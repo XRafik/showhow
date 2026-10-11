@@ -126,10 +126,12 @@ build still publishes, but the DMG is unsigned.
 
 ## Workflow
 
-Read `~/dev/OS/.agents/loop-config/WORKFLOW.md` before any build work and
-follow it. If that file cannot be read, stop and tell the owner. Do not guess
-the workflow.
+Before planning or build work, read both `~/dev/loop/AGENTS.md` and
+`~/dev/loop/README.md`. For an approved issue, use `ticket`; for an approved
+dependency-ordered milestone, use `milestone`; use `shape` while scope is
+unresolved. Follow the current Loop skill catalogue and keep shared procedures
+there.
 
-Read `.agents/CONTEXT.md` and `.agents/HANDOFF.md` before any work. This
+Before any work, read `.agents/CONTEXT.md` and `.agents/HANDOFF.md`. This
 repository owns those files and `.agents/decisions.md`. Agents never merge
 pull requests.

@@ -30,5 +30,5 @@ TypeScript in strict mode, Electron, React 18, Vite and Pixi.js v8. Node 22.22.1
 
 - Repository: https://github.com/bedarstudios/OS (private)
 - Local path: ~/dev/OS
-- Workflow and rules live only in head office:
-  ~/dev/OS/.agents/loop-config/WORKFLOW.md. This repository holds no copies.
+- Before planning or build work, read both `~/dev/loop/AGENTS.md` and
+  `~/dev/loop/README.md` for current workflow guidance and the skill catalogue.
