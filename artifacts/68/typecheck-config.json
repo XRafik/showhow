@@ -1,9 +1,0 @@
-{
-	"extends": "../../tsconfig.json",
-	"compilerOptions": {
-		"paths": {
-			"@/*": ["src/*"],
-			"ws": ["node_modules/@types/ws/index.d.ts", ".local/issue-68/types/ws/index.d.ts"]
-		}
-	}
-}

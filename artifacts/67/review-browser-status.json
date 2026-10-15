@@ -1,9 +1,0 @@
-{
-	"phase": "browser",
-	"log": "review-browser.log",
-	"pid": 90554,
-	"exitCode": 0,
-	"expectedExit": 0,
-	"seconds": 17.095710499999768,
-	"freeAfter": 221646848
-}

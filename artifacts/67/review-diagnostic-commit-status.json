@@ -1,9 +1,0 @@
-{
-	"phase": "diagnostic-commit",
-	"log": "review-diagnostic-commit.log",
-	"pid": 99884,
-	"exitCode": 0,
-	"expectedExit": 0,
-	"seconds": 1.0119904580024013,
-	"freeAfter": 237125632
-}

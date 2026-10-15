@@ -1,9 +1,0 @@
-{
-	"phase": "green",
-	"log": "review-green-1.log",
-	"pid": 89151,
-	"exitCode": 0,
-	"expectedExit": 0,
-	"seconds": 13.089252957999634,
-	"freeAfter": 251879424
-}

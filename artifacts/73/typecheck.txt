@@ -1,3 +1,0 @@
-Command: node node_modules/typescript/bin/tsc --noEmit -p artifacts/73/typecheck-config.json
-
-Exit status: 0

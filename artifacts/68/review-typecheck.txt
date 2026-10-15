@@ -1,9 +1,0 @@
-2026-09-07T23:11:24.802063+00:00
-$ node node_modules/typescript/bin/tsc --noEmit -p artifacts/68/typecheck-config.json
-electron/showhow/mediaProtocol.ts(140,59): error TS2554: Expected 0-1 arguments, but got 2.
-
-Exit status: 2
-2026-09-07T23:14:40.578217+00:00
-$ node node_modules/typescript/bin/tsc --noEmit -p artifacts/68/typecheck-config.json
-
-Exit status: 0

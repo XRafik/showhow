@@ -1,4 +1,0 @@
-clicks=6 spans=3 covering=3
-  3582-4915 focus=(0.818,0.150) HIT
-  5736-7069 focus=(0.602,0.621) HIT
-  25219-26552 focus=(0.365,0.769) HIT

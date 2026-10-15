@@ -1,9 +1,0 @@
-{
-	"phase": "controls-sanity",
-	"log": "review-controls-sanity.log",
-	"pid": 10063,
-	"exitCode": 0,
-	"expectedExit": 0,
-	"seconds": 1.007462708003004,
-	"freeAfter": 188825600
-}

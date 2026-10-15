@@ -1,9 +1,0 @@
-{
-	"phase": "diagnostic-lint",
-	"log": "review-diagnostic-lint.log",
-	"pid": 99577,
-	"exitCode": 0,
-	"expectedExit": 0,
-	"seconds": 1.0123780829999305,
-	"freeAfter": 240242688
-}

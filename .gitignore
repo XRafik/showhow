@@ -71,3 +71,9 @@ result-*
 /caption-assets/
 .bedar/previews/
 /.vitest-cache/
+
+# Owner-only notes; never commit
+private/
+
+# Local agent tooling
+.pi/

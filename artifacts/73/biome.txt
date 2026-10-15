@@ -1,4 +1,0 @@
-Command: node node_modules/@biomejs/biome/bin/biome check src/components/library/RecordingLibrary.tsx src/components/library/RecordingLibrary.test.tsx artifacts/73/vitest.config.ts artifacts/73/typecheck-config.json
-Checked 4 files in 14ms. No fixes applied.
-
-Exit status: 0

@@ -1,9 +1,0 @@
-{
-	"phase": "control",
-	"log": "review-control.log",
-	"pid": 84190,
-	"exitCode": 1,
-	"expectedExit": 1,
-	"seconds": 14.109748709000996,
-	"freeAfter": 265953280
-}

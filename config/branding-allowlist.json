@@ -5,6 +5,10 @@
 			"reason": "Documents which legacy identifiers are kept and why"
 		},
 		{
+			"file": ".agents/HANDOFF.md",
+			"reason": "Names the upstream project and legacy project-file format for the planned v2 migration"
+		},
+		{
 			"file": ".bedar/project-plan.yml",
 			"reason": "Dated project plan referencing the inherited baseline"
 		},
@@ -49,6 +53,10 @@
 			"reason": "Required attribution to the upstream project"
 		},
 		{
+			"file": "Archive/NEXT-SESSION.md",
+			"reason": "Owner's session plan; step 1 names the upstream release to assess"
+		},
+		{
 			"file": "README.md",
 			"reason": "Attribution and upstream release links"
 		},
@@ -79,8 +87,20 @@
 			]
 		},
 		{
+			"file": "Archive/design/DESIGN-MAX-HANDOFF.md",
+			"reason": "Closed design brief that names the upstream intake research"
+		},
+		{
 			"file": "docs/github-actions-workflows.md",
 			"reason": "Legacy compatibility instruction for the temporary inherited release-token fallback"
+		},
+		{
+			"file": "docs/research/2026-10-12-openscreen-v2-assessment.md",
+			"reason": "Upstream intake research; must name the source project and link its code"
+		},
+		{
+			"file": "docs/research/2026-10-12-ui-direction.md",
+			"reason": "Product direction notes that reference the upstream intake assessment"
 		},
 		{
 			"file": "docs/secrets.md",
@@ -191,7 +211,7 @@
 			"reason": "Migrates the legacy application-data directory; must name every legacy casing"
 		},
 		{
-			"file": "implementation-notes.md",
+			"file": "Archive/implementation-notes.md",
 			"reason": "Historical Phase 1 implementation notes describing inherited source behavior"
 		},
 		{

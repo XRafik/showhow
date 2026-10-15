@@ -1,9 +1,0 @@
-{
-	"phase": "oracle",
-	"log": "review-oracle-1.log",
-	"pid": 88819,
-	"exitCode": 0,
-	"expectedExit": 0,
-	"seconds": 2.021575042001132,
-	"freeAfter": 218349568
-}

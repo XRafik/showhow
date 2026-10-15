@@ -1,65 +1,39 @@
 # Showhow Roadmap
 
-**North star: record → folder → agent.** You hit record, you hit the bug, you stop. Showhow writes a self-contained folder and you hand a coding agent the path. Nothing else.
+**North star: show it once.** Record a bug or a process, press one button, and get a step-by-step guide with screenshots and timestamps. Hand it to a coding agent as a brief plus the folder path, or send it to a client as a PDF.
 
-This is the plan of record for what ships next. The machine-readable version — issue numbers, dependencies, done-when criteria — lives in [`.bedar/project-plan.yml`](./.bedar/project-plan.yml); this file is the human read of it. Phases gate each other strictly: nothing in phase 3 starts before phase 2 closes.
+This is the human-readable plan. The machine-readable plan is [`.bedar/project-plan.yml`](./.bedar/project-plan.yml).
 
 ## Principles
 
-- **The recorder wins, always.** Every Showhow addition is fail-open. Bundling breaks, transcription fails, accessibility is denied — the recording still saves. A take is never lost to a feature.
-- **Local only.** Transcription runs on-device. No account, no upload, no API key. That isn't a v1 shortcut; it's the design.
-- **macOS first.** V1 targets macOS 13+. Windows and Linux keep working as the inherited OpenScreen recorder, but the Showhow layer isn't hooked there.
-- **Stay mergeable with upstream.** Showhow code stays in `electron/showhow/` and `src/lib/showhow/`, commits stay prefixed `feat(showhow):`, so upstream fixes keep flowing in.
+- **The recorder wins, always.** Every Showhow addition is fail-open. If bundling breaks, transcription fails or AI is unavailable, the recording still saves. A take is never lost to a feature.
+- **Local-first and free.** Recording, transcription, editing and the click-based steps run on your Mac with no account. AI writing (guides, agent briefs, AI edits) is optional and only runs when you connect ChatGPT or OpenRouter and ask for it. There are no paywalls or paid tiers.
+- **macOS first.** V1 targets macOS 13+. Windows and Linux keep the inherited recorder, but the Showhow layer isn't hooked up there.
 
-## ✅ Phase 1 — Folder bundle *(shipped)*
+## Shipped
 
-Every finished macOS recording persists as a recoverable bundle instead of loose files.
+- **Folder bundles:** every recording is saved as a recoverable folder with the video, cursor telemetry, `meta.json` and an on-device timestamped transcript.
+- **Deterministic steps:** one marked screenshot per click, matched to the transcript, as `steps.json` and `steps.md`. Steps can be regenerated and edited.
+- **Library and doc view:** recordings newest first, with video, numbered screenshots, seekable timestamps and Copy path.
+- **Agent handoff proof:** a coding agent diagnosed a recorded bug from the folder path alone.
 
-- [x] Fail-open bundle persistence across all three macOS save paths
-- [x] `meta.json` manifest and cursor telemetry
-- [x] On-device Whisper transcript, timestamped, surviving the recorder→editor window transition
+## V1 (in progress)
 
-## 🔨 Phase 2 — Desktop doc engine *(in progress)*
+The full design is locked in `design/showhow.pen` (`Final · …` frames). V1 ships six features:
 
-Turn a recording into a deterministic step-by-step document.
+1. **Recording:** a source picker, a countdown and a floating bar, returning to the library on Stop.
+2. **One-button AI guide:** steps, screenshots and timestamps written from your narration.
+3. **Editor with an AI assistant:** the inherited editor in the Showhow style, with preview, apply and undo for AI edits.
+4. **Library as home**, including MP4 import.
+5. **Copy for agent:** a detailed brief plus the folder path. If no brief exists yet, Showhow makes it first.
+6. **PDF export** for clients and walkthrough posts.
 
-- [x] Extract the marked video frame for each desktop click — [#19](../../issues/19)
-- [ ] Generate `steps.json`, `steps.md`, and numbered screenshots by matching nearby transcript sentences to click timestamps — [#20](../../issues/20)
-- [ ] Prove the handoff: record a real bug, give an agent only the folder path, confirm it diagnoses it — [#21](../../issues/21)
+Order of work: move onto upstream OpenScreen v2 under a reviewed migration plan, build the interface with sample data, then connect the real features one at a time, starting with recording.
 
-Regenerating from the same video, transcript, and clicks must produce identical steps. Every `steps.md` timestamp must land within one second of its visible click.
+## Not in V1
 
-## 📚 Phase 3 — Library and doc view
-
-Make the folders browsable without leaving the app.
-
-- [ ] Local recording library — discover valid bundles, newest first, no second database — [#22](../../issues/22)
-- [ ] Workflow doc view — video, numbered screenshots, instructions, seekable timestamp chips, Copy path — [#23](../../issues/23)
-
-## 🌐 Phase 4 — Browser companion bridge
-
-Desktop clicks tell you *where* someone clicked. The browser can tell you *what* they clicked.
-
-- [ ] Desktop bridge — localhost pairing, recording-start clock handshake, safe fallback on disconnect — [#24](../../issues/24)
-- [ ] Companion capture — semantic action labels, capture-time redaction, SPA navigation, pre-action screenshots — [#25](../../issues/25)
-
-Start and stop stay desktop-owned. A mid-recording disconnect costs you semantic steps, never video.
-
-## ✨ Phase 5 — V1 polish
-
-- [ ] Safe doc editing — retitle, reword an instruction, delete a step, reveal redacted text per step, regenerate `steps.md` — [#26](../../issues/26)
-- [ ] Every empty, generating, and failure state, plus full V1 acceptance on macOS 13+ — [#27](../../issues/27)
-
-Redacted text stays out of the agent-facing Markdown unless explicitly revealed for that step.
-
-## Beyond V1
-
-Not scheduled, not promised — the things worth reconsidering once V1 holds up in daily use:
-
-- Windows support for the Showhow layer (the native capture path already has the identical shape; it's deliberately unhooked)
-- Export a bundle as a single shareable file
-- Publishing signed macOS builds
+MCP access to the library, the browser companion, a notes window while recording, demo-video export, and the Showhow layer on Windows and Linux.
 
 ## Inherited from upstream
 
-Showhow tracks [getopenscreen/openscreen](https://github.com/getopenscreen/openscreen) and merges its fixes. Recorder and editor bugs — export regressions, GPU encoder fallback, blur regions, Linux/Wayland issues — are upstream's roadmap, not this one. Report them there; they reach Showhow through the merge.
+Showhow is built on [getopenscreen/openscreen](https://github.com/getopenscreen/openscreen). Upstream changes come in through focused, reviewed imports under [`UPSTREAM.md`](./UPSTREAM.md). Recorder and editor bugs that also affect upstream belong in upstream's tracker.

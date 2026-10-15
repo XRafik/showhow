@@ -1,9 +1,0 @@
-{
-	"phase": "format",
-	"log": "review-format-6.log",
-	"pid": 5290,
-	"exitCode": 0,
-	"expectedExit": 0,
-	"seconds": 1.0054997499973979,
-	"freeAfter": 126140416
-}

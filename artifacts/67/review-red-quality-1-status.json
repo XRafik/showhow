@@ -1,9 +1,0 @@
-{
-	"phase": "red-quality",
-	"log": "review-red-quality-1.log",
-	"pid": 88905,
-	"exitCode": 1,
-	"expectedExit": 1,
-	"seconds": 8.058598916000847,
-	"freeAfter": 257740800
-}

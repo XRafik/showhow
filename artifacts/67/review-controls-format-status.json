@@ -1,9 +1,0 @@
-{
-	"phase": "controls-format",
-	"log": "review-controls-format.log",
-	"pid": 9908,
-	"exitCode": 0,
-	"expectedExit": 0,
-	"seconds": 1.0046091660005914,
-	"freeAfter": 189317120
-}

@@ -1,9 +1,0 @@
-{
-	"phase": "red-paired",
-	"log": "review-red-paired-1.log",
-	"pid": 88853,
-	"exitCode": 1,
-	"expectedExit": 1,
-	"seconds": 6.034141083999202,
-	"freeAfter": 263409664
-}

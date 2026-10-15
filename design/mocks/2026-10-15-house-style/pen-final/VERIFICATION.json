@@ -1,0 +1,412 @@
+{
+  "date": "2026-10-15",
+  "scope": "Pencil Final-frame design only",
+  "checks": {
+    "finalFrames": 50,
+    "unfinished": [],
+    "staleCopy": [],
+    "hardColours": [],
+    "selectedInSettings": [],
+    "missingSearch": [],
+    "missingReviewLink": [],
+    "expectedLayout": [
+      [
+        "nqIPi",
+        "o86TqK",
+        "Lane",
+        "partially clipped"
+      ],
+      [
+        "nqIPi",
+        "T9hxW",
+        "Lane",
+        "partially clipped"
+      ],
+      [
+        "nqIPi",
+        "S3oaq",
+        "Lane",
+        "partially clipped"
+      ],
+      [
+        "nqIPi",
+        "lmZGe",
+        "Lane",
+        "partially clipped"
+      ],
+      [
+        "nqIPi",
+        "UYFAT",
+        "Waveform",
+        "partially clipped"
+      ],
+      [
+        "nqIPi",
+        "Xj4rH",
+        "Playhead",
+        "partially clipped"
+      ],
+      [
+        "nqIPi",
+        "m1EZm",
+        "Knob",
+        "partially clipped"
+      ],
+      [
+        "HHgwX",
+        "JkOOA",
+        "Lane",
+        "partially clipped"
+      ],
+      [
+        "HHgwX",
+        "e1E2b",
+        "Lane",
+        "partially clipped"
+      ],
+      [
+        "HHgwX",
+        "QPhsn",
+        "Lane",
+        "partially clipped"
+      ],
+      [
+        "HHgwX",
+        "g0C3h",
+        "Lane",
+        "partially clipped"
+      ],
+      [
+        "HHgwX",
+        "eE4El",
+        "Waveform",
+        "partially clipped"
+      ],
+      [
+        "HHgwX",
+        "b1Eiwr",
+        "Playhead",
+        "partially clipped"
+      ],
+      [
+        "ZFuVb",
+        "RxlTO",
+        "Lane",
+        "partially clipped"
+      ],
+      [
+        "ZFuVb",
+        "pbMcG",
+        "Lane",
+        "partially clipped"
+      ],
+      [
+        "ZFuVb",
+        "j6lUv",
+        "Lane",
+        "partially clipped"
+      ],
+      [
+        "ZFuVb",
+        "kk3FF",
+        "Lane",
+        "partially clipped"
+      ],
+      [
+        "ZFuVb",
+        "ekPLc",
+        "Waveform",
+        "partially clipped"
+      ],
+      [
+        "ZFuVb",
+        "FM4eX",
+        "Playhead",
+        "partially clipped"
+      ],
+      [
+        "vdhfN",
+        "y16C0",
+        "Lane",
+        "partially clipped"
+      ],
+      [
+        "vdhfN",
+        "N7Z9tr",
+        "Lane",
+        "partially clipped"
+      ],
+      [
+        "vdhfN",
+        "yJUqJ",
+        "Lane",
+        "partially clipped"
+      ],
+      [
+        "vdhfN",
+        "oWsxC",
+        "Lane",
+        "partially clipped"
+      ],
+      [
+        "vdhfN",
+        "qHC71",
+        "Waveform",
+        "partially clipped"
+      ],
+      [
+        "vdhfN",
+        "L68HmK",
+        "Playhead",
+        "partially clipped"
+      ]
+    ]
+  },
+  "componentUsageNotes": 27,
+  "sourceFillBindings": 11,
+  "protectedFrames": {
+    "frames": 22,
+    "unchanged": true,
+    "before": [
+      {
+        "id": "KxBa3",
+        "hash": -1793448951,
+        "length": 4525
+      },
+      {
+        "id": "rlCaQ",
+        "hash": -1569115653,
+        "length": 7727
+      },
+      {
+        "id": "IRKof",
+        "hash": -1573633904,
+        "length": 7885
+      },
+      {
+        "id": "Q8OJqc",
+        "hash": -129328243,
+        "length": 8680
+      },
+      {
+        "id": "R3vOp3",
+        "hash": -307292991,
+        "length": 4195
+      },
+      {
+        "id": "nTPKb",
+        "hash": -1784885656,
+        "length": 4555
+      },
+      {
+        "id": "PDLYK",
+        "hash": -1900425665,
+        "length": 3566
+      },
+      {
+        "id": "LpjlH",
+        "hash": 395905770,
+        "length": 9438
+      },
+      {
+        "id": "g1zVUy",
+        "hash": 1282837293,
+        "length": 12366
+      },
+      {
+        "id": "lp6tK",
+        "hash": 1275287827,
+        "length": 8402
+      },
+      {
+        "id": "FNLdp",
+        "hash": 400024000,
+        "length": 7155
+      },
+      {
+        "id": "h5N7j",
+        "hash": -576937162,
+        "length": 9213
+      },
+      {
+        "id": "g6DjDU",
+        "hash": 960362298,
+        "length": 16912
+      },
+      {
+        "id": "a6ige",
+        "hash": -903505229,
+        "length": 7040
+      },
+      {
+        "id": "ri9fd",
+        "hash": 1371576735,
+        "length": 7819
+      },
+      {
+        "id": "HUFqA",
+        "hash": 136472438,
+        "length": 6759
+      },
+      {
+        "id": "XsTWa",
+        "hash": -1307892083,
+        "length": 34321
+      },
+      {
+        "id": "riTTf",
+        "hash": 1181744233,
+        "length": 5540
+      },
+      {
+        "id": "Eluar",
+        "hash": 934060880,
+        "length": 8655
+      },
+      {
+        "id": "hUVN5",
+        "hash": -1469589582,
+        "length": 5521
+      },
+      {
+        "id": "TS4xH",
+        "hash": 1131992164,
+        "length": 5727
+      },
+      {
+        "id": "ekpyg",
+        "hash": -189001100,
+        "length": 7068
+      }
+    ],
+    "after": [
+      {
+        "id": "KxBa3",
+        "hash": -1793448951,
+        "length": 4525
+      },
+      {
+        "id": "rlCaQ",
+        "hash": -1569115653,
+        "length": 7727
+      },
+      {
+        "id": "IRKof",
+        "hash": -1573633904,
+        "length": 7885
+      },
+      {
+        "id": "Q8OJqc",
+        "hash": -129328243,
+        "length": 8680
+      },
+      {
+        "id": "R3vOp3",
+        "hash": -307292991,
+        "length": 4195
+      },
+      {
+        "id": "nTPKb",
+        "hash": -1784885656,
+        "length": 4555
+      },
+      {
+        "id": "PDLYK",
+        "hash": -1900425665,
+        "length": 3566
+      },
+      {
+        "id": "LpjlH",
+        "hash": 395905770,
+        "length": 9438
+      },
+      {
+        "id": "g1zVUy",
+        "hash": 1282837293,
+        "length": 12366
+      },
+      {
+        "id": "lp6tK",
+        "hash": 1275287827,
+        "length": 8402
+      },
+      {
+        "id": "FNLdp",
+        "hash": 400024000,
+        "length": 7155
+      },
+      {
+        "id": "h5N7j",
+        "hash": -576937162,
+        "length": 9213
+      },
+      {
+        "id": "g6DjDU",
+        "hash": 960362298,
+        "length": 16912
+      },
+      {
+        "id": "a6ige",
+        "hash": -903505229,
+        "length": 7040
+      },
+      {
+        "id": "ri9fd",
+        "hash": 1371576735,
+        "length": 7819
+      },
+      {
+        "id": "HUFqA",
+        "hash": 136472438,
+        "length": 6759
+      },
+      {
+        "id": "XsTWa",
+        "hash": -1307892083,
+        "length": 34321
+      },
+      {
+        "id": "riTTf",
+        "hash": 1181744233,
+        "length": 5540
+      },
+      {
+        "id": "Eluar",
+        "hash": 934060880,
+        "length": 8655
+      },
+      {
+        "id": "hUVN5",
+        "hash": -1469589582,
+        "length": 5521
+      },
+      {
+        "id": "TS4xH",
+        "hash": 1131992164,
+        "length": 5727
+      },
+      {
+        "id": "ekpyg",
+        "hash": -189001100,
+        "length": 7068
+      }
+    ]
+  },
+  "visualChecks": {
+    "originalFramesBeforeChanges": 37,
+    "allNewFramesAfterCreation": 13,
+    "changedFramesAfterFinalChanges": true
+  },
+  "limits": [
+    "25 existing intentional partial clips in Editor timeline lanes, waveform, playhead and knob, unchanged from baseline",
+    "Hidden disabled tags omitted from visible-layout checks",
+    "Design references are static; no Electron, provider, native recording or clipboard runtime acceptance claimed"
+  ],
+  "saveGate": "Owner Cmd+S confirmation required before local commit",
+  "saveConfirmation": {
+    "date": "2026-10-16",
+    "ownerResponse": "Saved",
+    "status": "confirmed",
+    "finalFrameInventoryMatchesExports": true
+  }
+}

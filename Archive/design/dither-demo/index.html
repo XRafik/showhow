@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Showhow · Library — dither pass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Inter+Tight:wght@500&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --surface:#FFFCF7; --raised:#F9F5EC; --sunken:#F7F2E8;
+  --ink:#2F2F2F; --ink-soft:#2F2F2FB3; --muted:#2F2F2F8C; --faint:#2F2F2F66;
+  --line:#2F2F2F24; --wash:#2F2F2F14; --whisper:#2F2F2F08; --chip:#E8E4DC;
+  --panel:#2F2F2F; --panel-deep:#242424;
+  --on-panel:#FFFCF7; --on-soft:#FFFCF7AA; --on-muted:#FFFCF78C; --on-faint:#FFFCF766;
+  --on-wash:#FFFCF71A; --on-hover:#FFFCF70F;
+  --accent:#82B09A; --accent-strong:#33564A; --accent-100:#E7F1EC; --accent-200:#CFE4DA;
+  --accent-tint:#82B09A33; --accent-wash:#82B09A26; --accent-whisper:#82B09A1F;
+  --rec:#E3582D; --rec-wash:#E3582D1F; --rec-ink:#B3431F; --rec-soft:#F28B6B;
+  --body:'Inter',sans-serif; --display:'Inter Tight',sans-serif; --mono:'JetBrains Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased}
+body{background:#E9E5DC;font-family:var(--body);color:var(--ink);display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:40px 0 80px}
+.chrome{position:fixed;top:0;left:0;right:0;z-index:50;display:flex;align-items:center;gap:14px;padding:10px 18px;background:#2F2F2F;font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--on-muted)}
+.chrome b{color:var(--on-panel);font-weight:500}
+.chrome .seg{display:flex;gap:2px;background:var(--on-hover);border-radius:4px;padding:2px}
+.chrome .seg button{font:500 10px var(--mono);letter-spacing:.06em;color:var(--on-soft);background:none;border:0;border-radius:3px;padding:5px 9px;cursor:pointer}
+.chrome .seg button.on{background:var(--on-panel);color:var(--ink)}
+.chrome select{font:500 10px var(--mono);letter-spacing:.06em;background:var(--on-hover);color:var(--on-panel);border:0;border-radius:4px;padding:6px}
+.chrome .hint{margin-left:auto;color:var(--on-faint)}
+.screen{width:1200px;height:800px;background:var(--surface);display:flex;overflow:hidden;border-radius:2px;box-shadow:0 30px 80px -20px #2F2F2F44;margin-top:34px}
+/* ---------- sidebar ---------- */
+.sidebar{width:272px;flex:none;background:var(--panel);display:flex;flex-direction:column;gap:24px;padding:26px 18px}
+.logo{display:flex;align-items:center;gap:12px;padding:0 6px}
+.logo .tile{width:50px;height:50px;background:var(--surface);border-radius:6px;display:grid;place-items:center}
+.logo .mark{width:40px;height:40px;position:relative}
+.logo .mark .sh{position:absolute;inset:3px -3px -3px 3px;background:var(--accent)}
+.logo .mark .slab{position:absolute;inset:0;background:var(--panel)}
+.logo .mark svg{position:absolute;left:12px;top:13px}
+.logo .name{font:500 19px var(--display);letter-spacing:-.02em;color:var(--on-panel)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:4px;padding:10px 14px;font:500 11px var(--mono);letter-spacing:.06em;cursor:pointer;border:0;white-space:nowrap}
+.btn .ic{width:14px;height:14px;display:inline-flex}
+.btn.primary{background:var(--accent);color:var(--on-accent)}
+.btn.dark{background:var(--panel);color:var(--on-panel)}
+.btn.ghost{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.btn.secondary{background:var(--chip);color:var(--ink)}
+.btn.rec{background:var(--rec);color:var(--on-panel)}
+.sidebtn{width:100%;background:var(--on-hover);color:var(--on-panel);justify-content:flex-start}
+.lib-head{font:400 11px var(--mono);letter-spacing:.06em;color:var(--on-muted);padding:0 8px 8px}
+.rows{display:flex;flex-direction:column;gap:4px}
+.row{border-radius:6px;padding:10px;display:flex;flex-direction:column;gap:5px;cursor:pointer}
+.row.sel{background:var(--accent-tint)}
+.row .t{font:500 13px/1.3 var(--body);color:var(--on-panel)}
+.row .m{display:flex;gap:8px;align-items:center;font:400 10px var(--mono);letter-spacing:.06em;color:var(--on-muted)}
+.tag{align-self:flex-start;background:var(--on-wash);color:var(--on-soft);border-radius:3px;padding:2px 6px;font:400 9.5px var(--mono);letter-spacing:.06em}
+.tag.sage{background:var(--accent);color:var(--on-accent)}
+.tag.warn{color:var(--rec-soft)}
+.tag.new{background:none;color:var(--accent);padding:2px 0}
+.spacer{flex:1}
+.empty-note{border:1px solid #FFFCF72A;border-radius:6px;padding:14px;display:flex;flex-direction:column;gap:6px}
+.empty-note .h{font:400 10px var(--mono);letter-spacing:.06em;color:var(--on-soft)}
+.empty-note .b{font:400 12px/1.4 var(--body);color:var(--on-muted)}
+.skel{height:10px;border-radius:2px;background:var(--on-wash)}
+.skel.s2{width:90px;height:8px;background:var(--on-hover)}
+/* ---------- main ---------- */
+.main{flex:1;display:flex;flex-direction:column;align-items:center;overflow:hidden}
+.col{width:820px;padding:56px 0 80px;display:flex;flex-direction:column}
+.center{align-items:center;justify-content:center;gap:0}
+.title-row{display:flex;justify-content:space-between;align-items:center;padding-bottom:10px}
+h1{font:500 36px var(--display);letter-spacing:-.02em}
+h1.sm{font-size:32px;letter-spacing:-.02em}
+.meta{display:flex;gap:10px;align-items:center;font:400 11px var(--mono);letter-spacing:.06em;color:var(--muted);padding-bottom:20px}
+.meta .ok{color:var(--accent-strong)}
+.video{position:relative;width:100%;height:340px;border-radius:8px;overflow:hidden;background:var(--panel)}
+.video canvas{position:absolute;inset:0;width:100%;height:100%}
+.video .controls{position:absolute;left:14px;right:14px;bottom:14px;display:flex;gap:12px;align-items:center}
+.video .controls .t{font:400 11px var(--mono);letter-spacing:.06em;color:var(--on-soft)}
+.video .controls .scr{flex:1;height:2px;background:#FFFCF733}
+.video .controls svg{flex:none}
+.notice{display:flex;gap:8px;align-items:center;padding-top:16px;font:400 11px var(--mono);letter-spacing:.06em;color:var(--muted)}
+.sec-head{display:flex;justify-content:space-between;align-items:center;padding:36px 0 14px}
+.sec-head .l{display:flex;gap:10px;align-items:center}
+.kicker{font:500 12px var(--mono);letter-spacing:.08em;color:var(--ink)}
+.chip{background:var(--rec-wash);color:var(--rec-ink);border-radius:3px;padding:2px 6px;font:400 9.5px var(--mono);letter-spacing:.06em}
+.chip.sage{background:var(--accent-tint);color:var(--accent-strong)}
+.actions{display:flex;gap:8px}
+.card{position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.card .in{display:flex;gap:28px;padding:24px;align-items:center}
+.card .copy{flex:1;display:flex;flex-direction:column;gap:10px}
+.card h2{font:500 20px var(--display);letter-spacing:-.02em}
+.card p{font:400 13px/1.5 var(--body);color:var(--muted)}
+.engines{display:flex;gap:6px;padding-top:6px}
+.engine{display:flex;gap:5px;align-items:center;background:var(--accent-wash);color:var(--accent-strong);border-radius:3px;padding:3px 7px;font:400 10px var(--mono);letter-spacing:.06em}
+.engine .dot{width:6px;height:6px;border-radius:3px;background:var(--accent)}
+.fadeedge{position:absolute;top:0;right:0;bottom:0;width:56px;pointer-events:none}
+.fadeedge canvas{width:100%;height:100%;display:block}
+/* hero dither panel */
+.hero{position:relative;background:var(--panel);border-radius:8px;overflow:hidden;display:flex;flex-direction:column;gap:10px;padding:18px 28px}
+.hero canvas{position:absolute;inset:0;width:100%;height:100%}
+.hero .rel{position:relative}
+.hero .lbl{font:400 10px var(--mono);letter-spacing:.06em;color:var(--on-muted)}
+.hero .ascii{font:400 13px/1.3 var(--mono);color:var(--on-panel);white-space:pre}
+.hero.big{width:520px;align-items:flex-start}
+.hero .cap{font:400 10px var(--mono);letter-spacing:.06em;color:var(--on-faint)}
+/* progress */
+.pcard .in{flex-direction:column;align-items:stretch;gap:16px}
+.phead{display:flex;justify-content:space-between;align-items:center}
+.phead .r{font:400 11px var(--mono);letter-spacing:.06em;color:var(--muted)}
+.pbar{position:relative;height:16px;border-radius:3px;overflow:hidden;background:var(--chip)}
+.pbar canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.pbar .flat{position:absolute;inset:0 auto 0 0;background:var(--accent);border-radius:3px}
+.stages{display:flex;flex-direction:column;gap:10px}
+.stage{display:flex;gap:12px;align-items:center}
+.stage .txt{font:500 14px var(--body);color:var(--ink)}
+.stage .txt.dim{color:var(--muted)}
+.stage .meta{font:400 11px var(--mono);letter-spacing:.06em;color:var(--muted)}
+.pfoot{display:flex;justify-content:space-between;align-items:center;padding-top:8px}
+.pfoot .l{font:400 11px var(--mono);letter-spacing:.06em;color:var(--muted)}
+/* guide steps */
+.narr{position:relative;background:var(--accent-whisper);border-radius:8px;overflow:hidden;margin-bottom:4px}
+.narr .in{display:flex;flex-direction:column;gap:6px;padding:14px 16px}
+.narr .lbl{font:400 11px var(--mono);letter-spacing:.06em;color:var(--muted)}
+.narr .q{font:400 14px/1.5 var(--body);color:var(--ink)}
+.step{display:flex;gap:20px;padding:20px 0;border-top:1px solid var(--line)}
+.step .num{width:36px;flex:none;font:500 11px var(--mono);letter-spacing:.06em;color:var(--ink)}
+.thumb{position:relative;width:240px;height:136px;flex:none;border-radius:6px;overflow:hidden;background:var(--panel)}
+.thumb canvas{position:absolute;inset:0;width:100%;height:100%}
+.thumb .ring{position:absolute;left:120px;top:60px;width:18px;height:18px;border:2px solid var(--accent);border-radius:9px}
+.thumb .ring.rec{border-color:var(--rec)}
+.step .body{flex:1;display:flex;flex-direction:column;gap:8px}
+.step .st{font:500 15px var(--body)}
+.step .q{font:400 13px/1.5 var(--body);color:var(--muted)}
+.step .meta{display:flex;gap:12px;align-items:center;padding-top:4px}
+.step .ts{font:400 11px var(--mono);letter-spacing:.06em;color:var(--ink)}
+.step .act{display:flex;gap:8px}
+.step .btn{padding:6px 10px}
+/* empty / loading / error center states */
+.state-col{align-items:center;text-align:center;gap:18px}
+.state-col h1{margin-top:10px}
+.state-col p{max-width:420px;font:400 14px/1.5 var(--body);color:var(--muted)}
+.gap28{height:28px}.gap10{height:10px}.gap24{height:24px}
+.pixbar{font:400 12px/1.4 var(--mono);color:var(--on-panel);white-space:pre}
+/* pixel glyph */
+.pix{display:inline-grid;grid-template-columns:repeat(5,3px);grid-auto-rows:3px;gap:1px}
+.pix i{background:currentColor}
+</style>
+</head>
+<body>
+<div class="chrome" id="chrome">
+  <b>SHOWHOW · LIBRARY DITHER PASS</b>
+  <select id="stateSel"></select>
+  <div class="seg" id="dseg">
+    <button data-d="0">CURRENT</button>
+    <button data-d="1" class="on">DITHER</button>
+  </div>
+  <span class="hint">press 1–7 screens · d toggles dither</span>
+</div>
+<div class="screen" id="screen"></div>
+
+<script>
+/* ================= dither engine (mirrors ../dither.glsl) ================= */
+const VERT = "attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}";
+const FRAG = `
+precision mediump float;
+uniform vec2 u_resolution;uniform float u_pixel;uniform float u_block;
+uniform vec3 u_colA;uniform vec3 u_colB;uniform vec3 u_colC;uniform float u_accent;
+uniform float u_gradient;uniform float u_progress;uniform float u_frontier;
+uniform float u_seed;uniform float u_alpha;uniform float u_mode;uniform float u_time;uniform float u_shimmer;
+float bayer2(vec2 a){a=floor(a);return fract(a.x/2.0+a.y*a.y*0.75);}
+float bayer4(vec2 a){return bayer2(0.5*a)*0.25+bayer2(a);}
+float bayer8(vec2 a){return bayer4(0.5*a)*0.25+bayer2(a);}
+float hash12(vec2 p){vec3 p3=fract(vec3(p.xyx)*0.1031);p3+=dot(p3,p3.yzx+33.33);return fract((p3.x+p3.y)*p3.z);}
+void main(){
+  vec2 frag=gl_FragCoord.xy;
+  float d=bayer8(frag/u_pixel);
+  float v;
+  if(u_mode>0.5&&u_mode<1.5){
+    float x=frag.x/u_resolution.x;
+    float band=max(u_frontier,u_pixel)/u_resolution.x;
+    v=clamp((u_progress-x)/band+0.5,0.0,1.0);
+  }else if(u_mode>1.5&&u_mode<2.5){
+    v=1.0-frag.x/u_resolution.x;
+  }else if(u_mode>2.5){
+    v=frag.y/u_resolution.y;
+  }else{
+    vec2 bc=floor(frag/u_block);
+    float n=hash12(bc+u_seed);
+    if(u_shimmer>0.5){
+      float tw=step(0.985,hash12(bc+floor(u_time*0.8)+u_seed));
+      n=fract(n+tw*0.4);
+    }
+    float blocks=floor(n*5.0)/5.0;
+    float g=(frag.x/u_resolution.x)*0.55+(1.0-frag.y/u_resolution.y)*0.45;
+    v=mix(blocks,g,u_gradient);
+  }
+  float on=step(d,v);
+  if(u_mode>1.5){gl_FragColor=vec4(u_colA,on*u_alpha);return;}
+  vec3 col=mix(u_colB,u_colA,on);
+  if(u_mode<0.5){
+    vec2 bc=floor(frag/u_block);
+    float acc=step(1.0-u_accent,hash12(bc+u_seed+7.7));
+    col=mix(col,u_colC,acc*0.55);
+  }
+  gl_FragColor=vec4(col,u_alpha);
+}`;
+function hex(h){const n=parseInt(h.slice(1),16);return[(n>>16&255)/255,(n>>8&255)/255,(n&255)/255];}
+const live=[];
+function dither(canvas,opts){
+  const o=Object.assign({pixel:4,block:26,colA:"#CFE4DA",colB:"#2F2F2F",colC:"#82B09A",accent:.06,gradient:.35,progress:.62,frontier:28,seed:7,alpha:1,mode:0,shimmer:0},opts);
+  const gl=canvas.getContext("webgl",{alpha:true,antialias:false,premultipliedAlpha:false});
+  if(!gl)return null;
+  const sh=(t,s)=>{const h=gl.createShader(t);gl.shaderSource(h,s);gl.compileShader(h);return h;};
+  const pr=gl.createProgram();
+  gl.attachShader(pr,sh(gl.VERTEX_SHADER,VERT));gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,FRAG));
+  gl.linkProgram(pr);gl.useProgram(pr);
+  const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
+  const loc=gl.getAttribLocation(pr,"p");gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+  const U={};for(const n of["u_resolution","u_pixel","u_block","u_colA","u_colB","u_colC","u_accent","u_gradient","u_progress","u_frontier","u_seed","u_alpha","u_mode","u_time","u_shimmer"])U[n]=gl.getUniformLocation(pr,n);
+  gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
+  const st={gl,U,o,canvas,dead:false};
+  st.set=(k,v)=>{o[k]=v;};
+  live.push(st);
+  return st;
+}
+const DPR=Math.min(window.devicePixelRatio||1,2);
+function frame(t){
+  for(const s of live){
+    if(s.dead||!s.canvas.isConnected)continue;
+    const w=s.canvas.clientWidth*DPR,h=s.canvas.clientHeight*DPR;
+    if(s.canvas.width!==w||s.canvas.height!==h){s.canvas.width=w;s.canvas.height=h;s.gl.viewport(0,0,w,h);}
+    const{gl,U,o}=s;
+    gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.uniform2f(U.u_resolution,w,h);
+    gl.uniform1f(U.u_pixel,o.pixel*DPR);gl.uniform1f(U.u_block,o.block*DPR);
+    gl.uniform3fv(U.u_colA,hex(o.colA));gl.uniform3fv(U.u_colB,hex(o.colB));gl.uniform3fv(U.u_colC,hex(o.colC));
+    gl.uniform1f(U.u_accent,o.accent);gl.uniform1f(U.u_gradient,o.gradient);
+    gl.uniform1f(U.u_progress,typeof o.progress==="function"?o.progress(t/1000):o.progress);
+    gl.uniform1f(U.u_frontier,o.frontier*DPR);gl.uniform1f(U.u_seed,o.seed);
+    gl.uniform1f(U.u_alpha,o.alpha);gl.uniform1f(U.u_mode,o.mode);
+    gl.uniform1f(U.u_time,t/1000);gl.uniform1f(U.u_shimmer,o.shimmer);
+    gl.drawArrays(gl.TRIANGLES,0,3);
+  }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+/* ================= icons ================= */
+const I={
+  play:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFCF7" stroke-width="2"><polygon points="6 3 20 12 6 21 6 3" fill="#FFFCF7"/></svg>',
+  check:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>',
+  spark:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.9 5.8 5.8 1.9-5.8 1.9L12 18.4l-1.9-5.8L4.3 10.7l5.8-1.9z"/></svg>',
+  bot:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M12 8V4M8 4h8"/><circle cx="9" cy="14" r="1" fill="currentColor"/><circle cx="15" cy="14" r="1" fill="currentColor"/></svg>',
+  folder:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>',
+  down:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>',
+  rot:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>',
+  rotcw:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>',
+  dot:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>',
+  fsearch:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><circle cx="14" cy="13" r="3"/><path d="M16.2 15.2 19 18"/></svg>',
+  pen:'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></svg>',
+  trash:'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>',
+  gear:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+  cursor:'<svg width="15" height="15" viewBox="0 0 24 24" fill="#FFFCF7"><path d="M4 3l14 8-6 1 4 6-3 2-4-6-5 4z"/></svg>'
+};
+function pixGlyph(map,color){let s='<span class="pix" style="color:'+color+'">';for(const row of map)for(const c of row)s+=c==="1"?"<i></i>":"<i style='background:none'></i>";return s+"</span>";}
+const PX_CHECK=["00000","00001","00010","10010","01100"],PX_DOT=["00000","00100","01110","00100","00000"],PX_WAIT=["00000","01110","01110","01110","00000"];
+
+/* ================= shared chrome ================= */
+const ROWS=[
+  {t:"Bug: invoice total rounds wrong",m:"DESKTOP · 0:58",tag:"NO GUIDE",sel:true,isNew:true},
+  {t:"Set up a new client in Stripe",m:"BROWSER · 2:14",tag:"GUIDE",sage:true},
+  {t:"Export monthly report",m:"DESKTOP · 4:02",tag:"NO GUIDE"},
+  {t:"Onboard a teammate to Linear",m:"BROWSER · 1:37",tag:"GUIDE",sage:true},
+];
+function logo(){return `<div class="logo"><div class="tile"><div class="mark"><div class="sh"></div><div class="slab"></div>${I.cursor}</div></div><div class="name">Showhow</div></div>`;}
+function sidebarRows(mode){
+  if(mode==="skel")return `<div class="lib-head">LIBRARY</div>`+ROWS.map(()=>`<div class="row"><div class="skel"></div><div class="skel s2"></div></div>`).join("");
+  if(mode==="empty")return `<div class="lib-head">LIBRARY · 0</div><div class="empty-note"><div class="h">NOTHING HERE YET</div><div class="b">Recordings you save show up here.</div></div>`;
+  if(mode==="err")return `<div class="lib-head">LIBRARY · —</div>`;
+  return `<div class="lib-head">LIBRARY · 4</div>`+ROWS.map(r=>`<div class="row${r.sel?" sel":""}"><div class="t">${r.t}</div><div class="m">${r.m}${r.isNew?'<span class="tag new">· NEW</span>':""}</div><span class="tag${r.sage?" sage":""}">${r.tag}</span></div>`).join("");
+}
+function sidebar(mode){return `<div class="sidebar">${logo()}<button class="btn primary" style="width:100%">${I.dot}NEW RECORDING</button><div class="rows">${sidebarRows(mode)}</div><div class="spacer"></div><button class="btn sidebtn">${I.gear}SETTINGS</button></div>`;}
+function heroPanel(kind,d){
+  /* kind: pick|empty|load|err — d: dither on/off */
+  const cap={pick:"SHOWHOW · LIBRARY",empty:"SHOWHOW · LIBRARY · 0",load:"READING ~/Showhow/Recordings",err:"ERR · ENOENT"}[kind];
+  if(!d){
+    const art={pick:"┌─────────────────────────┐\n│   ▶  RECORD  →  GUIDE   │\n└─────────────────────────┘",
+               empty:"┌─────────────────────────┐\n│   ●  REC  →  ▤  GUIDE   │\n└─────────────────────────┘",
+               load:"[ ▓▓▓▓▓▓▓▓▓░░░░░░░░░░ ]  4/9",
+               err:"┌─────────────────────────┐\n│   ✕  FOLDER NOT FOUND   │\n└─────────────────────────┘"}[kind];
+    return `<div class="hero big"><div class="rel lbl">${cap}</div><div class="rel ascii">${art}</div></div>`;
+  }
+  const colC=kind==="err"?"#E3582D":"#82B09A";
+  return `<div class="hero big" style="min-height:150px"><canvas data-dither data-seed="${kind==="err"?21:7}" data-colc="${colC}" data-accent="${kind==="err"?.10:.08}" data-shimmer="1"></canvas><div class="rel lbl">${cap}</div><div class="rel cap" style="margin-top:auto">▶ RECORD → GUIDE — ${kind==="err"?"FOLDER NOT FOUND":"ORDERED DITHER · 4PX · BAYER 8×8"}</div></div>`;
+}
+function videoEl(d,seed){
+  return `<div class="video">${d?`<canvas data-dither data-mode="0" data-cola="#3D4A42" data-colb="#2F2F2F" data-cola2="" data-accent="0.05" data-seed="${seed||11}" data-pixel="3" data-block="22"></canvas>`:""}<div class="controls">${I.play}<span class="t">0:00 / 0:58</span><div class="scr"></div></div></div>`;
+}
+function titleBlock(){return `<div class="title-row"><h1>Bug: invoice total rounds wrong</h1><button class="btn ghost">RENAME</button></div><div class="meta"><span>DESKTOP · 0:58</span><span>· 26 SEP 2026, 10:14</span></div>`;}
+function savedNotice(){return `<div class="notice"><span style="color:var(--accent);display:inline-flex">${I.check}</span>Saved · ~/Showhow/Recordings/2026-09-26 Bug invoice total</div>`;}
+function secHead(extra){return `<div class="sec-head"><div class="l"><span class="kicker">01 / WALKTHROUGH GUIDE</span>${extra||""}</div></div>`;}
+function engines(){return `<div class="engines"><span class="engine"><span class="dot"></span>WHISPER · READY</span><span class="engine"><span class="dot"></span>LAYA · CONNECTED</span><span class="engine"><span class="dot"></span>CLICKS · 9 CAPTURED</span></div>`;}
+function mountDithers(root){
+  root.querySelectorAll("canvas[data-dither]").forEach(c=>{
+    dither(c,{mode:+(c.dataset.mode||0),colA:c.dataset.cola||"#CFE4DA",colB:c.dataset.colb||"#2F2F2F",colC:c.dataset.colc||"#82B09A",accent:+(c.dataset.accent??.06),pixel:+(c.dataset.pixel||4),block:+(c.dataset.block||26),seed:+(c.dataset.seed||7),alpha:+(c.dataset.alpha||1),shimmer:+(c.dataset.shimmer||0),frontier:+(c.dataset.frontier||28),gradient:+(c.dataset.gradient??.35),progress:c.dataset.progress?+c.dataset.progress:.62});
+  });
+}
+
+/* ================= screens ================= */
+const S={};
+S["23"]={label:"23 · Launch dashboard",render(d){return sidebar("full")+`
+<div class="main center"><div class="col state-col" style="justify-content:center">
+  ${heroPanel("pick",d)}
+  <div class="gap28"></div><h1 class="sm">Pick a recording</h1><div class="gap10"></div>
+  <p>Choose one from the library, or record something new.</p>
+  <div class="gap24"></div>
+  <div class="actions"><button class="btn dark">${I.dot}NEW RECORDING</button><button class="btn ghost">${I.folder}OPEN FOLDER</button></div>
+</div></div>`;}};
+S["24"]={label:"24 · Just saved, no guide yet",render(d){return sidebar("full")+`
+<div class="main"><div class="col">
+  ${titleBlock()}
+  ${videoEl(d,11)}
+  ${savedNotice()}
+  ${secHead()}
+  <div class="card"><div class="in">
+    <div class="copy">
+      <h2>Turn this recording into a guide</h2>
+      <p>Showhow transcribes what you said, takes a screenshot at every click and writes one step per action. Everything runs on this Mac.</p>
+      ${engines()}
+    </div>
+    <button class="btn primary" style="padding:14px 20px">${I.spark}CREATE GUIDE</button>
+    ${d?'<div class="fadeedge"><canvas data-dither data-mode="2" data-cola="#33564A" data-alpha="0.16" data-pixel="3" data-frontier="56"></canvas></div>':""}
+  </div></div>
+</div></div>`;}};
+S["25"]={label:"25 · Making the guide",render(d){return sidebar("full")+`
+<div class="main"><div class="col">
+  ${titleBlock()}
+  ${videoEl(d,11)}
+  ${secHead()}
+  <div class="card pcard"><div class="in">
+    <div class="phead"><h2>Making your guide</h2><span class="r">STEP 2 OF 3 · ~20S LEFT</span></div>
+    ${d
+      ?`<div class="pbar" style="height:16px"><canvas data-dither data-mode="1" data-cola="#82B09A" data-colb="#E8E4DC00" data-alpha="1" data-pixel="4" data-frontier="34" data-progress="0.62"></canvas></div>`
+      :`<div class="pbar"><div class="flat" style="width:62%"></div></div>`}
+    <div class="stages">
+      <div class="stage">${pixGlyph(PX_CHECK,"var(--accent-strong)")}<span class="txt">Transcribing speech</span><span class="meta">WHISPER · 0:58 OF AUDIO</span></div>
+      <div class="stage">${pixGlyph(PX_DOT,"var(--ink)")}<span class="txt">Finding steps</span><span class="meta">LAYA · SORTING 9 CLICKS AGAINST YOUR NARRATION</span></div>
+      <div class="stage">${pixGlyph(PX_WAIT,"var(--faint)")}<span class="txt dim">Writing the guide</span><span class="meta">SCREENSHOTS + STEP TEXT</span></div>
+    </div>
+    <div class="pfoot"><span class="l">YOU CAN KEEP USING SHOWHOW WHILE THIS RUNS</span><button class="btn ghost">CANCEL</button></div>
+    ${d?'<div class="fadeedge"><canvas data-dither data-mode="2" data-cola="#82B09A" data-alpha="0.10" data-pixel="3"></canvas></div>':""}
+  </div></div>
+</div></div>`;}};
+const STEPS=[
+  {n:"01",t:"Click “Invoices” in the sidebar",q:"“So first I'll go to invoices.”",ts:"0:04"},
+  {n:"02",t:"Click the invoice for Acme Co",q:"“This is the Acme one from Tuesday.”",ts:"0:17"},
+  {n:"03",t:"Point at the total field",q:"“See, it says £104.99 — it should be £105.00.”",ts:"0:31",flag:true},
+  {n:"04",t:"Click “Edit line items”",q:"“The line items add up to 105, so it's the total that's wrong.”",ts:"0:44"},
+];
+S["26"]={label:"26 · Guide ready",render(d){return sidebar("full")+`
+<div class="main"><div class="col">
+  ${titleBlock()}
+  ${videoEl(d,11)}
+  ${secHead('<span class="chip">BUG REPORT</span>').replace("</div>",`<div class="actions"><button class="btn ghost">${I.rot}REMAKE</button><button class="btn secondary">${I.down}EXPORT PDF</button><button class="btn secondary">${I.folder}COPY PATH</button><button class="btn dark">${I.bot}COPY FOR AGENT</button></div></div>`)}
+  <div class="narr"><div class="in">
+    <span class="lbl">FROM YOUR NARRATION</span>
+    <span class="q">“The total on the Acme invoice shows £104.99 but it should be £105.00 — it's rounding down somewhere.”</span>
+  </div>${d?'<div class="fadeedge"><canvas data-dither data-mode="2" data-cola="#82B09A" data-alpha="0.20" data-pixel="3"></canvas></div>':""}</div>
+  ${STEPS.map((s,i)=>`<div class="step">
+    <div class="num">${s.n}</div>
+    <div class="thumb">${d?`<canvas data-dither data-mode="0" data-cola="#3D4A42" data-colb="#2F2F2F" data-accent="0.07" data-seed="${31+i*13}" data-pixel="3" data-block="20"></canvas>`:""}<div class="ring${s.flag?" rec":""}"></div></div>
+    <div class="body">
+      <span class="st">${s.t}</span>
+      <span class="q">${s.q}</span>
+      <div class="meta"><span class="ts">${s.ts}</span>${s.flag?'<span class="chip">WHERE IT GOES WRONG</span>':""}<span class="act"><button class="btn ghost">${I.pen}EDIT</button><button class="btn ghost">${I.trash}DELETE</button></span></div>
+    </div>
+  </div>`).join("")}
+</div></div>`;}};
+S["28"]={label:"28 · Empty",render(d){return sidebar("empty")+`
+<div class="main center"><div class="col state-col" style="justify-content:center">
+  ${heroPanel("empty",d)}
+  <div class="gap28"></div><h1 class="sm">Record your first workflow</h1><div class="gap10"></div>
+  <p>Do the task once while talking it through. Showhow saves the video and turns it into a step-by-step guide.</p>
+  <div class="gap24"></div>
+  <div class="actions"><button class="btn dark">${I.dot}NEW RECORDING</button><button class="btn ghost">${I.folder}OPEN FOLDER</button></div>
+</div></div>`;}};
+S["29"]={label:"29 · Loading",render(d){return sidebar("skel")+`
+<div class="main center"><div class="col state-col" style="justify-content:center">
+  ${d
+    ?`<div class="hero big" style="min-height:120px"><canvas data-dither data-seed="5" data-accent="0.05" data-shimmer="1"></canvas><div class="rel lbl">READING ~/Showhow/Recordings</div><div class="rel" style="width:440px;margin-top:auto"><div class="pbar" style="height:14px;background:transparent"><canvas data-dither data-mode="1" data-cola="#FFFCF7" data-alpha="0.9" data-pixel="4" data-frontier="30" data-progress="0.45"></canvas></div></div><div class="rel cap">4 / 9 FOLDERS</div></div>`
+    :heroPanel("load",false)}
+  <div class="gap28"></div><h1 class="sm">Loading your library</h1><div class="gap10"></div>
+  <p>Reading recording folders on this Mac.</p>
+</div></div>`;}};
+S["30"]={label:"30 · Couldn't load",render(d){return sidebar("err")+`
+<div class="main center"><div class="col state-col" style="justify-content:center">
+  ${heroPanel("err",d)}
+  <div class="gap28"></div><h1 class="sm">Couldn't open the library</h1><div class="gap10"></div>
+  <p>Showhow can't find ~/Showhow/Recordings. It may have been moved or renamed. Nothing has been deleted.</p>
+  <div class="gap24"></div>
+  <div class="actions"><button class="btn dark">${I.rotcw}TRY AGAIN</button><button class="btn ghost">${I.fsearch}CHOOSE FOLDER</button></div>
+</div></div>`;}};
+
+/* ================= boot ================= */
+const params=new URLSearchParams(location.search);
+let ditherOn=params.get("d")!=="0";
+let cur=params.get("s")||"26";
+const sel=document.getElementById("stateSel");
+for(const k of Object.keys(S)){const o=document.createElement("option");o.value=k;o.textContent=S[k].label;sel.appendChild(o);}
+sel.value=cur;
+if(params.get("chrome")==="0")document.getElementById("chrome").style.display="none";
+function render(){
+  const scr=document.getElementById("screen");
+  scr.innerHTML=S[cur].render(ditherOn);
+  mountDithers(scr);
+  document.title="Showhow · "+S[cur].label+(ditherOn?" · dither":" · current");
+}
+sel.onchange=()=>{cur=sel.value;render();};
+document.querySelectorAll("#dseg button").forEach(b=>b.onclick=()=>{
+  ditherOn=b.dataset.d==="1";
+  document.querySelectorAll("#dseg button").forEach(x=>x.classList.toggle("on",x===b));
+  render();
+});
+addEventListener("keydown",e=>{
+  const keys=Object.keys(S);
+  if(e.key>="1"&&e.key<=String(keys.length)){cur=keys[+e.key-1];sel.value=cur;render();}
+  if(e.key==="d"){ditherOn=!ditherOn;document.querySelectorAll("#dseg button").forEach(x=>x.classList.toggle("on",(x.dataset.d==="1")===ditherOn));render();}
+});
+render();
+</script>
+</body>
+</html>

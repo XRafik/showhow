@@ -1,9 +1,0 @@
-{
-	"phase": "merge-lint",
-	"log": "review-merge-lint.log",
-	"pid": 93614,
-	"exitCode": 0,
-	"expectedExit": 0,
-	"seconds": 1.0046614170023531,
-	"freeAfter": 170332160
-}

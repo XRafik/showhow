@@ -1,9 +1,0 @@
-{
-	"phase": "merge-commit",
-	"log": "review-merge-commit.log",
-	"pid": 93897,
-	"exitCode": 0,
-	"expectedExit": 0,
-	"seconds": 1.0113874999988184,
-	"freeAfter": 170262528
-}

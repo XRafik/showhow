@@ -1,7 +1,0 @@
-Change: Corrected the cloud-pilot evidence sequence so the retained target test file is identical between the new red commit and the passing green head while keeping the approved deterministic timing implementation unchanged at green.
-Reason: CI's cloud evidence job requires the referenced red commit to exercise the identical `src/demoVideo/timing.test.ts` file kept at the final passing head; the earlier history had changed that test after the first red commit.
-Before evidence: See `artifacts/cloud-timing/red.txt` and corrected red commit `f73d775b64aa95b2314e2647e26f95b2d49302df`.
-After evidence: See `artifacts/cloud-timing/verification.txt` for the passing targeted test and required repository checks on corrected green head `6b8738711652b019ee53715d0ee6d2f201328288`.
-Commands: `npx vitest run src/demoVideo/timing.test.ts`, `npm run lint`, `npm run branding:check`, `npx tsc --noEmit`, `npm run test`, `npm run test:browser`, `npx vite build`.
-Limitations: Verification was Linux-only and intentionally limited to the approved pure timing scope; native capture, Remotion composition, and visual acceptance remain out of scope for this ticket.
-CI note: The failing semantic-title job log on the prior head was validating the stale title `[WIP] Implement deterministic demo-video timeline calculations`; the current PR title is `feat: implement deterministic demo-video timeline calculations`, so this corrective push is expected to re-run that check against the updated title.

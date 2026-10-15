@@ -1,9 +1,0 @@
-{
-	"phase": "controls-lint",
-	"log": "review-controls-lint.log",
-	"pid": 10444,
-	"exitCode": 0,
-	"expectedExit": 0,
-	"seconds": 1.0047463749979215,
-	"freeAfter": 187670528
-}

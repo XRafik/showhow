@@ -1,3 +1,0 @@
-i18n check PASSED — all 12 locales match en across 7 namespaces.
-
-i18n exit code: 0

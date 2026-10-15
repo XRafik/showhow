@@ -1,3 +1,0 @@
-Checked 4 files in 29ms. Fixed 1 file.
-
-Biome owned exit code: 0

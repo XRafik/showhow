@@ -1,9 +1,0 @@
-
- RUN  v4.1.5 /Users/mohamedb/.herdr/worktrees/showhow/ticket-67-optimize-mp4-size
-
-
- Test Files  4 passed | 1 skipped (5)
-      Tests  9 passed | 1 skipped (10)
-   Start at  00:47:36
-   Duration  15.88s (transform 0ms, setup 0ms, import 1.04s, tests 12.55s, environment 0ms)
-

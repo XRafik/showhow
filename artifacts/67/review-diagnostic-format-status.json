@@ -1,9 +1,0 @@
-{
-	"phase": "diagnostic-format",
-	"log": "review-diagnostic-format.log",
-	"pid": 99355,
-	"exitCode": 0,
-	"expectedExit": 0,
-	"seconds": 1.013876708002499,
-	"freeAfter": 237326336
-}
