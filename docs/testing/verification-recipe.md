@@ -6,7 +6,7 @@ Run in a dedicated Showhow ticket worktree. Keep personal recordings and the def
 
 ## Prepare once in the lane
 
-Use Node 22.22.1, npm 10.9.4, Codex 0.160.0, and the repository's locked Electron and Playwright dependencies. FFmpeg and ffprobe must already be available. The driver checks these prerequisites and the built main/preload/renderer before launching; it never installs or builds itself.
+Use Node 22.22.1, npm 10.9.4, Codex 0.160.0 or 0.162.1, and the repository's locked Electron and Playwright dependencies. FFmpeg and ffprobe must already be available. The driver checks these prerequisites and the built main/preload/renderer before launching; it never installs or builds itself.
 
 ```sh
 export PATH="$HOME/.nvm/versions/node/v22.22.1/bin:$HOME/.npm-global/bin:$PATH"
@@ -21,6 +21,43 @@ ruby ~/.local/bin/bedar-runtime.rb run --resource heavy -- npm run test:verify:e
 For a Codex role-shell launch, follow the head-office role launch procedure and record the exact launch and resolved tools. An API subagent is not thereby a native `codex -p bedar-executor` profile. Each result records observed shell role variables and explicitly avoids claiming a native Codex profile was launched.
 
 Exit 75 from the heavy runtime means the resource was busy and nothing ran. Queue the same command once the resource is free. Any other nonzero exit is a failed attempt; retain its evidence.
+
+## Verify an explicit packaged app
+
+For packaging acceptance, supply the preserved arm64 bundle explicitly:
+
+```sh
+ruby ~/.local/bin/bedar-runtime.rb run --resource heavy -- npm run verify:export -- --evidence-dir artifacts/verification-recipe/packaged-unique --app /absolute/path/to/Showhow.app
+```
+
+This mode resolves `Contents/MacOS/Showhow` and `Contents/Resources/app.asar`.
+It checks the archive identity and entrypoints before launch and never falls back
+to dependency Electron or worktree output. It pauses that executable with the
+Node inspector before the packaged main's first statement, sets private appData,
+userData, sessionData, downloads, temp, logs, crashDumps and app-level home paths,
+then resumes the original packaged entrypoint. HOME remains unchanged. Production
+bootstrap selects `appData/Showhow`, so appData must be private before it runs.
+The result must report `launchMode: "packaged"`, the actual packaged executable,
+`app.isPackaged`, the archive path, startup pause location and unchanged archive
+hashes. The package is never edited. Inspect the native evidence before claiming
+that this startup boundary worked on macOS.
+
+The lead may reuse the exported
+`launchPackagedApp({ appPath, paths, env, cwd, marker })` for private native proof.
+Create every `paths` directory in a new private run root first; use
+`userData: path.join(paths.appData, "Showhow")` and set TMPDIR/TMP/TEMP to
+`paths.temp` while retaining HOME. The promise returns `{ app, startup, packaged }`;
+`app` is the Playwright Electron application, and its main evaluation can read
+`globalThis.__showhowVerificationRuntime()`. The caller owns process tracking,
+normal app closure, private-root cleanup and assertions on actual runtime paths.
+A failed pre-main initialization terminates the owned child through its inspector
+before disconnecting. Playwright also cleans up failed launches. A returned app
+is closed on helper failure.
+
+`app.getPath("home")` isolation does not change `os.homedir()`. Showhow's native
+recording bundle root remains `~/Showhow/Recordings`. A separate owner-approved
+synthetic transcription proof must touch only its exact newly created bundle;
+this export recipe does not authorize scanning or deleting personal recordings.
 
 ## Run the five stages
 
@@ -48,4 +85,4 @@ Run a second fresh invocation to prove repeatability. Both successful runs must 
 
 ## Proof limits
 
-This proves synthetic editor load, renderer GIF export, production filesystem save and bounded isolated cleanup on the tested macOS machine. It does not prove recording permissions, recording bundles, native save-dialog interaction, MP4 export, packaging, Windows or Linux behavior. Screenshots and GIF signatures alone are insufficient export proof. The existing GIF e2e replaces the writer and uses the default profile; this recipe supplies the isolated real-write boundary it lacks.
+This proves synthetic editor load, renderer GIF export, production filesystem save and bounded isolated cleanup on the tested macOS machine. It does not prove recording permissions, recording bundles, native save-dialog interaction, MP4 export, recording/transcription behavior, Windows or Linux behavior. Development mode does not prove packaging; explicit packaged mode proves only the named export path in that archive. Screenshots and GIF signatures alone are insufficient export proof. The existing GIF e2e replaces the writer and uses the default profile; this recipe supplies the isolated real-write boundary it lacks.

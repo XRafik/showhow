@@ -2,16 +2,152 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import { createRequire } from "node:module";
+import net from "node:net";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { extractFile, statFile } from "@electron/asar";
 
 const require = createRequire(import.meta.url);
+export function resolvePackagedApp(appPath) {
+	if (!appPath.endsWith(".app")) throw new Error("Packaged path must name a .app bundle");
+	appPath = fs.realpathSync(appPath);
+	const electronBinary = path.join(appPath, "Contents/MacOS/Showhow");
+	const archive = path.join(appPath, "Contents/Resources/app.asar");
+	fs.accessSync(electronBinary, fs.constants.X_OK);
+	const metadata = JSON.parse(extractFile(archive, "package.json").toString());
+	if (metadata.name !== "showhow" || metadata.main !== "dist-electron/main.js")
+		throw new Error("Unexpected packaged archive identity");
+	statFile(archive, metadata.main);
+	statFile(archive, "dist-electron/preload.mjs");
+	statFile(archive, "dist/index.html");
+	return { appPath, electronBinary, archive, archiveSha256: sha256(archive) };
+}
+
+// Attach only to the loopback port reserved for this invocation. Terminate the
+// owned paused child on initialization failure rather than run without isolation.
+export async function initializeBeforeMain(port, expression, expectedEntry) {
+	let endpoint;
+	await waitUntil(
+		async () => {
+			try {
+				const targets = await (
+					await fetch(`http://127.0.0.1:${port}/json/list`, { signal: AbortSignal.timeout(500) })
+				).json();
+				endpoint = targets[0]?.webSocketDebuggerUrl;
+				return Boolean(endpoint);
+			} catch {
+				return false;
+			}
+		},
+		15_000,
+		"owned inspector endpoint",
+	);
+	const socket = new WebSocket(endpoint);
+	const pending = new Map();
+	const scripts = new Map();
+	let sequence = 0;
+	let onPaused;
+	const paused = new Promise((resolve) => {
+		onPaused = resolve;
+	});
+	socket.addEventListener("close", () => {
+		for (const { reject } of pending.values()) reject(new Error("Owned inspector closed"));
+		pending.clear();
+	});
+	socket.addEventListener("message", (event) => {
+		const message = JSON.parse(event.data);
+		if (message.method === "Debugger.scriptParsed")
+			scripts.set(message.params.scriptId, message.params.url);
+		if (message.method === "Debugger.paused") onPaused(message.params);
+		if (message.id) {
+			const handlers = pending.get(message.id);
+			if (!handlers) return;
+			pending.delete(message.id);
+			if (message.error) handlers.reject(new Error(message.error.message));
+			else handlers.resolve(message.result);
+		}
+	});
+	const send = (method, params = {}) =>
+		bounded(
+			() =>
+				new Promise((resolve, reject) => {
+					const id = ++sequence;
+					pending.set(id, { resolve, reject });
+					socket.send(JSON.stringify({ id, method, params }));
+				}),
+			10_000,
+		);
+	try {
+		await bounded(
+			() =>
+				new Promise((resolve, reject) => {
+					socket.addEventListener("open", resolve, { once: true });
+					socket.addEventListener("error", () => reject(new Error("Inspector transport failed")), {
+						once: true,
+					});
+				}),
+			10_000,
+		);
+		await send("Debugger.enable");
+		await send("Runtime.runIfWaitingForDebugger");
+		const stopped = await bounded(() => paused, 10_000);
+		const frame = stopped.callFrames[0];
+		const url = frame.url || scripts.get(frame.location.scriptId);
+		const entry = url?.startsWith("file:") ? fileURLToPath(url) : url;
+		const canonical = (file) => {
+			try {
+				return fs.realpathSync(file);
+			} catch {
+				return path.resolve(file);
+			}
+		};
+		if (
+			!entry ||
+			canonical(entry) !== canonical(expectedEntry) ||
+			stopped.reason !== "Break on start"
+		)
+			throw new Error(`Unexpected startup pause: ${url} (${stopped.reason})`);
+		const evaluated = await send("Runtime.evaluate", {
+			expression,
+			includeCommandLineAPI: true,
+			returnByValue: true,
+		});
+		if (evaluated.exceptionDetails)
+			throw new Error(
+				`Pre-main initialization failed: ${JSON.stringify(evaluated.exceptionDetails)}`,
+			);
+		await send("Debugger.resume");
+		return { entry: url, reason: stopped.reason, value: evaluated.result.value };
+	} catch (error) {
+		// This inspector belongs to the invocation's launched child. Terminate it while
+		// still paused: disconnecting the last debugger alone can release startup.
+		await send("Runtime.evaluate", {
+			expression: "process.exit(1)",
+			includeCommandLineAPI: true,
+		}).catch(() => undefined);
+		throw error;
+	} finally {
+		socket.close();
+	}
+}
+
+export function makePackagedInitialization(paths) {
+	return `(() => {
+const { app } = require("electron");
+const os = require("node:os");
+const fs = require("node:fs");
+const path = require("node:path");
+${runtimeInitialization(paths)}
+return { paths: Object.fromEntries(Object.keys(paths).map(key => [key, app.getPath(key)])), pid: process.pid };
+})()`;
+}
+
 export function assertPrerequisites(facts) {
 	if (
 		facts.node !== "v22.22.1" ||
 		facts.npm !== "10.9.4" ||
-		facts.codex !== "codex-cli 0.160.0" ||
+		!["codex-cli 0.160.0", "codex-cli 0.162.1"].includes(facts.codex) ||
 		facts.missing.length
 	) {
 		throw new Error(`prerequisite failure: ${JSON.stringify(facts)}`);
@@ -56,12 +192,8 @@ export function validateGif(bytes, probe, decode) {
 	};
 }
 
-export function makeBootstrap(main, paths) {
-	return `import { app } from "electron";
-import os from "node:os";
-import fs from "node:fs";
-import path from "node:path";
-const paths = ${JSON.stringify(paths)};
+function runtimeInitialization(paths) {
+	return `const paths = ${JSON.stringify(paths)};
 for (const [key, value] of Object.entries(paths)) app.setPath(key, value);
 globalThis.__showhowVerificationRuntime = () => {
   const current = Object.fromEntries(Object.keys(paths).map(key => [key, app.getPath(key)]));
@@ -70,10 +202,60 @@ globalThis.__showhowVerificationRuntime = () => {
     const lock = path.join(tmpdir, prefix + "-uid-" + process.getuid() + ".lock");
     return { path: lock, pid: Number(fs.readFileSync(path.join(lock, "pid"), "utf8")) };
   });
-  return { paths: current, recordings: path.join(current.userData, "recordings"), tmpdir, locks, pid: process.pid };
+  return { paths: current, recordings: path.join(current.userData, "recordings"), tmpdir, locks, pid: process.pid, electronVersion: process.versions.electron, isPackaged: app.isPackaged, executable: process.execPath, appPath: app.getAppPath() };
 };
+`;
+}
+
+export function makeBootstrap(main, paths) {
+	return `import { app } from "electron";
+import os from "node:os";
+import fs from "node:fs";
+import path from "node:path";
+${runtimeInitialization(paths)}
 await import(${JSON.stringify(pathToFileURL(main).href)});
 `;
+}
+
+// Reusable by the lead's private packaged smoke proof. Caller owns normal close/cleanup.
+export async function launchPackagedApp({ appPath, paths, env, cwd, marker }) {
+	const packaged = resolvePackagedApp(appPath);
+	const server = net.createServer();
+	await new Promise((resolve, reject) => {
+		server.once("error", reject);
+		server.listen(0, "127.0.0.1", resolve);
+	});
+	const port = server.address().port;
+	await new Promise((resolve) => server.close(resolve));
+	const { _electron } = await import("playwright");
+	const launch = _electron.launch({
+		executablePath: packaged.electronBinary,
+		args: [
+			`--inspect-brk=127.0.0.1:${port}`,
+			marker ?? `--showhow-verification-run=${paths.temp}`,
+			"--enable-unsafe-swiftshader",
+		],
+		cwd,
+		env,
+		timeout: 30_000,
+	});
+	// Observe launch failure immediately while the separate inspector sets paths before main.
+	launch.catch(() => undefined);
+	try {
+		const startup = await initializeBeforeMain(
+			port,
+			makePackagedInitialization(paths),
+			path.join(packaged.archive, "dist-electron/main.js"),
+		);
+		const app = await launch;
+		return { app, startup, packaged };
+	} catch (error) {
+		// Playwright owns and kills a launch that times out while paused. If it returned,
+		// close only that invocation rather than leave a running app after failed isolation.
+		const app = await launch.catch(() => null);
+		if (app) await app.close();
+		throw error;
+	}
 }
 
 function inside(root, target) {
@@ -112,7 +294,8 @@ function resolvedTool(name) {
 	return null;
 }
 
-function doctor(root) {
+function doctor(root, appPath) {
+	const packaged = appPath ? resolvePackagedApp(appPath) : null;
 	const missing = [];
 	const tools = {};
 	for (const name of ["npm", "codex", "ffmpeg", "ffprobe", "ps"]) {
@@ -132,7 +315,7 @@ function doctor(root) {
 	let electronBinary;
 	let playwright;
 	try {
-		electronBinary = require("electron");
+		electronBinary = packaged?.electronBinary ?? require("electron");
 	} catch {
 		missing.push("electron dependency");
 	}
@@ -142,9 +325,7 @@ function doctor(root) {
 		missing.push("playwright dependency");
 	}
 	for (const file of [
-		"dist-electron/main.js",
-		"dist-electron/preload.mjs",
-		"dist/index.html",
+		...(packaged ? [] : ["dist-electron/main.js", "dist-electron/preload.mjs", "dist/index.html"]),
 		"tests/fixtures/sample.webm",
 	]) {
 		try {
@@ -175,6 +356,7 @@ function doctor(root) {
 		throw new Error("Unexpected repository identity");
 	return {
 		facts,
+		packaged,
 		tools,
 		electronBinary,
 		playwright,
@@ -232,7 +414,7 @@ async function bounded(action, timeout) {
 	}
 }
 
-export async function runVerification(evidenceDirectory) {
+export async function runVerification(evidenceDirectory, { appPath } = {}) {
 	const root = fs.realpathSync(path.join(path.dirname(fileURLToPath(import.meta.url)), ".."));
 	const evidence = path.resolve(evidenceDirectory);
 	const evidenceParent = fs.realpathSync(path.dirname(evidence));
@@ -243,6 +425,7 @@ export async function runVerification(evidenceDirectory) {
 	reserveEvidence(evidence);
 	const result = {
 		schemaVersion: 1,
+		launchMode: appPath ? "packaged" : "development",
 		started: new Date().toISOString(),
 		platform: process.platform,
 		saveDialogOverride: "pick-export-save-path only; production write-export-to-path untouched",
@@ -311,7 +494,7 @@ export async function runVerification(evidenceDirectory) {
 		}
 	}
 	try {
-		prereq = doctor(root);
+		prereq = doctor(root, appPath);
 		result.doctor = prereq;
 		result.source = {
 			sha: checked("git", ["-C", root, "rev-parse", "HEAD"]),
@@ -339,13 +522,17 @@ export async function runVerification(evidenceDirectory) {
 		runRoot = fs.mkdtempSync(path.join(os.tmpdir(), "showhow-verify-"));
 		fs.chmodSync(runRoot, 0o700);
 		const paths = Object.fromEntries(
-			["appData", "userData", "sessionData", "downloads", "temp", "logs", "crashDumps"].map(
+			["appData", "userData", "sessionData", "downloads", "temp", "logs", "crashDumps", "home"].map(
 				(key) => [key, path.join(runRoot, key)],
 			),
 		);
+		paths.userData = path.join(paths.appData, "Showhow");
 		for (const directory of Object.values(paths)) fs.mkdirSync(directory, { mode: 0o700 });
-		bootstrap = path.join(runRoot, "isolated-bootstrap.mjs");
-		fs.writeFileSync(bootstrap, makeBootstrap(path.join(root, "dist-electron/main.js"), paths));
+		bootstrap = prereq.packaged
+			? `--showhow-verification-run=${runRoot}`
+			: path.join(runRoot, "isolated-bootstrap.mjs");
+		if (!prereq.packaged)
+			fs.writeFileSync(bootstrap, makeBootstrap(path.join(root, "dist-electron/main.js"), paths));
 		const env = {
 			...process.env,
 			TMPDIR: paths.temp,
@@ -357,15 +544,26 @@ export async function runVerification(evidenceDirectory) {
 		delete env.VITE_DEV_SERVER_URL;
 		tracker = setInterval(track, 100);
 		const { _electron } = await import("playwright");
-		app = await launchAfterDoctor(prereq.facts, () =>
-			_electron.launch({
+		app = await launchAfterDoctor(prereq.facts, async () => {
+			if (prereq.packaged) {
+				const launched = await launchPackagedApp({
+					appPath: prereq.packaged.appPath,
+					paths,
+					env,
+					cwd: root,
+					marker: bootstrap,
+				});
+				result.packagedStartup = launched.startup;
+				return launched.app;
+			}
+			return _electron.launch({
 				executablePath: prereq.electronBinary,
 				args: [bootstrap, "--enable-unsafe-swiftshader"],
 				cwd: root,
 				env,
 				timeout: 30_000,
-			}),
-		);
+			});
+		});
 		if (stopped) throw new Error("Attempt stopped by signal");
 		track();
 		const child = app.process();
@@ -382,6 +580,13 @@ export async function runVerification(evidenceDirectory) {
 		await hud.waitForLoadState("domcontentloaded", { timeout: 30_000 });
 		stage = "isolation";
 		const runtime = await app.evaluate(() => globalThis.__showhowVerificationRuntime());
+		if (
+			prereq.packaged &&
+			(!runtime.isPackaged ||
+				fs.realpathSync(runtime.executable) !== prereq.packaged.electronBinary ||
+				runtime.appPath !== prereq.packaged.archive)
+		)
+			throw new Error("Runtime is not the requested packaged executable and archive");
 		for (const target of [
 			...Object.values(runtime.paths),
 			runtime.recordings,
@@ -620,6 +825,17 @@ export async function runVerification(evidenceDirectory) {
 				};
 			}
 		}
+		if (prereq?.packaged) {
+			result.packagedIntegrity = {
+				before: prereq.packaged.archiveSha256,
+				after: sha256(prereq.packaged.archive),
+			};
+			if (result.packagedIntegrity.before !== result.packagedIntegrity.after)
+				result.failure = {
+					stage: "package-integrity",
+					message: "Packaged archive changed during verification",
+				};
+		}
 		clearInterval(tracker);
 		process.removeListener("SIGINT", stop);
 		process.removeListener("SIGTERM", stop);
@@ -662,12 +878,18 @@ export async function runVerification(evidenceDirectory) {
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
 	const args = process.argv.slice(2);
-	if (args.length !== 2 || args[0] !== "--evidence-dir") {
-		console.error("Usage: npm run verify:export -- --evidence-dir <new-directory>");
+	if (
+		![2, 4].includes(args.length) ||
+		args[0] !== "--evidence-dir" ||
+		(args.length === 4 && args[2] !== "--app")
+	) {
+		console.error(
+			"Usage: npm run verify:export -- --evidence-dir <new-directory> [--app /path/to/Showhow.app]",
+		);
 		process.exitCode = 2;
 	} else {
 		try {
-			process.exitCode = await runVerification(args[1]);
+			process.exitCode = await runVerification(args[1], { appPath: args[3] });
 		} catch (error) {
 			console.error(error.message);
 			process.exitCode = 1;

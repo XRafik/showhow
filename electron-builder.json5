@@ -18,12 +18,20 @@
   // let electron-builder use the prebuilt instead of recompiling.
   "buildDependenciesFromSource": false,
   "compression": "normal",
+  "electronLanguages": ["ar", "en", "en_GB", "es", "fr", "it", "ja", "ko", "pt_BR", "ru", "tr", "vi", "zh_CN", "zh_TW"],
   "directories": {
     "output": "release/${version}"
   },
   "files": [
     "dist",
     "dist-electron",
+    // Renderer dependencies are bundled by Vite; only the bridge loads ws at runtime.
+    "!node_modules/**",
+    "node_modules/ws/**/*",
+    // Packaged backgrounds resolve from Resources/wallpapers (electron/windows.ts).
+    "!dist/wallpapers{,/**/*}",
+    // No source references in src/, electron/, index.html or public/ (issue 110 evidence).
+    "!dist/{sample,demo,preview3,preview4}.png",
     "!*.png",
     "!preview*.png",
     "!*.md",

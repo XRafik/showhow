@@ -1,0 +1,39 @@
+{
+	"locales": [
+		"ar",
+		"en",
+		"en_GB",
+		"es",
+		"fr",
+		"it",
+		"ja",
+		"ko",
+		"pt_BR",
+		"ru",
+		"tr",
+		"vi",
+		"zh_CN",
+		"zh_TW"
+	],
+	"wallpaper": "wallpaper1.jpg",
+	"wallpapers": [
+		"wallpaper1.jpg",
+		"wallpaper2.jpg",
+		"wallpaper3.jpg",
+		"wallpaper4.jpg",
+		"wallpaper5.jpg",
+		"wallpaper6.jpg",
+		"wallpaper7.jpg",
+		"wallpaper8.jpg",
+		"wallpaper9.jpg",
+		"wallpaper10.jpg",
+		"wallpaper11.jpg",
+		"wallpaper12.jpg",
+		"wallpaper13.jpg",
+		"wallpaper14.jpg",
+		"wallpaper15.jpg",
+		"wallpaper16.jpg",
+		"wallpaper17.jpg",
+		"wallpaper18.jpg"
+	]
+}

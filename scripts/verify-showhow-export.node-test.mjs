@@ -147,3 +147,187 @@ test("real CLI doctor with missing tool PATH retains failure and never launches 
 		fs.rmSync(parent, { recursive: true });
 	}
 });
+
+test("installed Codex 0.162.1 is accepted without version substitution", () => {
+	let launched = false;
+	launchAfterDoctor({ ...good, codex: "codex-cli 0.162.1" }, () => {
+		launched = true;
+	});
+	assert.equal(launched, true);
+});
+
+test("packaged launch resolves the app executable and archive, never dependency Electron", async (t) => {
+	const fs = await import("node:fs/promises");
+	const path = await import("node:path");
+	const os = await import("node:os");
+	const { createPackage } = await import("@electron/asar");
+	const { resolvePackagedApp } = await import("./verify-showhow-export.mjs");
+	const root = await fs.mkdtemp(path.join(os.tmpdir(), "showhow-packaged-test-"));
+	t.after(() => fs.rm(root, { recursive: true, force: true }));
+	const app = path.join(root, "Showhow.app");
+	const binary = path.join(app, "Contents/MacOS/Showhow");
+	const archive = path.join(app, "Contents/Resources/app.asar");
+	await fs.mkdir(path.dirname(binary), { recursive: true });
+	await fs.mkdir(path.dirname(archive), { recursive: true });
+	await fs.writeFile(binary, "fixture executable", { mode: 0o700 });
+	const source = path.join(root, "source");
+	await fs.mkdir(path.join(source, "dist-electron"), { recursive: true });
+	await fs.writeFile(
+		path.join(source, "package.json"),
+		JSON.stringify({ name: "showhow", main: "dist-electron/main.js" }),
+	);
+	await fs.writeFile(path.join(source, "dist-electron/main.js"), "// fixture\n");
+	await fs.mkdir(path.join(source, "dist"));
+	await fs.writeFile(path.join(source, "dist-electron/preload.mjs"), "// preload");
+	await fs.writeFile(path.join(source, "dist/index.html"), "fixture");
+	await createPackage(source, archive);
+	const resolved = resolvePackagedApp(app);
+	assert.equal(resolved.electronBinary, await fs.realpath(binary));
+	assert.equal(resolved.archive, await fs.realpath(archive));
+	assert.equal(resolved.appPath, await fs.realpath(app));
+	assert.match(resolved.archiveSha256, /^[a-f0-9]{64}$/);
+	await fs.rm(archive);
+	assert.throws(() => resolvePackagedApp(app), /archive|ENOENT/);
+	assert.throws(() => resolvePackagedApp(root), /\.app/);
+});
+
+test("inspector initialization runs before the actual entrypoint first statement", async (t) => {
+	const fs = await import("node:fs/promises");
+	const path = await import("node:path");
+	const os = await import("node:os");
+	const net = await import("node:net");
+	const { spawn } = await import("node:child_process");
+	const { once } = await import("node:events");
+	const { initializeBeforeMain } = await import("./verify-showhow-export.mjs");
+	const root = await fs.mkdtemp(path.join(os.tmpdir(), "showhow-startup-test-"));
+	t.after(() => fs.rm(root, { recursive: true, force: true }));
+	const entry = path.join(root, "entry.cjs");
+	const output = path.join(root, "observed.json");
+	await fs.writeFile(
+		entry,
+		`require("node:fs").writeFileSync(${JSON.stringify(output)}, JSON.stringify(globalThis.initializedBeforeMain));\n`,
+	);
+	const server = net.createServer();
+	await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+	const port = server.address().port;
+	await new Promise((resolve) => server.close(resolve));
+	const child = spawn(process.execPath, [`--inspect-brk=127.0.0.1:${port}`, entry], {
+		stdio: "pipe",
+	});
+	const exited = once(child, "exit");
+	try {
+		const initialized = await initializeBeforeMain(
+			port,
+			"globalThis.initializedBeforeMain = 42",
+			entry,
+		);
+		assert.equal(initialized.value, 42);
+		await exited;
+		assert.equal(JSON.parse(await fs.readFile(output, "utf8")), 42);
+	} finally {
+		if (child.exitCode === null) child.kill();
+		await exited;
+	}
+});
+
+test("packaged initialization sets appData before bootstrap can reset userData and leaves HOME unchanged", async () => {
+	const vm = await import("node:vm");
+	const { makePackagedInitialization } = await import("./verify-showhow-export.mjs");
+	const observed = {};
+	const app = {
+		setPath: (key, value) => {
+			observed[key] = value;
+		},
+		getPath: (key) => observed[key],
+	};
+	const originalHome = process.env.HOME;
+	const paths = {
+		appData: "/private/synthetic/appData",
+		userData: "/private/synthetic/appData/Showhow",
+		home: "/private/synthetic/home",
+		temp: "/private/synthetic/temp",
+	};
+	vm.runInNewContext(makePackagedInitialization(paths), {
+		require: (name) =>
+			name === "electron"
+				? { app }
+				: name === "node:path"
+					? { join: (...parts) => parts.join("/") }
+					: {},
+		process: { pid: 100, execPath: "/synthetic/Showhow.app/Contents/MacOS/Showhow" },
+	});
+	assert.deepEqual(observed, paths);
+	// Production bootstrap selects appData/Showhow, so it must already be private.
+	assert.equal(`${observed.appData}/Showhow`, paths.userData);
+	assert.equal(process.env.HOME, originalHome);
+});
+
+test("explicit packaged CLI fails doctor on a missing app instead of falling back to dev Electron", async (t) => {
+	const fs = await import("node:fs/promises");
+	const path = await import("node:path");
+	const { spawnSync } = await import("node:child_process");
+	const parent = await fs.mkdtemp(path.resolve("artifacts/verification-recipe/packaged-doctor-"));
+	t.after(() => fs.rm(parent, { recursive: true, force: true }));
+	const evidence = path.join(parent, "failure");
+	const outcome = spawnSync(
+		process.execPath,
+		[
+			"scripts/verify-showhow-export.mjs",
+			"--evidence-dir",
+			evidence,
+			"--app",
+			path.join(parent, "Missing.app"),
+		],
+		{ encoding: "utf8", timeout: 15000 },
+	);
+	assert.equal(outcome.status, 1, outcome.stderr);
+	const result = JSON.parse(await fs.readFile(path.join(evidence, "result.json"), "utf8"));
+	assert.equal(result.failure.stage, "doctor");
+	assert.equal(result.electronPid, undefined);
+	assert.equal(result.launchMode, "packaged");
+	assert.match(result.failure.message, /ENOENT/);
+});
+
+test("a rejected startup location terminates the paused owned child before its first statement", async (t) => {
+	const fs = await import("node:fs/promises");
+	const path = await import("node:path");
+	const os = await import("node:os");
+	const net = await import("node:net");
+	const { spawn } = await import("node:child_process");
+	const { once } = await import("node:events");
+	const { initializeBeforeMain } = await import("./verify-showhow-export.mjs");
+	const root = await fs.mkdtemp(path.join(os.tmpdir(), "showhow-startup-reject-"));
+	t.after(() => fs.rm(root, { recursive: true, force: true }));
+	const entry = path.join(root, "entry.cjs");
+	const output = path.join(root, "unsafe-write");
+	await fs.writeFile(
+		entry,
+		`require("node:fs").writeFileSync(${JSON.stringify(output)}, "must not run");\n`,
+	);
+	const server = net.createServer();
+	await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+	const port = server.address().port;
+	await new Promise((resolve) => server.close(resolve));
+	const child = spawn(process.execPath, [`--inspect-brk=127.0.0.1:${port}`, entry], {
+		stdio: "pipe",
+	});
+	const exited = once(child, "exit");
+	try {
+		await assert.rejects(
+			initializeBeforeMain(port, "globalThis.shouldNotRun = true", path.join(root, "wrong.cjs")),
+			/Unexpected startup pause/,
+		);
+		const exit = await Promise.race([
+			exited,
+			new Promise((resolve) => {
+				const timer = setTimeout(() => resolve([null]), 500);
+				timer.unref();
+			}),
+		]);
+		assert.equal(exit[0], 1, "rejected initialization must terminate its paused child");
+		await assert.rejects(fs.access(output), /ENOENT/);
+	} finally {
+		if (child.exitCode === null) child.kill();
+		await exited;
+	}
+});
