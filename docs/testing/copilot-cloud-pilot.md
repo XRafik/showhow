@@ -1,3 +1,25 @@
+# Copilot cloud pilot — Retired
+
+Retired by owner decision on 15 October 2026. The
+[central Loop retirement decision](https://github.com/bedarstudios/loop/blob/e4eb5dd5556b687a32e1197a777e203e152b6513/docs/retirements/overnight-copilot.md)
+supersedes the pilot rollout, dispatch, review and fix instructions below.
+[Showhow #108](https://github.com/bedarstudios/showhow/issues/108) removes the
+dedicated controller, policy, skill and CI consumers. Generic manual Copilot
+setup and product CI remain available.
+
+The lead's 16 October 2026 readback records `overnight-pilot.yml` as
+`disabled_manually`. Source removal and live shutdown are separate outcomes;
+review, source merge and final readbacks remain pending at this Build.
+[Ledger #86](https://github.com/bedarstudios/showhow/issues/86) remains open,
+with its historical merged run preserved. Its closure waits for a separately
+owner-authorised #108 merge and the coordinator's dated retirement note.
+
+## Historical pilot record
+
+The original record follows unchanged, including dated observations, commands
+and links. These are historical evidence, not instructions to enable or run the
+retired service. Preserve the existing pilot PRs, logs and ledger comments.
+
 # Copilot cloud pilot
 
 ## Scope and authority

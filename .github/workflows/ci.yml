@@ -42,7 +42,6 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup
       - run: npm run test
-      - run: node --test .github/scripts/overnight-evidence-integration.node-test.mjs
       - run: npm run test:browser:install
       - run: npm run test:browser
 
@@ -78,47 +77,3 @@ jobs:
             style
             revert
           requireScope: false
-
-  cloud-evidence:
-    name: Cloud evidence
-    if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'copilot/')
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-          fetch-depth: 0
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.base.sha }}
-          path: .trusted-cloud-policy
-          persist-credentials: false
-      - name: Prepare approved evidence profile
-        env:
-          POLICY_FILE: .trusted-cloud-policy/.bedar/overnight.json
-          APPROVAL_FILE: ${{ runner.temp }}/cloud-approval.json
-        run: node .trusted-cloud-policy/.github/scripts/overnight-evidence-profile.mjs
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22.22.1
-          cache: npm
-      - run: npm ci
-      - name: Reproduce targeted RED and GREEN
-        env:
-          APPROVAL_FILE: ${{ runner.temp }}/cloud-approval.json
-        run: node .trusted-cloud-policy/.github/scripts/overnight-evidence.mjs
-
-  cloud-controller-tests:
-    name: Cloud controller tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22.22.1
-      - run: node --test .github/scripts/overnight.node-test.mjs .github/scripts/overnight-review.node-test.mjs .github/scripts/overnight-reconcile.node-test.mjs .github/scripts/overnight-evidence.node-test.mjs .github/scripts/overnight-github.node-test.mjs

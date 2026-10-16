@@ -31,5 +31,3 @@ jobs:
           test "$(npm --version)" = 10.9.4
       - run: npm ci
       - run: npm run test:browser:install
-      - name: Record successful setup
-        run: touch /tmp/showhow-copilot-setup-ok
