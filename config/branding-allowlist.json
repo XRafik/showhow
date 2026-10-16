@@ -57,6 +57,44 @@
 			"reason": "Owner's session plan; step 1 names the upstream release to assess"
 		},
 		{
+			"file": "PLAN.md",
+			"reason": "Approved upstream migration plan names the source project, source evidence paths and legacy project-file format; allows only the eight recorded lines",
+			"lines": [
+				{
+					"text": "Rebuild Showhow on the upstream OpenScreen v2 codebase, so the owner gets v2's editor, Rust compositor, native transcription and AI editing assistant, and can take later upstream releases through reviewed merges. Today's Showhow behaviour (recording bundles, library, workflow documents, Showhow identity, legacy data) keeps working on the new base. The six V1 features are shaped afterwards on this base.",
+					"count": 1
+				},
+				{
+					"text": "- Prior assessment: `docs/research/2026-10-12-openscreen-v2-assessment.md`.",
+					"count": 1
+				},
+				{
+					"text": "- User-visible \"OpenScreen\" text becomes Showhow. Internal names (helper binaries, the `openscreen` CLI, the MCP server id, the `.openscreen` extension) stay as upstream has them unless they are persisted or user-visible. CLI and MCP stay in the code, hidden and off.",
+					"count": 1
+				},
+				{
+					"text": "- Legacy cases that must pass (Task 2): (L1) a `.showhow` project saved by Showhow `main` at `fc50566a` opens in the v2 editor and the file's bytes are unchanged after opening; (L2) a `.openscreen` project from the same build opens without being overwritten, and the next save defaults to a new `.showhow` file; (L3) bundles recorded by `fc50566a` appear in the library and open; (L4) the recordings folder and the preferences set in a `fc50566a` profile survive the first launch of the new build; (L5) a new recording writes `<video path>.cursor.json` and the editor reads it.",
+					"count": 1
+				},
+				{
+					"text": "**Files:** `UPSTREAM.md`, `docs/research/2026-10-12-openscreen-v2-assessment.md` (append a dated refresh section), `AGENTS.md`, `.agents/CONTEXT.md`, `ROADMAP.md`, `implementation-notes.md`",
+					"count": 1
+				},
+				{
+					"text": "- [ ] RED: `grep -n \"Never use a full branch merge\" UPSTREAM.md` matches, and `grep -n \"v2.1.0-rc.3\" docs/research/2026-10-12-openscreen-v2-assessment.md` finds nothing.",
+					"count": 1
+				},
+				{
+					"text": "- R2.2 Identity: `appId`, `productName`, app icon, user-visible app name and window titles are Showhow's. User-visible \"OpenScreen\" strings in the 13 locales are replaced; `npm run branding:check` passes. Internal identifiers follow the confirmed rule; each one kept or renamed is listed in `upstream-touchpoints.md` with its role (persisted, IPC, helper discovery, user-visible).",
+					"count": 1
+				},
+				{
+					"text": "- Manual macOS arm64 smoke test on a packaged build, with screenshots: first launch on a copied `fc50566a` profile (L4); library lists old bundles (L3); a new narrated recording saves a full bundle (L5, R2.3); the bundle opens in the v2 editor (R2.5); old `.showhow` and `.openscreen` projects open (L1, L2); HUD and editor show Showhow theming (R2.6).",
+					"count": 1
+				}
+			]
+		},
+		{
 			"file": "README.md",
 			"reason": "Attribution and upstream release links"
 		},

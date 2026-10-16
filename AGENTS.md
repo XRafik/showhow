@@ -10,8 +10,10 @@ canonical guide for coding agents in `bedarstudios/showhow`.
 - Keep the inherited recorder and editor working while adding Showhow functionality.
 - Showhow owns its product direction. Do not add paywalls, premium tiers, upsells, or required cloud
   services.
-- The attributed source ancestor is not an operational parent. Never perform a full source-branch
-  merge. Follow `UPSTREAM.md` for a focused, reviewed import.
+- OpenScreen is an attributed release parent. Before an upstream intake, follow `UPSTREAM.md`
+  for the permanent tags-only remote, one reviewed merge PR per release tag, compatibility
+  checklist and exclusions. The v2 migration cannot merge before final `v2.1.0`; no Showhow
+  `v*` release tag is pushed until the milestone is complete.
 - Do not claim planned doc-engine, library, bridge, or polish features are complete unless current
   code and acceptance evidence prove it.
 

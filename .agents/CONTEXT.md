@@ -20,7 +20,7 @@ TypeScript in strict mode, Electron, React 18, Vite and Pixi.js v8. Node 22.22.1
 
 - V1 is record, folder bundle, workflow doc, then copy path. Preserve the recorder and editor; documentation failures must never discard a valid recording.
 - Keep processing local, free forever, with no required cloud, account, API key, paywall or paid tier.
-- Use focused, reviewed imports under `UPSTREAM.md`; never merge the full source branch.
+- Before upstream intake, follow `UPSTREAM.md`: OpenScreen is a release parent with a permanent tags-only remote and one reviewed merge PR per release tag. The v2 migration waits for final `v2.1.0`; no Showhow `v*` release tag until the milestone is complete.
 - New projects use `.showhow`; preserve readable `.openscreen` projects and legacy data. Keep the `<video path>.cursor.json` convention.
 - Native capture requires smoke tests on the target OS; Linux checks cannot prove macOS or Windows behavior.
 - Planned doc-engine, library, bridge and polish features require current code and acceptance evidence before being called complete.

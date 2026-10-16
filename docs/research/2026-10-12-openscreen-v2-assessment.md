@@ -116,3 +116,118 @@ A read-only source and packaging inventory was run on 2026-10-12. No installer w
 - **Model download is unpinned.** `scripts/fetch-caption-model.mjs` downloads from `resolve/main`, so builds can bundle different model files with an unstated model licence. Pin a revision and record its licence.
 - **Unknown provenance:** 18 wallpapers in `public/wallpapers/`, six PNGs in `public/` and the built-in SVG cursors in `src/assets/cursors/` have no provenance record. Fonts are covered by `src/assets/fonts/LICENSE.md` (OFL-1.1, plus Apache-2.0 for Permanent Marker).
 - **Unclear packaging:** whether `onnxruntime-node` and `sharp`/libvips reach the installer. Check a built app.
+
+
+## Refresh: 2026-10-16 — rc.3 and the separate shaping snapshot
+
+This dated refresh supersedes earlier intake recommendations and policy descriptions above; their
+bytes are retained as historical evidence. The approved move stays on Electron and uses upstream
+as a release parent under [UPSTREAM.md](../../UPSTREAM.md). This is source research, not an import,
+completed migration or native acceptance.
+
+### Source identities and method
+
+- Development tag `v2.1.0-rc.3` resolves to [`523a3e4c47cf7566cc5c759ad5275f7edcd3382e`](https://github.com/getopenscreen/openscreen/commit/523a3e4c47cf7566cc5c759ad5275f7edcd3382e).
+- The separate shaping snapshot is [`bb4660b11d2e1f87f5f5fc57dd6acb14e248109f`](https://github.com/getopenscreen/openscreen/commit/bb4660b11d2e1f87f5f5fc57dd6acb14e248109f),
+  subject `docs(testing): log the macOS pass of v2.1.0-rc.3`. It is not the rc.3 tag.
+- The coordinator's 2026-10-16 factual clarification resolves the shorthand that paired rc.3 with
+  `bb4660b1`. The [full upstream comparison](https://github.com/getopenscreen/openscreen/compare/523a3e4c47cf7566cc5c759ad5275f7edcd3382e...bb4660b11d2e1f87f5f5fc57dd6acb14e248109f)
+  reports **diverged, 20 ahead / 9 behind** (shaping relative to rc.3). Neither pin is treated as
+  identical to, or simply after, the other. A shallow-clone range log cannot establish that relationship.
+
+Method: read both immutable trees in an external scratch clone; compare the files supporting the
+five topics below. No current-main claims, remote added to Showhow, code import, model download,
+app build or native smoke test. Raw source/command receipts and file hashes are retained in
+`/Users/mohamedb/dev/loop-evidence/showhow-115/executor/` (`resume-topic-source-files.json`,
+`resume-topic-source-hashes.json`, `resume-extra-source-files.json`, `resume-relevant-pin-diff.json`).
+
+### Runtime and compositor binding
+
+Both pins specify **Electron 41.2.1** (package line 163; only the package version differs in that
+file: rc.3 versus 2.0.0). Sources: [rc.3](https://github.com/getopenscreen/openscreen/blob/523a3e4c47cf7566cc5c759ad5275f7edcd3382e/package.json#L163), [shaping](https://github.com/getopenscreen/openscreen/blob/bb4660b11d2e1f87f5f5fc57dd6acb14e248109f/package.json#L163).
+The Rust compositor uses Metal and VideoToolbox on macOS; the `compositor-view-napi` crate
+exports the napi-rs addon `compositor_view.node`, loaded by the Electron main-process
+`CompositorViewService` and used for the live view. Sources: [rc.3](https://github.com/getopenscreen/openscreen/blob/523a3e4c47cf7566cc5c759ad5275f7edcd3382e/crates/compositor/Cargo.toml#L5), [shaping](https://github.com/getopenscreen/openscreen/blob/bb4660b11d2e1f87f5f5fc57dd6acb14e248109f/crates/compositor/Cargo.toml#L5); [rc.3](https://github.com/getopenscreen/openscreen/blob/523a3e4c47cf7566cc5c759ad5275f7edcd3382e/crates/compositor-view-napi/Cargo.toml#L5), [shaping](https://github.com/getopenscreen/openscreen/blob/bb4660b11d2e1f87f5f5fc57dd6acb14e248109f/crates/compositor-view-napi/Cargo.toml#L5); [rc.3](https://github.com/getopenscreen/openscreen/blob/523a3e4c47cf7566cc5c759ad5275f7edcd3382e/electron/native-bridge/services/compositorViewService.ts#L42), [shaping](https://github.com/getopenscreen/openscreen/blob/bb4660b11d2e1f87f5f5fc57dd6acb14e248109f/electron/native-bridge/services/compositorViewService.ts#L42).
+These manifests and the bridge service are byte-identical at both pins. The compositor macOS
+source differs by a diagnostic test reporting the Metal device; this does not change the runtime
+choice or prove equivalent native behaviour. Source: [rc.3](https://github.com/getopenscreen/openscreen/blob/523a3e4c47cf7566cc5c759ad5275f7edcd3382e/crates/compositor/src/compositor_macos.rs#L3469), [shaping](https://github.com/getopenscreen/openscreen/blob/bb4660b11d2e1f87f5f5fc57dd6acb14e248109f/crates/compositor/src/compositor_macos.rs#L3469).
+The runtime decision is settled Electron; a WebKit shell is not part of this move.
+
+### Transcription engine and model download
+
+Both pins use native whisper.cpp through `whisper-stt-server`, orchestrated by `electron/stt/`.
+The default is multilingual **small**, `ggml-small-q8_0.bin`, fetched on demand from Hugging Face
+`ggerganov/whisper.cpp` at revision `5359861c739e955e79d9a303bcbc70fb988958b1`.
+The manager verifies SHA-256 and atomically renames partial downloads; cached valid files are
+reused. It also manages Silero VAD and language-specific CTC aligners. Sources: [rc.3](https://github.com/getopenscreen/openscreen/blob/523a3e4c47cf7566cc5c759ad5275f7edcd3382e/electron/stt/modelManager.ts#L60), [shaping](https://github.com/getopenscreen/openscreen/blob/bb4660b11d2e1f87f5f5fc57dd6acb14e248109f/electron/stt/modelManager.ts#L60); [rc.3](https://github.com/getopenscreen/openscreen/blob/523a3e4c47cf7566cc5c759ad5275f7edcd3382e/electron/stt/index.ts#L242), [shaping](https://github.com/getopenscreen/openscreen/blob/bb4660b11d2e1f87f5f5fc57dd6acb14e248109f/electron/stt/index.ts#L242); [rc.3](https://github.com/getopenscreen/openscreen/blob/523a3e4c47cf7566cc5c759ad5275f7edcd3382e/electron/native/whisper-stt/CMakeLists.txt#L100), [shaping](https://github.com/getopenscreen/openscreen/blob/bb4660b11d2e1f87f5f5fc57dd6acb14e248109f/electron/native/whisper-stt/CMakeLists.txt#L100).
+These files are identical at both pins; neither package manifest depends on `@xenova/transformers`.
+
+Today's Showhow bundle transcript still uses its renderer Whisper-tiny pipeline. Task 2 preserves
+that working pipeline. **Task 3 is planned** to adapt v2's native engine to bundle transcription
+with a bundled quantised multilingual **base** model, preserving timestamped `transcript.txt`
+and the `(transcription failed)` fail-open marker. Upstream's fixed small-model manager needs
+adaptation for that approved bundled-base requirement; the native port is not already done.
+Larger downloadable models remain a product requirement, not a claim that this snapshot already
+has Showhow's planned model-selection flow.
+
+### Project migration
+
+Both pins provide bidirectional `EditorProjectData` ↔ `AxcutDocument` conversion; the forward
+path creates document assets/clips and retains legacy editor settings before schema migration.
+Sources: [rc.3](https://github.com/getopenscreen/openscreen/blob/523a3e4c47cf7566cc5c759ad5275f7edcd3382e/src/lib/ai-edition/document/migrate.ts#L100), [shaping](https://github.com/getopenscreen/openscreen/blob/bb4660b11d2e1f87f5f5fc57dd6acb14e248109f/src/lib/ai-edition/document/migrate.ts#L100); [rc.3](https://github.com/getopenscreen/openscreen/blob/523a3e4c47cf7566cc5c759ad5275f7edcd3382e/src/components/video-editor/projectPersistence.ts#L132), [shaping](https://github.com/getopenscreen/openscreen/blob/bb4660b11d2e1f87f5f5fc57dd6acb14e248109f/src/components/video-editor/projectPersistence.ts#L132). These files are identical at both pins.
+They do not prove that Showhow's `fc50566a` fixtures survive opening and saving. Task 2 must prove
+L1–L5 from the plan, including unchanged bytes on opening, non-overwriting `.openscreen` reads,
+new `.showhow` save defaults, library/profile preservation and `<video path>.cursor.json`.
+Upstream retains that sidecar convention: [rc.3](https://github.com/getopenscreen/openscreen/blob/523a3e4c47cf7566cc5c759ad5275f7edcd3382e/electron/cli/projectCommands.ts#L90), [shaping](https://github.com/getopenscreen/openscreen/blob/bb4660b11d2e1f87f5f5fc57dd6acb14e248109f/electron/cli/projectCommands.ts#L90).
+
+### Cursor packs and notices
+
+Both pins have **six named original packs plus the built-in default**: Studio Ink, Prism Glow,
+Pop Coral, Pixel Candy, Star Sprout and Glass Lens. This is seven selectable themes, rather than
+seven entries in `CURSOR_THEMES`. The registry explicitly attributes the former Sweezy-pack
+removal to redistribution restrictions; it has no Sweezy pack entries. Source: [rc.3](https://github.com/getopenscreen/openscreen/blob/523a3e4c47cf7566cc5c759ad5275f7edcd3382e/src/lib/cursor/cursorThemes.ts#L136), [shaping](https://github.com/getopenscreen/openscreen/blob/bb4660b11d2e1f87f5f5fc57dd6acb14e248109f/src/lib/cursor/cursorThemes.ts#L136).
+
+`THIRD-PARTY-NOTICES.md` is checked in; it is **not** the generated file. It covers native and
+other bundled components, including whisper.cpp/ggml and Rust crates. npm licence texts are
+compiled into **`THIRD-PARTY-LICENSES.txt`** by `licenses:generate`; packaging copies both.
+Sources: [rc.3](https://github.com/getopenscreen/openscreen/blob/523a3e4c47cf7566cc5c759ad5275f7edcd3382e/THIRD-PARTY-NOTICES.md#L1), [shaping](https://github.com/getopenscreen/openscreen/blob/bb4660b11d2e1f87f5f5fc57dd6acb14e248109f/THIRD-PARTY-NOTICES.md#L1); [rc.3](https://github.com/getopenscreen/openscreen/blob/523a3e4c47cf7566cc5c759ad5275f7edcd3382e/scripts/generate-third-party-licenses.mjs), [shaping](https://github.com/getopenscreen/openscreen/blob/bb4660b11d2e1f87f5f5fc57dd6acb14e248109f/scripts/generate-third-party-licenses.mjs); [rc.3](https://github.com/getopenscreen/openscreen/blob/523a3e4c47cf7566cc5c759ad5275f7edcd3382e/electron-builder.json5#L130), [shaping](https://github.com/getopenscreen/openscreen/blob/bb4660b11d2e1f87f5f5fc57dd6acb14e248109f/electron-builder.json5#L130). Registry, notices, generator and packaging rules were
+compared at both pins. Task 2 still must remove Showhow's 17 Sweezy packs and retain required
+notices. This docs ticket removes no assets and establishes no installer licensing acceptance.
+
+### Showhow-layer features and v2 counterparts
+
+The counterpart findings apply to **both pins**, not to an integrated Showhow build. The upstream
+App uses `AiEditionShell`, and neither tree contains the Showhow-owned bundle/library directories.
+The targeted source search found no `steps.json`, `steps.md` or `transcript.txt` contract in either
+upstream tree. Sources: [rc.3](https://github.com/getopenscreen/openscreen/blob/523a3e4c47cf7566cc5c759ad5275f7edcd3382e/src/App.tsx#L21), [shaping](https://github.com/getopenscreen/openscreen/blob/bb4660b11d2e1f87f5f5fc57dd6acb14e248109f/src/App.tsx#L21); [rc.3](https://github.com/getopenscreen/openscreen/blob/523a3e4c47cf7566cc5c759ad5275f7edcd3382e/src/lib/ai-edition/document/migrate.ts#L100), [shaping](https://github.com/getopenscreen/openscreen/blob/bb4660b11d2e1f87f5f5fc57dd6acb14e248109f/src/lib/ai-edition/document/migrate.ts#L100); [rc.3](https://github.com/getopenscreen/openscreen/blob/523a3e4c47cf7566cc5c759ad5275f7edcd3382e/electron/stt/index.ts#L242), [shaping](https://github.com/getopenscreen/openscreen/blob/bb4660b11d2e1f87f5f5fc57dd6acb14e248109f/electron/stt/index.ts#L242); [rc.3](https://github.com/getopenscreen/openscreen/blob/523a3e4c47cf7566cc5c759ad5275f7edcd3382e/electron/ai-edition/provider-registry.ts#L32), [shaping](https://github.com/getopenscreen/openscreen/blob/bb4660b11d2e1f87f5f5fc57dd6acb14e248109f/electron/ai-edition/provider-registry.ts#L32); the two tree/search receipts above.
+Current Showhow sources are pinned at [the ticket base](https://github.com/bedarstudios/showhow/tree/a06da359287213c1d328dbe444658f1f1908ee4c).
+
+| Current Showhow layer / planned surface | Counterpart at both upstream pins | Migration consequence |
+|---|---|---|
+| Recoverable folder bundle, video/cursor sidecars and `meta.json` | Recording/project media and cursor sidecars; no Showhow bundle contract | Port `electron/showhow/bundle.ts` in Task 2; a documentation failure must still save valid video. |
+| Timestamped `transcript.txt`, renderer Whisper-tiny and fail-open marker | Native STT, document transcripts and captions; no bundle text contract | Preserve current behaviour in Task 2; adapt native STT to the bundle format in Task 3. |
+| Deterministic click screenshots, `steps.json`/`steps.md`, regenerate/edit | Document editing and transcript/caption tools; no deterministic workflow-document counterpart | Port the existing doc engine; AI editor operations do not replace it. |
+| Recording library, doc view, seekable timestamps, Copy path, bundle media serving | Editor/project opening; no Showhow bundle library or copy-path handoff | Port library/readers/media protocol and workflow editing in Task 2. |
+| Browser companion bridge and page-aware step capture | No Showhow companion protocol counterpart | Task 2 deletes companion code and tests as approved; not deleted here. |
+| Showhow components, design tokens, branding and legacy persistence | Upstream editor/HUD/recorder and their styles/settings | Task 2 retains identity and compatibility; upstream screens get themes and slots, not component restructuring. |
+| Planned one-button AI guide, Copy for agent brief, PDF export and library MP4 import | No Showhow guide/brief/PDF/import workflow; AI editor and API-key provider registry supply only partial building blocks | These redesigned V1 features remain later work. Upstream OpenRouter support is not ChatGPT plan sign-in. |
+| Planned editor with AI assistant | Document-bound AI editing and provider configuration | Task 2 takes the upstream assistant, optional and off until configured; no new provider boundary is built here. |
+
+The shaping snapshot has chat rewind identity handling absent from rc.3 (`userMessageId` and
+`adoptStoredUserMessage`); do not infer exact assistant behaviour parity from shared architecture.
+Sources: [rc.3](https://github.com/getopenscreen/openscreen/blob/523a3e4c47cf7566cc5c759ad5275f7edcd3382e/electron/ai-edition/chat-service.ts#L484), [shaping](https://github.com/getopenscreen/openscreen/blob/bb4660b11d2e1f87f5f5fc57dd6acb14e248109f/electron/ai-edition/chat-service.ts#L484); [rc.3](https://github.com/getopenscreen/openscreen/blob/523a3e4c47cf7566cc5c759ad5275f7edcd3382e/src/components/ai-edition/LeftPanel.tsx#L634), [shaping](https://github.com/getopenscreen/openscreen/blob/bb4660b11d2e1f87f5f5fc57dd6acb14e248109f/src/components/ai-edition/LeftPanel.tsx#L634). This is a source difference to review in the migration, not authority to
+substitute the shaping commit for the named development tag.
+
+### What remains planned
+
+The earlier held recorder fixes [29736d4d](https://github.com/getopenscreen/openscreen/commit/29736d4d9b71ce1dcc8b7a7b1f3c9a69e46a1c54),
+[f261fa45](https://github.com/getopenscreen/openscreen/commit/f261fa45db81a91d7024686f4ab50a2fe55996ec) and
+[52eda0e6](https://github.com/getopenscreen/openscreen/commit/52eda0e6820d66633dcc5bd02abf551b3331a4e9)
+are treated by the approved plan as covered by the v2 move, rather than separate patch tickets.
+That is planning disposition, not evidence of a completed Showhow native fix. Task 2's packaged
+macOS checks remain required. Windows and Linux native behaviour remain untested.
+
+Task 2 must land the base and working Showhow layer together and cannot merge before final
+upstream `v2.1.0`. Task 3's bundled native transcription and Task 4's ≤ 400 MB size target remain
+unimplemented here. No Showhow `v*` tags until the milestone is complete; agents never merge.
+Upstream release pipelines, publishers, package identity and product branding stay excluded.

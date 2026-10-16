@@ -103,3 +103,89 @@ add/add on this notes file. Both the #108 history and the complete #110 notes
 were retained, in that order. No implementation, tests, package configuration
 or packaged inputs changed. The lead owns focused checks and the explicit
 candidate/proof comparison before updating the existing PR.
+
+
+## Showhow #115 — upstream policy and evidence refresh — 2026-10-16
+
+Replaced selective intake with the approved release-parent policy: a permanent tags-only
+remote (documented, not configured here), one reviewed merge PR per upstream release tag,
+identity/touchpoints/branding/legacy/native checks, and the existing pipeline/publisher exclusions.
+Updated AGENTS and context pointers and the roadmap's optional AI connections wording.
+Appended the five-topic assessment against both immutable pins. No app, build, config, package
+identity or cursor assets changed. Tasks 2/3 functionality remains planned; final v2.1.0 and
+milestone release-tag gates are unchanged.
+
+### Correction and deviation
+
+Build initially stopped because the approved shorthand paired rc.3 with bb4660b1. The actual
+`v2.1.0-rc.3` tag is `523a3e4c47cf7566cc5c759ad5275f7edcd3382e`; the separate shaping
+snapshot is `bb4660b11d2e1f87f5f5fc57dd6acb14e248109f`. The coordinator's factual
+clarification (`coordinator-20261016T184047Z/pin-clarification.md` in the ticket evidence root)
+cleared this stop within the original documentation scope. This is a **coordinator clarification**,
+not a new owner answer or owner decision; the resume message's “coordinator/owner” wording
+was imprecise. The original messages and stopped receipts remain preserved.
+
+The full compare reports diverged, 20 ahead / 9 behind; no simple ancestry is inferred from the
+shallow clone. The refresh compares both pins and records differences in package version,
+compositor diagnostic tests and chat rewind handling. It also clarifies six named cursor packs
+plus the default and checked-in notices versus generated npm licence texts. These are factual
+corrections, not changes to the approved product choices. No concrete requirement conflict
+was found: adapting the fixed small-model manager to bundled base is already Task 3's work.
+
+Evidence remains external at `/Users/mohamedb/dev/loop-evidence/showhow-115/`. Reused BEFORE
+and RED are `lead/before/`, `lead/before-manifest.json` and `lead/before.json`, captured by the
+lead before edits; they are not fresh executor observations. Original `STOP.md`, `BUILD-RETURN.md`
+and failed raw receipts are untouched. Resumed source/check receipts, diff and hashes are in
+`executor/resume-*`; `BUILD-RETURN-RESUMED.md` records the return. Lead owns Prove, fresh
+native Review and Ship. Failed-review count remains 0; executor gives no review verdict.
+
+
+### Verification requirement conflict and external proposal
+
+The earlier “no concrete requirement conflict” statement concerned source-research feasibility
+and settled product choices only. Verification has a separate inherited blocker: required
+`npm run branding:check` exits 1 on eight unchanged `PLAN.md` lines (191, 202, 213, 224,
+243, 251, 269, 294). The complete pristine `a06da359` archive reproduces the exact same
+findings with the same scanner and policy. This conflicts with #115's required branding pass
+and its six-file scope/no plan rewrite. Neither PLAN nor the ticket allowlist was changed.
+The required branding result remains RED. No independent review or PR is authorised by this return.
+
+Lint initially exited 127 because this lane has no node_modules. Read-only reuse of the canonical
+checkout's Biome 2.4.12 (matching package-lock) lets exact `npm run lint` exit 0, with the existing
+`deferredClick.test.ts:28` empty-block warning. No dependencies or tracked configuration changed.
+The paired GREEN greps pass; prefix and scope receipts accompany the candidate.
+
+At the coordinator's preparation instruction, an external, **proposed and unapproved** patch
+adds counted allowances for only those eight exact PLAN lines to `config/branding-allowlist.json`.
+It is not applied to this ticket. Scratch proof uses the complete baseline tracked file list,
+the same scanner and policy schema: baseline RED, proposed policy GREEN, unrelated injected
+legacy-name finding still RED. Patch, proposed JSON and raw receipts are external under
+`executor/resume-PROPOSED-UNAPPROVED-*` and `executor/resume-proposal-*`.
+Recommendation to the owner: add only `config/branding-allowlist.json` to #115's owned scope
+for this exact allowance proposal. This is a coordinator-prepared recommendation, not owner
+approval. Lead must transfer this verification conflict for coordinator/owner clearance before
+fresh Review or Ship. Failed-review count remains 0; no review verdict.
+
+
+## Showhow #115 — owner-approved scope addition — 2026-10-16
+
+The owner explicitly approved adding only `config/branding-allowlist.json` to #115's scope
+for the exact external patch SHA-256
+`72483c27af4253dfbe052078aaa7d02f647fe858a46ffdcee3e067a90b632cda`.
+Approval and clearance: `coordinator-20261016T184047Z/owner-scope-approved.md` and
+`owner-scope-clearance-readback.json` under the ticket evidence root. This owner answer
+is distinct from the earlier coordinator factual pin clarification. It authorises the scope
+addition and resumption only; it grants no merge consent, proof/review waiver or product change.
+
+After verifying that hash and all six frozen candidate hashes, the executor applied exactly
+the approved patch: one PLAN allowance entry with eight exact line literals, each count 1.
+No PLAN text, scanner, existing allowance, app source, workflow or dependency file changed.
+The earlier unapproved scratch proof and required branding RED are retained as history;
+new required branding/lint and seven-path preservation receipts cover this resumed candidate.
+The previous six-path-only stop is cleared by this specific scope approval. Old STOP files,
+returns and raw failed receipts are preserved; `BUILD-RETURN-OWNER-APPROVED.md` records
+this return. The earlier six documentation files remain owned, with notes append-only.
+
+Same lane/base, failed-review count 0, reviewer identity not observed and no review verdict.
+Lead owns Prove and fresh independent Review before Ship. No commit, push or publication by
+executor. Final upstream v2.1.0 and milestone release-tag gates remain unchanged.

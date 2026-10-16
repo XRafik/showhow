@@ -7,7 +7,7 @@ This is the human-readable plan. The machine-readable plan is [`.bedar/project-p
 ## Principles
 
 - **The recorder wins, always.** Every Showhow addition is fail-open. If bundling breaks, transcription fails or AI is unavailable, the recording still saves. A take is never lost to a feature.
-- **Local-first and free.** Recording, transcription, editing and the click-based steps run on your Mac with no account. AI writing (guides, agent briefs, AI edits) is optional and only runs when you connect ChatGPT or OpenRouter and ask for it. There are no paywalls or paid tiers.
+- **Local-first, free, optional AI connections.** Recording, transcription, editing and the click-based steps run on your Mac with no account. AI writing (guides, agent briefs, AI edits) is optional and only runs when you connect ChatGPT or OpenRouter and ask for it. There are no paywalls or paid tiers.
 - **macOS first.** V1 targets macOS 13+. Windows and Linux keep the inherited recorder, but the Showhow layer isn't hooked up there.
 
 ## Shipped
@@ -36,4 +36,4 @@ MCP access to the library, the browser companion, a notes window while recording
 
 ## Inherited from upstream
 
-Showhow is built on [getopenscreen/openscreen](https://github.com/getopenscreen/openscreen). Upstream changes come in through focused, reviewed imports under [`UPSTREAM.md`](./UPSTREAM.md). Recorder and editor bugs that also affect upstream belong in upstream's tracker.
+Showhow is built on [getopenscreen/openscreen](https://github.com/getopenscreen/openscreen). Upstream is a release parent: changes come in through one reviewed merge PR per release tag under [`UPSTREAM.md`](./UPSTREAM.md). Recorder and editor bugs that also affect upstream belong in upstream's tracker.
