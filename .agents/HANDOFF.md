@@ -4,9 +4,9 @@ Updated: 2026-10-16
 
 ## In flight
 
-Nothing is in flight. The design phase is merged (#109). The app size ticket (#110, PR #113) and the Copilot controller retirement (#108, PR #112) shipped on 2026-10-16.
+The move onto upstream v2 is shaped and published: milestone "Move onto upstream v2" with #115 → #116 → #117 → #118, all in Ready to implement, none priority. The plan is the "Showhow move onto upstream v2 Plan" section of `PLAN.md`; decisions are in `.agents/decisions.md` (2026-10-16). The design phase is merged (#109). The app size ticket (#110, PR #113) and the Copilot controller retirement (#108, PR #112) shipped on 2026-10-16.
 
-- App size: installed 867 MB → 321 MB, DMG 337 MB → 167 MB (macOS arm64). `npm run check:package` audits a packaged app (only `ws` in `node_modules`, 14 Chromium locales, each wallpaper once, ≤ 330 MB). The owner installed the new build and confirmed that recording, transcription and export work. Windows and Linux are untested.
+- App size: installed 867 MB → 321 MB, DMG 337 MB → 167 MB (macOS arm64). `npm run check:package` audits a packaged app (only `ws` in `node_modules`, 14 Chromium locales, each wallpaper once, ≤ 330 MB). The owner installed the new build and confirmed that recording, transcription and export work. Windows and Linux are untested. #118 re-applies the trim to the v2 build with a ≤ 400 MB target.
 
 - V1 brief and ship list: `~/Brain/projects/showhow/brief.md` and `ship list.md` (owner's vault). It ships six features: recording, the one-button AI guide, the editor with the v2 AI assistant, the library with MP4 import, Copy for agent, and PDF export.
 - Locked mock: `design/mocks/2026-10-15-house-style/` (`index.html`, `SPEC.md`).
@@ -16,17 +16,11 @@ Nothing is in flight. The design phase is merged (#109). The app size ticket (#1
 
 ## Next action
 
-Shape the move onto upstream OpenScreen v2 (step 4 of the brief's order of work) with the `shape` skill. Plan scope:
-
-- An `UPSTREAM.md` policy change (it currently forbids full source-branch merges).
-- A migration plan that keeps bundles, `.showhow`/`.openscreen` files and `<video path>.cursor.json` working.
-- What is dropped: the browser companion, and the three held macOS recorder fixes that v2 already has.
-- A refresh of `docs/research/2026-10-12-openscreen-v2-assessment.md` against current upstream.
-- First decision: stay on Electron (floor about 320 MB installed) or move to a WebKit-based shell such as Tauri (about 20–80 MB). Spike WebCodecs support in WebKit (the editor and exporter use VideoEncoder/VideoDecoder, mediabunny and web-demuxer) and the cost of porting the 7,000-line main process.
+Coordinator dispatches #115 (upstream policy and v2 evidence refresh). #116 must not merge before upstream tags the final `v2.1.0`; upstream was at `v2.1.0-rc.3` on 2026-10-16. The runtime question is settled: Showhow stays on Electron.
 
 ## Open decisions
 
-- Cursor packs: remove the 17 bundled third-party packs or clear their terms. This blocks release, and the v2 move may settle it because v2 removed them.
+- Cursor packs: #116 removes the 17 Sweezy packs and takes upstream's seven original packs. Still blocks release until #116 merges.
 - Per-feature goals and milestone metrics (audit questions B1 and J2). Weekly use is the only metric for now.
 
 ## Loop operations notes

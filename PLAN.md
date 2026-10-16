@@ -184,3 +184,174 @@ Unbounded-word scan: "every" doesn't appear in requirements or DONE WHEN. "Each 
 
 ## Implementation notes
 Append each deviation from this plan to `implementation-notes.md` under "Deviations": what changed, why and what was done instead. Commit it with the ticket. Path-scope checks treat it as an owned path.
+
+# Showhow move onto upstream v2 Plan
+
+## Goal
+Rebuild Showhow on the upstream OpenScreen v2 codebase, so the owner gets v2's editor, Rust compositor, native transcription and AI editing assistant, and can take later upstream releases through reviewed merges. Today's Showhow behaviour (recording bundles, library, workflow documents, Showhow identity, legacy data) keeps working on the new base. The six V1 features are shaped afterwards on this base.
+
+## Context and decisions
+- Evidence, gathered 2026-10-16 from a read-only upstream clone (no remote added):
+  - Upstream `main` is at `bb4660b1` (`v2.1.0-rc.3`), 458 commits after `v2.0.0` and 192 after the assessment's `9c55596e`.
+  - v2 runs on Electron 41.2.1. The Rust compositor (`crates/compositor`, Metal + VideoToolbox on macOS) reaches the app as the napi-rs addon `compositor_view.node` (`crates/compositor-view-napi`), which also embeds the live preview view.
+  - v2's main process is about 38,600 lines of TypeScript in 227 files under `electron/`; Showhow's is about 10,500, of which about 3,700 are the Showhow layer.
+  - v2 keeps `<video path>.cursor.json` (`electron/recording/nativeMacCaptureStop.ts`, `electron/cli/projectCommands.ts`, `electron/mcp/media-tools.ts`).
+  - v2 migrates old `EditorProjectData` projects into its `AxcutDocument` model (`src/lib/ai-edition/document/migrate.ts`).
+  - v2 ships seven original cursor packs and a generated `THIRD-PARTY-NOTICES.md`; the 17 Sweezy packs are gone.
+  - v2 transcribes with native whisper.cpp (`electron/stt/`) and downloads its default `small` model from Hugging Face on first use. It has no `@xenova/transformers` dependency.
+  - Prior assessment: `docs/research/2026-10-12-openscreen-v2-assessment.md`.
+- Owner decisions, shaping session 2026-10-16:
+  1. Runtime: stay on Electron. A WebKit shell would mean rewriting v2's main process and compositor binding and re-porting every upstream release.
+  2. Upstream is a release parent: Showhow merges each upstream release tag through a reviewed PR.
+  3. Design split by ownership: Showhow-owned screens (library, settings, guide and brief views, Copy for agent, PDF) follow the Final frames; upstream screens (editor, HUD, recorder) take the Showhow look through theme tokens, CSS and small wrapper slots without restructuring upstream components.
+  4. This plan covers the move only. V1 features are shaped later.
+  5. Transcription: v2's native engine, with a small model bundled in the app.
+  6. No gap on `main`: the v2 base and the Showhow-layer port land in one PR.
+- Confirmed assumptions:
+  - Real `git merge` of the upstream tag into Showhow history, so later release merges have a merge base. `UPSTREAM.md` allows a permanent tags-only `upstream` remote.
+  - Work starts on `v2.1.0-rc.3`; Task 2 merges to `main` only on the final `v2.1.0` tag.
+  - User-visible "OpenScreen" text becomes Showhow. Internal names (helper binaries, the `openscreen` CLI, the MCP server id, the `.openscreen` extension) stay as upstream has them unless they are persisted or user-visible. CLI and MCP stay in the code, hidden and off.
+  - Bundled model: whisper.cpp `base` multilingual, quantised (about 60–80 MB). Larger models stay downloadable through v2's model manager.
+  - Size: Task 4 records v2's untrimmed baseline, then targets ≤ 400 MB installed on macOS arm64, model included.
+  - Browser companion code and tests are deleted, not archived. The three held macOS recorder fixes are closed as covered by v2. Issues #54–#63 stay parked for re-triage after the milestone. Upstream's AI editing assistant stays as upstream ships it, optional and off until configured.
+  - Windows and Linux are reported as untested; native acceptance is a manual macOS smoke test.
+- Priority: no, for all four tasks (owner answer).
+
+## Bounded requirements
+- Supported platform for acceptance: macOS 13+ on arm64. Windows and Linux builds must compile in CI where they do today; their native behaviour is untested and stated so.
+- Upstream base: tag `v2.1.0` (development on `v2.1.0-rc.3`). Later upstream tags are follow-ups.
+- Identity kept unchanged: `appId` `com.bedarstudios.showhow` and `productName` `Showhow` (changing them moves userData and resets macOS TCC grants, `electron-builder.json5:10`).
+- Legacy cases that must pass (Task 2): (L1) a `.showhow` project saved by Showhow `main` at `fc50566a` opens in the v2 editor and the file's bytes are unchanged after opening; (L2) a `.openscreen` project from the same build opens without being overwritten, and the next save defaults to a new `.showhow` file; (L3) bundles recorded by `fc50566a` appear in the library and open; (L4) the recordings folder and the preferences set in a `fc50566a` profile survive the first launch of the new build; (L5) a new recording writes `<video path>.cursor.json` and the editor reads it.
+- Excluded from this milestone: the six V1 features in their new design, ChatGPT sign-in, upstream CLI and MCP exposure, Windows and Linux native fixes, upstream releases after `v2.1.0`.
+
+## Architecture
+- After Task 2, the tree is upstream `v2.1.0` plus a Showhow layer. Showhow-owned code stays in `electron/showhow/`, `src/lib/showhow/`, `src/components/showhow/` and `src/components/library/`. Edits to upstream files are kept to identity, theming, wiring and slot points, and each one is listed in `docs/architecture/upstream-touchpoints.md` (new) so release merges know where conflicts will come from.
+- Theming on upstream screens goes through Showhow design tokens (`src/lib/showhow/designTokens.ts`, `theme.ts`) mapped onto upstream's CSS variables and Tailwind config, not by forking upstream components.
+- Transcription after Task 3: bundle transcripts call v2's `electron/stt/` engine from the main process. `transcript.txt` keeps its current timestamped format (`src/lib/showhow/transcriptFormat.ts`) and its fail-open rule (`docs/architecture/showhow-bundles.md`: a failure still writes `transcript.txt` with `(transcription failed)`).
+
+## Milestones
+**Move onto upstream v2** (GitHub milestone 12). Published 2026-10-16: Task 1 = #115, Task 2 = #116, Task 3 = #117, Task 4 = #118.
+
+Task 1 → Task 2 → Task 3 → Task 4, in order. Outcome: Showhow `main` is upstream `v2.1.0` plus the Showhow layer, transcribes with v2's engine and ships at ≤ 400 MB. No `v*` release tag is pushed until the milestone is done.
+
+### Task 1: Rewrite the upstream policy and refresh the v2 evidence
+
+**Priority:** no
+**Labels:** feature
+**Milestone:** Move onto upstream v2
+**Depends on:** none
+**Files:** `UPSTREAM.md`, `docs/research/2026-10-12-openscreen-v2-assessment.md` (append a dated refresh section), `AGENTS.md`, `.agents/CONTEXT.md`, `ROADMAP.md`, `implementation-notes.md`
+**Requirements:**
+- `UPSTREAM.md` describes the release-parent model: a permanent `upstream` remote that fetches tags only; one reviewed merge PR per upstream release tag (`v*` without `-`, or a named rc used as a development base); the per-merge checklist (identity diff review, `docs/architecture/upstream-touchpoints.md` update, branding check, the Task 2 legacy cases L1–L5, macOS smoke test); and what is still excluded (upstream release pipeline, publishers, package identity, product branding).
+- The assessment gains a refresh section against `v2.1.0-rc.3` (`bb4660b1`) covering: runtime and compositor binding, transcription engine and model download, project migration, cursor packs and notices, and the list of Showhow-layer features with their v2 counterpart (or none).
+- `AGENTS.md` and `.agents/CONTEXT.md` replace "never merge the full source branch" with the release-parent rule. `ROADMAP.md` drops "no API key" in favour of "optional AI connections".
+**Interfaces:** Read by Task 2's executor and every later upstream merge.
+**Constraints and reasons:** Docs only; no code. The policy must keep the ban on reintroducing upstream's RC pipeline and publishers (AGENTS.md, "Pull requests and releases").
+
+- [ ] RED: `grep -n "Never use a full branch merge" UPSTREAM.md` matches, and `grep -n "v2.1.0-rc.3" docs/research/2026-10-12-openscreen-v2-assessment.md` finds nothing.
+- [ ] Write the policy, the refresh section and the wording changes.
+- [ ] GREEN: the first grep finds nothing; the refresh section exists with the five topics; `npm run branding:check` and `npm run lint` pass.
+- [ ] Prove and obtain independent review, then open the PR to main.
+
+**Verification:** the two greps above; `npm run branding:check`; `npm run lint`.
+**DONE WHEN:** the PR changes only the listed files; `UPSTREAM.md` contains the remote rule, the merge checklist and the exclusions; the refresh section covers the five named topics with upstream commit links; branding and lint pass.
+**Outside cases / follow-ups:** none.
+
+### Task 2: Showhow on upstream v2.1.0
+
+**Priority:** no
+**Labels:** feature, ui
+**Milestone:** Move onto upstream v2
+**Depends on:** Task 1
+**Files:** the merge commit of upstream `v2.1.0` into the ticket branch, plus: `electron/showhow/**`, `src/lib/showhow/**`, `src/components/showhow/**`, `src/components/library/**`, `src/components/launch/**`, `electron/bootstrap.ts`, `electron/main.ts`, `electron/preload.ts`, `electron/ipc/handlers.ts` (identity and wiring only), `electron-builder.json5`, `package.json`, `vite.config.ts`, `src/App.tsx`, `src/i18n/locales/**`, `src/assets/fonts/**`, `public/cursors/**`, `scripts/branding-check.mjs`, `scripts/audit-showhow-bundle.mjs`, `docs/architecture/showhow-bundles.md`, `docs/architecture/upstream-touchpoints.md` (new), `tests/fixtures/legacy/**` (new), `NOTICE.md`, `implementation-notes.md`. Deleted: `electron/showhow/bridge*`, `electron/showhow/companionStepCapture*`, `src/lib/showhow/browserCompanion*`, `src/lib/showhow/companion/**`, `scripts/build-browser-companion.mjs`, `scripts/check-bridge-bundle.mjs`, and the browser-companion source folder.
+**Requirements:**
+- R2.1 The branch history contains upstream `v2.1.0` as a merge parent (`git merge-base --is-ancestor v2.1.0 HEAD` exits 0).
+- R2.2 Identity: `appId`, `productName`, app icon, user-visible app name and window titles are Showhow's. User-visible "OpenScreen" strings in the 13 locales are replaced; `npm run branding:check` passes. Internal identifiers follow the confirmed rule; each one kept or renamed is listed in `upstream-touchpoints.md` with its role (persisted, IPC, helper discovery, user-visible).
+- R2.3 The Showhow layer works on v2: recordings save a bundle per `docs/architecture/showhow-bundles.md` (video, `cursor.json`, `meta.json`, `transcript.txt`, `screenshots/`); the library is the home window and lists bundles; workflow documents generate as on `fc50566a`; the media protocol serves bundle files.
+- R2.4 Transcription keeps working with today's Whisper-tiny renderer pipeline (replaced in Task 3).
+- R2.5 The v2 editor replaces the inherited editor. Opening a bundle from the library opens it in the v2 editor.
+- R2.6 Upstream screens (editor, HUD, recorder) use Showhow tokens for colour, type (Inter Tight) and radius through upstream's CSS variables; no upstream component is restructured. Showhow-owned screens keep their current look.
+- R2.7 Legacy cases L1–L5 pass, using fixtures in `tests/fixtures/legacy/` made with the `fc50566a` build.
+- R2.8 The browser companion and the 17 Sweezy cursor packs are absent from the source tree and the packaged app. Upstream's `THIRD-PARTY-NOTICES.md` generation runs in the build.
+- R2.9 Upstream CLI and MCP are not reachable from Showhow's UI and MCP is off by default.
+**Interfaces:** Consumes upstream's recording, editor and document APIs. Produces the same bundle layout and `showhow:*` IPC channels the library and workflow code use today (minus companion channels).
+**Constraints and reasons:**
+- Do not change `appId` or `productName`: macOS TCC grants and userData depend on them.
+- A bundle or transcript failure must never discard a valid recording (AGENTS.md).
+- Legacy files are never overwritten on open (AGENTS.md compatibility constraints).
+- Keep edits to upstream files minimal and listed, because every later release merge pays for them.
+- Do not merge to `main` before the final `v2.1.0` tag exists; if the tag is late, keep the PR open and rebase the merge onto it.
+
+- [ ] RED: with fixtures made from `fc50566a`, new tests for L1–L5 and a bundle-save test at the v2 recording seam fail on the branch after the raw upstream merge (before the Showhow layer is ported).
+- [ ] Merge, re-apply identity, port the layer, delete the companion and Sweezy packs, apply theming, write `upstream-touchpoints.md`.
+- [ ] GREEN: L1–L5 and the bundle tests pass; the existing Showhow-layer unit and browser tests pass (minus deleted companion tests).
+- [ ] Prove and obtain independent review, then open the PR to main.
+
+**Verification:**
+- `git merge-base --is-ancestor v2.1.0 HEAD`: exit 0.
+- `npm run lint`, `npx tsc --noEmit`, `npm run test`, `npm run test:browser`, `npm run i18n:check`, `npm run branding:check`: pass.
+- `npm run verify:export -- --evidence-dir artifacts/verification-recipe/<new-dir>` against the new editor (update the recipe's locators if v2 renamed them; record that in `implementation-notes.md`).
+- Manual macOS arm64 smoke test on a packaged build, with screenshots: first launch on a copied `fc50566a` profile (L4); library lists old bundles (L3); a new narrated recording saves a full bundle (L5, R2.3); the bundle opens in the v2 editor (R2.5); old `.showhow` and `.openscreen` projects open (L1, L2); HUD and editor show Showhow theming (R2.6).
+- `grep -rli sweezy public src electron` finds nothing; the packaged `Resources` has no companion or Sweezy files.
+**DONE WHEN:** the six verification items above pass and their evidence (command output, screenshots, file hashes for L1/L2) is in the PR; `upstream-touchpoints.md` lists each edited upstream file; the PR states Windows and Linux as untested; the PR merges only after `v2.1.0` final is tagged upstream.
+**Outside cases / follow-ups:** redesigned V1 screens; ChatGPT/OpenRouter connections in Showhow's provider boundary; native Windows and Linux checks; recipe changes beyond locator updates.
+
+### Task 3: Bundle transcripts from v2's native engine with a bundled model
+
+**Priority:** no
+**Labels:** feature
+**Milestone:** Move onto upstream v2
+**Depends on:** Task 2
+**Files:** `electron/showhow/**` (transcript job), `src/lib/showhow/generateTranscript.ts`, `src/lib/showhow/transcriptFormat.ts`, `src/lib/captioning/**` (removal of the Whisper-tiny worker), `electron/stt/modelManager.ts` (bundled-model lookup only), `scripts/fetch-caption-model.mjs` (replaced by a pinned whisper.cpp model fetch), `electron-builder.json5`, `package.json`, `THIRD-PARTY-NOTICES` inputs, `docs/architecture/showhow-bundles.md`, `docs/architecture/upstream-touchpoints.md`, `implementation-notes.md`
+**Requirements:**
+- R3.1 A new recording's `transcript.txt` is produced by v2's whisper.cpp engine using the bundled `base` multilingual quantised model, with no network access needed.
+- R3.2 `transcript.txt` keeps today's timestamped line format; existing `transcriptFormat` tests pass unchanged.
+- R3.3 Fail-open: when transcription fails (cases: model file missing, engine error, zero-length audio), `transcript.txt` contains `(transcription failed)` and the recording and bundle stay intact.
+- R3.4 The model is fetched at build time from a pinned Hugging Face revision with its SHA-256 checked; its licence is recorded in the third-party notices.
+- R3.5 `@xenova/transformers`, `onnxruntime-web` and the `caption-assets` Whisper-tiny files are gone from `package.json` and the packaged app.
+- R3.6 v2's model manager still offers its larger downloadable models; the bundled model is used when no larger one is chosen.
+**Interfaces:** The bundle save path requests a transcript job; the job writes `transcript.txt` through the existing `showhow:write-transcript` contract or its main-process equivalent.
+**Constraints and reasons:** Keep the edit to `electron/stt/` to a bundled-model lookup, listed in `upstream-touchpoints.md`, so upstream merges stay cheap.
+
+- [ ] RED: a test at the transcript-job seam expects the native engine and the bundled model path and fails; a fail-open test for the three named failure cases fails or is absent.
+- [ ] Wire the job to `electron/stt/`, bundle the pinned model, remove the old stack.
+- [ ] GREEN: the new tests and existing `transcriptFormat` tests pass.
+- [ ] Prove and obtain independent review, then open the PR to main.
+
+**Verification:** `npm run lint`, `npx tsc --noEmit`, `npm run test`, `npm run test:browser`; `node scripts/check-package-contents.mjs <app>` shows no `@xenova`/`onnxruntime-web`; manual macOS smoke test with Wi-Fi off: a narrated 30-second recording produces a timestamped `transcript.txt`; with the model file renamed, a recording still saves and `transcript.txt` says `(transcription failed)`.
+**DONE WHEN:** the four verification items pass with evidence in the PR (transcript excerpt, failure-case transcript, package report, pinned revision and hash).
+**Outside cases / follow-ups:** transcript glossary (upstream `13db77e5`); word-level alignment use in guides.
+
+### Task 4: Re-apply the size trim to the v2 build
+
+**Priority:** no
+**Labels:** feature
+**Milestone:** Move onto upstream v2
+**Depends on:** Task 3
+**Files:** `electron-builder.json5`, `vite.config.ts` (only if needed), `scripts/check-package-contents.mjs`, `scripts/check-package-contents.node-test.mjs`, `scripts/fixtures/package-contents/**`, `package.json` (scripts only), `implementation-notes.md`
+**Requirements:**
+- R4.1 Record the untrimmed v2 installed size and arm64 DMG size at Task 3's merge commit before changing anything.
+- R4.2 The packaged app's `app.asar` and `app.asar.unpacked` contain only the `node_modules` packages the built main process loads at runtime; the audit's allow-list names each one with the reason.
+- R4.3 Chromium language packs are limited to the 13 app locales plus `en` and `en-GB`; wallpapers ship once; unreferenced `public/` images are excluded (same rules as Task 1 of the size plan, #110).
+- R4.4 Installed macOS arm64 size ≤ 400 MB, model included.
+- R4.5 No regression on these packaged-app paths: launch to library, native recording saves a bundle, offline transcript, v2 editor opens with a wallpaper background, `npm run verify:export` passes.
+**Interfaces:** `node scripts/check-package-contents.mjs <app-path> --budget-mb 400`.
+**Constraints and reasons:** Packaging config only; do not move dependencies between `dependencies` and `devDependencies`, so upstream merges of `package.json` stay simple. Native addons (`compositor_view.node`, ONNX Runtime) stay unpacked.
+
+- [ ] RED: the audit on the untrimmed v2 app exits 1 against the 400 MB budget and the new allow-list.
+- [ ] Apply the packaging changes.
+- [ ] GREEN: the audit exits 0; the node test passes with an added case for an allow-listed native addon.
+- [ ] Prove and obtain independent review, then open the PR to main.
+
+**Verification:** `node --test scripts/check-package-contents.node-test.mjs`; `npm run check:package` before (exit 1) and after (exit 0); DMG and installed sizes before and after in the PR; the R4.5 paths on the packaged build with screenshots or log lines.
+**DONE WHEN:** the after build is ≤ 400 MB installed and the audit exits 0; the R4.5 paths are evidenced; before and after sizes are in the PR; Windows and Linux are stated as untested.
+**Outside cases / follow-ups:** dropping the webcam segmentation ONNX Runtime if Showhow doesn't use it; Windows and Linux size checks.
+
+## Superseded issues
+None closed by this plan. The three held macOS recorder fixes (upstream `29736d4d`, `f261fa45`, `52eda0e6`) were never filed as issues; they are recorded as covered by v2 in Task 1's refresh section. Issues #54–#63 stay open and parked for re-triage after the milestone.
+
+## Self-review
+Unbounded-word scan of requirements and DONE WHEN: "every later upstream merge" (Task 1 interfaces) and "every later release merge" (Task 2 constraints) are reasons, not acceptance. "Each upstream release tag" in R1 is bounded by the policy's tag rule. "Each one kept or renamed" (R2.2) and "each edited upstream file" (Task 2 DONE WHEN) are bounded by the diff against `v2.1.0`. "All", "any" and "valid" do not appear in acceptance; "each one" in R4.2 is bounded by the audit allow-list.
+
+## Implementation notes
+Append each deviation from this plan to `implementation-notes.md` under "Deviations": what changed, why and what was done instead. Commit it with the ticket. Path-scope checks treat it as an owned path.
