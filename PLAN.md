@@ -85,3 +85,102 @@ Keep an `implementation-notes.md` in the repo root during the build. If an edge
 case or discovery forces a deviation from this plan, pick the conservative
 path and record the deviation there with its reason. Surface it to Mohamed at
 the end; do not silently change scope or acceptance.
+
+# Showhow app size reduction Plan
+
+## Goal
+Cut the packaged macOS app from 865 MB installed to 330 MB or less (arm64), so it downloads and installs quickly for the owner and later users. Recording, transcription, editing and export must behave and perform as before.
+
+## Context and decisions
+- Measured 2026-10-16 on `/Applications/Showhow.app`, 865 MB in total:
+  - `app.asar` holds 503 MB of `node_modules`, and `app.asar.unpacked` another 98 MB (onnxruntime-node and sharp). The largest are react-icons (81 MB), pixi.js (72 MB), onnxruntime-node (74 MB), onnxruntime-web (65 MB), @xenova (44 MB), lucide-react (33 MB), emoji-picker-react (33 MB) and sharp (24 MB). Vite already bundles everything the renderer uses into `dist/`.
+  - The built main process (`dist-electron/*.js`) loads only one package at runtime: `ws` (`vite.config.ts` externals).
+  - Electron Framework ships 220 Chromium `.lproj` packs (47 MB in total). The app has 13 locales (`src/i18n/locales`).
+  - Wallpapers ship twice: `dist/wallpapers` (24 MB, copied from `public/` by Vite) and `Resources/wallpapers` (24 MB, from `extraResources`, which `electron/preload.ts` reads when packaged).
+  - `caption-assets` (61 MB: Whisper-tiny plus ONNX runtime WebAssembly) stays.
+- Owner decisions (2026-10-16):
+  - Do the Electron diet now. Whether to leave Electron is decided while shaping the v2 move.
+  - Keep Whisper-tiny bundled.
+  - Not priority.
+  - Measure and test on macOS only; report Windows and Linux as untested.
+  - One ticket, branched from `main` after #109 merges.
+- Estimated result: about 300 MB installed. The Electron binary (170 MB) is the floor.
+
+## Bounded requirements
+- Supported target: the macOS arm64 build from `electron-builder.json5`. Windows and Linux get the same config but are not measured.
+- R1. The packaged `app.asar` and `app.asar.unpacked` contain no `node_modules` packages except `ws`.
+- R2. Electron's bundled Chromium language packs are limited to the app's 13 locales plus `en` and `en-GB`, using electron-builder's `electronLanguages`. Locale mapping: ar, en, es, fr, it, ja, ko, pt_BR, ru, tr, vi, zh_CN, zh_TW.
+- R3. Each wallpaper image ships exactly once in the packaged app, at the location `electron/preload.ts` reads when packaged.
+- R4. Images in `public/` that no source file references (candidates: `sample.png`, `demo.png`, `preview3.png`, `preview4.png`) are left out of the package. A file is excluded only after `grep` over `src/`, `electron/`, `index.html` and `public/` finds no reference.
+- R5. The installed arm64 app measures 330 MB or less (`du -sh` of the `.app`). Record the arm64 DMG size before and after.
+- R6. There is no behaviour regression on these named paths, checked on the packaged arm64 app: the app launches to the library; a native recording saves its bundle; transcription completes from the packaged app (transcript.txt present with timestamps); the editor opens and shows a wallpaper background; export completes through the existing verification recipe (`npm run verify:export`); the browser bridge's `ws` server still loads (no main-process load error in the log).
+- Excluded: cursor packs, `ws` removal, JavaScript bundle tuning inside `dist/`, Electron version changes, the Whisper model.
+
+## Architecture
+- Packaging config only: `electron-builder.json5` (`files` exclusions with a `ws` inclusion, `electronLanguages`, and wallpaper or unused-image exclusions). Use `vite.config.ts` only if keeping wallpapers out of `dist/` needs it.
+- A new package audit script, `scripts/check-package-contents.mjs`, takes a built `.app` path. It reads the `app.asar` listing (`@electron/asar`, already a transitive dependency of electron-builder) and the `Resources` and `Frameworks` folders, then reports:
+  - `node_modules` packages present
+  - Chromium `.lproj` count
+  - wallpaper copies
+  - installed size
+  It exits non-zero when R1–R3 or R5 fail.
+- A same-package test, `scripts/check-package-contents.node-test.mjs`, uses a small fixture directory tree (not a real build). Its cases:
+  - extra `node_modules` fails
+  - `ws` alone passes
+  - a duplicate wallpaper fails
+  - an over-budget size fails
+- `package.json` gets one script, `check:package`, that runs the audit against `release/<version>/mac-arm64/Showhow.app`.
+
+## Milestones
+None.
+
+### Task 1: Shrink the packaged macOS app to 330 MB or less
+
+**Priority:** no
+**Labels:** feature
+**Milestone:** none
+**Depends on:** #109 (merged). Published as #110.
+**Files:** `electron-builder.json5`, `vite.config.ts` (only if needed for R3), `package.json` (script only), `scripts/check-package-contents.mjs`, `scripts/check-package-contents.node-test.mjs`, `scripts/fixtures/package-contents/**`, `implementation-notes.md`
+**Requirements:** R1–R6 above.
+**Interfaces:** `node scripts/check-package-contents.mjs <app-path> [--budget-mb 330]` prints a JSON report and exits 0 or 1. CI doesn't run it (CI doesn't package macOS); it's a local and release check.
+**Constraints and reasons:**
+- `asarUnpack` for `**/*.node` stays, so any future native module can still be loaded from outside the archive.
+- Don't move dependencies between `dependencies` and `devDependencies`. The config exclusion is smaller and easier to reverse, and the v2 move will replace `package.json` anyway.
+- Keep the before and after `.app` builds side by side until R6 passes, so a regression can be bisected.
+- Native capture is platform-fragile, so smoke-test on real macOS (AGENTS.md).
+
+- [ ] RED: `node --test scripts/check-package-contents.node-test.mjs` fails because the script doesn't exist yet. Then `node scripts/check-package-contents.mjs <current packaged app>` exits 1, reporting about 600 MB of `node_modules`, 220 `.lproj` packs and 2 wallpaper copies.
+- [ ] Implement the audit script and the packaging config changes.
+- [ ] GREEN: the node test passes. Rebuild (`npx electron-builder --mac --arm64 --dir` after `npm run build-vite`), then the audit on the new app exits 0. Then run the R6 paths on the packaged app.
+- [ ] Prove and obtain independent review, then open the PR to main.
+
+**Verification:**
+- `node --test scripts/check-package-contents.node-test.mjs`: pass.
+- `npm run check:package` on the before build: exit 1 with the measured report. On the after build: exit 0, installed size ≤ 330 MB, `node_modules: ["ws"]`, `.lproj` count = 14, wallpaper copies = 1.
+- arm64 DMG size before and after, recorded in the PR.
+- `npm run verify:export -- --evidence-dir artifacts/verification-recipe/<new-dir>` on the after build: pass.
+- Manual native smoke test on macOS covering the other R6 paths (launch, record, transcript, editor wallpaper, `ws` load), with screenshots or log lines as evidence.
+- `npm run lint`, `npx tsc --noEmit`, `npm run test`: pass.
+
+**DONE WHEN:**
+- The after arm64 `.app` measures ≤ 330 MB and the audit exits 0 with the R1–R3 values above.
+- The DMG sizes before and after are in the PR.
+- The six R6 paths are evidenced on the packaged after build.
+- The node test covers the four fixture cases.
+- Windows and Linux are stated as untested in the PR.
+
+**Outside cases / follow-ups:**
+- Runtime choice (Electron or a WebKit-based shell such as Tauri): decided while shaping the v2 move, with a spike on WebCodecs in WebKit and the main-process porting cost.
+- Cursor pack removal (licensing blocker).
+- Removing `ws` with the browser companion.
+- Bundle splitting inside `dist/`.
+- Measuring Windows and Linux installer sizes.
+
+## Superseded issues
+None.
+
+## Self-review
+Unbounded-word scan: "every" doesn't appear in requirements or DONE WHEN. "Each wallpaper" (R3) is bounded to the `public/wallpapers` set and checked by the audit's duplicate count. "Any future native module" is a constraint reason, not a requirement. No "all", "any" or "valid" in acceptance.
+
+## Implementation notes
+Append each deviation from this plan to `implementation-notes.md` under "Deviations": what changed, why and what was done instead. Commit it with the ticket. Path-scope checks treat it as an owned path.
