@@ -1,3 +1,4 @@
+// Electron permissions are public IPC dependencies, not native runtime in this test.
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -15,6 +16,11 @@ const fixture = vi.hoisted(() => {
 	const userData = nodeFs.mkdtempSync(nodePath.join(nodeOs.tmpdir(), "showhow-userdata-"));
 	return { recordingsDir, showhowRoot, userData };
 });
+
+vi.mock("../permissions", () => ({
+	getMacPermissions: () => ({ read: async () => ({ screen: "granted", accessibility: "denied" }) }),
+	showPermissionsWindow: () => undefined,
+}));
 
 vi.mock("electron", () => ({
 	app: { getPath: () => fixture.userData },

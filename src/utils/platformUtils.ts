@@ -1,65 +1,42 @@
-let cachedPlatform: string | null = null;
-
 /**
- * Gets the current platform from Electron
+ * Gets the current platform.
+ *
+ * The renderer runs with `contextIsolation: true` / `nodeIntegration: false`,
+ * so the Node `process` global does not exist here — it lives only in the
+ * preload's isolated world. `electron/preload.ts` snapshots `process.platform`
+ * once and exposes it as a plain string, which is what we read.
+ *
+ * Browser mode (`src/native/browserShim.ts`, `?browser`) has no `electronAPI`,
+ * so fall back to sniffing `navigator` rather than throwing.
  */
-export const getPlatform = async (): Promise<string> => {
-	if (cachedPlatform) return cachedPlatform;
+export function getPlatform(): NodeJS.Platform {
+	const fromPreload = window.electronAPI?.getPlatform?.();
+	if (fromPreload) return fromPreload as NodeJS.Platform;
 
-	try {
-		const platform = await window.electronAPI.getPlatform();
-		cachedPlatform = platform;
-		return platform;
-	} catch (error) {
-		console.warn("Failed to get platform from Electron, falling back to navigator:", error);
-		// Fallback for dev/testing
-		let fallbackPlatform = "win32";
-		if (typeof navigator !== "undefined") {
-			if (/Mac|iPhone|iPad|iPod/.test(navigator.platform)) {
-				fallbackPlatform = "darwin";
-			} else if (/Linux/.test(navigator.platform)) {
-				fallbackPlatform = "linux";
-			}
-		}
-
-		cachedPlatform = fallbackPlatform;
-		return fallbackPlatform;
+	if (typeof navigator !== "undefined") {
+		const ua = `${navigator.platform ?? ""} ${navigator.userAgent ?? ""}`;
+		if (/Mac|iPhone|iPad|iPod/.test(ua)) return "darwin";
+		if (/Linux|Android/.test(ua)) return "linux";
 	}
-};
+	return "win32";
+}
 
 /**
- * Detects if the current platform is macOS
+ * Detects if the current platform is macOS.
  */
-export const isMac = async (): Promise<boolean> => {
-	const platform = await getPlatform();
-	return platform === "darwin";
-};
+export const isMac = (): boolean => getPlatform() === "darwin";
 
 /**
- * Gets the modifier key symbol based on the platform
+ * Whether a take can record the microphone on this machine.
+ *
+ * Every macOS take goes through the ScreenCaptureKit helper, which records the
+ * microphone with `captureMicrophone`: macOS 15 API. On 13 and 14 the take came
+ * out without the voice and without a word (#700), so the microphone is not
+ * offered there. A version that does not parse keeps it: the helper still says
+ * when it records without the microphone.
  */
-export const getModifierKey = async (): Promise<string> => {
-	return (await isMac()) ? "⌘" : "Ctrl";
-};
-
-/**
- * Gets the shift key symbol based on the platform
- */
-export const getShiftKey = async (): Promise<string> => {
-	return (await isMac()) ? "⇧" : "Shift";
-};
-
-/**
- * Formats a keyboard shortcut for display based on the platform
- * @param keys Array of key combinations (e.g., ['mod', 'D'] or ['shift', 'mod', 'Scroll'])
- */
-export const formatShortcut = async (keys: string[]): Promise<string> => {
-	const isMacPlatform = await isMac();
-	return keys
-		.map((key) => {
-			if (key.toLowerCase() === "mod") return isMacPlatform ? "⌘" : "Ctrl";
-			if (key.toLowerCase() === "shift") return isMacPlatform ? "⇧" : "Shift";
-			return key;
-		})
-		.join(" + ");
-};
+export function canRecordMicrophone(): boolean {
+	if (getPlatform() !== "darwin") return true;
+	const major = Number.parseInt(window.electronAPI?.getSystemVersion?.() ?? "", 10);
+	return Number.isNaN(major) || major >= 15;
+}

@@ -4,12 +4,14 @@ import { calculateMp4ExportSettings } from "./mp4ExportSettings";
 describe("MP4 bitrate scaling", () => {
 	it("reduces the source export budget when a crop removes most pixels", () => {
 		const full = calculateMp4ExportSettings({
+			frameRate: 30,
 			quality: "source",
 			sourceWidth: 1920,
 			sourceHeight: 1080,
 			aspectRatioValue: 16 / 9,
 		});
 		const cropped = calculateMp4ExportSettings({
+			frameRate: 30,
 			quality: "source",
 			sourceWidth: 854,
 			sourceHeight: 480,
@@ -28,12 +30,14 @@ describe("MP4 bitrate scaling", () => {
 		{ quality: "source" as const, width: 2560, height: 1440 },
 	])("avoids a bitrate cliff just above $width x $height ($quality)", (sample) => {
 		const atBoundary = calculateMp4ExportSettings({
+			frameRate: 30,
 			quality: sample.quality,
 			sourceWidth: sample.width,
 			sourceHeight: sample.height,
 			aspectRatioValue: sample.width / sample.height,
 		});
 		const justAbove = calculateMp4ExportSettings({
+			frameRate: 30,
 			quality: sample.quality,
 			sourceWidth: sample.width + 2,
 			sourceHeight: sample.height,

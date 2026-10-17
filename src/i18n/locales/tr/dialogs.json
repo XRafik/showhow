@@ -57,21 +57,35 @@
 		"detailLoadProject": "Başka bir proje yüklemeden önce kaydetmek ister misiniz?",
 		"saveAndLoadProject": "Kaydet ve Proje Yükle",
 		"discardAndLoadProject": "Kaydetmeden Proje Yükle",
+		"newProject": "Yeni Proje",
+		"importVideo": "Video Dosyası İçe Aktar…",
 		"loadProject": "Proje Yükle…",
 		"saveProject": "Proje Kaydet…",
 		"saveProjectAs": "Farklı Kaydet…",
-		"newProject": "Yeni Proje",
-		"importVideo": "Video Dosyası İçe Aktar…"
+		"modal": {
+			"closeTitle": "Kapatmadan önce değişiklikler kaydedilsin mi?",
+			"closeBody": "Projenizde kaydedilmemiş değişiklikler var. Şimdi kaydedin, atın veya düzenleyicide kalın.",
+			"newTitle": "Yeni bir proje oluşturmadan önce değişiklikler kaydedilsin mi?",
+			"openTitle": "Başka bir projeyi açmadan önce değişiklikler kaydedilsin mi?",
+			"recordTitle": "Yeni bir kayıt başlatmadan önce değişiklikler kaydedilsin mi?",
+			"sharedBody": "Geçerli projede kaydedilmemiş değişiklikler var. Önce kaydedin, atın veya vazgeçin.",
+			"notSavedYet": "Geçerli proje henüz diske kaydedilmedi.",
+			"discard": "At",
+			"saveAndContinue": "Kaydet ve devam et",
+			"saving": "Kaydediliyor…"
+		}
 	},
 	"fileDialogs": {
 		"saveGif": "Dışa Aktarılan GIF'i Kaydet",
 		"saveVideo": "Dışa Aktarılan Videoyu Kaydet",
 		"selectVideo": "Video Dosyası Seç",
+		"selectAudio": "Ses dosyası seç",
 		"saveProject": "Showhow Projesini Kaydet",
 		"openProject": "Showhow Projesini Aç",
 		"gifImage": "GIF Görüntüsü",
 		"mp4Video": "MP4 Video",
 		"videoFiles": "Video Dosyaları",
+		"audioFiles": "Ses dosyaları",
 		"allFiles": "Tüm Dosyalar",
 		"showhowProject": "Showhow Projesi"
 	}

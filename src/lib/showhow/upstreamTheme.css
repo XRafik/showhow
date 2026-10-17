@@ -1,0 +1,77 @@
+/* Map upstream screen tokens to the house palette. Keep upstream component structure. */
+:root:root:root {
+	--font-body: "Inter Tight", Inter, system-ui, sans-serif;
+	--font-display: "Inter Tight", Inter, system-ui, sans-serif;
+	--font-mono: "JetBrains Mono", monospace;
+	--bg: var(--ds-surface);
+	--bg-grad: var(--ds-surface);
+	--surface: var(--ds-surface-raised);
+	--surface-1: var(--ds-surface-sunken);
+	--surface-2: var(--ds-chip);
+	--surface-3: var(--ds-chip);
+	--surface-hi: var(--ds-surface-raised);
+	--surface-warm: var(--ds-surface);
+	--fg: var(--ds-ink);
+	--fg-2: var(--ds-ink-soft);
+	--fg-emphasis: var(--ds-ink);
+	--muted: var(--ds-muted);
+	--muted-soft: var(--ds-ink-faint);
+	--border: var(--ds-line);
+	--border-soft: var(--ds-line);
+	--border-hi: var(--ds-ink-faint);
+	--shell-rule: var(--ds-line);
+	--shell-rule-soft: var(--ds-line);
+	--accent: var(--ds-accent);
+	--accent-on: var(--ds-on-accent);
+	--accent-soft: var(--ds-accent-tint);
+	--accent-wash: var(--ds-accent-wash);
+	--accent-border: var(--ds-accent-strong-soft);
+	--accent-ring: var(--ds-accent-strong-soft);
+	--danger: var(--ds-rec);
+	--danger-lo: var(--ds-rec);
+	--r-xs: 4px;
+	--r-sm: calc(var(--ds-radius) * 1px);
+	--r-md: calc(var(--ds-radius) * 1px);
+	--r-lg: calc(var(--ds-radius) * 1px + 4px);
+}
+
+/* The stable HUD uses inherited text and literal chrome rather than editor tokens.
+ * Its existing layout marker keeps this bridge off Showhow's library/settings. */
+:root [data-tray-layout] {
+	font-family: var(--font-body);
+	background: var(--ds-panel);
+	border-color: var(--ds-on-panel-line);
+	border-radius: calc(var(--r-md) + 9px);
+}
+
+[data-tray-layout] button {
+	font-family: inherit;
+	border-radius: calc(var(--r-md) + 2px);
+}
+
+[data-tray-layout] [data-testid="launch-source-selector-button"],
+[data-tray-layout] [aria-haspopup="menu"] > span {
+	color: var(--ds-on-panel);
+}
+
+[data-tray-layout] [data-testid="launch-source-selector-button"][data-remembered] {
+	color: var(--ds-on-panel-muted);
+}
+
+[data-tray-layout] [data-testid="launch-record-button"] {
+	border-radius: calc(var(--r-md) + 9px);
+}
+
+[data-tray-layout] [aria-pressed="true"] svg {
+	color: var(--accent);
+}
+
+/* The editable cursor is a solid toggle, unlike the transparent device toggles. */
+[data-tray-layout] [data-testid="launch-cursor-mode-button"][aria-pressed="true"] {
+	background-color: var(--accent);
+	color: var(--accent-on);
+}
+
+[data-tray-layout] [data-testid="launch-cursor-mode-button"][aria-pressed="true"] svg {
+	color: var(--accent-on);
+}

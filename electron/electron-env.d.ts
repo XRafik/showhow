@@ -27,47 +27,108 @@ interface Window {
 		invokeNativeBridge: <TData = unknown>(
 			request: import("../src/native/contracts").NativeBridgeRequest,
 		) => Promise<import("../src/native/contracts").NativeBridgeResponse<TData>>;
+		/** Export bench only (--bench=): tells main the run is over so it can quit. */
+		benchFinished?: () => Promise<void>;
+		/** Clipboard write via main (issue #738): Electron denies the renderer's
+		 *  navigator.clipboard.writeText, so Copy message crosses to main's
+		 *  clipboard module. Optional: shim/web contexts have no bridge. */
+		copyToClipboard?: (text: string) => Promise<void>;
+		/** Native (D3D) export progress — frames encoded so far, pushed at ~10 Hz max while
+		 *  `compositor.export`/`compositor.exportMulti` runs. Distinct from `exportOnFrameAck`,
+		 *  the OLD web/CPU pipeline's per-frame ack, not a progress signal. */
+		onNativeExportProgress?: (callback: (frames: number, exportId?: string) => void) => () => void;
+		/** Preview frames the main process hands over as shared GPU textures (Windows). The
+		 *  listener draws `frame` and closes it; one listener at a time. Returns the
+		 *  unsubscribe. Optional: shim/web contexts have no bridge. */
+		onCompositorFrame?: (
+			listener: (
+				frame: VideoFrame,
+				meta: import("../src/native/contracts").CompositorSharedFrameMeta,
+			) => void,
+		) => () => void;
 		getSources: (opts: Electron.SourcesOptions) => Promise<ProcessedDesktopSource[]>;
 		switchToEditor: () => Promise<void>;
-		switchToLibrary: () => Promise<void>;
 		switchToHud: () => Promise<void>;
 		startNewRecording: () => Promise<{ success: boolean; error?: string }>;
 		openSourceSelector: () => Promise<{
 			opened: boolean;
 			reason?: string;
-			access?: {
-				success: boolean;
-				granted: boolean;
-				status: string;
-				error?: string;
-			};
 		}>;
+		/** Sources are picked in Apple's system picker (macOS 15.2+), not in an app list. */
+		usesSystemSourcePicker?: () => Promise<boolean>;
+		/** Name of the last source picked in Apple's picker, for display only: it is not selected. */
+		getLastPickedSource?: () => Promise<string | null>;
 		openNotes: () => Promise<{
 			opened: boolean;
 			reason?: string;
 		}>;
-		selectSource: (source: ProcessedDesktopSource) => Promise<ProcessedDesktopSource | null>;
+		selectSource: (
+			source: ProcessedDesktopSource,
+			options?: { persist?: boolean },
+		) => Promise<ProcessedDesktopSource | null>;
 		getSelectedSource: () => Promise<ProcessedDesktopSource | null>;
-		onSelectedSourceChanged: (callback: (source: ProcessedDesktopSource) => void) => () => void;
+		onSelectedSourceChanged: (
+			callback: (source: ProcessedDesktopSource | null) => void,
+		) => () => void;
+		getRecordingPrefs: () => Promise<import("./ipc/handlers").RecordingPrefs>;
+		setRecordingPrefs: (
+			prefs: Partial<import("./ipc/handlers").RecordingPrefs>,
+		) => Promise<import("./ipc/handlers").RecordingPrefs>;
+		onRecordingPrefsChanged: (
+			callback: (prefs: import("./ipc/handlers").RecordingPrefs) => void,
+		) => () => void;
 		onSourceSelectorClosed: (callback: () => void) => () => void;
+		onAutoStartRecording: (callback: () => void) => () => void;
+		onAiEditionChatEvent: (
+			callback: (event: import("../src/native/contracts").AiEditionChatEvent) => void,
+		) => () => void;
+		/** Optional: absent in the browser shim and in tests that stub electronAPI. */
+		onAiEditionMcpRequest?: (
+			callback: (
+				request: import("../src/native/contracts").AiEditionMcpHostRequest,
+			) => Promise<import("../src/native/contracts").AiEditionMcpHostResponse["result"]>,
+		) => () => void;
 		requestCameraAccess: () => Promise<{
 			success: boolean;
 			granted: boolean;
 			status: string;
 			error?: string;
 		}>;
-		requestScreenAccess: () => Promise<{
-			success: boolean;
-			granted: boolean;
-			status: string;
-			error?: string;
-		}>;
+		/** macOS privacy permissions; see electron/permissions/macPermissions.ts. */
+		permissions: {
+			get: () => Promise<import("./permissions/macPermissions").PermissionsSnapshot>;
+			request: (kind: import("./permissions/macPermissions").PermissionKind) => Promise<void>;
+			openSettings: (kind: import("./permissions/macPermissions").PermissionKind) => Promise<void>;
+			relaunch: () => Promise<void>;
+			close: () => Promise<void>;
+		};
 		requestNativeMacCursorAccess: () => Promise<{
 			success: boolean;
 			granted: boolean;
-			status: string;
+			// "not-determined" is the only genuine denial; the rest mean the helper
+			// never got to ask. See macNativeCursorRecordingSession.ts.
+			status: "granted" | "not-determined" | "missing-helper" | "error" | "exited" | "timeout";
+			accessibilityTrusted: boolean;
 			error?: string;
 		}>;
+		showhowOpenRecording: (bundleDir: string) => Promise<{ success: boolean }>;
+		showhowListRecordings: () => Promise<
+			import("../src/lib/showhow/recordingLibrary").RecordingLibraryEntry[]
+		>;
+		showhowCopyPath: (bundleDir: string) => Promise<{ success: boolean }>;
+		showhowWriteTranscript: (bundleDir: string, content: string) => Promise<{ success: boolean }>;
+		showhowUpdateWorkflowDocument: (
+			bundleDir: string,
+			update: import("../src/lib/showhow/workflowDocument").WorkflowDocumentUpdate,
+		) => Promise<{ success: boolean }>;
+		showhowRegenerateDoc: (bundleDir: string) => Promise<{
+			success: boolean;
+			stepsWritten: number;
+			transcriptAvailable: boolean;
+			entry: import("../src/lib/showhow/recordingLibrary").RecordingLibraryEntry | null;
+		}>;
+		showhowGetSystemTheme: () => Promise<boolean>;
+		showhowOnSystemThemeChanged: (callback: (isDark: boolean) => void) => () => void;
 		assetBaseUrl: string;
 		storeRecordedVideo: (
 			videoData: ArrayBuffer,
@@ -87,30 +148,6 @@ interface Window {
 			session?: import("../src/lib/recordingSession").RecordingSession;
 			message?: string;
 			error?: string;
-			bundleDir?: string;
-			videoFileUrl?: string;
-		}>;
-		showhowListRecordings: () => Promise<
-			import("../src/lib/showhow/recordingLibrary").RecordingLibraryEntry[]
-		>;
-		showhowCopyPath: (bundleDir: string) => Promise<{ success: boolean }>;
-		showhowWriteTranscript: (bundleDir: string, content: string) => Promise<{ success: boolean }>;
-		showhowUpdateWorkflowDocument: (
-			bundleDir: string,
-			update: import("../src/lib/showhow/workflowDocument").WorkflowDocumentUpdate,
-		) => Promise<{ success: boolean }>;
-		showhowRegenerateDoc: (bundleDir: string) => Promise<{
-			success: boolean;
-			stepsWritten: number;
-			transcriptAvailable: boolean;
-			entry: import("../src/lib/showhow/recordingLibrary").RecordingLibraryEntry | null;
-		}>;
-		showhowBridgeStatus: () => Promise<{
-			host: string;
-			port: number;
-			paired: boolean;
-			recording: boolean;
-			pairingToken: string;
 		}>;
 		openRecordingStream: (fileName: string) => Promise<{ success: boolean; error?: string }>;
 		appendRecordingChunk: (
@@ -153,6 +190,11 @@ interface Window {
 			message?: string;
 			discarded?: boolean;
 			error?: string;
+			/**
+			 * A camera was recorded but produced nothing usable, so the session was
+			 * saved without it. Still a success — the screen video is intact.
+			 */
+			webcamDropped?: boolean;
 		}>;
 		pauseNativeWindowsRecording: () => Promise<{
 			success: boolean;
@@ -165,6 +207,7 @@ interface Window {
 		startNativeMacRecording: (
 			request: import("../src/lib/nativeMacRecording").NativeMacRecordingRequest,
 		) => Promise<import("../src/lib/nativeMacRecording").NativeMacRecordingStartResult>;
+		onNativeMacSystemAudioUnavailable: (callback: () => void) => () => void;
 		pauseNativeMacRecording: () => Promise<{
 			success: boolean;
 			error?: string;
@@ -183,24 +226,82 @@ interface Window {
 			session?: import("../src/lib/recordingSession").RecordingSession;
 			message?: string;
 			discarded?: boolean;
+			/** The take ended before it was stopped, but its recording was kept. */
+			warning?: string;
+			/** The stop failed and the recording was recovered from what was on disk. */
+			recovered?: boolean;
 			error?: string;
-			bundleDir?: string;
-			videoFileUrl?: string;
 		}>;
 		attachNativeMacWebcamRecording: (payload: {
 			screenVideoPath: string;
 			recordingId: number;
 			webcam: import("../src/lib/recordingSession").RecordedVideoAssetInput;
 			cursorCaptureMode?: import("../src/lib/recordingSession").CursorCaptureMode;
-			stepCaptureReason?: import("../src/lib/showhow/recordingLibrary").StepCaptureReason;
+			durationMs?: number;
+			webcamOffsetMs?: number;
 		}) => Promise<{
 			success: boolean;
 			path?: string;
 			session?: import("../src/lib/recordingSession").RecordingSession;
 			message?: string;
 			error?: string;
-			bundleDir?: string;
-			videoFileUrl?: string;
+		}>;
+		isNativeLinuxCaptureAvailable: () => Promise<{
+			success: boolean;
+			available: boolean;
+			helperPath?: string;
+			reason?: "unsupported-platform" | "missing-helper" | string;
+			error?: string;
+		}>;
+		/**
+		 * Raises the compositor's picker and holds the grant until the recording
+		 * actually starts, so a countdown can run AFTER the user has chosen.
+		 *
+		 * Best-effort: a `success: false` means "start normally", never "fail".
+		 */
+		prepareNativeLinuxRecording: (
+			request: import("../src/lib/nativeLinuxRecording").NativeLinuxRecordingRequest,
+		) => Promise<{
+			success: boolean;
+			recordingId?: number;
+			sourceKind?: "monitor" | "window" | "virtual" | null;
+			reason?: string;
+			error?: string;
+		}>;
+		/** Drops a prepared session when the countdown was abandoned. */
+		cancelNativeLinuxPrepare: () => Promise<{ success: boolean }>;
+		startNativeLinuxRecording: (
+			request: import("../src/lib/nativeLinuxRecording").NativeLinuxRecordingRequest,
+		) => Promise<import("../src/lib/nativeLinuxRecording").NativeLinuxRecordingStartResult>;
+		pauseNativeLinuxRecording: () => Promise<{
+			success: boolean;
+			error?: string;
+		}>;
+		resumeNativeLinuxRecording: () => Promise<{
+			success: boolean;
+			error?: string;
+		}>;
+		stopNativeLinuxRecording: (discard?: boolean) => Promise<{
+			success: boolean;
+			path?: string;
+			session?: import("../src/lib/recordingSession").RecordingSession;
+			message?: string;
+			discarded?: boolean;
+			error?: string;
+		}>;
+		attachNativeLinuxWebcamRecording: (payload: {
+			screenVideoPath: string;
+			recordingId: number;
+			webcam: import("../src/lib/recordingSession").RecordedVideoAssetInput;
+			cursorCaptureMode?: import("../src/lib/recordingSession").CursorCaptureMode;
+			durationMs?: number;
+			webcamOffsetMs?: number;
+		}) => Promise<{
+			success: boolean;
+			path?: string;
+			session?: import("../src/lib/recordingSession").RecordingSession;
+			message?: string;
+			error?: string;
 		}>;
 		discardCursorTelemetry: (recordingId: number) => Promise<void>;
 		getCursorTelemetry: (videoPath?: string) => Promise<{
@@ -212,6 +313,10 @@ interface Window {
 		}>;
 		onStopRecordingFromTray: (callback: () => void) => () => void;
 		openExternalUrl: (url: string) => Promise<{ success: boolean; error?: string }>;
+		openRepoPage: () => Promise<void>;
+		starPromptExportFinished: () => Promise<{ offer: boolean; store: boolean }>;
+		dismissStarPrompt: () => Promise<void>;
+		openStoreReview: () => Promise<{ success: boolean }>;
 		pickExportSavePath: (
 			fileName: string,
 			exportFolder?: string,
@@ -231,7 +336,30 @@ interface Window {
 			message?: string;
 			error?: string;
 		}>;
-		openVideoFilePicker: () => Promise<{ success: boolean; path?: string; canceled?: boolean }>;
+		openVideoFilePicker: () => Promise<{
+			success: boolean;
+			path?: string;
+			// Browser-mode shim only: a blob: URL has no meaningful basename, so
+			// the shim carries the picked File's real name here for the label.
+			name?: string;
+			canceled?: boolean;
+		}>;
+		// Import an external audio file from the timeline toolbar (issue #350).
+		openAudioFilePicker: () => Promise<{
+			success: boolean;
+			path?: string;
+			name?: string;
+			canceled?: boolean;
+			message?: string;
+		}>;
+		// Persist an in-editor voiceover take (raw MediaRecorder bytes) under the
+		// recordings dir, so it outlives the session like every other asset.
+		saveRecordedVoiceover: (data: ArrayBuffer) => Promise<{
+			success: boolean;
+			path?: string;
+			message?: string;
+			error?: string;
+		}>;
 		setCurrentVideoPath: (path: string) => Promise<{ success: boolean }>;
 		setCurrentRecordingSession: (
 			session: import("../src/lib/recordingSession").RecordingSession | null,
@@ -242,7 +370,16 @@ interface Window {
 		getCurrentVideoPath: () => Promise<{ success: boolean; path?: string }>;
 		getCurrentRecordingSession: () => Promise<{
 			success: boolean;
-			session?: import("../src/lib/recordingSession").RecordingSession;
+			session?: RecordingSession | null;
+			canceled?: boolean;
+			/** Why this recording ended before it was stopped, when it did. */
+			warning?: string;
+		}>;
+		findRecordingCamera: (videoPath: string) => Promise<{
+			success: boolean;
+			webcamVideoPath?: string;
+			offsetMs?: number;
+			error?: string;
 		}>;
 		readBinaryFile: (filePath: string) => Promise<{
 			success: boolean;
@@ -259,6 +396,10 @@ interface Window {
 			message?: string;
 			error?: string;
 		}>;
+		getAudioPeaks: (
+			filePath: string,
+			durationSec: number,
+		) => Promise<import("./media/audioPeaks").AudioPeaksResult>;
 		readFileChunk: (
 			filePath: string,
 			offset: number,
@@ -275,6 +416,11 @@ interface Window {
 			path?: string | null;
 			message?: string;
 			error?: string;
+		}>;
+		getLoudnessGain: (filePath: string) => Promise<{
+			success: boolean;
+			gainDb: number;
+			message?: string;
 		}>;
 		clearCurrentVideoPath: () => Promise<{ success: boolean }>;
 		saveProjectFile: (
@@ -318,7 +464,18 @@ interface Window {
 		onMenuLoadProject: (callback: () => void) => () => void;
 		onMenuSaveProject: (callback: () => void) => () => void;
 		onMenuSaveProjectAs: (callback: () => void) => () => void;
-		getPlatform: () => Promise<string>;
+		/** Edit > Undo / Redo. On macOS the menu is the only route Cmd+Z has to the
+		 *  renderer at all — see `electron/edit-menu.ts`. */
+		onMenuUndo: (callback: () => void) => () => void;
+		onMenuRedo: (callback: () => void) => () => void;
+		quitApp: () => void;
+		setTitleBarOverlay: (color: string, symbolColor: string) => void;
+		getPlatform: () => string;
+		getSystemVersion: () => string;
+		getAppInfo: () => Promise<{ version: string; canCheckForUpdates: boolean }>;
+		checkForUpdates: () => Promise<void>;
+		showAbout: () => Promise<void>;
+		canCheckForUpdatesNow: () => Promise<boolean>;
 		revealInFolder: (
 			filePath: string,
 		) => Promise<{ success: boolean; error?: string; message?: string }>;
@@ -333,8 +490,29 @@ interface Window {
 		hudOverlayHide: () => void;
 		hudOverlayClose: () => void;
 		setHudOverlayIgnoreMouseEvents: (ignore: boolean) => void;
-		moveHudOverlayBy: (deltaX: number, deltaY: number) => void;
-		setHudOverlaySize: (width: number, height: number) => void;
+		/** Window-relative cursor position, pushed while the HUD is click-through and
+		 *  therefore receiving no pointer events of its own. Returns an unsubscribe. */
+		onHudOverlayCursor: (callback: (x: number, y: number) => void) => () => void;
+		/** Pins the overlay's current position as the origin for `dragHudOverlayTo`. */
+		beginHudOverlayDrag: () => void;
+		/** Total pointer travel since `beginHudOverlayDrag`, not a per-frame delta. */
+		dragHudOverlayTo: (deltaX: number, deltaY: number) => void;
+		endHudOverlayDrag: () => void;
+		/** Resizes the overlay and reports the visible stack's rect inside the requested
+		 *  size (window-relative); positioning decisions are made on that rect. */
+		setHudOverlaySize: (
+			width: number,
+			height: number,
+			content: { x: number; y: number; width: number; height: number },
+		) => void;
+		/** The visible stack's rect changed without a resize (a popover opened, the bar
+		 *  grew into its reserve); the overlay is re-clamped by it. */
+		setHudOverlayContent: (content: {
+			x: number;
+			y: number;
+			width: number;
+			height: number;
+		}) => void;
 		showCountdownOverlay: (value: number, runId: number) => Promise<void>;
 		setCountdownOverlayValue: (value: number, runId: number) => Promise<void>;
 		hideCountdownOverlay: (runId: number) => Promise<void>;
@@ -344,9 +522,22 @@ interface Window {
 		onRequestSaveBeforeClose: (callback: () => Promise<boolean> | boolean) => () => void;
 		onRequestCloseConfirm: (callback: () => void) => () => void;
 		sendCloseConfirmResponse: (choice: "save" | "discard" | "cancel") => void;
+		stt: {
+			transcribe: (
+				request: import("./stt/transcriptionContract").SttTranscribeRequest,
+			) => Promise<import("./stt/transcriptionContract").SttTranscribeResponse>;
+			cancel: () => Promise<void>;
+			onStatus: (
+				callback: (event: import("./stt/transcriptionContract").SttStatusEvent) => void,
+			) => () => void;
+		};
+		// CLI mode (hidden runner windows; see electron/cli/)
+		cliGetRequest: () => Promise<import("../src/lib/cliContracts").CliRequest>;
+		cliProgress: (progress: import("../src/lib/cliContracts").CliProgressEvent) => void;
+		cliLog: (level: "info" | "error", message: string) => void;
+		cliDone: (result: import("../src/lib/cliContracts").CliDoneResult) => Promise<void>;
+		onCliStopRecording: (callback: () => void) => () => void;
 		setLocale: (locale: string) => Promise<void>;
-		showhowGetSystemTheme: () => Promise<boolean>;
-		showhowOnSystemThemeChanged: (callback: (isDark: boolean) => void) => () => void;
 		saveDiagnostic: (payload: {
 			error: string;
 			stack?: string;
@@ -368,5 +559,4 @@ interface CursorTelemetryPoint {
 	timeMs: number;
 	cx: number;
 	cy: number;
-	interactionType?: "move" | "click" | "mouseup";
 }

@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
 	applyResolvedTheme,
@@ -25,7 +26,7 @@ function createStorage(initial: Record<string, string> = {}): Storage {
 }
 
 afterEach(() => {
-	delete (window as Window & { electronAPI?: Window["electronAPI"] }).electronAPI;
+	Reflect.deleteProperty(window, "electronAPI");
 	document.documentElement.removeAttribute("data-sh-theme");
 	vi.restoreAllMocks();
 });
@@ -175,7 +176,7 @@ describe("theme preferences", () => {
 		expect(() => {
 			noMediaCleanup = initTheme({ storage: createStorage() });
 		}).not.toThrow();
-		noMediaCleanup?.();
+		(noMediaCleanup as (() => void) | undefined)?.();
 	});
 
 	it("renders the synchronous system appearance while the Electron theme request is pending", () => {

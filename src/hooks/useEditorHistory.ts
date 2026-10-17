@@ -6,6 +6,7 @@ import {
 } from "@/components/video-editor/editorDefaults";
 import type {
 	AnnotationRegion,
+	CameraFullscreenRegion,
 	CropRegion,
 	SpeedRegion,
 	TrimRegion,
@@ -26,6 +27,7 @@ import type { AspectRatio } from "@/utils/aspectRatioUtils";
 // would feel surprising.
 export interface EditorState {
 	zoomRegions: ZoomRegion[];
+	cameraFullscreenRegions: CameraFullscreenRegion[];
 	/** Magic-wand auto-zoom toggle. When on, fresh recordings get suggested zooms. */
 	autoZoomEnabled: boolean;
 	/** Global Auto-Focus toggle: when on, all zooms follow the cursor and the
@@ -37,8 +39,7 @@ export interface EditorState {
 	cropRegion: CropRegion;
 	wallpaper: string;
 	shadowIntensity: number;
-	showBlur: boolean;
-	showTrimWaveform: boolean;
+	backgroundBlur: number;
 	motionBlurAmount: number;
 	borderRadius: number;
 	padding: number;
@@ -53,6 +54,7 @@ export interface EditorState {
 
 export const INITIAL_EDITOR_STATE: EditorState = {
 	zoomRegions: [],
+	cameraFullscreenRegions: [],
 	autoZoomEnabled: true,
 	autoFocusAll: false,
 	trimRegions: [],
@@ -61,8 +63,7 @@ export const INITIAL_EDITOR_STATE: EditorState = {
 	cropRegion: DEFAULT_CROP_REGION,
 	wallpaper: DEFAULT_EDITOR_LAYOUT_SETTINGS.wallpaper,
 	shadowIntensity: DEFAULT_EDITOR_APPEARANCE_SETTINGS.shadowIntensity,
-	showBlur: DEFAULT_EDITOR_APPEARANCE_SETTINGS.showBlur,
-	showTrimWaveform: DEFAULT_EDITOR_APPEARANCE_SETTINGS.showTrimWaveform,
+	backgroundBlur: DEFAULT_EDITOR_APPEARANCE_SETTINGS.backgroundBlur,
 	motionBlurAmount: DEFAULT_EDITOR_APPEARANCE_SETTINGS.motionBlurAmount,
 	borderRadius: DEFAULT_EDITOR_APPEARANCE_SETTINGS.borderRadius,
 	padding: DEFAULT_EDITOR_LAYOUT_SETTINGS.padding,

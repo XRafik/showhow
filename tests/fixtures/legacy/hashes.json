@@ -1,0 +1,17 @@
+{
+  "bundle/meta.json": "10c0be96096ff4650de370579646d4667a5fee2e9d968550405c0c4a7f26f073",
+  "bundle/steps.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+  "bundle/steps.md": "591e6849991ddb9eb21bac48f91b547a3198ef14067626a6e4e2fd756718b812",
+  "bundle/transcript.txt": "d937e406303e9aee0986640cd8991c78564bba6a4b6c9bbe89e08f6c033eb622",
+  "bundle/video.webm": "34e62f67d3d9dd50ea7fa0b76cbfe7ed568ddb4be2d6b0a63513d2a97dda95d6",
+  "legacy.openscreen": "e8bb7cd77136d02b319e017b929d37720113431520e2871f35f1380c86d0dea4",
+  "legacy.showhow": "e8bb7cd77136d02b319e017b929d37720113431520e2871f35f1380c86d0dea4",
+  "profile/recordings/before-synthetic.webm": "34e62f67d3d9dd50ea7fa0b76cbfe7ed568ddb4be2d6b0a63513d2a97dda95d6",
+  "profile/recordings/fixture-session.session.json": "ddfde24ae1298e4414a146cad808a2f780936811dba5ce9e1f62b5cfbb035b12",
+  "renderer-storage.json": "f98885f9e464d078ba40d1b1f64670c169c1589f630408c7eb6b241eea54e6bb",
+  "sessionData/Local Storage/leveldb/000003.log": "71dc2ddb5d7f895cb1ca7d0925cd3382f044068f5ad5ec266f4afc4ad8ff1153",
+  "sessionData/Local Storage/leveldb/CURRENT": "0f1bad70c7bd1e0a69562853ec529355462fcd0423263a3d39d6d0d70b780443",
+  "sessionData/Local Storage/leveldb/LOCK": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "sessionData/Local Storage/leveldb/LOG": "777e669406a41b7f8ba2d59f27c02b24c9089abb9043bc6d9ead358711b50dfb",
+  "sessionData/Local Storage/leveldb/MANIFEST-000001": "f9d31b278e215eb0d0e9cd709edfa037e828f36214ab7906f612160fead4b2b4"
+}

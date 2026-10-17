@@ -73,7 +73,15 @@ describe("standalone package identity", () => {
 			const source = read(file);
 			expect(source).toContain("showhow");
 			expect(source).not.toContain("showhow-desktop");
-			expect(source).not.toMatch(/openscreen/i);
+			const retainedRuntimeKeys = [
+				"OPENSCREEN_COMPOSITOR_VIEW_NODE",
+				"OPENSCREEN_FFMPEG_PATH",
+				"OPENSCREEN_LINUX_CURSOR_HELPER_EXE",
+				"OPENSCREEN_WHISPER_SERVER_EXE",
+			];
+			const actualRuntimeKeys = [...new Set(source.match(/OPENSCREEN_[A-Z_]+/g) ?? [])].sort();
+			expect(actualRuntimeKeys).toEqual(file === "nix/package.nix" ? retainedRuntimeKeys : []);
+			expect(source.replace(/OPENSCREEN_[A-Z_]+/g, "")).not.toMatch(/openscreen/i);
 		}
 		const packageSource = read("nix/package.nix");
 		expect(packageSource).toContain('desktopName = "Showhow"');
@@ -104,18 +112,23 @@ describe("standalone package identity", () => {
 		expect(workflow).toContain('DMG_NAME="Showhow-Mac-${ARCH}-${VERSION}-Installer.dmg"');
 		expect(workflow).not.toMatch(/name:\s*openscreen-/i);
 		expect(workflow).toContain("secrets.SHOWHOW_RELEASE_TOKEN || secrets.OPENSCREEN_RELEASE_TOKEN");
-		expect(workflow.match(/openscreen/gi)).toEqual(["OPENSCREEN"]);
-		expect(workflow.match(/OPENSCREEN_[A-Z_]+/g)).toEqual(["OPENSCREEN_RELEASE_TOKEN"]);
+		expect(workflow.match(/openscreen/gi)).toEqual(["OPENSCREEN", "OPENSCREEN"]);
+		expect(workflow.match(/OPENSCREEN_[A-Z_]+/g)).toEqual([
+			"OPENSCREEN_MAC_HELPER_ARCHS",
+			"OPENSCREEN_RELEASE_TOKEN",
+		]);
 	});
 
-	test("limits the helper build allowlist to one Showhow-first legacy variable fallback", () => {
+	test("keeps Showhow-first helper build arch reads separate from pinned stable target names", () => {
 		const source = read("scripts/build-macos-screencapturekit-helper.mjs");
 		const current = "process.env.SHOWHOW_MAC_HELPER_ARCHS ??";
 		const legacy = "process.env.OPENSCREEN_MAC_HELPER_ARCHS ??";
 		expect(source.indexOf(current)).toBeGreaterThan(-1);
 		expect(source.indexOf(legacy)).toBeGreaterThan(source.indexOf(current));
 		expect(source.match(/OPENSCREEN_MAC_HELPER_ARCHS/g)).toHaveLength(2);
-		expect(source.match(/openscreen/gi)).toEqual(["OPENSCREEN", "OPENSCREEN"]);
+		expect(source).toContain('const helperName = "openscreen-screencapturekit-helper";');
+		expect(source).toContain('const cursorHelperName = "openscreen-macos-cursor-helper";');
+		expect(source).not.toContain("ShowhowScreenCaptureKitHelper");
 	});
 
 	test("uses Showhow-first preview names with read-only legacy fallbacks", () => {

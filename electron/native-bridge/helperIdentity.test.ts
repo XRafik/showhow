@@ -88,7 +88,7 @@ describe("native helper identity", () => {
 		]);
 	});
 
-	it("keeps native build definitions aligned with canonical helper names", () => {
+	it("keeps pinned stable native targets while retaining Showhow read aliases", () => {
 		const read = (relativePath: string) => fs.readFileSync(path.resolve(relativePath), "utf8");
 		const swiftPackage = read("electron/native/screencapturekit/Package.swift");
 		const cmake = read("electron/native/wgc-capture/CMakeLists.txt");
@@ -96,12 +96,12 @@ describe("native helper identity", () => {
 		const windowsBuild = read("scripts/build-windows-wgc-helper.mjs");
 
 		for (const identity of [HELPER_IDENTITIES.macCapture, HELPER_IDENTITIES.macCursor]) {
-			expect(swiftPackage).toContain(`name: "${identity.currentName}"`);
-			expect(macBuild).toContain(`"${identity.currentName}"`);
+			expect(swiftPackage).toContain(`name: "${identity.legacyName}"`);
+			expect(macBuild).toContain(`"${identity.legacyName}"`);
 		}
 		for (const identity of [HELPER_IDENTITIES.windowsCapture, HELPER_IDENTITIES.windowsCursor]) {
-			expect(cmake).toContain(identity.currentName.replace(/\.exe$/, ""));
-			expect(windowsBuild).toContain(`"${identity.currentName}"`);
+			expect(cmake).toContain(identity.legacyName.replace(/\.exe$/, ""));
+			expect(windowsBuild).toContain(`"${identity.legacyName}"`);
 		}
 	});
 

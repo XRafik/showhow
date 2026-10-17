@@ -1,6 +1,10 @@
 {
 	"$schema": "https://biomejs.dev/schemas/2.4.12/schema.json",
-	"vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true
+	},
 	"files": {
 		"ignoreUnknown": false,
 		"includes": ["**", "!**/*.css", "!design/**", "!Archive/design/**"]
@@ -11,7 +15,16 @@
 		"formatWithErrors": true,
 		"lineEnding": "lf",
 		"lineWidth": 100,
-		"attributePosition": "auto"
+		"attributePosition": "auto",
+		"includes": [
+			"**",
+			"!website/src/components/Recreation/generated.ts",
+			"!website/i18n/**/*.json",
+			"!tests/fixtures/legacy/fc50566a/bundle/meta.json",
+			"!tests/fixtures/legacy/fc50566a/profile/recordings/fixture-session.session.json",
+			"!tests/fixtures/legacy/fc50566a/renderer-storage.json",
+			"!tests/fixtures/legacy/hashes.json"
+		]
 	},
 	"linter": {
 		"enabled": true,
@@ -97,13 +110,19 @@
 		},
 		"includes": ["**", "**/dist", "**/.eslintrc.cjs", "!**/*.css"]
 	},
-	"javascript": { "formatter": { "quoteStyle": "double" } },
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "double"
+		}
+	},
 	"overrides": [
 		{
 			"includes": ["*.ts", "*.tsx", "*.mts", "*.cts"],
 			"linter": {
 				"rules": {
-					"complexity": { "noArguments": "error" },
+					"complexity": {
+						"noArguments": "error"
+					},
 					"correctness": {
 						"noConstAssign": "off",
 						"noGlobalObjectCalls": "off",
@@ -114,7 +133,9 @@
 						"noUnreachable": "off",
 						"noUnreachableSuper": "off"
 					},
-					"style": { "useConst": "error" },
+					"style": {
+						"useConst": "error"
+					},
 					"suspicious": {
 						"noDuplicateClassMembers": "off",
 						"noDuplicateObjectKeys": "off",
@@ -132,6 +153,10 @@
 	],
 	"assist": {
 		"enabled": true,
-		"actions": { "source": { "organizeImports": "on" } }
+		"actions": {
+			"source": {
+				"organizeImports": "on"
+			}
+		}
 	}
 }

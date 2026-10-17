@@ -1,6 +1,6 @@
 # Verify a native Showhow GIF export
 
-Use this recipe for editor/export verification on macOS. It opens only the committed two-second synthetic `tests/fixtures/sample.webm`, drives the built production editor and GIF encoder, and saves through the production `write-export-to-path` IPC handler. The operating-system save-path picker is the only replaced handler.
+Use this recipe for editor/export verification on macOS. It opens only the committed two-second synthetic `tests/fixtures/sample.webm`, drives the built production editor and GIF encoder, and saves through the production native export pipeline. The operating-system save-path picker is the only replaced handler.
 
 Run in a dedicated Showhow ticket worktree. Keep personal recordings and the default profile out of the journey. Do not search for newer recordings or cursor sidecars. Do not change permissions, dependencies, product code, HOME, credentials, or Codex profiles to get a passing result.
 
@@ -35,7 +35,7 @@ It checks the archive identity and entrypoints before launch and never falls bac
 to dependency Electron or worktree output. It pauses that executable with the
 Node inspector before the packaged main's first statement, sets private appData,
 userData, sessionData, downloads, temp, logs, crashDumps and app-level home paths,
-then resumes the original packaged entrypoint. HOME remains unchanged. Production
+and documents/desktop/media paths, overrides `os.homedir()` within this owned child before any production import, then resumes the original packaged entrypoint. HOME remains unchanged. Runtime `os.homedir()` and `~/Showhow/Recordings` must resolve beneath the scratch root before fixture IPC. Production
 bootstrap selects `appData/Showhow`, so appData must be private before it runs.
 The result must report `launchMode: "packaged"`, the actual packaged executable,
 `app.isPackaged`, the archive path, startup pause location and unchanged archive
@@ -69,8 +69,8 @@ ruby ~/.local/bin/bedar-runtime.rb run --resource heavy -- npm run verify:export
 
 1. **Doctor.** Resolve the repository, exact tools, dependencies, Electron executable, built entrypoints, and readable fixture. Reserve a fresh evidence directory atomically. A missing prerequisite prevents Electron launch. Existing directories are rejected without touching their bytes.
 2. **Launch.** Allocate a private temporary root. The generated bootstrap synchronously sets appData, userData, sessionData, downloads, temp, logs and crashDumps before importing production main. TMPDIR, TMP and TEMP point at the private temp directory. HOME remains unchanged. Observe the final production appData/Showhow profile, recordings directory, all runtime paths, and both stable-instance lock files; both lock PIDs must equal the launched Electron PID and every path must remain within the private root.
-3. **Drive.** Copy the synthetic fixture into isolated recordings and confirm its hash. Use production video-path and switch-to-editor IPC. Subscribe to the new window before switching; tolerate a closed HUD only when its closure is observed. Reload the editor once, as the existing GIF E2E requires for first-load WebCodecs registration, and observe actual decoder/encoder functions. Wait with finite deadlines for the actual video duration and canvas, then capture `editor.png`.
-4. **Evidence.** Replace only `pick-export-save-path` with the private GIF destination. Click the existing Export, GIF and Export buttons. Observe the actual `GIF exported successfully` toast and the file concurrently. The production export finally closes its progress dialog, so waiting for an `Export Complete` dialog is not a reliable completion condition. Check GIF bytes, size above 1 KiB, positive dimensions, at least two decoded frames, and duration between one and four seconds. Independently decode the entire file with FFmpeg `-xerror`; a zero exit is required. Save `complete.png` and the synthetic `export.gif`.
+3. **Drive.** Copy the synthetic fixture into isolated recordings and confirm its hash. Use production video-path and switch-to-editor IPC. Subscribe to the new window before switching; tolerate a closed HUD only when its closure is observed. Wait for the v2 editor Export control and capture `editor.png`. Native media correctness is established by the exported synthetic pixels, rather than DOM video/canvas or WebCodecs availability.
+4. **Evidence.** Replace only `pick-export-save-path` with the private GIF destination. Click Export, GIF, then the modal Export GIF button. Observe `export-show-in-folder` and the file concurrently. The production export finally closes its progress dialog, so waiting for an `Export Complete` dialog is not a reliable completion condition. Check GIF bytes, size above 1 KiB, positive dimensions, at least two decoded frames, and duration between one and four seconds. Independently decode the entire file with FFmpeg `-xerror`; a zero exit is required. Independently extract RGB pixels and require the known synthetic red, green, blue and white palette. A decodable all-black or solid export fails. Save `complete.png` and the synthetic `export.gif`.
 5. **Cleanup.** Close the owned Electron app, observe its process tree with PID birth times, and boundedly escalate only still-identical owned PIDs. Remove only this invocation's temporary root after its observed processes are gone. Rehash the committed source fixture. Exit zero requires the journey, decoding, unchanged fixture and complete cleanup all to pass.
 
 ## Inspect and resume

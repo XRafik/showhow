@@ -1,5 +1,6 @@
-import { extractMono16kFromVideoUrl, transcribeMono16kToSegments } from "@/lib/captioning";
 import { formatTranscript } from "./transcriptFormat";
+import { extractMono16kFromVideoUrl } from "./whisperTiny/extractMono16k";
+import { transcribeMono16kToSegments } from "./whisperTiny/transcribe";
 
 /**
  * Fire-and-forget after a recording saves: transcribe the bundled video and write

@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import "@testing-library/jest-dom";
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -8,6 +9,7 @@ import { RecordingLibrary } from "./RecordingLibrary";
 
 // Mock window.electronAPI
 const mockShowhowListRecordings = vi.fn<() => Promise<RecordingLibraryEntry[]>>();
+const mockOpenRecording = vi.fn();
 const mockSwitchToHud = vi.fn<() => Promise<void>>();
 const mockClipboardWriteText = vi.fn<(text: string) => Promise<void>>();
 const mockShowhowCopyPath = vi.fn<(bundleDir: string) => Promise<{ success: boolean }>>();
@@ -38,6 +40,7 @@ beforeEach(() => {
 	Object.defineProperty(window, "electronAPI", {
 		value: {
 			showhowListRecordings: mockShowhowListRecordings,
+			showhowOpenRecording: mockOpenRecording,
 			showhowCopyPath: mockShowhowCopyPath,
 			showhowUpdateWorkflowDocument: mockShowhowUpdateWorkflowDocument,
 			showhowRegenerateDoc: mockShowhowRegenerateDoc,
@@ -746,16 +749,25 @@ describe("RecordingLibrary — missing-doc resilience (issue #27)", () => {
 
 	it("shows an observable generating state while the Create action is in flight", async () => {
 		mockShowhowListRecordings.mockResolvedValue([desktopNoDocEntry]);
-		let resolveRegen: (value: { success: boolean; entry: RecordingLibraryEntry | null }) => void =
-			() => {
-				// Placeholder replaced by the in-flight regeneration promise below,
-				// before the Create action is clicked.
-			};
+		let resolveRegen: (value: {
+			success: boolean;
+			stepsWritten: number;
+			transcriptAvailable: boolean;
+			entry: RecordingLibraryEntry | null;
+		}) => void = () => {
+			// Placeholder replaced by the in-flight regeneration promise below,
+			// before the Create action is clicked.
+		};
 		mockShowhowRegenerateDoc.mockImplementation(
 			() =>
 				new Promise((resolve) => {
 					resolveRegen = resolve;
-				}) as Promise<{ success: boolean; entry: RecordingLibraryEntry | null }>,
+				}) as Promise<{
+					success: boolean;
+					stepsWritten: number;
+					transcriptAvailable: boolean;
+					entry: RecordingLibraryEntry | null;
+				}>,
 		);
 		render(<RecordingLibrary />);
 
@@ -767,7 +779,12 @@ describe("RecordingLibrary — missing-doc resilience (issue #27)", () => {
 
 		// Release the in-flight regeneration.
 		await act(async () => {
-			resolveRegen({ success: true, entry: desktopDocEntry });
+			resolveRegen({
+				success: true,
+				stepsWritten: 2,
+				transcriptAvailable: true,
+				entry: desktopDocEntry,
+			});
 		});
 	});
 
@@ -998,7 +1015,7 @@ describe("RecordingLibrary — missing-doc resilience (issue #27)", () => {
 			video: "video.mp4",
 			stepCapture: {
 				status: "unavailable",
-				reason: "frame-extraction-failed",
+				reason: "frame-extraction",
 				message:
 					"Desktop click frames could not be extracted; this bundle has a transcript-only doc.",
 			} as RecordingLibraryEntry["stepCapture"],
@@ -1036,4 +1053,12 @@ describe("RecordingLibrary — missing-doc resilience (issue #27)", () => {
 		expect(docState.textContent ?? "").toMatch(/could not be extracted/iu);
 		expect(docState.textContent ?? "").toMatch(/transcript-only/iu);
 	});
+});
+
+it("opens the selected bundle in the v2 editor", async () => {
+	mockOpenRecording.mockResolvedValue({ success: true });
+	mockShowhowListRecordings.mockResolvedValue([{ ...desktopEntry, video: "video.webm" }]);
+	render(<RecordingLibrary />);
+	fireEvent.click(await screen.findByRole("button", { name: "Open in editor" }));
+	await waitFor(() => expect(mockOpenRecording).toHaveBeenCalledWith(desktopEntry.bundleDir));
 });

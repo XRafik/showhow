@@ -13,18 +13,21 @@
 	"reservedShortcut": "Este atalho é reservado para \"{{label}}\" e não pode ser reatribuído.",
 	"savedToast": "Atalhos de teclado salvos",
 	"resetToast": "Atalhos redefinidos para o padrão — clique em Salvar para aplicar",
+	"registrationFailed": "Falha ao registrar o atalho. Ele pode estar sendo usado por outro aplicativo. Tente outra tecla.",
 	"actions": {
+		"openApp": "Abrir aplicativo",
 		"addZoom": "Adicionar Zoom",
 		"addTrim": "Adicionar Recorte",
 		"addSpeed": "Adicionar Velocidade",
 		"addAnnotation": "Adicionar Anotação",
-		"addBlur": "Adicionar Desfoque",
+		"addAudio": "Adicionar áudio",
+		"addVoiceover": "Gravar narração",
 		"addKeyframe": "Adicionar Quadro-chave",
+		"addCameraFullscreen": "Adicionar Câmera em Tela Cheia",
 		"deleteSelected": "Excluir Selecionado",
 		"playPause": "Reproduzir / Pausar",
 		"copySelected": "Copiar seleção",
-		"paste": "Colar",
-		"openApp": "Abrir aplicativo"
+		"paste": "Colar"
 	},
 	"fixedActions": {
 		"undo": "Desfazer",
@@ -36,6 +39,5 @@
 		"zoomTimeline": "Zoom na Linha do Tempo",
 		"frameBack": "Quadro Anterior",
 		"frameForward": "Próximo Quadro"
-	},
-	"registrationFailed": "Falha ao registrar o atalho. Ele pode estar sendo usado por outro aplicativo. Tente outra tecla."
+	}
 }

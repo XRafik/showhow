@@ -92,5 +92,28 @@ acceptance requires a real macOS native recording because Linux CI cannot exerci
 6. induce or simulate a documentation-layer failure when changing fail-open behavior and confirm
    the recording remains available.
 
-Focused imports from the source ancestor follow the temporary-remote procedure in `UPSTREAM.md`;
-never restore full-merge instructions to this architecture document.
+Upstream intake follows `UPSTREAM.md`: keep the permanent tags-only `upstream` remote and merge
+the selected release tag as a real release parent. Follow that policy's compatibility checklist
+and exclusions; this bundle contract does not replace the upstream intake policy.
+
+
+### Stable-v2 integration clarification (2026-10-17)
+
+For #116 the retained renderer bundle-transcript pipeline lives in
+`src/lib/showhow/whisperTiny/`, called through `generateTranscript.ts` and the
+`BundleTranscript` wrapper. Stable native STT helper/model-manager packaging does
+not replace that renderer job in this ticket. A flat legacy `.session.json` is
+opened through the library, then Showhow's main-process resume seam reconstructs
+only a genuinely pending bundle job from bundle metadata; completed transcript
+content wins over stale pending fields. Renderer job completion clears only the
+matching bundle/video session and preserves other session fields. Existing valid
+media survives document/transcript failures. Source regressions bind this seam;
+fresh packaged import/resume/transcript acceptance remains lead-owned.
+
+Original `fc50566a` fixtures and serialized absolute paths remain byte-preserved
+in `tests/fixtures/legacy/fc50566a/`. Derived relocated fixtures are separate and
+record their path adaptation. The copied synthetic profile requires its separately
+isolated sessionData/Local Storage files as well as appData; profile-only copying
+is insufficient. Neither synthetic fixture set claims native capture or cursor
+telemetry acceptance. A new stable candidate recording and `<video path>.cursor.json`
+read are separately required at native Prove.
