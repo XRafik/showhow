@@ -574,3 +574,29 @@ docs change; no skip/config/product/native edits. Runtime/package reuse comparis
 exact three-path dirty/index/metadata binding are returned in first-review-fix-executor.
 Source writes HOLD for lead commit/re-proof/fresh round2; failed-review count remains1,
 not reset by source checks. No executor staging/commit/push/reviewer/GUI or native rebuild.
+
+
+Docs checker clean-checkout compatibility integration (coordinator disposition granted):
+The imported scripts/check-docs.mjs and scripts/check-docs.test.mjs were byte-identical to the pinned upstream blobs, while the upstream-only .harness tree is absent from the Showhow baseline and stable candidate. The checker now treats only ENOENT for the optional .harness root itself as an empty optional tree. The technical-documentation walk, REQUIRED documents, link and legacy-policy validators, and non-ENOENT errors remain enforced. Test fixtures copy the checker into owned temporary roots; the existing full committed-tree check remains read-only. Probe creation is exclusive. Coordinator disposition and approved patch SHA-256 1d64aa71170f5d359295f706e91d873b911634e7d50bc7ecd5f533354efc3113 are recorded under prove-owner-confirmed-20261017/aggregate-hosted-ci-integration/docs-executor. The original clean-tracked-tree RED (4/4), final absent/empty/synthetic-root GREEN (8/8 each), and Biome receipts are retained there; local .harness content was not read or copied. The separate approved Windows CI sparse-checkout adaptation remains the only workflow change.
+
+Hosted CI integration (coordinator routine disposition granted): `.github/workflows/ci.yml`
+uses the repository's exact four-path Git sparse-checkout patterns for the tracked diagnostics
+inputs, while retaining all other workflow fields and steps. External validation selected exactly
+4 of 2,507 tracked paths and parsed-YAML comparison confirmed every other field was unchanged;
+no hosted dispatch was run. The approved workflow patch and its validation are recorded under
+`prove-owner-confirmed-20261017/aggregate-hosted-ci-integration/executor-ci-validation`.
+
+Combined candidate verification after the docs checker integration: the affected checker test
+passed 8/8, full unit suite passed 4,561 tests with 2 skipped, production and required test
+TypeScript checks passed, Biome passed with 26 inherited warnings, docs, branding, and all 14
+i18n locales passed. Branding ran in an external candidate tree with a copied Git index; copied
+and live index SHA-256 remained `f62ce584631404b1f11253d551d4de551f838b8e93266349ec0f94ccc104bc64`.
+The first archive-only branding invocation failed because the archive lacked `.git`; that setup
+failure is retained and the external-index rerun is the passing result. Exact streams and exits
+are under `prove-owner-confirmed-20261017/aggregate-hosted-ci-integration/combined-executor`.
+The source/native/generated/package comparisons have zero mismatches against READY6 and the
+previous runtime-reuse record. The immutable package5 ASAR remains
+`20615551c8f66ebdfafae07b89ed1f04c012e82f376c47e13472887c33a66b88`; existing HUD/editor,
+legacy media/export, repository recipe, bundle-editor, and owner audio proofs remain reusable
+within their recorded limits. No native rebuild, package rebuild, new narration, or hosted CI
+run was performed. Failed-review count remains 1; this is a Build transfer, not a review verdict.

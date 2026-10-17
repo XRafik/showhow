@@ -14,8 +14,8 @@ const DOCS = join(ROOT, "technical-documentation");
 // month, while the same fact stayed correct under technical-documentation/
 // because this script was watching that tree and not this one. Every file here
 // is loaded into agent runs, so a stale one is worse than a stale page nobody
-// opens. Only REQUIRED (the "expected file is real" pass) stays docs-only.
-const TREES = [DOCS, join(ROOT, ".harness")];
+// opens. Some downstream checkouts intentionally omit this upstream-only tree;
+// only ENOENT for the optional root is tolerated. REQUIRED remains docs-only.
 
 // Names of components, docs, or conventions that no longer exist on this branch.
 // A doc may only mention them inside a "removed / superseded" note, which lives
@@ -103,8 +103,17 @@ function walk(dir) {
 	return out;
 }
 
+function walkOptionalRoot(dir) {
+	try {
+		return walk(dir);
+	} catch (error) {
+		if (error?.code === "ENOENT" && error.path === dir) return [];
+		throw error;
+	}
+}
+
 const errors = [];
-const files = TREES.flatMap(walk);
+const files = [...walk(DOCS), ...walkOptionalRoot(join(ROOT, ".harness"))];
 
 for (const abs of REQUIRED) {
 	const rel = `technical-documentation/${abs}`;

@@ -750,3 +750,7 @@ docs change; no skip/config/product/native edits. Runtime/package reuse comparis
 exact three-path dirty/index/metadata binding are returned in first-review-fix-executor.
 Source writes HOLD for lead commit/re-proof/fresh round2; failed-review count remains1,
 not reset by source checks. No executor staging/commit/push/reviewer/GUI or native rebuild.
+
+
+| `scripts/check-docs.mjs`, `scripts/check-docs.test.mjs` | Stable upstream copies check technical documentation plus upstream `.harness` agent scaffolding. Showhow intentionally does not carry that optional tree. | Treat only `ENOENT` for the `.harness` root as absent; retain mandatory technical documentation, all link and legacy-policy checks, and propagation of other filesystem errors. Keep mutating fixtures in isolated temporary roots. | Coordinator routine disposition and external clean-checkout RED/GREEN evidence: `prove-owner-confirmed-20261017/aggregate-hosted-ci-integration/docs-executor`. |
+| `.github/workflows/ci.yml` | Stable upstream CI expects four tracked diagnostic paths in addition to the Showhow repository checkout. | Retain the exact four-path sparse-checkout selection while preserving all other workflow inputs, jobs, steps, runner, permissions, and commands. Validation selected 4/2,507 tracked paths and parsed-YAML comparison found all other fields unchanged; no hosted dispatch. | Coordinator routine disposition and local validation: `prove-owner-confirmed-20261017/aggregate-hosted-ci-integration/executor-ci-validation`. |

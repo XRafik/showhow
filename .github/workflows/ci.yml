@@ -140,6 +140,15 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          # Preserve historical receipts in Git; omit only NTFS-invalid diagnostic filenames.
+          sparse-checkout: |
+            /*
+            !/artifacts/verification-recipe/ci-attempt-01/02-npm-branding:check.txt
+            !/artifacts/verification-recipe/ci-attempt-02/02-npm-branding:check.txt
+            !/artifacts/verification-recipe/ci-attempt-02/06-npm-test:browser:install.txt
+            !/artifacts/verification-recipe/ci-attempt-02/07-npm-test:browser.txt
+          sparse-checkout-cone-mode: false
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
