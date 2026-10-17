@@ -111,6 +111,30 @@ interface Window {
 			accessibilityTrusted: boolean;
 			error?: string;
 		}>;
+		showhowAiGuideStatus: (
+			bundleDir?: string,
+		) => Promise<import("../src/lib/showhow/aiGuide").GuideStatus>;
+		showhowAiGuidePreview: (
+			bundleDir: string,
+			options: import("../src/lib/showhow/aiGuide").GuideOptions,
+		) => Promise<
+			import("../src/lib/showhow/aiGuide").GuidePreview & { success?: boolean; error?: string }
+		>;
+		showhowAiGuideConsent: (
+			bundleDir: string,
+			token: string,
+			alwaysSend: boolean,
+		) => Promise<{ success: boolean }>;
+		showhowAiGuideRun: (
+			bundleDir: string,
+			token: string,
+		) => Promise<{ success: boolean; error?: string }>;
+		showhowOnAiGuideProgress: (
+			callback: (event: {
+				bundleDir: string;
+				phase: import("../src/lib/showhow/aiGuide").GuidePhase;
+			}) => void,
+		) => () => void;
 		showhowOpenRecording: (bundleDir: string) => Promise<{ success: boolean }>;
 		showhowListRecordings: () => Promise<
 			import("../src/lib/showhow/recordingLibrary").RecordingLibraryEntry[]
