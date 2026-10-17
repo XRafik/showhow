@@ -785,3 +785,9 @@ Local frame preparation calls the existing `electron/media/audioPeaks.ts` FFmpeg
 five declarations in `electron/electron-env.d.ts` are the sole added ambient type surface; the lead
 explicitly approved this necessary addition on 2026-10-17. No native bridge schema, editor assistant,
 upstream provider registry, key-store implementation or model factory implementation is changed.
+
+### #122 Ubuntu test media dependency
+
+The existing Ubuntu `test` job in `.github/workflows/ci.yml` installs `ffmpeg` (including `ffprobe`)
+before `npm run test`. This supplies the host tools for the unchanged real JPEG/narration-frame tests;
+no model calls, runtime dependency, workflow trigger/permission/job or native job changes are added.

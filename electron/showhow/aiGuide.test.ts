@@ -112,7 +112,7 @@ it("review and request share only opted-in transcript, evenly capped frames and 
 		{ sourceId: "3", ts: 3000, label: "[redacted]" },
 	]);
 	expect(JSON.stringify(result.messages)).toContain(
-		JSON.stringify(result.steps).replaceAll('"', '\\"'),
+		JSON.stringify(result.steps).split('"').join('\\"'),
 	);
 	const off = buildGuideRequest({
 		steps,

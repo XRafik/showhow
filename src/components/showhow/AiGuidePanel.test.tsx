@@ -69,7 +69,7 @@ afterEach(cleanup);
 it("missing key shows only active OpenRouter plus disabled ChatGPT; cancel sends nothing", async () => {
 	status.mockResolvedValue({ ...connected, connected: false });
 	render(<AiGuidePanel entry={entry} onEntryChange={onChange} />);
-	fireEvent.click(screen.getByRole("button", { name: "Make guide", exact: true }));
+	fireEvent.click(screen.getByRole("button", { name: "Make guide" }));
 	expect(await screen.findByRole("heading", { name: "Connect AI to make guides" })).toBeVisible();
 	expect(screen.getByRole("button", { name: "ChatGPT · Coming later" })).toBeDisabled();
 	fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
@@ -79,7 +79,7 @@ it("missing key shows only active OpenRouter plus disabled ChatGPT; cancel sends
 
 it("review toggles rebuild the payload, cancel sends nothing, acceptance persists consent then runs", async () => {
 	render(<AiGuidePanel entry={entry} onEntryChange={onChange} />);
-	fireEvent.click(screen.getByRole("button", { name: "Make guide", exact: true }));
+	fireEvent.click(screen.getByRole("button", { name: "Make guide" }));
 	expect(await screen.findByRole("heading", { name: "Check what gets sent" })).toBeVisible();
 	expect(screen.getByText("Transcript · 2 words")).toBeVisible();
 	fireEvent.click(screen.getByRole("checkbox", { name: "Send transcript" }));
@@ -88,9 +88,9 @@ it("review toggles rebuild the payload, cancel sends nothing, acceptance persist
 	);
 	fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
 	expect(run).not.toHaveBeenCalled();
-	fireEvent.click(screen.getByRole("button", { name: "Make guide", exact: true }));
+	fireEvent.click(screen.getByRole("button", { name: "Make guide" }));
 	await screen.findByRole("heading", { name: "Check what gets sent" });
-	fireEvent.click(screen.getAllByRole("button", { name: "Make guide", exact: true }).at(-1)!);
+	fireEvent.click(screen.getAllByRole("button", { name: "Make guide" }).at(-1)!);
 	await waitFor(() =>
 		expect(consent).toHaveBeenCalledWith(entry.bundleDir, "reviewed-token", true),
 	);
@@ -106,7 +106,7 @@ it("edited Remake confirms, cancel preserves, unedited Remake and Retry skip rev
 		guide: { status: "ready", provider: "openrouter", model: "fake", editedSinceAi: true },
 	});
 	render(<AiGuidePanel entry={entry} onEntryChange={onChange} />);
-	fireEvent.click(await screen.findByRole("button", { name: "Remake", exact: true }));
+	fireEvent.click(await screen.findByRole("button", { name: "Remake" }));
 	expect(await screen.findByRole("heading", { name: "Remake the guide?" })).toBeVisible();
 	fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
 	expect(run).not.toHaveBeenCalled();
@@ -116,7 +116,7 @@ it("edited Remake confirms, cancel preserves, unedited Remake and Retry skip rev
 		guide: { status: "ready", provider: "openrouter", model: "fake", editedSinceAi: false },
 	});
 	run.mockResolvedValueOnce({ success: false });
-	fireEvent.click(screen.getByRole("button", { name: "Remake", exact: true }));
+	fireEvent.click(screen.getByRole("button", { name: "Remake" }));
 	expect(await screen.findByRole("heading", { name: "Couldn’t make the guide" })).toBeVisible();
 	expect(screen.queryByRole("heading", { name: "Check what gets sent" })).not.toBeInTheDocument();
 	fireEvent.click(screen.getByRole("button", { name: "Retry" }));
@@ -137,9 +137,9 @@ it("shows real making phases without partial steps, and the narration/no-speech 
 		guide: { status: "ready", provider: "openrouter", model: "fake", editedSinceAi: true },
 	});
 	render(<AiGuidePanel entry={entry} onEntryChange={onChange} />);
-	fireEvent.click(await screen.findByRole("button", { name: "Remake", exact: true }));
+	fireEvent.click(await screen.findByRole("button", { name: "Remake" }));
 	await screen.findByRole("heading", { name: "Remake the guide?" });
-	fireEvent.click(screen.getAllByRole("button", { name: "Remake", exact: true }).at(-1)!);
+	fireEvent.click(screen.getAllByRole("button", { name: "Remake" }).at(-1)!);
 	expect(await screen.findByRole("heading", { name: "Making your guide" })).toBeVisible();
 	status.mockResolvedValue({
 		...connected,
@@ -159,7 +159,7 @@ it("shows clicks-only no-speech notice without blocking the guide", async () => 
 	});
 	render(<AiGuidePanel entry={entry} onEntryChange={onChange} />);
 	expect(await screen.findByRole("heading", { name: "No speech found" })).toBeVisible();
-	expect(screen.getByRole("button", { name: "Remake", exact: true })).toBeEnabled();
+	expect(screen.getByRole("button", { name: "Remake" })).toBeEnabled();
 });
 
 it("keeps consent once per provider even when the stored send preference is unchecked", async () => {
@@ -170,7 +170,7 @@ it("keeps consent once per provider even when the stored send preference is unch
 		guide: { status: "ready", provider: "openrouter", model: "fake", editedSinceAi: false },
 	});
 	render(<AiGuidePanel entry={entry} onEntryChange={onChange} />);
-	fireEvent.click(await screen.findByRole("button", { name: "Remake", exact: true }));
+	fireEvent.click(await screen.findByRole("button", { name: "Remake" }));
 	await waitFor(() => expect(run).toHaveBeenCalledWith(entry.bundleDir, "reviewed-token"));
 	expect(screen.queryByRole("heading", { name: "Check what gets sent" })).not.toBeInTheDocument();
 	expect(consent).not.toHaveBeenCalled();
@@ -195,7 +195,7 @@ it.each([
 		.mockReturnValueOnce(old.promise)
 		.mockResolvedValue(payload);
 	render(<AiGuidePanel entry={entry} onEntryChange={onChange} />);
-	fireEvent.click(screen.getByRole("button", { name: "Make guide", exact: true }));
+	fireEvent.click(screen.getByRole("button", { name: "Make guide" }));
 	await screen.findByText("Transcript · 2 words");
 	fireEvent.click(screen.getByRole("checkbox", { name: "Send frames" }));
 	fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
@@ -204,11 +204,11 @@ it.each([
 		else old.reject(new Error("stale preview failure"));
 	});
 	expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-	expect(screen.getByRole("button", { name: "Make guide", exact: true })).toBeEnabled();
+	expect(screen.getByRole("button", { name: "Make guide" })).toBeEnabled();
 	expect(screen.getByRole("button", { name: "Check what gets sent" })).toBeEnabled();
 	expect(run).not.toHaveBeenCalled();
 	expect(consent).not.toHaveBeenCalled();
-	fireEvent.click(screen.getByRole("button", { name: "Make guide", exact: true }));
+	fireEvent.click(screen.getByRole("button", { name: "Make guide" }));
 	await screen.findByText("Transcript · 2 words");
 	expect(screen.queryByRole("alert")).not.toBeInTheDocument();
 });
@@ -224,7 +224,7 @@ it.each([
 		.mockReturnValueOnce(old.promise)
 		.mockReturnValueOnce(fresh.promise);
 	render(<AiGuidePanel entry={entry} onEntryChange={onChange} />);
-	fireEvent.click(screen.getByRole("button", { name: "Make guide", exact: true }));
+	fireEvent.click(screen.getByRole("button", { name: "Make guide" }));
 	await screen.findByText("Transcript · 2 words");
 	fireEvent.click(screen.getByRole("checkbox", { name: "Send frames" }));
 	fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
@@ -236,13 +236,13 @@ it.each([
 		else old.reject(new Error("cancelled old request"));
 	});
 	const dialog = screen.getByRole("dialog");
-	expect(within(dialog).getByRole("button", { name: "Make guide", exact: true })).toBeDisabled();
+	expect(within(dialog).getByRole("button", { name: "Make guide" })).toBeDisabled();
 	expect(within(dialog).queryByRole("alert")).not.toBeInTheDocument();
 	await act(async () => fresh.resolve({ ...payload, token: "new-review-token" }));
-	expect(within(dialog).getByRole("button", { name: "Make guide", exact: true })).toBeEnabled();
+	expect(within(dialog).getByRole("button", { name: "Make guide" })).toBeEnabled();
 	expect(run).not.toHaveBeenCalled();
 	expect(consent).not.toHaveBeenCalled();
-	fireEvent.click(within(dialog).getByRole("button", { name: "Make guide", exact: true }));
+	fireEvent.click(within(dialog).getByRole("button", { name: "Make guide" }));
 	await waitFor(() => expect(run).toHaveBeenCalledWith(entry.bundleDir, "new-review-token"));
 	expect(run).not.toHaveBeenCalledWith(entry.bundleDir, "old-cancelled-token");
 });
@@ -256,7 +256,7 @@ it.each(
 }) => {
 	const user = userEvent.setup();
 	render(<AiGuidePanel entry={entry} onEntryChange={onChange} />);
-	const button = screen.getByRole("button", { name: trigger, exact: true });
+	const button = screen.getByRole("button", { name: trigger });
 	button.focus();
 	await user.click(button);
 	const dialog = await screen.findByRole("dialog");
@@ -265,7 +265,7 @@ it.each(
 	await user.tab({ shift: true });
 	expect(dialog.contains(document.activeElement)).toBe(true);
 	if (method === "Escape") await user.keyboard("{Escape}");
-	else await user.click(within(dialog).getByRole("button", { name: method, exact: true }));
+	else await user.click(within(dialog).getByRole("button", { name: method }));
 	await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
 	await waitFor(() => expect(button).toHaveFocus());
 	expect(run).not.toHaveBeenCalled();
@@ -274,7 +274,6 @@ it.each(
 	expect(
 		screen.getByRole("button", {
 			name: trigger === "Make guide" ? "Check what gets sent" : "Make guide",
-			exact: true,
 		}),
 	).toHaveFocus();
 });
@@ -285,15 +284,15 @@ it.each([
 	status.mockResolvedValue({ ...connected, connected: false });
 	const user = userEvent.setup();
 	render(<AiGuidePanel entry={entry} onEntryChange={onChange} />);
-	const make = screen.getByRole("button", { name: "Make guide", exact: true });
+	const make = screen.getByRole("button", { name: "Make guide" });
 	await user.click(make);
-	const connect = await screen.findByRole("button", { name: "Connect OpenRouter", exact: true });
+	const connect = await screen.findByRole("button", { name: "Connect OpenRouter" });
 	await user.click(connect);
-	await screen.findByRole("heading", { name: "Settings", exact: true });
+	await screen.findByRole("heading", { name: "Settings" });
 	const dialog = screen.getByRole("dialog");
 	expect(dialog.contains(document.activeElement)).toBe(true);
 	if (method === "Escape") await user.keyboard("{Escape}");
-	else await user.click(within(dialog).getByRole("button", { name: "Close", exact: true }));
+	else await user.click(within(dialog).getByRole("button", { name: "Close" }));
 	await screen.findByRole("heading", { name: "Connect AI to make guides" });
 	await waitFor(() => expect(connect).toHaveFocus());
 	await user.click(screen.getByRole("button", { name: "Cancel" }));

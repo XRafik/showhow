@@ -3,6 +3,7 @@ import "@testing-library/jest-dom";
 import {
 	act,
 	fireEvent,
+	type RenderOptions,
 	render as rtlRender,
 	screen,
 	waitFor,
@@ -11,10 +12,10 @@ import {
 import userEvent from "@testing-library/user-event";
 import { I18nProvider } from "@/contexts/I18nContext";
 
-const render: typeof rtlRender = (node, options) =>
+const render = (node: ReactNode, options?: RenderOptions) =>
 	rtlRender(node, { wrapper: I18nProvider, ...options });
 
-import { StrictMode } from "react";
+import { type ReactNode, StrictMode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { RecordingLibraryEntry } from "@/lib/showhow/recordingLibrary";
 import { RecordingLibrary } from "./RecordingLibrary";
@@ -1078,8 +1079,8 @@ it("opens the selected bundle in the v2 editor", async () => {
 it("integrates Make guide and Showhow AI connections without requiring a key to view recordings", async () => {
 	mockShowhowListRecordings.mockResolvedValue([desktopDocEntry]);
 	render(<RecordingLibrary />);
-	expect(await screen.findByRole("button", { name: "Make guide", exact: true })).toBeVisible();
-	expect(screen.getByRole("button", { name: "Settings", exact: true })).toBeVisible();
+	expect(await screen.findByRole("button", { name: "Make guide" })).toBeVisible();
+	expect(screen.getByRole("button", { name: "Settings" })).toBeVisible();
 });
 
 describe("round1 finding3: background guide completion", () => {
@@ -1155,21 +1156,21 @@ describe("round1 finding3: background guide completion", () => {
 			showhowOnAiGuideProgress: () => () => undefined,
 		});
 		render(<RecordingLibrary />);
-		await screen.findByRole("heading", { name: "Original title", exact: true });
-		const firstRow = screen.getByRole("button", { name: "Original title Desktop", exact: true });
-		const secondRow = screen.getByRole("button", { name: "Other recording Desktop", exact: true });
-		await user.click(screen.getByRole("button", { name: "Make guide", exact: true }));
+		await screen.findByRole("heading", { name: "Original title" });
+		const firstRow = screen.getByRole("button", { name: "Original title Desktop" });
+		const secondRow = screen.getByRole("button", { name: "Other recording Desktop" });
+		await user.click(screen.getByRole("button", { name: "Make guide" }));
 		await waitFor(() => expect(run).toHaveBeenCalledTimes(1));
 		await user.click(secondRow);
-		await screen.findByRole("heading", { name: "Other recording", exact: true });
+		await screen.findByRole("heading", { name: "Other recording" });
 		expect(screen.getByText("Second instruction")).toBeVisible();
 		expect(secondRow).toHaveAttribute("aria-pressed", "true");
 		if (returnBefore) {
 			await user.click(firstRow);
-			await screen.findByRole("heading", { name: "Original title", exact: true });
+			await screen.findByRole("heading", { name: "Original title" });
 			if (!delayStatus) {
-				await screen.findByRole("heading", { name: "Making your guide", exact: true });
-				expect(screen.getByRole("button", { name: "Make guide", exact: true })).toBeDisabled();
+				await screen.findByRole("heading", { name: "Making your guide" });
+				expect(screen.getByRole("button", { name: "Make guide" })).toBeDisabled();
 			}
 		}
 		entries = [
@@ -1187,15 +1188,15 @@ describe("round1 finding3: background guide completion", () => {
 		);
 		if (!returnBefore) {
 			expect(secondRow).toHaveAttribute("aria-pressed", "true");
-			expect(screen.getByRole("heading", { name: "Other recording", exact: true })).toBeVisible();
+			expect(screen.getByRole("heading", { name: "Other recording" })).toBeVisible();
 			expect(screen.getByText("Second instruction")).toBeVisible();
 			expect(screen.queryByText("AI instruction")).not.toBeInTheDocument();
 			await user.click(firstRow);
 		}
-		await screen.findByRole("heading", { name: "AI title", exact: true });
+		await screen.findByRole("heading", { name: "AI title" });
 		expect(screen.getByText("AI instruction")).toBeVisible();
 		expect(screen.queryByText("Original instruction")).not.toBeInTheDocument();
-		expect(await screen.findByRole("button", { name: "Remake", exact: true })).toBeEnabled();
+		expect(await screen.findByRole("button", { name: "Remake" })).toBeEnabled();
 		expect(screen.queryByRole("heading", { name: "Making your guide" })).not.toBeInTheDocument();
 		if (delayStatus) {
 			expect(delayed).toBe(true);
@@ -1208,7 +1209,7 @@ describe("round1 finding3: background guide completion", () => {
 					guide: { ...ready, status: "making" },
 				}),
 			);
-			expect(screen.getByRole("button", { name: "Remake", exact: true })).toBeEnabled();
+			expect(screen.getByRole("button", { name: "Remake" })).toBeEnabled();
 			expect(screen.queryByRole("heading", { name: "Making your guide" })).not.toBeInTheDocument();
 		}
 		expect(run).toHaveBeenCalledTimes(1);
