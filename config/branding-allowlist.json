@@ -475,7 +475,7 @@
 			]
 		},
 		{
-			"file": "artifacts/verification-recipe/ci-attempt-01/02-npm-branding:check.txt",
+			"file": "artifacts/verification-recipe/ci-attempt-01/02-npm-branding-check.txt",
 			"reason": "Exact compatibility lock name observation required to prove private legacy lock isolation; retained failure evidence is not product branding.",
 			"lines": [
 				{

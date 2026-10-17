@@ -754,3 +754,20 @@ not reset by source checks. No executor staging/commit/push/reviewer/GUI or nati
 
 | `scripts/check-docs.mjs`, `scripts/check-docs.test.mjs` | Stable upstream copies check technical documentation plus upstream `.harness` agent scaffolding. Showhow intentionally does not carry that optional tree. | Treat only `ENOENT` for the `.harness` root as absent; retain mandatory technical documentation, all link and legacy-policy checks, and propagation of other filesystem errors. Keep mutating fixtures in isolated temporary roots. | Coordinator routine disposition and external clean-checkout RED/GREEN evidence: `prove-owner-confirmed-20261017/aggregate-hosted-ci-integration/docs-executor`. |
 | `.github/workflows/ci.yml` | Stable upstream CI expects four tracked diagnostic paths in addition to the Showhow repository checkout. | Retain the exact four-path sparse-checkout selection while preserving all other workflow inputs, jobs, steps, runner, permissions, and commands. Validation selected 4/2,507 tracked paths and parsed-YAML comparison found all other fields unchanged; no hosted dispatch. | Coordinator routine disposition and local validation: `prove-owner-confirmed-20261017/aggregate-hosted-ci-integration/executor-ci-validation`. |
+
+
+## Windows checkout portability correction — 2026-10-17
+
+| Paths | Stable-source behavior and compatibility reason | Bounded adaptation and evidence |
+| --- | --- | --- |
+| `.github/workflows/ci.yml`; `config/branding-allowlist.json`; four `artifacts/verification-recipe/ci-attempt-*/...` receipt names | Actual Git for Windows 2.56.0.windows.2 rejects four retained colon-bearing paths during index construction, before sparse-checkout filtering. One allowlist record points to the attempt-01 branding receipt. | Coordinator routine disposition cleared patch `4372bd8f1594100358b27e4a207efbd711bcb403cf456c77865c5c8e1902048f`: four exact-content/mode Git renames, removal of only the ineffective sparse checkout input, and one allowlist path value update. The allowlist reason/classification/lines and historical receipt bytes remain unchanged. `build.yml` requires no change because its Windows release job already uses ordinary checkout. Pinned path-predicate and external full-tree checks pass; hosted Windows checkout/Cargo remains pending. Detailed actual RED, pin, frozen copies and raw receipts: `prove-owner-confirmed-20261017/aggregate-hosted-ci-integration/windows-checkout-diagnosis-2/portable-applied-executor/` and sibling `portable-receipt-proposal/`. |
+
+
+### Historical receipt references retained unchanged
+
+| Historical reference | Treatment and evidence |
+| --- | --- |
+| `artifacts/verification-recipe/Verification.md:84` -> `ci-attempt-02/result.json` | Historical verification narrative remains byte-identical; it is a result-document link, not a current checkout consumer. |
+| `ci-attempt-01/result.json` and `ci-attempt-02/result.json` nested `log` strings | Four original receipt path strings remain in the two unchanged result manifests. They map to the four portable current-tree names listed in the implementation-notes clarification; the old Git-tree paths and blobs remain available at pre-rename commit `dbc257c99cd02a07ba4682ebea662d8fc64d10c2`. The result manifests were not edited. |
+
+The expanded scan and consumer classification are preserved in `windows-checkout-diagnosis-2/references-excluding-only-four-receipt-bodies.json` and `historical-result-consumer-scan.json`; current-tree path and hash receipts are in `portable-applied-executor/historical-reference-preservation.json`.

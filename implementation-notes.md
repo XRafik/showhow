@@ -600,3 +600,21 @@ previous runtime-reuse record. The immutable package5 ASAR remains
 legacy media/export, repository recipe, bundle-editor, and owner audio proofs remain reusable
 within their recorded limits. No native rebuild, package rebuild, new narration, or hosted CI
 run was performed. Failed-review count remains 1; this is a Build transfer, not a review verdict.
+
+
+### Portable Windows checkout follow-up — 2026-10-17
+
+The actual Windows checkout failure is retained in `prove-owner-confirmed-20261017/aggregate-hosted-ci-integration/windows-checkout-diagnosis-2/DIAGNOSIS.md`: Git for Windows 2.56.0.windows.2 rejects the four colon-bearing tracked diagnostic names while constructing its index, before sparse-checkout marking. The pinned source is commit `cc4dbf752a05efdc0e04e71fd3e8110d11bdd35c`; its host-compiled pathname predicate with NTFS protection enabled rejected those four and accepted the other 2,503 baseline paths. This is not a Windows Build/CI PASS.
+
+Coordinator routine disposition `aggregate-hosted-ci-integration/coordinator-portable-receipt-routine-disposition.json` cleared the exact patch SHA-256 `4372bd8f1594100358b27e4a207efbd711bcb403cf456c77865c5c8e1902048f`. It makes four 100% byte/blob/mode-preserving receipt renames, restores ordinary checkout by removing only the ineffective sparse-checkout block, and changes only the matching `config/branding-allowlist.json` file value. The reason, classification, line evidence and frozen receipt contents were not changed. Git history retains the original names/blobs. The prior active-reference scan found no other active references.
+
+All four originals were independently checked against their frozen external copies, Git blob OIDs, modes and SHA-256 before application; all four rename destinations were absent. The exact approved patch then applied with `git apply` to the worktree only. The Git index remains unchanged. The external original/candidate manifests, patch preimage/postcondition receipts, check streams and previous sparse/archive failure history remain under `prove-owner-confirmed-20261017/aggregate-hosted-ci-integration/windows-checkout-diagnosis-2/`.
+
+The earlier sparse-checkout row in the integration history records the prior candidate and is superseded by this correction: the current workflow uses ordinary checkout. The candidate remains subject to fresh hosted Windows checkout and Cargo validation; no path-predicate or previous CI evidence substitutes for that gate.
+
+
+### Historical receipt-reference clarification — 2026-10-17
+
+The broader reference scan excludes only the four frozen receipt bodies and finds two provenance-only reference classes beyond active source configuration: (1) the unchanged `artifacts/verification-recipe/Verification.md` line 84 links `ci-attempt-02/result.json` as historical proof narrative; (2) `ci-attempt-01/result.json` and `ci-attempt-02/result.json` retain four nested old log-path strings. A bounded scan found no current application or tooling consumer for those result manifests. These three historical files remain byte-identical to HEAD; their SHA-256 and Git blob IDs are recorded in `portable-applied-executor/historical-reference-preservation.json`. No historical result JSON or Verification narrative was edited.
+
+The four old-to-current log mappings are: `ci-attempt-01/02-npm-branding:check.txt` -> `ci-attempt-01/02-npm-branding-check.txt`; `ci-attempt-02/02-npm-branding:check.txt` -> `ci-attempt-02/02-npm-branding-check.txt`; `ci-attempt-02/06-npm-test:browser:install.txt` -> `ci-attempt-02/06-npm-test-browser-install.txt`; and `ci-attempt-02/07-npm-test:browser.txt` -> `ci-attempt-02/07-npm-test-browser.txt` (all paths are under `artifacts/verification-recipe/`). The raw result manifests preserve the original historical spellings; their references resolve through the old paths in the retained `dbc257c99cd02a07ba4682ebea662d8fc64d10c2` Git history. The current tree contains only the four portable names.
