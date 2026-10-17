@@ -20,8 +20,15 @@ const sandbox = vi.hoisted(() => {
 	const root = fs.mkdtempSync(path.join(os.tmpdir(), "showhow-v2-compat-"));
 	for (const name of ["profile", "recordings", "Showhow/Recordings"])
 		fs.mkdirSync(path.join(root, name), { recursive: true });
+	let releaseNative: () => void = () => undefined;
+	const nativeGate = new Promise<void>((resolve) => {
+		releaseNative = resolve;
+	});
 	return {
 		root,
+		nativeGate,
+		releaseNative,
+		transcriptJobs: [] as Promise<void>[],
 		platformDescriptor,
 		systemVersionDescriptor,
 		handlers: new Map<string, (...args: unknown[]) => unknown>(),
@@ -78,6 +85,33 @@ vi.mock("../native-bridge/cursor/recording/factory", () => ({
 	}),
 }));
 
+// Compatibility checks deliberately observe a pending native job. Hold only the
+// native engine boundary; keep the real job, persistence and library resume paths.
+vi.mock("../stt", () => ({
+	SttManager: class {
+		async init() {
+			await sandbox.nativeGate;
+		}
+		async transcribe() {
+			return { segments: [] };
+		}
+		async shutdown() {
+			return;
+		}
+	},
+}));
+vi.mock("./transcriptJob", async (original) => {
+	const actual = await original<typeof import("./transcriptJob")>();
+	return {
+		...actual,
+		requestBundleTranscript: (...args: Parameters<typeof actual.requestBundleTranscript>) => {
+			const job = actual.requestBundleTranscript(...args);
+			sandbox.transcriptJobs.push(job);
+			return job;
+		},
+	};
+});
+
 import { registerIpcHandlers } from "../ipc/handlers";
 
 const fixtures = path.resolve("tests/fixtures/legacy/fc50566a");
@@ -104,6 +138,9 @@ beforeAll(() => {
 });
 afterAll(async () => {
 	try {
+		// Finish every real background job before removing its owned scratch bundle.
+		sandbox.releaseNative();
+		await Promise.all(sandbox.transcriptJobs);
 		await fs.rm(sandbox.root, { recursive: true, force: true });
 	} finally {
 		for (const [name, descriptor] of [
