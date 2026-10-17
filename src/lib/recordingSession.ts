@@ -1,19 +1,19 @@
 export interface ProjectMedia {
 	screenVideoPath: string;
 	webcamVideoPath?: string;
+	/**
+	 * Milliseconds to shift the webcam asset's playback position relative to
+	 * the screen recording. Negative when the webcam started capturing before
+	 * the screen recording's real start (e.g. the browser MediaRecorder for
+	 * the webcam is started in the renderer before the native Windows helper
+	 * process finishes spawning and confirms recording), so the editor skips
+	 * that much extra leading footage instead of showing stale camera frames.
+	 */
+	webcamOffsetMs?: number;
 	cursorCaptureMode?: CursorCaptureMode;
 }
 
 export type CursorCaptureMode = "editable-overlay" | "system";
-
-/**
- * Structured step-capture degradation reason, re-exported from the canonical
- * Showhow shared type so the recorder can persist the root cause (e.g.
- * `accessibility-denied`) through the store-recorded-session IPC into the
- * bundle's meta.json. Kept here as a convenience re-export so the IPC input
- * type is self-contained.
- */
-export type { StepCaptureReason } from "./showhow/recordingLibrary";
 
 export interface RecordingSession extends ProjectMedia {
 	createdAt: number;
@@ -31,6 +31,7 @@ export interface StoreRecordedSessionInput {
 	webcam?: RecordedVideoAssetInput;
 	createdAt?: number;
 	cursorCaptureMode?: CursorCaptureMode;
+	stepCaptureReason?: import("./showhow/recordingLibrary").StepCaptureReason;
 	/**
 	 * Recording wall-clock duration (ms). The main process patches the WebM Duration
 	 * header on streamed recordings (the renderer no longer holds the bytes). Browser
@@ -38,18 +39,8 @@ export interface StoreRecordedSessionInput {
 	 * timeline for anything that took the streaming path.
 	 */
 	durationMs?: number;
-	/**
-	 * Structured step-capture degradation reason to persist into the bundle's
-	 * meta.json (e.g. `accessibility-denied` when the recorder degraded to
-	 * system-cursor mode). Optional; omitted for a normal recording.
-	 */
-	stepCaptureReason?: import("./showhow/recordingLibrary").StepCaptureReason;
-	/**
-	 * Recording source written to meta.json. Defaults to "desktop"; "browser"
-	 * marks a browser-companion recording so companion-origin degradation
-	 * reasons (unpaired/disconnected) are applied at bundle time.
-	 */
-	source?: "desktop" | "browser";
+	/** See {@link ProjectMedia.webcamOffsetMs}. */
+	webcamOffsetMs?: number;
 }
 
 export function normalizeCursorCaptureMode(value: unknown): CursorCaptureMode | undefined {
@@ -79,10 +70,15 @@ export function normalizeProjectMedia(candidate: unknown): ProjectMedia | null {
 
 	const webcamVideoPath = normalizePath(raw.webcamVideoPath);
 	const cursorCaptureMode = normalizeCursorCaptureMode(raw.cursorCaptureMode);
+	const webcamOffsetMs =
+		typeof raw.webcamOffsetMs === "number" && Number.isFinite(raw.webcamOffsetMs)
+			? raw.webcamOffsetMs
+			: undefined;
 
 	return {
 		screenVideoPath,
 		...(webcamVideoPath ? { webcamVideoPath } : {}),
+		...(webcamOffsetMs !== undefined ? { webcamOffsetMs } : {}),
 		...(cursorCaptureMode ? { cursorCaptureMode } : {}),
 	};
 }
@@ -100,16 +96,16 @@ export function normalizeRecordingSession(candidate: unknown): RecordingSession 
 
 	return {
 		...media,
-		createdAt:
-			typeof raw.createdAt === "number" && Number.isFinite(raw.createdAt)
-				? raw.createdAt
-				: Date.now(),
 		...(normalizePath(raw.showhowBundleDir)
 			? { showhowBundleDir: normalizePath(raw.showhowBundleDir) }
 			: {}),
 		...(normalizePath(raw.showhowVideoFileUrl)
 			? { showhowVideoFileUrl: normalizePath(raw.showhowVideoFileUrl) }
 			: {}),
+		createdAt:
+			typeof raw.createdAt === "number" && Number.isFinite(raw.createdAt)
+				? raw.createdAt
+				: Date.now(),
 	};
 }
 

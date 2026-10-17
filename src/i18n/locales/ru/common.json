@@ -4,9 +4,18 @@
 		"save": "Сохранить",
 		"delete": "Удалить",
 		"close": "Закрыть",
+		"resetToDefault": "Вернуть значение по умолчанию",
 		"share": "Поделиться",
 		"done": "Готово",
 		"open": "Открыть",
+		"checkForUpdates": "Проверить обновления",
+		"updateSettings": "Настройки обновления",
+		"updateModeNotify": "Уведомлять, когда доступно обновление",
+		"updateModeDownload": "Загружать обновления автоматически",
+		"updateModeDownloadAndInstall": "Загружать и устанавливать обновления автоматически",
+		"viewRelease": "Открыть выпуск",
+		"downloadUpdate": "Загрузить обновление",
+		"restartNow": "Перезапустить",
 		"upload": "Загрузить",
 		"export": "Экспорт",
 		"showInFolder": "Показать в папке",
@@ -14,6 +23,7 @@
 		"edit": "Редактировать",
 		"view": "Вид",
 		"window": "Окно",
+		"help": "Справка",
 		"quit": "Выход",
 		"stopRecording": "Остановить запись",
 		"undo": "Отменить",
@@ -35,16 +45,34 @@
 		"services": "Сервисы",
 		"hide": "Скрыть Showhow",
 		"hideOthers": "Скрыть остальные",
-		"unhide": "Показать все"
+		"unhide": "Показать все",
+		"saveDiagnostics": "Сохранить диагностику",
+		"starOnGithub": "Поставить звезду на GitHub",
+		"permissions": "Разрешения…",
+		"closeNotification": "Закрыть уведомление"
 	},
-	"playback": {
-		"play": "Воспроизвести",
-		"pause": "Пауза",
-		"fullscreen": "Полный экран",
-		"exitFullscreen": "Выход из полного экрана"
+	"updates": {
+		"available": "Доступен Showhow {{latestVersion}}. Установлена версия {{currentVersion}}.",
+		"current": "Установлена последняя версия Showhow ({{currentVersion}}).",
+		"readyToInstall": "Showhow {{latestVersion}} загружен. Перезапустите, чтобы завершить установку.",
+		"downloaded": "Showhow {{latestVersion}} загружен.",
+		"blockedRecording": "Завершите запись перед установкой обновления.",
+		"blockedLocation": "Переместите Showhow в папку «Программы» перед обновлением.",
+		"failed": "Не удалось проверить наличие обновлений.",
+		"downloadFailed": "Не удалось загрузить обновление."
+	},
+	"units": {
+		"pixelsPerSecond": "{{value}} пикс/с",
+		"pixels": "{{value}} пикс"
 	},
 	"locale": {
 		"name": "Русский",
 		"short": "RU"
+	},
+	"recordingSource": {
+		"window": "Окно",
+		"screen": "Экран",
+		"virtual": "Виртуальный экран",
+		"unknown": "Запись экрана"
 	}
 }

@@ -1,3 +1,4 @@
+// Electron permissions are public IPC dependencies, not native runtime in this test.
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -19,8 +20,18 @@ const fixture = vi.hoisted(() => {
 // Capture ipcMain.handle registrations so the test can invoke a handler by channel.
 const handlerRegistry = vi.hoisted(() => new Map<string, (...args: unknown[]) => unknown>());
 
+vi.mock("../permissions", () => ({
+	getMacPermissions: () => ({ read: async () => ({ screen: "granted", accessibility: "denied" }) }),
+	showPermissionsWindow: () => undefined,
+}));
+
 vi.mock("electron", () => ({
-	app: { getPath: () => fixture.userData, focus: () => undefined },
+	app: {
+		getPath: () => fixture.userData,
+		focus: () => undefined,
+		on: () => undefined,
+		getVersion: () => "1.6.0",
+	},
 	BrowserWindow: {},
 	clipboard: {},
 	desktopCapturer: {},
@@ -34,6 +45,7 @@ vi.mock("electron", () => ({
 	},
 	screen: {},
 	shell: {},
+	safeStorage: { isEncryptionAvailable: () => false },
 	systemPreferences: {},
 }));
 
@@ -92,7 +104,7 @@ describe("stop-native-mac-recording stepCaptureReason (issue #27 live)", () => {
 	// Register handlers once with stub window factories (none are invoked).
 	registerIpcHandlers(
 		() => undefined,
-		() => undefined,
+		() => ({}) as never,
 		() => ({}) as never,
 		() => ({}) as never,
 		() => ({}) as never,

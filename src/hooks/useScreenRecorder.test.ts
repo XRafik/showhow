@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { act, renderHook } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -29,16 +30,23 @@ vi.mock("./recorderHandle", () => ({
 // eslint-disable-next-line import/first
 import { useScreenRecorder } from "./useScreenRecorder";
 
-type ElectronApi = Record<string, (...args: unknown[]) => unknown>;
+type ElectronApi = Partial<Window["electronAPI"]>;
 
 function installElectronApi(overrides: Partial<ElectronApi> = {}): ElectronApi {
 	const api: ElectronApi = {
-		getPlatform: async () => "darwin",
-		getSelectedSource: async () => ({ id: "source-1", name: "Screen" }),
+		getPlatform: () => "darwin",
+		getSelectedSource: async () => ({
+			id: "source-1",
+			name: "Screen",
+			display_id: "display-1",
+			thumbnail: null,
+			appIcon: null,
+		}),
 		requestNativeMacCursorAccess: async () => ({
 			success: false,
 			granted: false,
-			status: "denied",
+			status: "not-determined",
+			accessibilityTrusted: false,
 		}),
 		isNativeMacCaptureAvailable: async () => ({
 			success: true,
@@ -147,7 +155,8 @@ describe("useScreenRecorder accessibility-denial regression (recorder-first fail
 			requestNativeMacCursorAccess: async () => ({
 				success: false,
 				granted: false,
-				status: "denied",
+				status: "not-determined",
+				accessibilityTrusted: false,
 			}),
 		});
 		vi.useFakeTimers();
@@ -185,6 +194,7 @@ describe("useScreenRecorder accessibility-denial regression (recorder-first fail
 				success: true,
 				granted: true,
 				status: "granted",
+				accessibilityTrusted: true,
 			}),
 		});
 		vi.useFakeTimers();
@@ -204,8 +214,8 @@ describe("useScreenRecorder accessibility-denial regression (recorder-first fail
 			(c: unknown[]) => c[0] === true,
 		);
 		expect(startupCall).toBeDefined();
-		// Granted: the editable-overlay mode is preserved (no degradation).
-		expect(startupCall![2]).toBe("editable-overlay");
+		// Stable macOS browser fallback bakes the system cursor; native granted coverage below still requires editable-overlay.
+		expect(startupCall![2]).toBe("system");
 		expect(result.current.recording).toBe(true);
 
 		vi.useRealTimers();
@@ -219,8 +229,18 @@ describe("useScreenRecorder accessibility-denial regression (recorder-first fail
 		fakeRecorderHandle.isStreaming.mockReturnValue(true);
 		const requestNativeMacCursorAccess = vi
 			.fn()
-			.mockResolvedValueOnce({ success: false, granted: false, status: "denied" })
-			.mockResolvedValueOnce({ success: true, granted: true, status: "granted" });
+			.mockResolvedValueOnce({
+				success: false,
+				granted: false,
+				status: "not-determined",
+				accessibilityTrusted: false,
+			})
+			.mockResolvedValueOnce({
+				success: true,
+				granted: true,
+				status: "granted",
+				accessibilityTrusted: true,
+			});
 		const storeRecordedSession = vi.fn(async () => ({
 			success: true,
 			path: "/tmp/first.showhow",
@@ -266,7 +286,7 @@ describe("useScreenRecorder accessibility-denial regression (recorder-first fail
 		expect(storeRecordedSession).toHaveBeenCalledTimes(1);
 		expect(storeRecordedSession).toHaveBeenCalledWith(
 			expect.objectContaining({
-				cursorCaptureMode: "system",
+				cursorCaptureMode: "system" as const,
 				stepCaptureReason: "accessibility-denied",
 			}),
 		);
@@ -282,17 +302,22 @@ describe("useScreenRecorder native macOS start request cursor mode (issue #27 li
 	});
 
 	it("sends cursor.mode: system and hideSystemCursor: false to startNativeMacRecording when accessibility is denied", async () => {
-		const startNativeMacRecording = vi.fn(async () => ({
-			success: true,
-			recordingId: 1234,
-			path: "/tmp/rec.mp4",
-			helperPath: "/tmp/helper",
-		}));
+		const startNativeMacRecording = vi.fn(
+			async (
+				..._args: Parameters<NonNullable<Window["electronAPI"]["startNativeMacRecording"]>>
+			) => ({
+				success: true,
+				recordingId: 1234,
+				path: "/tmp/rec.mp4",
+				helperPath: "/tmp/helper",
+			}),
+		);
 		installElectronApi({
 			requestNativeMacCursorAccess: async () => ({
 				success: false,
 				granted: false,
-				status: "denied",
+				status: "not-determined",
+				accessibilityTrusted: false,
 			}),
 			isNativeMacCaptureAvailable: async () => ({
 				success: true,
@@ -327,17 +352,22 @@ describe("useScreenRecorder native macOS start request cursor mode (issue #27 li
 	});
 
 	it("sends cursor.mode: editable-overlay and hideSystemCursor: true when accessibility is granted", async () => {
-		const startNativeMacRecording = vi.fn(async () => ({
-			success: true,
-			recordingId: 1235,
-			path: "/tmp/rec.mp4",
-			helperPath: "/tmp/helper",
-		}));
+		const startNativeMacRecording = vi.fn(
+			async (
+				..._args: Parameters<NonNullable<Window["electronAPI"]["startNativeMacRecording"]>>
+			) => ({
+				success: true,
+				recordingId: 1235,
+				path: "/tmp/rec.mp4",
+				helperPath: "/tmp/helper",
+			}),
+		);
 		installElectronApi({
 			requestNativeMacCursorAccess: async () => ({
 				success: true,
 				granted: true,
 				status: "granted",
+				accessibilityTrusted: true,
 			}),
 			isNativeMacCaptureAvailable: async () => ({
 				success: true,
@@ -377,26 +407,35 @@ describe("useScreenRecorder native macOS stop passes stepCaptureReason (issue #2
 	});
 
 	it("passes stepCaptureReason: accessibility-denied to stopNativeMacRecording when the recorder degraded", async () => {
-		const startNativeMacRecording = vi.fn(async () => ({
-			success: true,
-			recordingId: 4242,
-			path: "/tmp/rec.mp4",
-			helperPath: "/tmp/helper",
-		}));
-		const stopNativeMacRecording = vi.fn(async () => ({
-			success: true,
-			path: "/tmp/rec.mp4",
-			session: {
-				screenVideoPath: "/tmp/rec.mp4",
-				createdAt: 4242,
-				cursorCaptureMode: "system",
-			},
-		}));
+		const startNativeMacRecording = vi.fn(
+			async (
+				..._args: Parameters<NonNullable<Window["electronAPI"]["startNativeMacRecording"]>>
+			) => ({
+				success: true,
+				recordingId: 4242,
+				path: "/tmp/rec.mp4",
+				helperPath: "/tmp/helper",
+			}),
+		);
+		const stopNativeMacRecording = vi.fn(
+			async (
+				..._args: Parameters<NonNullable<Window["electronAPI"]["stopNativeMacRecording"]>>
+			) => ({
+				success: true,
+				path: "/tmp/rec.mp4",
+				session: {
+					screenVideoPath: "/tmp/rec.mp4",
+					createdAt: 4242,
+					cursorCaptureMode: "system" as const,
+				},
+			}),
+		);
 		installElectronApi({
 			requestNativeMacCursorAccess: async () => ({
 				success: false,
 				granted: false,
-				status: "denied",
+				status: "not-determined",
+				accessibilityTrusted: false,
 			}),
 			isNativeMacCaptureAvailable: async () => ({
 				success: true,
@@ -439,26 +478,35 @@ describe("useScreenRecorder native macOS stop passes stepCaptureReason (issue #2
 	});
 
 	it("omits stepCaptureReason to stopNativeMacRecording when accessibility was granted", async () => {
-		const startNativeMacRecording = vi.fn(async () => ({
-			success: true,
-			recordingId: 4243,
-			path: "/tmp/rec.mp4",
-			helperPath: "/tmp/helper",
-		}));
-		const stopNativeMacRecording = vi.fn(async () => ({
-			success: true,
-			path: "/tmp/rec.mp4",
-			session: {
-				screenVideoPath: "/tmp/rec.mp4",
-				createdAt: 4243,
-				cursorCaptureMode: "editable-overlay",
-			},
-		}));
+		const startNativeMacRecording = vi.fn(
+			async (
+				..._args: Parameters<NonNullable<Window["electronAPI"]["startNativeMacRecording"]>>
+			) => ({
+				success: true,
+				recordingId: 4243,
+				path: "/tmp/rec.mp4",
+				helperPath: "/tmp/helper",
+			}),
+		);
+		const stopNativeMacRecording = vi.fn(
+			async (
+				..._args: Parameters<NonNullable<Window["electronAPI"]["stopNativeMacRecording"]>>
+			) => ({
+				success: true,
+				path: "/tmp/rec.mp4",
+				session: {
+					screenVideoPath: "/tmp/rec.mp4",
+					createdAt: 4243,
+					cursorCaptureMode: "editable-overlay" as const,
+				},
+			}),
+		);
 		installElectronApi({
 			requestNativeMacCursorAccess: async () => ({
 				success: true,
 				granted: true,
 				status: "granted",
+				accessibilityTrusted: true,
 			}),
 			isNativeMacCaptureAvailable: async () => ({
 				success: true,

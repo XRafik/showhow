@@ -4,9 +4,18 @@
 		"save": "Enregistrer",
 		"delete": "Supprimer",
 		"close": "Fermer",
+		"resetToDefault": "Rétablir la valeur par défaut",
 		"share": "Partager",
 		"done": "Terminer",
 		"open": "Ouvrir",
+		"checkForUpdates": "Rechercher des mises à jour",
+		"updateSettings": "Paramètres de mise à jour",
+		"updateModeNotify": "Notifier lorsqu'une mise à jour est disponible",
+		"updateModeDownload": "Télécharger les mises à jour automatiquement",
+		"updateModeDownloadAndInstall": "Télécharger et installer les mises à jour automatiquement",
+		"viewRelease": "Voir la version",
+		"downloadUpdate": "Télécharger la mise à jour",
+		"restartNow": "Redémarrer maintenant",
 		"upload": "Téléverser",
 		"export": "Exporter",
 		"showInFolder": "Afficher dans le dossier",
@@ -14,6 +23,7 @@
 		"edit": "Éditer",
 		"view": "Affichage",
 		"window": "Fenêtre",
+		"help": "Aide",
 		"quit": "Quitter",
 		"stopRecording": "Arrêter l'enregistrement",
 		"undo": "Annuler",
@@ -35,16 +45,34 @@
 		"services": "Services",
 		"hide": "Masquer Showhow",
 		"hideOthers": "Masquer les autres",
-		"unhide": "Tout afficher"
+		"unhide": "Tout afficher",
+		"saveDiagnostics": "Enregistrer les diagnostics",
+		"starOnGithub": "Mettre une étoile sur GitHub",
+		"permissions": "Autorisations…",
+		"closeNotification": "Fermer la notification"
 	},
-	"playback": {
-		"play": "Lecture",
-		"pause": "Pause",
-		"fullscreen": "Plein écran",
-		"exitFullscreen": "Quitter le plein écran"
+	"updates": {
+		"available": "Showhow {{latestVersion}} est disponible. Vous utilisez la version {{currentVersion}}.",
+		"current": "Showhow est à jour ({{currentVersion}}).",
+		"readyToInstall": "Showhow {{latestVersion}} a été téléchargé. Redémarrez pour terminer l'installation.",
+		"downloaded": "Showhow {{latestVersion}} a été téléchargé.",
+		"blockedRecording": "Terminez votre enregistrement avant d'installer la mise à jour.",
+		"blockedLocation": "Déplacez Showhow dans le dossier Applications avant de le mettre à jour.",
+		"failed": "Impossible de rechercher les mises à jour.",
+		"downloadFailed": "Impossible de télécharger la mise à jour."
+	},
+	"units": {
+		"pixelsPerSecond": "{{value}} pixels/s",
+		"pixels": "{{value}} pixels"
 	},
 	"locale": {
 		"name": "Français",
 		"short": "FR"
+	},
+	"recordingSource": {
+		"window": "Fenêtre",
+		"screen": "Écran",
+		"virtual": "Écran virtuel",
+		"unknown": "Enregistrement d'écran"
 	}
 }

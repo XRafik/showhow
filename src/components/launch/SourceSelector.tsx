@@ -1,6 +1,5 @@
 import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { MdCheck } from "react-icons/md";
 import { useScopedT } from "@/contexts/I18nContext";
 import { Button } from "../ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
@@ -21,7 +20,7 @@ export function SourceSelector() {
 	const [selectedSource, setSelectedSource] = useState<DesktopSource | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [loadFailed, setLoadFailed] = useState(false);
-	const cardRefs = useRef(new Map<string, HTMLDivElement>());
+	const cardRefs = useRef(new Map<string, HTMLButtonElement>());
 
 	const fetchSources = useCallback(async () => {
 		setLoading(true);
@@ -66,7 +65,6 @@ export function SourceSelector() {
 	const hasNoSources = !loading && sources.length === 0;
 
 	const handleSourceSelect = (source: DesktopSource) => setSelectedSource(source);
-
 	// Roving tabIndex: within each category radio group, the selected card (or
 	// the first card when nothing in that category is selected) is the single
 	// Tab stop; every other card is programmatically focusable only.
@@ -78,7 +76,7 @@ export function SourceSelector() {
 
 	const handleCardKeyDown =
 		(source: DesktopSource, index: number, category: DesktopSource[]) =>
-		(event: ReactKeyboardEvent<HTMLDivElement>) => {
+		(event: ReactKeyboardEvent<HTMLButtonElement>) => {
 			// Space or Enter activates the focused radio.
 			if (event.key === " " || event.key === "Enter") {
 				event.preventDefault();
@@ -111,8 +109,8 @@ export function SourceSelector() {
 				style={{ minHeight: "100vh" }}
 			>
 				<div className="text-center">
-					<div className="animate-spin duration-500 rounded-[50%] h-6 w-6 border-2 border-b-transparent border-[#34B27B] mx-auto mb-2" />
-					<p className="text-xs text-zinc-400">{t("sourceSelector.loading")}</p>
+					<div className="animate-spin duration-500 rounded-[50%] h-6 w-6 border-2 border-b-transparent border-[#10b981] mx-auto mb-2" />
+					<p className="text-xs text-[#828c99]">{t("sourceSelector.loading")}</p>
 				</div>
 			</div>
 		);
@@ -125,15 +123,15 @@ export function SourceSelector() {
 				style={{ minHeight: "100vh" }}
 			>
 				<div className="max-w-[320px] px-6 text-center">
-					<h2 className="text-sm font-semibold text-white">{t("sourceSelector.emptyTitle")}</h2>
-					<p className="mt-2 text-xs leading-5 text-zinc-400">
+					<h2 className="text-sm font-semibold text-[#ffffff]">{t("sourceSelector.emptyTitle")}</h2>
+					<p className="mt-2 text-xs leading-5 text-[#828c99]">
 						{loadFailed
 							? t("sourceSelector.loadFailedDescription")
 							: t("sourceSelector.emptyDescription")}
 					</p>
 					<Button
 						onClick={() => void fetchSources()}
-						className="mt-4 h-8 rounded-lg bg-[#34B27B] px-5 text-[11px] font-semibold text-white transition-transform duration-150 hover:bg-[#34B27B]/85 active:scale-95"
+						className="mt-4 h-9 rounded-[9px] bg-[#10b981] px-5 text-[13px] font-semibold text-[#08090d] transition-transform duration-150 hover:bg-[#10b981]/85 active:scale-95"
 					>
 						{tc("actions.reload")}
 					</Button>
@@ -146,105 +144,96 @@ export function SourceSelector() {
 		const isSelected = selectedSource?.id === source.id;
 		const sourceKind = source.id.startsWith("screen:") ? "screen" : "window";
 		return (
-			<div
+			<button
 				key={source.id}
+				type="button"
 				ref={(node) => {
-					if (node) {
-						cardRefs.current.set(source.id, node);
-					} else {
-						cardRefs.current.delete(source.id);
-					}
+					if (node) cardRefs.current.set(source.id, node);
+					else cardRefs.current.delete(source.id);
 				}}
 				role="radio"
 				aria-checked={isSelected}
 				aria-label={source.name}
 				tabIndex={isCardTabStop(source, index, category) ? 0 : -1}
+				onKeyDown={handleCardKeyDown(source, index, category)}
 				data-testid="source-selector-card"
 				data-source-kind={sourceKind}
-				className={`${styles.sourceCard} ${isSelected ? styles.selected : ""} p-1.5`}
+				className={`${styles.sourceCard} ${isSelected ? styles.selected : ""} flex flex-col text-left`}
 				onClick={(event) => {
 					handleSourceSelect(source);
 					event.currentTarget.focus();
 				}}
-				onKeyDown={handleCardKeyDown(source, index, category)}
 			>
-				<div className="relative mb-1.5 overflow-hidden rounded-lg border border-white/[0.06] bg-black/30">
+				<div className={styles.thumb}>
 					<img
 						src={source.thumbnail || ""}
 						alt={source.name}
-						className="w-full aspect-video object-cover"
+						className="w-full h-full object-cover"
 					/>
-					{isSelected && (
-						<div className="absolute right-1.5 top-1.5">
-							<div className={styles.checkBadge}>
-								<MdCheck size={11} className="text-white" />
-							</div>
-						</div>
-					)}
 				</div>
-				<div className="flex items-center gap-1.5 px-1 pb-0.5">
-					{source.appIcon && (
-						<img src={source.appIcon} alt="" className={`${styles.icon} flex-shrink-0`} />
+				<div className="flex items-center gap-[7px] px-[11px] py-[9px]">
+					{source.appIcon ? (
+						<img src={source.appIcon} alt="" className={styles.icon} />
+					) : (
+						<span className={styles.iconFallback}>
+							<svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor">
+								<circle cx="12" cy="12" r="10" />
+							</svg>
+						</span>
 					)}
 					<div className={`${styles.name} truncate`}>{source.name}</div>
 				</div>
-			</div>
+			</button>
 		);
 	};
 
 	return (
-		<div className={`min-h-screen flex flex-col ${styles.glassContainer}`}>
-			<div className="flex-1 flex flex-col w-full px-3.5 pt-3.5">
-				<Tabs
-					defaultValue={screenSources.length === 0 ? "windows" : "screens"}
-					className="flex-1 flex flex-col"
-				>
-					<TabsList className="mb-3 grid h-8 grid-cols-2 rounded-xl border border-white/[0.06] bg-white/[0.04] p-0.5">
-						<TabsTrigger
-							value="screens"
-							className="rounded-lg py-1 text-[11px] text-zinc-400 transition-all data-[state=active]:bg-white/[0.12] data-[state=active]:text-white"
+		<div className={`h-screen flex flex-col ${styles.glassContainer}`}>
+			<Tabs
+				defaultValue={screenSources.length === 0 ? "windows" : "screens"}
+				className="flex-1 flex flex-col min-h-0"
+			>
+				<TabsList className="flex items-center gap-1.5 h-auto p-3.5 rounded-none bg-transparent border-b border-[#191d24] flex-shrink-0">
+					<TabsTrigger
+						value="screens"
+						className="flex-1 h-10 rounded-[11px] text-[13.5px] font-medium text-[#828c99] border border-transparent transition-all data-[state=active]:bg-[#232830] data-[state=active]:border-[#333a45] data-[state=active]:text-[#ffffff] data-[state=active]:font-semibold data-[state=active]:shadow-none"
+					>
+						{t("sourceSelector.screens", { count: String(screenSources.length) })}
+					</TabsTrigger>
+					<TabsTrigger
+						value="windows"
+						className="flex-1 h-10 rounded-[11px] text-[13.5px] font-medium text-[#828c99] border border-transparent transition-all data-[state=active]:bg-[#232830] data-[state=active]:border-[#333a45] data-[state=active]:text-[#ffffff] data-[state=active]:font-semibold data-[state=active]:shadow-none"
+					>
+						{t("sourceSelector.windows", { count: String(windowSources.length) })}
+					</TabsTrigger>
+				</TabsList>
+				<div className="flex-1 min-h-0 px-[18px] pt-[18px] pb-1.5">
+					<TabsContent value="screens" className="h-full mt-0">
+						<div
+							role="radiogroup"
+							aria-label={t("sourceSelector.screens", { count: String(screenSources.length) })}
+							className={`grid h-full auto-rows-min grid-cols-2 gap-3.5 overflow-y-auto pr-1.5 ${styles.sourceGridScroll}`}
 						>
-							{t("sourceSelector.screens", { count: String(screenSources.length) })}
-						</TabsTrigger>
-						<TabsTrigger
-							value="windows"
-							className="rounded-lg py-1 text-[11px] text-zinc-400 transition-all data-[state=active]:bg-white/[0.12] data-[state=active]:text-white"
+							{screenSources.map((source, index) => renderSourceCard(source, index, screenSources))}
+						</div>
+					</TabsContent>
+					<TabsContent value="windows" className="h-full mt-0">
+						<div
+							role="radiogroup"
+							aria-label={t("sourceSelector.windows", { count: String(windowSources.length) })}
+							className={`grid h-full auto-rows-min grid-cols-2 gap-3.5 overflow-y-auto pr-1.5 ${styles.sourceGridScroll}`}
 						>
-							{t("sourceSelector.windows", { count: String(windowSources.length) })}
-						</TabsTrigger>
-					</TabsList>
-					<div className="flex-1 min-h-0">
-						<TabsContent value="screens" className="h-full mt-0">
-							<div
-								role="radiogroup"
-								aria-label={t("sourceSelector.screens", { count: String(screenSources.length) })}
-								className={`grid h-[282px] auto-rows-min grid-cols-2 gap-2.5 overflow-y-auto pr-1.5 pt-1 ${styles.sourceGridScroll}`}
-							>
-								{screenSources.map((source, index) =>
-									renderSourceCard(source, index, screenSources),
-								)}
-							</div>
-						</TabsContent>
-						<TabsContent value="windows" className="h-full mt-0">
-							<div
-								role="radiogroup"
-								aria-label={t("sourceSelector.windows", { count: String(windowSources.length) })}
-								className={`grid h-[282px] auto-rows-min grid-cols-2 gap-2.5 overflow-y-auto pr-1.5 pt-1 ${styles.sourceGridScroll}`}
-							>
-								{windowSources.map((source, index) =>
-									renderSourceCard(source, index, windowSources),
-								)}
-							</div>
-						</TabsContent>
-					</div>
-				</Tabs>
-			</div>
-			<div className="flex justify-center gap-2 border-t border-white/[0.06] p-3">
+							{windowSources.map((source, index) => renderSourceCard(source, index, windowSources))}
+						</div>
+					</TabsContent>
+				</div>
+			</Tabs>
+			<div className="flex justify-end gap-2.5 border-t border-[#191d24] px-[18px] py-4">
 				<Button
 					data-testid="source-selector-cancel-button"
 					variant="ghost"
 					onClick={() => window.close()}
-					className="h-8 rounded-lg px-5 text-[11px] text-zinc-400 transition-transform duration-150 hover:bg-white/5 hover:text-white active:scale-95"
+					className="h-9 rounded-[9px] border border-[#333a45] px-4 text-[13px] font-medium text-[#f5f7fa] transition-colors duration-150 hover:bg-white/[0.08] hover:text-[#f5f7fa]"
 				>
 					{tc("actions.cancel")}
 				</Button>
@@ -252,7 +241,7 @@ export function SourceSelector() {
 					data-testid="source-selector-share-button"
 					onClick={handleShare}
 					disabled={!selectedSource}
-					className="h-8 rounded-lg bg-[#34B27B] px-5 text-[11px] font-semibold text-white transition-transform duration-150 hover:bg-[#34B27B]/85 active:scale-95 disabled:bg-zinc-700 disabled:opacity-30"
+					className="h-9 rounded-[9px] bg-[#10b981] px-5 text-[13px] font-semibold text-[#08090d] transition-transform duration-150 hover:bg-[#10b981]/85 active:scale-95 disabled:bg-[#232830] disabled:border disabled:border-[#242932] disabled:text-[#565f6b] disabled:opacity-100"
 				>
 					{tc("actions.share")}
 				</Button>

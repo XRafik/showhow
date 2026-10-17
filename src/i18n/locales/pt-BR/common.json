@@ -4,9 +4,18 @@
 		"save": "Salvar",
 		"delete": "Deletar",
 		"close": "Fechar",
+		"resetToDefault": "Restaurar o valor padrão",
 		"share": "Compartilhar",
 		"done": "Concluir",
 		"open": "Abrir",
+		"checkForUpdates": "Verificar atualizações",
+		"updateSettings": "Configurações de atualização",
+		"updateModeNotify": "Avisar quando houver uma atualização",
+		"updateModeDownload": "Baixar atualizações automaticamente",
+		"updateModeDownloadAndInstall": "Baixar e instalar atualizações automaticamente",
+		"viewRelease": "Ver versão",
+		"downloadUpdate": "Baixar atualização",
+		"restartNow": "Reiniciar agora",
 		"upload": "Upload",
 		"export": "Exportar",
 		"showInFolder": "Mostrar na Pasta",
@@ -14,6 +23,7 @@
 		"edit": "Editar",
 		"view": "Visualizar",
 		"window": "Janela",
+		"help": "Ajuda",
 		"quit": "Sair",
 		"stopRecording": "Parar Gravação",
 		"undo": "Desfazer",
@@ -35,16 +45,34 @@
 		"services": "Serviços",
 		"hide": "Ocultar Showhow",
 		"hideOthers": "Ocultar Outros",
-		"unhide": "Mostrar Todos"
+		"unhide": "Mostrar Todos",
+		"saveDiagnostics": "Salvar Diagnósticos",
+		"starOnGithub": "Dar uma estrela no GitHub",
+		"permissions": "Permissões…",
+		"closeNotification": "Fechar a notificação"
 	},
-	"playback": {
-		"play": "Play",
-		"pause": "Pause",
-		"fullscreen": "Tela Cheia",
-		"exitFullscreen": "Sair da Tela Cheia"
+	"updates": {
+		"available": "O Showhow {{latestVersion}} está disponível. Você está usando a versão {{currentVersion}}.",
+		"current": "O Showhow está atualizado ({{currentVersion}}).",
+		"readyToInstall": "O Showhow {{latestVersion}} foi baixado. Reinicie para concluir a instalação.",
+		"downloaded": "O Showhow {{latestVersion}} foi baixado.",
+		"blockedRecording": "Conclua a gravação antes de instalar a atualização.",
+		"blockedLocation": "Mova o Showhow para a pasta Aplicativos antes de atualizar.",
+		"failed": "Não foi possível verificar atualizações.",
+		"downloadFailed": "Não foi possível baixar a atualização."
+	},
+	"units": {
+		"pixelsPerSecond": "{{value}} pixels/s",
+		"pixels": "{{value}} pixels"
 	},
 	"locale": {
 		"name": "Português Brasileiro",
 		"short": "PT-BR"
+	},
+	"recordingSource": {
+		"window": "Janela",
+		"screen": "Tela",
+		"virtual": "Tela virtual",
+		"unknown": "Gravação de tela"
 	}
 }

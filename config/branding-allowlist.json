@@ -58,18 +58,14 @@
 		},
 		{
 			"file": "PLAN.md",
-			"reason": "Approved upstream migration plan names the source project, source evidence paths and legacy project-file format; allows only the eight recorded lines",
+			"reason": "Reviewed stable-v2.0 plan literal source/legacy/attribution lines only; no blanket application exemption",
 			"lines": [
 				{
 					"text": "Rebuild Showhow on the upstream OpenScreen v2 codebase, so the owner gets v2's editor, Rust compositor, native transcription and AI editing assistant, and can take later upstream releases through reviewed merges. Today's Showhow behaviour (recording bundles, library, workflow documents, Showhow identity, legacy data) keeps working on the new base. The six V1 features are shaped afterwards on this base.",
 					"count": 1
 				},
 				{
-					"text": "- Prior assessment: `docs/research/2026-10-12-openscreen-v2-assessment.md`.",
-					"count": 1
-				},
-				{
-					"text": "- User-visible \"OpenScreen\" text becomes Showhow. Internal names (helper binaries, the `openscreen` CLI, the MCP server id, the `.openscreen` extension) stay as upstream has them unless they are persisted or user-visible. CLI and MCP stay in the code, hidden and off.",
+					"text": "- Source research: `docs/research/2026-10-16-openscreen-v2.0.0-seam-assessment.md`, with pinned primary-source links and untrusted claim ledger. Source facts are not runtime acceptance. Official compare and local objects agree rc.3 is447ahead/16behind stable, with divergent histories. `bb4660b11d2e1f87f5f5fc57dd6acb14e248109f` was a separate shaping snapshot, not rc.3; the actual rc.3 pin is `523a3e4c47cf7566cc5c759ad5275f7edcd3382e`. Do not use the stale458count for these tags.",
 					"count": 1
 				},
 				{
@@ -85,7 +81,11 @@
 					"count": 1
 				},
 				{
-					"text": "- R2.2 Identity: `appId`, `productName`, app icon, user-visible app name and window titles are Showhow's. User-visible \"OpenScreen\" strings in the 13 locales are replaced; `npm run branding:check` passes. Internal identifiers follow the confirmed rule; each one kept or renamed is listed in `upstream-touchpoints.md` with its role (persisted, IPC, helper discovery, user-visible).",
+					"text": "- Policy/research/plan corrections: `PLAN.md`, `UPSTREAM.md`, `AGENTS.md`, `.agents/CONTEXT.md`, `.agents/HANDOFF.md`, `.agents/decisions.md`, `docs/research/2026-10-16-openscreen-v2.0.0-seam-assessment.md`, `docs/research/2026-10-12-openscreen-v2-assessment.md`, `config/branding-allowlist.json`, `config/upstream-branding-allowlist.json`. Preserve prior decisions/notes as history; append corrections.",
+					"count": 1
+				},
+				{
+					"text": "- R2.2 Identity: `appId`, `productName`, app icon, user-visible app name and window titles are Showhow's. User-visible \"OpenScreen\" strings in the locale set actually shipped by the stable-derived app are replaced; record the locale inventory; `npm run branding:check` passes. Internal identifiers follow the confirmed rule; each one kept or renamed is listed in `upstream-touchpoints.md` with its role (persisted, IPC, helper discovery, user-visible).",
 					"count": 1
 				},
 				{
@@ -515,6 +515,10 @@
 					"count": 1
 				}
 			]
+		},
+		{
+			"file": "docs/research/2026-10-16-openscreen-v2.0.0-seam-assessment.md",
+			"reason": "Pinned upstream source research and untrusted-evidence record; not application copy"
 		}
 	]
 }

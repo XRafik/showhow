@@ -4,9 +4,18 @@
 		"save": "Salva",
 		"delete": "Elimina",
 		"close": "Chiudi",
+		"resetToDefault": "Ripristina il valore predefinito",
 		"share": "Condividi",
 		"done": "Fatto",
 		"open": "Apri",
+		"checkForUpdates": "Controlla aggiornamenti",
+		"updateSettings": "Impostazioni aggiornamento",
+		"updateModeNotify": "Notifica quando è disponibile un aggiornamento",
+		"updateModeDownload": "Scarica gli aggiornamenti automaticamente",
+		"updateModeDownloadAndInstall": "Scarica e installa gli aggiornamenti automaticamente",
+		"viewRelease": "Visualizza versione",
+		"downloadUpdate": "Scarica aggiornamento",
+		"restartNow": "Riavvia ora",
 		"upload": "Carica",
 		"export": "Esporta",
 		"showInFolder": "Mostra nella cartella",
@@ -14,6 +23,7 @@
 		"edit": "Modifica",
 		"view": "Visualizza",
 		"window": "Finestra",
+		"help": "Aiuto",
 		"quit": "Esci",
 		"stopRecording": "Interrompi registrazione",
 		"undo": "Annulla",
@@ -35,16 +45,34 @@
 		"services": "Servizi",
 		"hide": "Nascondi Showhow",
 		"hideOthers": "Nascondi gli altri",
-		"unhide": "Mostra tutto"
+		"unhide": "Mostra tutto",
+		"saveDiagnostics": "Salva dati diagnostici",
+		"starOnGithub": "Metti una stella su GitHub",
+		"permissions": "Permessi…",
+		"closeNotification": "Chiudi la notifica"
 	},
-	"playback": {
-		"play": "Riproduci",
-		"pause": "Pausa",
-		"fullscreen": "Schermo intero",
-		"exitFullscreen": "Esci dallo schermo intero"
+	"updates": {
+		"available": "Showhow {{latestVersion}} è disponibile. Stai usando la versione {{currentVersion}}.",
+		"current": "Showhow è aggiornato ({{currentVersion}}).",
+		"readyToInstall": "Showhow {{latestVersion}} è stato scaricato. Riavvia per completare l'installazione.",
+		"downloaded": "Showhow {{latestVersion}} è stato scaricato.",
+		"blockedRecording": "Termina la registrazione prima di installare l'aggiornamento.",
+		"blockedLocation": "Sposta Showhow nella cartella Applicazioni prima di aggiornare.",
+		"failed": "Impossibile controllare gli aggiornamenti.",
+		"downloadFailed": "Impossibile scaricare l'aggiornamento."
+	},
+	"units": {
+		"pixelsPerSecond": "{{value}} pixel/s",
+		"pixels": "{{value}} pixel"
 	},
 	"locale": {
 		"name": "Italiano",
 		"short": "IT"
+	},
+	"recordingSource": {
+		"window": "Finestra",
+		"screen": "Schermo",
+		"virtual": "Schermo virtuale",
+		"unknown": "Registrazione schermo"
 	}
 }

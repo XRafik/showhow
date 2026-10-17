@@ -30,9 +30,13 @@ upstream tag into the isolated ticket branch so subsequent release merges retain
 Do not merge upstream `main` or continuously synchronise branches. The merge and the Showhow-layer
 port land together; `main` must not lose existing Showhow behaviour between them.
 
-For the approved “Move onto upstream v2” milestone, Task 2 (#116) develops from
-`v2.1.0-rc.3` (`523a3e4c47cf7566cc5c759ad5275f7edcd3382e`) and cannot merge to `main`
-before upstream tags final `v2.1.0`. Rebase the migration onto that final tag before it lands.
+For the owner-retargeted “Move onto upstream v2” milestone, Task 2 (#116) uses
+stable `v2.0.0` (`eff86dcba48fac490a0e153141bf8537df7ffc54`) as its actual release parent.
+The former rc.3/final-v2.1.0 waiting condition is superseded by the owner-approved
+stable retarget. Archive the pending RC candidate before same-lane reconstruction;
+carry focused Showhow adaptations, not the divergent RC tree. Refresh source/native/
+packaged proof and owner acceptance against stable. Eventual exact-head owner-authorised
+GitHub landing uses a merge commit, never squash/rebase; verify stable tag ancestry on main.
 No Showhow `v*` release tags are pushed until the milestone is complete. Agents never merge PRs;
 follow the repository's Loop review and owner merge gates.
 
@@ -58,7 +62,7 @@ follow the repository's Loop review and owner merge gates.
    Retain command outputs, screenshots and L1/L2 file hashes. State Windows and Linux native behaviour
    as untested unless target-platform evidence exists. Source checks alone do not prove native behaviour.
 6. Obtain fresh independent review of the candidate and its evidence before Ship. Later upstream
-   releases need their own scoped ticket and PR; this milestone approves only the v2.1.0 migration.
+   releases need their own scoped ticket and PR; this milestone approves only the stable v2.0.0 migration.
 
 ## Exclusions
 

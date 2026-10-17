@@ -30,19 +30,23 @@ export function useShortcuts(): ShortcutsContextValue {
 
 export function ShortcutsProvider({ children }: { children: ReactNode }) {
 	const [shortcuts, setShortcuts] = useState<ShortcutsConfig>(DEFAULT_SHORTCUTS);
+	// `getIsMac()` is synchronous, but it reads `window.electronAPI`, so keep it
+	// in an effect rather than in the initial state — that keeps the first render
+	// free of any dependency on preload having been installed.
 	const [isMac, setIsMac] = useState(false);
 	const [isConfigOpen, setIsConfigOpen] = useState(false);
 
 	useEffect(() => {
-		getIsMac()
-			.then(setIsMac)
-			.catch(() => {
-				// Keep default non-mac fallback if detection fails.
-			});
+		setIsMac(getIsMac());
 
+		// Guard `electronAPI` itself, not just the method on it — that is what the
+		// note above is after. Without preload (browser mode, and any test that
+		// renders a consumer) the bare property read threw and took the whole
+		// subtree with it, rather than falling back to the defaults already in
+		// state.
 		window.electronAPI
-			.getShortcuts?.()
-			.then((saved) => {
+			?.getShortcuts?.()
+			?.then((saved) => {
 				if (saved) {
 					setShortcuts(mergeWithDefaults(saved as Partial<ShortcutsConfig>));
 				}
@@ -55,9 +59,9 @@ export function ShortcutsProvider({ children }: { children: ReactNode }) {
 	const persistShortcuts = useCallback(
 		async (config?: ShortcutsConfig) => {
 			const configToSave = config ?? shortcuts;
-			await window.electronAPI.saveShortcuts?.(configToSave);
+			await window.electronAPI?.saveShortcuts?.(configToSave);
 
-			const result = await window.electronAPI.updateGlobalShortcut?.(configToSave.openApp);
+			const result = await window.electronAPI?.updateGlobalShortcut?.(configToSave.openApp);
 			return result ? result.success : true;
 		},
 		[shortcuts],

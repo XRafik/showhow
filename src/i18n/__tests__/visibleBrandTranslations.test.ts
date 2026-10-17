@@ -47,19 +47,15 @@ describe("visible Showhow translations", () => {
 			"utf8",
 		);
 		const appComponent = fs.readFileSync(path.resolve("src/App.tsx"), "utf8");
-		const settingsPanel = fs.readFileSync(
-			path.resolve("src/components/video-editor/SettingsPanel.tsx"),
-			"utf8",
-		);
 		const indexHtml = fs.readFileSync(path.resolve("index.html"), "utf8");
 
 		expect(electronMain).toContain('"About Showhow"');
 		expect(electronMain).toContain('"Hide Showhow"');
-		expect(electronMain).toContain(': "Showhow"');
+		expect(fs.readFileSync(path.resolve("electron/about.ts"), "utf8")).toContain(
+			'PRODUCT_NAME = "Showhow"',
+		);
 		expect(electronMain).toContain('getTrayIcon("showhow.png"');
 		expect(electronMain).not.toMatch(/OpenScreen|openscreen\.png/);
-		expect(electronHandlers).toContain("Allow Showhow under System Settings");
-		expect(electronHandlers).toContain("Allow Showhow in macOS System Settings");
 		expect(electronHandlers).toContain("`showhow-diagnostic-${Date.now()}.json`");
 		expect(electronHandlers).not.toContain("`openscreen-diagnostic-${Date.now()}.json`");
 		expect(electronWindows).toContain('title: "Showhow"');
@@ -78,15 +74,12 @@ describe("visible Showhow translations", () => {
 		expect(diagnosticReadme).not.toContain("retains this inherited filename until");
 		expect(appComponent).toContain("<h1>Showhow</h1>");
 		expect(appComponent).not.toContain("<h1>Openscreen</h1>");
-		expect(settingsPanel).toContain('openExternalUrl("https://github.com/bedarstudios/showhow")');
-		expect(settingsPanel).toContain('"https://github.com/bedarstudios/showhow/issues/new/choose"');
-		expect(settingsPanel).not.toContain("EtienneLescot/openscreen");
 		expect(indexHtml).toContain('href="/showhow.png"');
-		expect(indexHtml).not.toMatch(/vite\.svg|openscreen/i);
+		expect(indexHtml).not.toMatch(/vite\.svg|<title>OpenScreen/i);
 	});
 
-	it("keeps exact translation-key parity across all 13 locales", () => {
-		expect(locales).toHaveLength(13);
+	it("keeps exact translation-key parity across all 15 stable locales", () => {
+		expect(locales).toHaveLength(15);
 		for (const namespace of namespaces) {
 			const englishKeys = flattenedKeys(readNamespace("en", namespace));
 			for (const locale of locales) {

@@ -5,10 +5,12 @@ describe("migrating storage", () => {
 	it("prefers Showhow data", () => {
 		const storage = {
 			getItem: vi.fn((key: string) => (key === "showhow" ? "new" : "old")),
+			setItem: vi.fn(),
 		};
 
 		expect(readWithLegacyFallback(storage, "showhow", "openscreen")).toBe("new");
 		expect(storage.getItem).not.toHaveBeenCalledWith("openscreen");
+		expect(storage.setItem).not.toHaveBeenCalled();
 	});
 
 	it("copies a legacy value to the Showhow key without deleting the legacy key", () => {

@@ -1,26 +1,27 @@
 {
 	"buttons": {
-		"addZoom": "Yakınlaştırma Ekle (Z)",
-		"suggestZooms": "İmleçten Yakınlaştırma Öner",
-		"addTrim": "Kırpma Ekle (T)",
-		"addAnnotation": "Açıklama Ekle (A)",
-		"addSpeed": "Hız Ekle (S)",
-		"addBlur": "Bulanık ekle (B)",
-		"autoZoomOn": "Otomatik yakınlaştırma önerileri açık — önerilen yakınlaştırmaları kaldırmak için tıklayın",
-		"autoZoomOff": "Otomatik yakınlaştırma önerileri kapalı — imleçten yakınlaştırma önermek için tıklayın",
-		"autoFocusAllOn": "Tüm yakınlaştırmalarda Otomatik Odak açık — tümünü manuele geçirmek için tıklayın",
-		"autoFocusAllOff": "Tüm yakınlaştırmalara Otomatik Odak uygula (kamera imleci takip eder)"
+		"addZoom": "Şu anki zamanda yakınlaştırma ekle",
+		"autoFocusAll": "Tüm yakınlaştırmalar için Otomatik Odak",
+		"autoFocusAllTip": "Tüm yakınlaştırmalar imleci takip eder. Kapalı: her yakınlaştırmanın odağını siz seçersiniz.",
+		"clearTimeline": "Tüm yakınlaştırma, kırpma, hız, açıklama ve Tam Ekran Kamera öğelerini kaldır. Klipler, ses ve altyazılar kalır.",
+		"addTrim": "Kırpma ekle: videonun bir bölümünü şu anki zamanda çıkarır",
+		"addAnnotation": "Şu anki zamanda metin, ok, resim veya bulanıklık ekle",
+		"addSpeed": "Şu anki zamanda hız değişikliği ekle",
+		"addCameraFullscreen": "Tam Ekran Kamera ekle: kamerayı şu anki zamanda tam ekran gösterir"
 	},
 	"hints": {
-		"pressZoom": "Yakınlaştırma eklemek için Z tuşuna basın",
-		"pressTrim": "Kırpma eklemek için T tuşuna basın",
-		"pressAnnotation": "Açıklama eklemek için A tuşuna basın",
-		"pressSpeed": "Hız eklemek için S tuşuna basın",
-		"pressBlur": "Bulanık bölge eklemek için B tuşuna basın"
+		"pressZoom": "Yakınlaştırma eklemek için {{key}} tuşuna basın",
+		"pressTrim": "Kırpma eklemek için {{key}} tuşuna basın",
+		"pressAnnotation": "Açıklama eklemek için {{key}} tuşuna basın",
+		"pressAudio": "Ses eklemek için {{audioKey}}, seslendirme kaydetmek için {{voiceoverKey}} tuşuna basın",
+		"pressSpeed": "Hız eklemek için {{key}} tuşuna basın",
+		"pressCameraFullscreen": "Tam Ekran Kamera bölümü eklemek için {{key}} tuşuna basın"
 	},
 	"labels": {
 		"pan": "Kaydır",
+		"panTip": "Zaman çizelgesini kaydır",
 		"zoom": "Yakınlaştır",
+		"zoomTip": "Zaman çizelgesini yakınlaştır",
 		"trim": "Kırp",
 		"speed": "Hız",
 		"zoomItem": "Yakınlaştırma {{index}}",
@@ -29,7 +30,8 @@
 		"annotationItem": "Açıklama",
 		"imageItem": "Görüntü",
 		"emptyText": "Boş metin",
-		"blurItem": "Bulanık {{index}}"
+		"cameraFullscreen": "Tam Ekran Kamera",
+		"cameraFullscreenItem": "Tam Ekran Kamera {{index}}"
 	},
 	"emptyState": {
 		"noVideo": "Video Yüklenmedi",
@@ -50,10 +52,56 @@
 		"cannotPlaceTrim": "Buraya kırpma yerleştirilemiyor",
 		"trimExistsAtLocation": "Bu konumda zaten bir kırpma var veya yeterli alan yok.",
 		"cannotPlaceSpeed": "Buraya hız yerleştirilemiyor",
-		"speedExistsAtLocation": "Bu konumda zaten bir hız bölgesi var veya yeterli alan yok."
+		"speedExistsAtLocation": "Bu konumda zaten bir hız bölgesi var veya yeterli alan yok.",
+		"cannotPlaceCameraFullscreen": "Buraya Tam Ekran Kamera yerleştirilemiyor",
+		"cameraFullscreenExistsAtLocation": "Bu konumda zaten bir Tam Ekran Kamera bölümü var veya yeterli alan yok."
 	},
 	"success": {
 		"addedZoomSuggestions": "{{count}} imleç tabanlı yakınlaştırma önerisi eklendi",
 		"addedZoomSuggestionsPlural": "{{count}} imleç tabanlı yakınlaştırma önerisi eklendi"
+	},
+	"toolbar": {
+		"autoEnhance": "Otomatik iyileştirme",
+		"automaticZooms": "Otomatik yakınlaştırmalar",
+		"automaticZoomsHint": "Kaydedilen tıklamalardan",
+		"smartZoomsAndCuts": "Akıllı kırpma",
+		"smartZoomsAndCutsHint": "Yapay zeka ile",
+		"timelineTools": "Zaman çizelgesi araçları",
+		"arrangeClips": "Klipleri düzenle",
+		"arrangeClipsHint": "Yeniden sıralamak için aşağıdaki klipleri sürükleyin veya yenilerini bırakın",
+		"newAnnotation": "Açıklama",
+		"dragToReorderHint": "Sıralamak için sürükleyin. Başlangıç ve bitişi değiştirmek için çift tıklayın.",
+		"editInOutPoints": "Giriş/çıkış noktalarını düzenle",
+		"deleteClip": "Klibi sil",
+		"dropToAdd": "Zaman çizelgesine eklemek için bırakın",
+		"importRecordingFirst": "Önce bir kayıt içe aktarın",
+		"noAutoZoomMoments": "Otomatik yakınlaştırma anı bulunamadı",
+		"noAutoZoomMomentsDescription": "Bu kayıtta kaydedilmiş tıklama yok ya da hiçbiri için yakınlaştırmaya yer yok.",
+		"addedAutoZoom": "{{count}} otomatik yakınlaştırma eklendi",
+		"addedAutoZoomPlural": "{{count}} otomatik yakınlaştırma eklendi",
+		"autoZoomFailed": "Otomatik yakınlaştırma başarısız oldu",
+		"aiEnhanceRequested": "Yapay zeka aracısından ölü zamanları kırpması istendi",
+		"smartCutsWaiting": "Metne dökülüyor… birazdan hazır",
+		"smartCutsNeedsTranscript": "Bir döküm gerekiyor",
+		"smartCutsNoAudio": "Bu medyada ses yok",
+		"smartCutsNoSpeech": "Konuşma algılanmadı",
+		"smartCutsFailed": "Metne dökme başarısız — Medya bölümünden yeniden deneyin",
+		"addAudioTooltip": "Ses ekle",
+		"addedWord": "Eklenen kelime: \"{{word}}\" — arkasında ses yok"
+	},
+	"audio": {
+		"addVoiceover": "Seslendirme ekle",
+		"addVoiceoverHint": "Videonuzun üzerine anlatım kaydedin",
+		"subtitle": "Zaman çizelgesine seslendirme veya fon müziği katmanı yerleştirin",
+		"record": "Seslendirme kaydet",
+		"importFile": "Ses dosyası içe aktar",
+		"importFileHint": "Müzik veya ses dosyası içe aktarın",
+		"recording": "Kaydediliyor",
+		"recordingHint": "Videoyla birlikte anlatın — kayıt sırasında oynamaya devam eder",
+		"stop": "Durdur",
+		"micDenied": "Mikrofon erişimi reddedildi",
+		"recordingUnavailable": "Burada kayıt kullanılamıyor",
+		"saveFailed": "Kayıt kaydedilemedi",
+		"importFailed": "Ses dosyası içe aktarılamadı"
 	}
 }

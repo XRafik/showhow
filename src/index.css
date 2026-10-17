@@ -482,3 +482,47 @@
 	--ds-editor-bg: #09090B;
 	--ds-editor-accent: #34B27B;
 }
+
+/* v2 dismissible toast chrome, through the existing wrapper and token palette. */
+html [data-sonner-toaster][dir="ltr"] {
+	--toast-close-button-start: unset;
+	--toast-close-button-end: 8px;
+	--toast-close-button-transform: none;
+}
+
+html [data-sonner-toaster][dir="rtl"] {
+	--toast-close-button-start: 8px;
+	--toast-close-button-end: unset;
+	--toast-close-button-transform: none;
+}
+
+/* Room for the button, so a long title does not run under it. Logical, not `padding-right`,
+   for the same mirroring reason as above. */
+html [data-sonner-toaster] [data-sonner-toast][data-styled="true"] {
+	padding-inline-end: 36px;
+}
+
+/* Inside the box, the chrome sonner gives the button stops making sense: a bordered,
+   opaque chip reads as a badge stuck on the corner when it is overhanging, and as a second
+   surface floating on the toast when it is not. Plain icon, weight on hover only.
+
+   The colours are here and not in the Toaster's `classNames`: sonner sets the button's
+   colour at (0,4,0), which a Tailwind utility at (0,3,0) cannot beat, while the leading
+   `html` puts this rule at (0,4,1). Tokens, so the cross follows the toast's theme. */
+html [data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-close-button] {
+	top: 8px;
+	border-color: transparent;
+	background: transparent;
+	color: var(--muted);
+	transition: background 0.12s ease-out, color 0.12s ease-out;
+}
+
+/* `border-color` again, on purpose. The base rule's `transparent` loses on hover: sonner's
+   `:hover` rule sits at (0,5,0), above that rule's (0,4,1), and brings back
+   `--normal-border-hover`, a ring around a cross that has no border at rest. The `html`
+   keeps this one at (0,5,1). */
+html [data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-close-button]:hover {
+	border-color: transparent;
+	background: color-mix(in oklab, var(--fg) 10%, transparent);
+	color: var(--fg);
+}

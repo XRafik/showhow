@@ -3,6 +3,10 @@
 
 import commonAr from "../src/i18n/locales/ar/common.json";
 import dialogsAr from "../src/i18n/locales/ar/dialogs.json";
+import commonCs from "../src/i18n/locales/cs/common.json";
+import dialogsCs from "../src/i18n/locales/cs/dialogs.json";
+import commonDe from "../src/i18n/locales/de/common.json";
+import dialogsDe from "../src/i18n/locales/de/dialogs.json";
 import commonEn from "../src/i18n/locales/en/common.json";
 import dialogsEn from "../src/i18n/locales/en/dialogs.json";
 import commonEs from "../src/i18n/locales/es/common.json";
@@ -15,6 +19,8 @@ import commonJa from "../src/i18n/locales/ja-JP/common.json";
 import dialogsJa from "../src/i18n/locales/ja-JP/dialogs.json";
 import commonKo from "../src/i18n/locales/ko-KR/common.json";
 import dialogsKo from "../src/i18n/locales/ko-KR/dialogs.json";
+import commonPtBr from "../src/i18n/locales/pt-BR/common.json";
+import dialogsPtBr from "../src/i18n/locales/pt-BR/dialogs.json";
 import commonRu from "../src/i18n/locales/ru/common.json";
 import dialogsRu from "../src/i18n/locales/ru/dialogs.json";
 import commonTr from "../src/i18n/locales/tr/common.json";
@@ -29,11 +35,14 @@ import dialogsZhTw from "../src/i18n/locales/zh-TW/dialogs.json";
 type Locale =
 	| "en"
 	| "ar"
+	| "cs"
+	| "de"
 	| "es"
 	| "fr"
 	| "it"
 	| "ja-JP"
 	| "ko-KR"
+	| "pt-BR"
 	| "ru"
 	| "tr"
 	| "vi"
@@ -45,11 +54,14 @@ type MessageMap = Record<string, unknown>;
 const messages: Record<Locale, Record<Namespace, MessageMap>> = {
 	en: { common: commonEn, dialogs: dialogsEn },
 	ar: { common: commonAr, dialogs: dialogsAr },
+	cs: { common: commonCs, dialogs: dialogsCs },
+	de: { common: commonDe, dialogs: dialogsDe },
 	es: { common: commonEs, dialogs: dialogsEs },
 	fr: { common: commonFr, dialogs: dialogsFr },
 	it: { common: commonIt, dialogs: dialogsIt },
 	"ja-JP": { common: commonJa, dialogs: dialogsJa },
 	"ko-KR": { common: commonKo, dialogs: dialogsKo },
+	"pt-BR": { common: commonPtBr, dialogs: dialogsPtBr },
 	ru: { common: commonRu, dialogs: dialogsRu },
 	tr: { common: commonTr, dialogs: dialogsTr },
 	vi: { common: commonVi, dialogs: dialogsVi },
@@ -63,11 +75,14 @@ export function setMainLocale(locale: string) {
 	if (
 		locale === "en" ||
 		locale === "ar" ||
+		locale === "cs" ||
+		locale === "de" ||
 		locale === "es" ||
 		locale === "fr" ||
 		locale === "it" ||
 		locale === "ja-JP" ||
 		locale === "ko-KR" ||
+		locale === "pt-BR" ||
 		locale === "ru" ||
 		locale === "tr" ||
 		locale === "vi" ||

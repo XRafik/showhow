@@ -1,20 +1,25 @@
+import type { BrowserWindow } from "electron";
 import type {
 	ProjectContext,
 	ProjectFileResult,
 	ProjectPathResult,
 } from "../../../src/native/contracts";
-import type { NativeBridgeStateStore } from "../store";
+import type { NativeBridgeState } from "../store";
 
 interface ProjectServiceOptions {
-	store: NativeBridgeStateStore;
+	store: NativeBridgeState;
 	getCurrentProjectPath: () => string | null;
 	getCurrentVideoPath: () => string | null;
 	saveProjectFile: (
 		projectData: unknown,
 		suggestedName?: string,
 		existingProjectPath?: string,
+		parent?: BrowserWindow | null,
 	) => Promise<ProjectFileResult>;
-	loadProjectFile: (projectFolder?: string) => Promise<ProjectFileResult>;
+	loadProjectFile: (
+		projectFolder?: string,
+		parent?: BrowserWindow | null,
+	) => Promise<ProjectFileResult>;
 	loadCurrentProjectFile: () => Promise<ProjectFileResult>;
 	loadProjectFileFromPath: (path: string) => Promise<ProjectFileResult>;
 	setCurrentVideoPath: (path: string) => ProjectPathResult | Promise<ProjectPathResult>;
@@ -39,18 +44,20 @@ export class ProjectService {
 		projectData: unknown,
 		suggestedName?: string,
 		existingProjectPath?: string,
+		parent?: BrowserWindow | null,
 	) {
 		const result = await this.options.saveProjectFile(
 			projectData,
 			suggestedName,
 			existingProjectPath,
+			parent,
 		);
 		this.getCurrentContext();
 		return result;
 	}
 
-	async loadProjectFile(projectFolder?: string) {
-		const result = await this.options.loadProjectFile(projectFolder);
+	async loadProjectFile(projectFolder?: string, parent?: BrowserWindow | null) {
+		const result = await this.options.loadProjectFile(projectFolder, parent);
 		this.getCurrentContext();
 		return result;
 	}

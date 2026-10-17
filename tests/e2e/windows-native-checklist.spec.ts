@@ -5,12 +5,10 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Page } from "@playwright/test";
 import { _electron as electron, expect, test } from "@playwright/test";
-import { NATIVE_BRIDGE_CHANNEL, NATIVE_BRIDGE_VERSION } from "../../src/native/contracts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, "../..");
 const MAIN_JS = path.join(ROOT, "dist-electron/main.js");
-const TEST_VIDEO = path.join(__dirname, "../fixtures/sample.webm");
 
 async function launchApp() {
 	const testUserDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "openscreen-e2e-"));
@@ -77,17 +75,6 @@ async function closeApp(app: ElectronApplication) {
 			retryDelay: 100,
 		});
 	}
-}
-
-async function copyFixtureToRecordings(app: ElectronApplication, fileName: string) {
-	const userDataDir = await app.evaluate(({ app: electronApp }) => {
-		return electronApp.getPath("userData");
-	});
-	const recordingsDir = path.join(userDataDir, "recordings");
-	const targetPath = path.join(recordingsDir, fileName);
-	fs.mkdirSync(recordingsDir, { recursive: true });
-	fs.copyFileSync(TEST_VIDEO, targetPath);
-	return targetPath;
 }
 
 async function dismissLanguagePrompt(page: Page) {
@@ -165,158 +152,126 @@ test.describe("Windows native checklist smoke tests", () => {
 		}
 	});
 
-	test("launch window opens an existing video into the editor and playback controls respond", async () => {
+	// The HUD must reach click-through by *asking* for it from the renderer, never
+	// by being born that way: a window born input-transparent whose renderer never
+	// mounts can never be clicked again, which is what bricked the app in issue #266.
+	// Both halves matter — that nothing asks during construction, and that the
+	// renderer still does after mount.
+	//
+	// The tape assertions also pin `forward` OFF. It used to be the only route back
+	// out of click-through, via a global WH_MOUSE_LL hook that Windows can refuse or
+	// silently revoke — which is how #385 reproduced a dead HUD on a build that already
+	// carried the #266 fix. The way out is now the "hud-overlay-cursor" poll in
+	// electron/windows.ts, and asking for `forward` again would restore the dependency
+	// without restoring the need.
+	//
+	// Note what this test therefore cannot do, and what no test in this file can.
+	// Only a real OS cursor move drives a WH_MOUSE_LL hook; CDP-injected input
+	// arrives below the OS hit-test, so Playwright's own `.click()` on a HUD testid
+	// — as in the source-selector test above — reaches the DOM handler whether or
+	// not click-through is installed, or even working. Those
+	// clicks assert renderer wiring and nothing else. The failure #266 actually shipped
+	// (a painted, permanently inert HUD) is invisible to injected input by construction,
+	// so it belongs on the manual computer-use checklist and cannot be regression-tested
+	// here. Do not read a green run as evidence that the HUD is clickable.
+	test("the HUD asks for click-through instead of being born with it", async () => {
 		const app = await launchApp();
-		let testVideoInRecordings = "";
 
 		try {
 			const hudWindow = await app.firstWindow({ timeout: 60_000 });
 			await hudWindow.waitForLoadState("domcontentloaded");
 			await dismissLanguagePrompt(hudWindow);
-			testVideoInRecordings = await copyFixtureToRecordings(app, "checklist-sample.webm");
 
-			await app.evaluate(({ ipcMain }, videoPath) => {
-				ipcMain.removeHandler("open-video-file-picker");
-				ipcMain.handle("open-video-file-picker", () => ({
-					success: true,
-					path: videoPath,
-				}));
-			}, testVideoInRecordings);
-
-			await hudWindow.getByTestId("launch-open-video-button").click();
-			const editorWindow = await app.waitForEvent("window", {
-				predicate: (w) => w.url().includes("windowType=editor"),
+			// A second window keeps the window list non-empty while the HUD is torn
+			// down below — emptying it fires window-all-closed, which quits the app.
+			await hudWindow.getByTestId("launch-source-selector-button").click();
+			await app.waitForEvent("window", {
+				predicate: (w) => w.url().includes("windowType=source-selector"),
 				timeout: 15_000,
 			});
-			await editorWindow.waitForLoadState("domcontentloaded");
-			await expect(editorWindow.getByText("Loading video...")).not.toBeVisible({ timeout: 20_000 });
 
-			const playButton = editorWindow.locator(
-				'button[aria-label="Play"], button[aria-label="Lire"]',
-			);
-			await expect(playButton).toBeVisible({ timeout: 10_000 });
-			await playButton.click();
-
-			const seekInput = editorWindow.locator('input[type="range"]').first();
-			await expect(seekInput).toBeVisible();
-			await seekInput.evaluate((input) => {
-				const range = input as HTMLInputElement;
-				range.value = "0.25";
-				range.dispatchEvent(new Event("input", { bubbles: true }));
-				range.dispatchEvent(new Event("change", { bubbles: true }));
-			});
-			await expect.poll(() => seekInput.inputValue(), { timeout: 10_000 }).not.toBe("0");
-
-			await expect(
-				editorWindow.getByText("Background").or(editorWindow.getByText("Arrière-plan")),
-			).toBeVisible();
-			await expect(editorWindow.getByTestId("testId-export-button")).toBeVisible();
-		} finally {
-			await closeApp(app);
-			if (testVideoInRecordings && fs.existsSync(testVideoInRecordings)) {
-				fs.unlinkSync(testVideoInRecordings);
-			}
-		}
-	});
-
-	test("launch window opens an existing project into the editor", async () => {
-		const app = await launchApp();
-		let testVideoInRecordings = "";
-		let projectPath = "";
-
-		try {
-			const hudWindow = await app.firstWindow({ timeout: 60_000 });
-			await hudWindow.waitForLoadState("domcontentloaded");
-			await dismissLanguagePrompt(hudWindow);
-			testVideoInRecordings = await copyFixtureToRecordings(app, "checklist-project-sample.webm");
-			projectPath = path.join(os.tmpdir(), `openscreen-checklist-${Date.now()}.openscreen`);
-			const project = {
-				version: 2,
-				videoPath: testVideoInRecordings,
-				editor: {},
-			};
-			fs.writeFileSync(projectPath, JSON.stringify(project), "utf-8");
-
-			await app.evaluate(
-				({ ipcMain }, payload) => {
-					ipcMain.removeHandler(payload.nativeBridgeChannel);
-					ipcMain.handle(payload.nativeBridgeChannel, (_event, request) => {
-						const success = (data: unknown) => ({
-							ok: true,
-							data,
-							meta: {
-								version: payload.nativeBridgeVersion,
-								requestId: request.requestId ?? "checklist-project-load",
-								timestampMs: Date.now(),
-							},
-						});
-
-						if (request.domain === "project" && request.action === "loadProjectFile") {
-							return success({
-								success: true,
-								path: payload.projectPath,
-								project: payload.project,
-							});
-						}
-						if (request.domain === "project" && request.action === "loadCurrentProjectFile") {
-							return success({ success: false, canceled: true });
-						}
-						if (request.domain === "project" && request.action === "getCurrentVideoPath") {
-							return success({ success: true, path: payload.videoPath });
-						}
-						if (request.domain === "system" && request.action === "getPlatform") {
-							return success("win32");
-						}
-						if (request.domain === "system" && request.action === "getAssetBasePath") {
-							return success(null);
-						}
-						if (request.domain === "cursor" && request.action === "getRecordingData") {
-							return success({ version: 2, provider: "none", samples: [], assets: [] });
-						}
-						if (request.domain === "cursor" && request.action === "getTelemetry") {
-							return success([]);
-						}
-
-						return {
-							ok: false,
-							error: {
-								code: "UNSUPPORTED_ACTION",
-								message: `Unexpected native bridge request in test: ${request.domain}.${request.action}`,
-								retryable: false,
-							},
-							meta: {
-								version: payload.nativeBridgeVersion,
-								requestId: request.requestId ?? "checklist-project-load",
-								timestampMs: Date.now(),
-							},
-						};
+			// Recreate the HUD through the app's own path (second-instance →
+			// showMainWindow → createHudOverlayWindow) with the native call taped.
+			// Nothing awaits between the tape going on and the snapshot coming off,
+			// so no IPC from the renderer can slip into it: what comes back is
+			// construction, and construction only.
+			const duringConstruction = await app.evaluate(({ app: electronApp, BrowserWindow }) => {
+				const tape: Array<{ hud: boolean; args: unknown[] }> = [];
+				const original = BrowserWindow.prototype.setIgnoreMouseEvents;
+				globalThis.__hudTape = tape;
+				globalThis.__hudSetIgnoreMouseEvents = original;
+				BrowserWindow.prototype.setIgnoreMouseEvents = function patched(
+					this: InstanceType<typeof BrowserWindow>,
+					...args: Parameters<typeof original>
+				) {
+					// The patch is on the prototype, so every window's calls land here.
+					// Tag them: an unfiltered tape would let another overlay's options
+					// object fail the `forward` claim under this test's name, and let its
+					// bare [true] satisfy the first-ask claim. Tag rather than filter,
+					// because loadURL runs after this handler is installed — during
+					// construction the URL is still "", and that is exactly the window
+					// the empty-tape assertion below has to be able to see.
+					tape.push({
+						hud: this.isDestroyed()
+							? false
+							: this.webContents.getURL().includes("windowType=hud-overlay"),
+						args,
 					});
-				},
-				{
-					projectPath,
-					project,
-					videoPath: testVideoInRecordings,
-					nativeBridgeChannel: NATIVE_BRIDGE_CHANNEL,
-					nativeBridgeVersion: NATIVE_BRIDGE_VERSION,
-				},
-			);
+					return original.apply(this, args);
+				};
 
-			await hudWindow.getByTestId("launch-open-project-button").click();
-			const editorWindow = await app.waitForEvent("window", {
-				predicate: (w) => w.url().includes("windowType=editor"),
-				timeout: 15_000,
+				BrowserWindow.getAllWindows()
+					.find((w) => w.webContents.getURL().includes("windowType=hud-overlay"))
+					?.destroy();
+				electronApp.emit("second-instance");
+
+				return tape.slice();
 			});
-			await editorWindow.waitForLoadState("domcontentloaded");
-			await expect(editorWindow.getByText("Loading video...")).not.toBeVisible({ timeout: 20_000 });
-			await expect(editorWindow.getByTestId("testId-export-button")).toBeVisible();
+
+			expect(duringConstruction).toEqual([]);
+
+			// And the renderer does ask, once it has mounted. Keep the snapshot the
+			// poll settled on rather than fetching a second time, so all three claims
+			// below are made about one state of the tape and not three.
+			let hudCalls: unknown[][] = [];
+			await expect
+				.poll(
+					async () => {
+						hudCalls = await app.evaluate(() =>
+							(globalThis.__hudTape ?? []).filter((entry) => entry.hud).map((entry) => entry.args),
+						);
+						return hudCalls;
+					},
+					{ timeout: 20_000 },
+				)
+				.toContainEqual([true]);
+
+			// Containment is not enough by itself: a second caller asking with
+			// `forward` would sit in the tape beside the renderer's own bare [true]
+			// and still satisfy it, which is exactly the shape a re-arm of the hook
+			// takes. So pin the HUD's whole tape — the first ask is the renderer's,
+			// and no ask carries an options object, the only way `forward` returns.
+			expect(hudCalls[0]).toEqual([true]);
+			expect(hudCalls.filter((call) => call.length > 1)).toEqual([]);
 		} finally {
+			await app.evaluate(({ BrowserWindow }) => {
+				const original = globalThis.__hudSetIgnoreMouseEvents;
+				if (original) {
+					BrowserWindow.prototype.setIgnoreMouseEvents = original;
+				}
+				globalThis.__hudTape = undefined;
+				globalThis.__hudSetIgnoreMouseEvents = undefined;
+			});
 			await closeApp(app);
-			if (testVideoInRecordings && fs.existsSync(testVideoInRecordings)) {
-				fs.unlinkSync(testVideoInRecordings);
-			}
-			if (projectPath && fs.existsSync(projectPath)) {
-				fs.unlinkSync(projectPath);
-			}
 		}
 	});
 });
+
+declare global {
+	// Set inside the main process by the click-through test above, read back by a
+	// second evaluate — the only way to observe calls that land between two of them.
+	var __hudTape: Array<{ hud: boolean; args: unknown[] }> | undefined;
+	var __hudSetIgnoreMouseEvents:
+		| ((ignore: boolean, options?: { forward?: boolean }) => void)
+		| undefined;
+}

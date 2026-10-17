@@ -11,18 +11,27 @@ interface SourceCropRegion {
 	height: number;
 }
 
+interface Dims {
+	width: number;
+	height: number;
+}
+
+/**
+ * Would rendering a `source`-sized clip into an `output`-sized frame stretch it past its own
+ * resolution?
+ *
+ * The clip is CONTAIN-fitted into the output frame, so the answer is that fit scale — not a
+ * comparison of short sides, which counts letterbox rows as if they were stretched pixels. A
+ * 1920x1032 window capture in a 16:9 project gives a 1920x1080 frame whose 48 extra rows are
+ * wallpaper, at scale 1.0: nothing is upscaled. The short-side test called that frame an
+ * upscale under the "1080p" tier while "Source" produced the exact same frame unflagged.
+ */
+export function wouldUpscale(output: Dims, source: Dims): boolean {
+	return Math.min(output.width / source.width, output.height / source.height) > 1;
+}
+
 const MEDIUM_SHORT_SIDE = 720;
 const HIGH_SHORT_SIDE = 1080;
-
-// Smooth pixel-proportional MP4 video budget, anchored at the 2.4 Mbps budget
-// measured against the Calculator app export (artifacts/67/app-trial-24mbps.json)
-// and clamped so tiny crops stay usable and huge sources bounded.
-const BITRATE_REFERENCE_PIXELS = 1920 * 1080;
-const BITRATE_REFERENCE_BPS = 2_400_000;
-const SOURCE_BITRATE_MULTIPLIER = 1.5;
-const MIN_BITRATE_BPS = 1_000_000;
-const MAX_BITRATE_BPS = 24_000_000;
-const BITRATE_ROUNDING_STEP_BPS = 100_000;
 
 function even(value: number) {
 	return Math.floor(value / 2) * 2;
@@ -104,12 +113,25 @@ function calculateSourceDimensions(
 	};
 }
 
-function calculateBitrate(width: number, height: number, quality: ExportQuality) {
-	const qualityMultiplier = quality === "source" ? SOURCE_BITRATE_MULTIPLIER : 1;
-	const proportional =
-		(width * height * BITRATE_REFERENCE_BPS * qualityMultiplier) / BITRATE_REFERENCE_PIXELS;
-	const rounded = Math.round(proportional / BITRATE_ROUNDING_STEP_BPS) * BITRATE_ROUNDING_STEP_BPS;
-	return Math.min(MAX_BITRATE_BPS, Math.max(MIN_BITRATE_BPS, rounded));
+/**
+ * Bits the encoder may spend per pixel of each frame. Measured with NVENC on scrolled text under
+ * animated zooms, against the same export with no cap: at 1080p60 the quality climbs steeply up
+ * to 16-20 Mb/s and flattens after, and 0.15 sits on that knee (18.7 Mb/s; 9.3 at 1080p30).
+ * Equal quality took 1.6-1.9x the bits at 60 fps as at 30, so scaling linearly with the frame
+ * rate is right, if a little generous. It is a ceiling more than a spend: NVENC and AMF run VBR
+ * and a still screen costs far less.
+ */
+const BITS_PER_PIXEL = 0.15;
+/** Floor for tiny outputs, the native pipeline's own. */
+const MIN_BITRATE = 2_000_000;
+
+/**
+ * The bitrate the native encoder is asked for: per pixel AND per frame. The frame rate is the
+ * half that used to be missing. The pipeline encoded 8 Mb/s at 1080p whatever the rate, so a
+ * 60 fps export spread the same bits over twice the frames.
+ */
+function calculateBitrate(width: number, height: number, frameRate: number) {
+	return Math.max(MIN_BITRATE, Math.round(width * height * frameRate * BITS_PER_PIXEL));
 }
 
 export function calculateMp4ExportSettings({
@@ -117,17 +139,19 @@ export function calculateMp4ExportSettings({
 	sourceWidth,
 	sourceHeight,
 	aspectRatioValue,
+	frameRate,
 }: {
 	quality: ExportQuality;
 	sourceWidth: number;
 	sourceHeight: number;
 	aspectRatioValue: number;
+	frameRate: number;
 }): Mp4ExportSettings {
 	if (quality === "medium") {
 		const dimensions = calculateDimensionsForShortSide(MEDIUM_SHORT_SIDE, aspectRatioValue);
 		return {
 			...dimensions,
-			bitrate: calculateBitrate(dimensions.width, dimensions.height, quality),
+			bitrate: calculateBitrate(dimensions.width, dimensions.height, frameRate),
 		};
 	}
 
@@ -135,13 +159,13 @@ export function calculateMp4ExportSettings({
 		const dimensions = calculateDimensionsForShortSide(HIGH_SHORT_SIDE, aspectRatioValue);
 		return {
 			...dimensions,
-			bitrate: calculateBitrate(dimensions.width, dimensions.height, quality),
+			bitrate: calculateBitrate(dimensions.width, dimensions.height, frameRate),
 		};
 	}
 
 	const sourceDimensions = calculateSourceDimensions(sourceWidth, sourceHeight, aspectRatioValue);
 	return {
 		...sourceDimensions,
-		bitrate: calculateBitrate(sourceDimensions.width, sourceDimensions.height, quality),
+		bitrate: calculateBitrate(sourceDimensions.width, sourceDimensions.height, frameRate),
 	};
 }

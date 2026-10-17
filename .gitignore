@@ -77,3 +77,6 @@ private/
 
 # Local agent tooling
 .pi/
+
+# Generated licence bundle; reproducible from locked inputs by licenses:generate.
+/build-licenses/

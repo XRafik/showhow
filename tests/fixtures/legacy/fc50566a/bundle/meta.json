@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "title": "Recording 2026-10-16 20:00",
+  "source": "desktop",
+  "createdAt": 1792177200000,
+  "durationMs": 2000,
+  "video": "video.webm",
+  "transcript": "transcript.txt",
+  "steps": null,
+  "stepCapture": {
+    "status": "unavailable",
+    "reason": "no-clicks",
+    "message": "No desktop clicks were captured; this bundle has a transcript-only doc."
+  }
+}

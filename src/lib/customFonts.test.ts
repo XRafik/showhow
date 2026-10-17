@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LEGACY_STORAGE_KEYS, STORAGE_KEYS } from "@/shared/productIdentity";
 import { type CustomFont, getCustomFonts, saveCustomFonts } from "./customFonts";

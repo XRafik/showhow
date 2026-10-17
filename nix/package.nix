@@ -3,15 +3,33 @@
   buildNpmPackage,
   nodejs_22,
   electron,
+  ffmpeg-headless,
+  compositor-view,
+  pipewire-helper,
+  whisper-stt,
   makeWrapper,
   makeDesktopItem,
   copyDesktopItems,
 }:
 
+let
+  # nixpkgs' ffmpeg defaults to withGPL and withVersion3, so the stock
+  # ffmpeg-headless is gpl3Plus -- in the runtime closure of a derivation whose
+  # meta below says MIT, and on the one packaging path where scripts/
+  # fetch-ffmpeg.mjs's licence gate never runs. nix/compositor-view.nix builds an
+  # LGPL ffmpeg for exactly this reason and calls the alternative "a licensing
+  # fault, not a packaging shortcut"; the same standard applies here. The only
+  # invocation is a decode to raw PCM, so dropping GPL costs nothing.
+  ffmpegLgpl = ffmpeg-headless.override { withGPL = false; };
+in
 buildNpmPackage {
   nodejs = nodejs_22;
   pname = "showhow";
-  version = "1.6.0";
+  # Read, not restated. A hand-copied version is one more thing to remember at
+  # release time and it had already drifted two minors behind the app it names.
+  # (`npmDepsHash` below still has to be updated by hand — that is Nix, not a
+  # choice — but it fails loudly, where a stale version number never does.)
+  version = (lib.importJSON ../package.json).version;
 
   src =
     let
@@ -33,7 +51,7 @@ buildNpmPackage {
       );
     };
 
-  npmDepsHash = "sha256-IZypOLWlDShIjCKWxlJcrdtIkMu0P/DuXaq4c0HW3FY=";
+  npmDepsHash = "sha256-VeehS9Cp7Z/tcKgPAkjTzRLORqMuSp1pRf2AIOgm6q4=";
 
   env.ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
 
@@ -72,12 +90,40 @@ buildNpmPackage {
     # packaged layout (electron-builder extraResources -> resources/wallpapers).
     mkdir -p "$out/lib/showhow/public"
     cp -r public/wallpapers "$out/lib/showhow/public/wallpapers"
+    # Same for the caption/annotation fonts: the renderer's picker loads them from
+    # there. The compositor itself finds the copy Vite put in dist/fonts.
+    cp -r public/fonts "$out/lib/showhow/public/fonts"
 
-    # Wrap system electron with the app directory
+    # Wrap system electron with the app directory.
+    #
+    # OPENSCREEN_FFMPEG_PATH is checked before every other candidate in
+    # ffmpegCandidates (electron/media/audioPeaks.ts), which is what makes this
+    # a one-line answer to a problem that otherwise has none: the app normally
+    # gets ffmpeg from scripts/fetch-ffmpeg.mjs, and a build-time download
+    # cannot happen inside the sandbox. Without it resolveFfmpeg returns null,
+    # getAudioPeaks returns null in turn, and the renderer silently falls back
+    # to decoding waveforms in Chromium -- an order of magnitude slower, and
+    # invisible, which is the failure mode worth removing first.
+    #
+    # -headless rather than the full build: the only invocation is a decode to
+    # raw PCM (-i/-ac/-ar/-f), so X11 and SDL would be closure weight for
+    # nothing.
+    #
+    # OPENSCREEN_LINUX_CURSOR_HELPER_EXE is the first candidate in
+    # helperCandidates (pipeWireCursorRecordingSession.ts), and the same lookup
+    # serves linuxNativeCaptureSession, so one variable covers both consumers.
+    # Every other candidate is relative to APP_ROOT or resourcesPath and assumes
+    # the electron-builder layout, which this package does not produce; without
+    # the override the helper is simply never found and Wayland capture and
+    # cursor sampling degrade silently.
     mkdir -p "$out/bin"
     makeWrapper "${electron}/bin/electron" "$out/bin/showhow" \
       --add-flags "$out/lib/showhow" \
-      --set ELECTRON_IS_DEV 0
+      --set ELECTRON_IS_DEV 0 \
+      --set OPENSCREEN_FFMPEG_PATH "${ffmpegLgpl}/bin/ffmpeg" \
+      --set OPENSCREEN_COMPOSITOR_VIEW_NODE "${compositor-view}/lib/compositor_view.node" \
+      --set OPENSCREEN_LINUX_CURSOR_HELPER_EXE "${lib.getExe pipewire-helper}" \
+      --set OPENSCREEN_WHISPER_SERVER_EXE "${lib.getExe whisper-stt}"
 
     # Install icons to hicolor theme
     for size in 16 24 32 48 64 128 256 512 1024; do
@@ -100,10 +146,10 @@ buildNpmPackage {
     (makeDesktopItem {
       name = "showhow";
       desktopName = "Showhow";
-      genericName = "Workflow Documentation Recorder";
+      genericName = "Screen Recorder";
       exec = "showhow %U";
       icon = "showhow";
-      comment = "Local-first screen recorder and workflow documentation tool";
+      comment = "Desktop screen recorder with built-in editor";
       categories = [
         "AudioVideo"
         "Video"
@@ -115,7 +161,7 @@ buildNpmPackage {
   ];
 
   meta = {
-    description = "Local-first screen recorder and workflow documentation tool";
+    description = "Desktop screen recorder with built-in editor";
     homepage = "https://github.com/bedarstudios/showhow";
     license = lib.licenses.mit;
     mainProgram = "showhow";

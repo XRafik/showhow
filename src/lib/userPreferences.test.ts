@@ -1,5 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { LEGACY_STORAGE_KEYS, STORAGE_KEYS } from "@/shared/productIdentity";
+import { beforeEach, describe, expect, it } from "vitest";
 import {
 	DEFAULT_PREFS,
 	getProjectFolder,
@@ -7,10 +6,6 @@ import {
 	parentDirectoryOf,
 	saveUserPreferences,
 } from "./userPreferences";
-
-afterEach(() => {
-	vi.restoreAllMocks();
-});
 
 describe("parentDirectoryOf", () => {
 	it("returns the directory for a POSIX path", () => {
@@ -109,35 +104,33 @@ describe("user preferences", () => {
 		expect(loadUserPreferences().trayLayout).toBe("horizontal");
 	});
 
-	it("reads legacy preferences, copies them to the Showhow key, and preserves legacy data", () => {
-		const legacyValue = JSON.stringify({ trayLayout: "vertical" });
-		localStorage.setItem(LEGACY_STORAGE_KEYS.preferences, legacyValue);
+	it("persists the software encoder preference", () => {
+		saveUserPreferences({ preferSoftwareEncoder: true });
 
-		expect(loadUserPreferences().trayLayout).toBe("vertical");
-		expect(localStorage.getItem(STORAGE_KEYS.preferences)).toBe(legacyValue);
-		expect(localStorage.getItem(LEGACY_STORAGE_KEYS.preferences)).toBe(legacyValue);
+		expect(loadUserPreferences().preferSoftwareEncoder).toBe(true);
 	});
 
-	it("saves preferences to the Showhow key", () => {
-		saveUserPreferences({ trayLayout: "vertical" });
+	it("falls back to the default software encoder preference for invalid stored values", () => {
+		localStorage.setItem(
+			"openscreen_user_preferences",
+			JSON.stringify({ preferSoftwareEncoder: "yes" }),
+		);
 
-		expect(localStorage.getItem(STORAGE_KEYS.preferences)).not.toBeNull();
-		expect(localStorage.getItem(LEGACY_STORAGE_KEYS.preferences)).toBeNull();
+		expect(loadUserPreferences().preferSoftwareEncoder).toBe(false);
 	});
 
-	it("returns defaults when storage reads throw", () => {
-		vi.spyOn(localStorage, "getItem").mockImplementation(() => {
-			throw new Error("read failed");
-		});
+	it("persists the software encoder fallback notice suppression", () => {
+		saveUserPreferences({ hideSoftwareEncoderFallbackNotice: true });
 
-		expect(loadUserPreferences()).toEqual(DEFAULT_PREFS);
+		expect(loadUserPreferences().hideSoftwareEncoderFallbackNotice).toBe(true);
 	});
 
-	it("retains silent save failure behavior when storage writes throw", () => {
-		vi.spyOn(localStorage, "setItem").mockImplementation(() => {
-			throw new Error("write failed");
-		});
+	it("falls back to showing the software encoder fallback notice for invalid stored values", () => {
+		localStorage.setItem(
+			"openscreen_user_preferences",
+			JSON.stringify({ hideSoftwareEncoderFallbackNotice: "yes" }),
+		);
 
-		expect(() => saveUserPreferences({ trayLayout: "vertical" })).not.toThrow();
+		expect(loadUserPreferences().hideSoftwareEncoderFallbackNotice).toBe(false);
 	});
 });

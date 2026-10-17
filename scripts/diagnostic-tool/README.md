@@ -31,7 +31,15 @@ Flags:
   New reports use the Showhow filename. Legacy helper environment variables and macOS helper names
   remain read-only discovery fallbacks.
 - `--window` capture a window instead of the full display (default: display)
+- `--system-audio` also capture system (loopback) audio
+- `--mic` also capture the default microphone
 - `-h, --help` show help
+
+The audio flags matter for reproducing a stop hang. Audio and video writes take
+the same sink-writer lock, so a run without audio has nothing to contend with
+and can pass on a machine where the app hangs every time. If you are reporting a
+hang that happens in the app but not here, re-run with whichever sources the
+failing recording used: `--system-audio`, `--mic`, or both together.
 
 Or use the bundled launcher:
 - Windows: `diagnostic.bat`

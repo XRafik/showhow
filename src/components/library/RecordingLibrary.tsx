@@ -249,6 +249,7 @@ function RecordingDetail({
 	const [editingTitle, setEditingTitle] = useState(false);
 	const [titleDraft, setTitleDraft] = useState(entry.title);
 	const [titleStatus, setTitleStatus] = useState<"idle" | "saving" | "success" | "failure">("idle");
+	const [editorError, setEditorError] = useState(false);
 	const [copyStatus, setCopyStatus] = useState<"idle" | "copying" | "success" | "failure">("idle");
 	const [editingStepIndex, setEditingStepIndex] = useState<number | null>(null);
 	const [instructionDraft, setInstructionDraft] = useState("");
@@ -273,6 +274,15 @@ function RecordingDetail({
 	};
 	const videoSrc =
 		entry.videoUrl ?? (entry.video ? fallbackBundleUrl(entry.bundleDir, entry.video) : undefined);
+	const openInEditor = async () => {
+		setEditorError(false);
+		try {
+			const result = await window.electronAPI.showhowOpenRecording(entry.bundleDir);
+			if (!result.success) setEditorError(true);
+		} catch {
+			setEditorError(true);
+		}
+	};
 	const copyPath = async () => {
 		setCopyStatus("copying");
 		try {
@@ -497,6 +507,25 @@ function RecordingDetail({
 				>
 					{entry.bundleDir}
 				</div>
+				{entry.video && (
+					<button
+						type="button"
+						onClick={() => void openInEditor()}
+						style={{
+							border: "1px solid var(--sh-color-divider)",
+							borderRadius: "8px",
+							background: "transparent",
+							color: "var(--sh-color-text)",
+							padding: "6px 9px",
+							fontSize: "12px",
+							fontWeight: 600,
+							cursor: "pointer",
+							whiteSpace: "nowrap",
+						}}
+					>
+						Open in editor
+					</button>
+				)}
 				<button
 					type="button"
 					disabled={copyStatus === "copying"}
@@ -516,6 +545,11 @@ function RecordingDetail({
 					{copyStatus === "copying" ? "Copying…" : "Copy path"}
 				</button>
 			</div>
+			{editorError && (
+				<p role="alert">
+					Couldn’t open this recording in the editor. The recording is still saved.
+				</p>
+			)}
 			{copyStatus !== "idle" && (
 				<p role="status" style={{ margin: "8px 0 0", color: "var(--sh-muted)", fontSize: "13px" }}>
 					{copyStatus === "copying"

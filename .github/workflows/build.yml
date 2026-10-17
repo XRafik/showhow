@@ -44,6 +44,40 @@ jobs:
           path: caption-assets
           key: caption-assets-${{ runner.os }}-${{ hashFiles('scripts/fetch-caption-model.mjs') }}
 
+      - name: Select validated Rust toolchain
+        shell: bash
+        run: |
+          rustup toolchain install 1.99.1 --profile minimal
+          rustup override set 1.99.1
+          cargo --version
+
+      - name: Install native STT Vulkan SDK
+        uses: jakoch/install-vulkan-sdk-action@v1
+        with:
+          vulkan_version: 1.4.304.1
+          install_runtime: false
+          cache: true
+
+      - name: Expose native STT shader compiler
+        shell: bash
+        run: |
+          set -euo pipefail
+          for candidate in "${VULKAN_SDK}/Bin" "${VULKAN_SDK}/bin"; do
+            if [[ -d "$candidate" ]]; then echo "$candidate" >> "$GITHUB_PATH"; fi
+          done
+
+      - name: Install native STT SPIRV headers
+        shell: bash
+        run: |
+          set -euo pipefail
+          sdk_vcpkg_root="$(dirname "$(command -v vcpkg)")"
+          "${sdk_vcpkg_root}/vcpkg" install spirv-headers:x64-windows
+          echo "CMAKE_PREFIX_PATH=${sdk_vcpkg_root}/installed/x64-windows" >> "$GITHUB_ENV"
+
+      - name: Build inherited native STT payload from this checkout
+        shell: bash
+        run: npm run build:whisper-binaries
+
       - name: Build Windows app
         run: npm run build:win -- --publish never
 
@@ -57,7 +91,7 @@ jobs:
 
   build-macos:
     name: macOS ${{ matrix.arch }} DMG
-    runs-on: macos-latest
+    runs-on: ${{ matrix.arch == 'x64' && 'macos-15-intel' || 'macos-latest' }}
     strategy:
       fail-fast: false
       matrix:
@@ -133,6 +167,42 @@ jobs:
         run: npm run build:native:mac
         env:
           SHOWHOW_MAC_HELPER_ARCHS: ${{ matrix.arch }}
+          OPENSCREEN_MAC_HELPER_ARCHS: ${{ matrix.arch }}
+
+      - name: Check native host architecture
+        shell: bash
+        run: test "$(node -p process.arch)" = "${{ matrix.arch }}"
+
+      - name: Prepare native build tools
+        shell: bash
+        run: |
+          brew list --versions cmake >/dev/null || brew install cmake
+          brew list --versions ninja >/dev/null || brew install ninja
+          cmake --version
+          ninja --version
+
+      - name: Select validated Rust toolchain
+        shell: bash
+        run: |
+          rustup toolchain install 1.99.1 --profile minimal
+          rustup override set 1.99.1
+          cargo --version
+
+      - name: Vendor pinned LGPL FFmpeg SDK
+        run: npm run fetch:ffmpeg:mac
+
+      - name: Build native Metal compositor
+        run: npm run build:native:compositor:mac
+
+      - name: Stage verified ONNX Runtime
+        run: npm run fetch:onnxruntime
+
+      - name: Build inherited native STT payload from this checkout
+        shell: bash
+        run: npm run build:whisper-binaries
+
+      - name: Generate third-party licences
+        run: npm run licenses:generate
 
       - name: Package .app bundle
         run: npx electron-builder --mac --${{ matrix.arch }} --dir --publish never
@@ -231,7 +301,7 @@ jobs:
 
   build-linux:
     name: Linux packages
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -240,13 +310,50 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Install pacman build dependencies
-        run: sudo apt-get update && sudo apt-get install -y libarchive-tools
+        run: sudo apt-get update && sudo apt-get install -y libarchive-tools rpm zsync ninja-build build-essential cmake clang libclang-dev pkg-config libssl-dev libx11-dev libxkbcommon-dev libwayland-dev
 
       - name: Cache caption assets
         uses: actions/cache@v4
         with:
           path: caption-assets
           key: caption-assets-${{ runner.os }}-${{ hashFiles('scripts/fetch-caption-model.mjs') }}
+
+      - name: Select validated Rust toolchain
+        shell: bash
+        run: |
+          rustup toolchain install 1.99.1 --profile minimal
+          rustup override set 1.99.1
+          cargo --version
+
+      - name: Install native STT Vulkan SDK
+        uses: jakoch/install-vulkan-sdk-action@v1
+        with:
+          vulkan_version: 1.4.304.1
+          install_runtime: false
+          cache: true
+
+      - name: Expose native STT shader compiler
+        shell: bash
+        run: |
+          set -euo pipefail
+          for candidate in "${VULKAN_SDK}/Bin" "${VULKAN_SDK}/bin"; do
+            if [[ -d "$candidate" ]]; then echo "$candidate" >> "$GITHUB_PATH"; fi
+          done
+
+      - name: Install pinned symbol-renaming patchelf
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSLo "$RUNNER_TEMP/patchelf.tar.gz" https://github.com/NixOS/patchelf/releases/download/0.18.0/patchelf-0.18.0-x86_64.tar.gz
+          echo "ce84f2447fb7a8679e58bc54a20dc2b01b37b5802e12c57eece772a6f14bf3f0  $RUNNER_TEMP/patchelf.tar.gz" | sha256sum -c -
+          mkdir -p "$HOME/.local/bin" "$RUNNER_TEMP/showhow-patchelf"
+          tar -xzf "$RUNNER_TEMP/patchelf.tar.gz" -C "$RUNNER_TEMP/showhow-patchelf" ./bin/patchelf
+          cp "$RUNNER_TEMP/showhow-patchelf/bin/patchelf" "$HOME/.local/bin/patchelf"
+          "$HOME/.local/bin/patchelf" --version
+
+      - name: Build inherited native STT payload from this checkout
+        shell: bash
+        run: npm run build:whisper-binaries
 
       - name: Build Linux app
         run: npm run build:linux -- --publish never
