@@ -460,3 +460,94 @@ None.
 
 ## Self-review
 Unbounded-word scan of requirements and DONE WHEN: "any source is true" (output rules) is bounded to the merged step's own sources. "Each step" and "each case" refer to the named C1–C7 cases and the steps of one guide. "All", "every" and "valid" do not appear in acceptance; "valid steps" in the output rules means steps that pass the named validator rules.
+
+# Showhow Connect ChatGPT Plan
+
+## Goal
+The owner makes guides with their ChatGPT subscription (GPT-6 Luna by default) through their own Codex login, at no extra cost. OpenRouter with Claude Haiku 5.5 stays as the pay-per-guide alternative. Applies to Make guide only.
+
+## Context and decisions
+- Builds on #122 (PR #126): the AI pass in `electron/showhow/aiGuide.ts` takes an injected `model(messages) => Promise<string>` seam, a validator (`parseGuideResponse`), per-provider consent (`electron/showhow/aiGuideConsent.ts`), and the guide UI (`src/components/showhow/AiGuidePanel.tsx`, `AiGuideSheets.tsx`, `AiConnections.tsx`, `AiGuideSettings.tsx`). This ticket adds a second provider behind the same seam.
+- Evidence checked on 2026-10-17 on the owner's Mac, read-only, no inference:
+  - Codex CLI `0.163.0` at `~/.npm-global/bin/codex` (npm package `@openai/codex`).
+  - `codex app-server` (stdio JSON-RPC) answers `initialize`, `account/read` (`type: chatgpt`, `planType: prolite`) and `model/list` (`gpt-6.1-sol` default; also `gpt-6-luna`, `gpt-6-astra`, `gpt-6-sol`, `gpt-5.6-*`, each with `inputModalities: text, image`).
+  - Protocol methods include `account/login/start`, `account/login/cancel`, `account/rateLimits/read`, `thread/start` (`ephemeral`, `sandbox`, `approvalPolicy`, `developerInstructions`, `config`, `model`) and `turn/start` (`input` with `text`, `image` and `localImage` items, `outputSchema`, `effort`, `sandboxPolicy`). Schema generated with `codex app-server generate-json-schema`.
+  - Upstream's own code says ChatGPT returns through the user's own `codex login` via `codex app-server`, so no OpenAI client ID ships.
+- Approved mock: `design/mocks/2026-10-17-chatgpt-connect/` (`index.html`, `SPEC.md`, `shots/state-a..e.png`). States: A connect with Codex signed in, B Codex signed out, C Codex not installed, D AI CONNECTIONS with "Use for guides", E guide failed on ChatGPT. Owner approved 2026-10-17.
+- Owner answers, shaping session 2026-10-17:
+  1. Connect ChatGPT: one click when Codex is signed in; start ChatGPT sign-in through Codex (browser) when signed out; show "Install Codex first" with the install command when Codex is missing.
+  2. ChatGPT is used first; AI CONNECTIONS has a "Use for guides" choice (ChatGPT / OpenRouter).
+  3. A ChatGPT failure shows the failed state with the reason and a "Try with OpenRouter" button. Showhow never switches provider by itself.
+  4. Make guide only. The editor's AI assistant keeps upstream's provider settings.
+  5. Priority: no.
+  6. OpenRouter default stays `anthropic/claude-haiku-5.5`; no model bake-off.
+- Confirmed assumptions (owner sign-off 2026-10-17):
+  - A. Guide runs are isolated from the owner's Codex setup: per-run overrides switch off hooks, MCP servers, plugins and skills; the turn has no tools, a read-only sandbox and approval policy `never`.
+  - B. Guide threads are ephemeral and do not appear in Codex history.
+  - C. Guides count against the same ChatGPT/Codex limits as the owner's coding work. Settings shows usage from `account/rateLimits/read`; a limit error shows state E.
+  - D. Showhow never stores ChatGPT tokens. Disconnect stops Showhow using ChatGPT and does not sign Codex out.
+  - E. Sign-in from state B signs Codex in globally (same Codex as the terminal).
+  - F. Minimum Codex version `0.163.0`; an older one shows state C's layout with "Update Codex" wording.
+  - G. The mock is the visual reference; Library-19's ChatGPT row becomes active.
+  - Defaults: `codex app-server` starts on demand for a guide run or a settings check and stops after; Codex is found on PATH plus `~/.npm-global/bin`, `/opt/homebrew/bin`, `/usr/local/bin`; default model `gpt-6-luna` with effort `low`; the settings model list is Codex's `model/list` filtered to image-capable models; same prompt, validator and review sheet as #122; unit tests use a fake app-server.
+
+## Bounded requirements
+- Platform for acceptance: macOS 13+ arm64. Windows and Linux untested and reported so.
+- Supported Codex: CLI `0.163.0` or newer, found at one of the named locations. Other install locations are a follow-up.
+- Supported cases: (K1) Codex signed in, connect, make a guide with `gpt-6-luna`; (K2) Codex signed out, sign in from Showhow, then make a guide; (K3) Codex not installed, state C, then install and Check again; (K4) Codex older than `0.163.0`, "Update Codex" variant; (K5) ChatGPT error (usage limit, signed out mid-run, app-server crash or timeout) shows state E with the reason, deterministic steps intact, and "Try with OpenRouter" when OpenRouter is connected (hidden otherwise); (K6) "Use for guides" switches provider, and the first run on a provider shows its own review; (K7) Disconnect ChatGPT leaves Codex signed in (`account/read` still reports the account).
+- Data sent through ChatGPT equals what the review sheet lists (transcript if on, selected frames, step labels and times), as in #122.
+- Excluded: editor AI assistant, bundling Codex, ChatGPT for the agent brief, automatic fallback, non-macOS checks.
+
+## Architecture
+- `electron/showhow/codexProvider.ts` (new): owns the app-server process and protocol.
+  - `findCodex()` → `{ path, version } | { missing } | { tooOld, version }`.
+  - `codexStatus()` → `account/read` + `account/rateLimits/read` summary (signed in, plan, usage), never tokens.
+  - `startCodexSignIn()` / `cancelCodexSignIn()` → `account/login/start` / `account/login/cancel`, resolving on `account/login/completed`.
+  - `listCodexModels()` → image-capable models from `model/list`.
+  - `codexGuideModel({ model, effort })` → a `model(messages)` function for `runAiGuide`: starts an ephemeral thread (`sandbox` read-only, `approvalPolicy: never`, config overrides disabling hooks, MCP servers, plugins and skills, `developerInstructions` from the system message), sends one `turn/start` with text and `image` items (the #122 data URLs) and an `outputSchema` matching the guide JSON, collects the final agent message, and returns its text. Errors map to typed reasons: `usage-limit`, `signed-out`, `codex-missing`, `codex-too-old`, `timeout` (120 s), `crashed`.
+  - The process is spawned with an explicit argument list (no shell) and killed on completion, error or app quit.
+- `electron/showhow/aiGuide.ts`: `meta.guide.provider` widens to `"openrouter" | "chatgpt"`; the provider chooses the model function. No change to the validator.
+- `electron/showhow/aiGuideConsent.ts`: per-provider consent and the "Use for guides" preference (Showhow preference key; ChatGPT default when connected).
+- IPC (Showhow block in `electron/ipc/handlers.ts`): `showhow:codex-status`, `showhow:codex-sign-in`, `showhow:codex-sign-in-cancel`, `showhow:codex-models`, `showhow:ai-guide-provider` (get/set). The existing run handler picks the provider.
+- Renderer: `AiGuideSheets.tsx` states A–C and E; `AiConnections.tsx` / `AiGuideSettings.tsx` state D; `AiGuidePanel.tsx` passes the failure reason and the "Try with OpenRouter" action.
+- Upstream touchpoints: none. Upstream's provider registry and chat model are not changed.
+
+## Milestones
+None. One ticket, after #122. Published 2026-10-17: Task 1 = #128.
+
+### Task 1: Connect ChatGPT through the owner's Codex login for Make guide
+
+**Priority:** no (owner answer, 2026-10-17)
+**Labels:** feature, ui
+**Milestone:** none
+**Depends on:** #122 merged to `main` (PR #126). Do not start before it lands.
+**Files:** `electron/showhow/codexProvider.ts`, `electron/showhow/codexProvider.test.ts`, `electron/showhow/fixtures/fakeCodexAppServer.mjs` (test fake), `electron/showhow/aiGuide.ts`, `electron/showhow/aiGuide.test.ts`, `electron/showhow/aiGuideConsent.ts`, `electron/showhow/aiGuideConsent.test.ts`, `electron/ipc/handlers.ts` (Showhow block only), `electron/preload.ts` and `electron/electron-env.d.ts` (Showhow API only), `src/lib/showhow/aiGuide.ts`, `src/lib/showhow/aiGuide.test.ts`, `src/components/showhow/AiGuideSheets.tsx`, `src/components/showhow/AiGuidePanel.tsx`, `src/components/showhow/AiConnections.tsx`, `src/components/showhow/AiGuideSettings.tsx` and their tests, `src/i18n/locales/*/` (new Showhow keys), `docs/architecture/showhow-bundles.md`, `implementation-notes.md`
+**Requirements:**
+- R1 Connect sheet (Library-19) shows states A, B or C from `findCodex()` and `codexStatus()`, matching the mock's copy and controls. Connect in A records ChatGPT as connected without network calls beyond `account/read`.
+- R2 State B starts sign-in through Codex, shows "Waiting for browser…" with Cancel, and reaches the connected outcome on `account/login/completed`. Cancel calls `account/login/cancel`.
+- R3 State C shows `npm install -g @openai/codex` with Copy, and Check again re-runs `findCodex()`. An older Codex shows the "Update Codex" variant.
+- R4 Make guide with ChatGPT runs the #122 AI pass through `codexGuideModel` with `gpt-6-luna` (or the model chosen in settings), and writes the same files and `meta.guide` with `provider: "chatgpt"`.
+- R5 The guide run starts no tools, uses an ephemeral thread and disables hooks, MCP servers, plugins and skills through per-run overrides. A test asserts the exact `thread/start` and `turn/start` parameters sent to the fake.
+- R6 AI CONNECTIONS (state D): both cards, model selects, ChatGPT usage line, Disconnect (Showhow only), and "Use for guides" persisted. The first guide on each provider shows that provider's review.
+- R7 Failure (state E): the typed reason in plain words, deterministic steps and recording unchanged, "Retry with ChatGPT", and "Try with OpenRouter" only when OpenRouter is connected. No automatic switch.
+**Interfaces:** Consumes the `codex` CLI (`app-server` over stdio) and #122's guide pipeline. Produces the same bundle files as #122. Read later by Copy for agent and PDF export.
+**Constraints and reasons:** No tokens stored by Showhow (Codex owns auth). No shell when spawning Codex (argument injection). Kill the child process on every exit path (no orphaned app-servers). No network in CI (fake app-server). Fail open as in #122. Do not edit upstream AI code (release merges).
+
+- [ ] RED: `codexProvider.test.ts` fails for: `findCodex` returns missing / too old / found for three fake install layouts; `codexGuideModel` sends `thread/start` with `ephemeral: true`, read-only sandbox, `approvalPolicy: "never"` and the disabling overrides, and `turn/start` with text plus image items and the guide `outputSchema`; a fake rate-limit error maps to `usage-limit`; a fake that never answers maps to `timeout` and the child is killed; `aiGuide.test.ts` writes `provider: "chatgpt"` and leaves `steps.json` byte-equal to the deterministic file on a thrown ChatGPT error.
+- [ ] Implement the bounded behaviour.
+- [ ] GREEN: those cases pass; renderer tests cover states A–E and K6/K7; #122's existing tests still pass.
+- [ ] Prove and obtain independent review, then open the PR to main.
+
+**Verification:** `npx vitest run electron/showhow src/lib/showhow src/components/showhow src/components/library`; `npm run test`; `npm run test:browser`; `npx tsc --noEmit`; `npx tsc --noEmit -p tsconfig.test.json` (the CI "Typecheck (tests)" job); `npm run lint`; `npm run i18n:check`; `npm run branding:check`. Manual macOS arm64 smoke on a dev build with the owner's real Codex login: K1 on the owner's narrated recording `2026-10-17_135232-recording` (copy in an isolated profile), K3 and K4 by pointing discovery at an empty and an old fake binary, K5 by a forced error (fake binary or blocked network), K6 and K7. Screenshots of states A–E from the real app saved to `~/dev/loop-evidence/showhow-<issue>/`. The owner's Codex history shows no new thread after K1 (assumption B).
+**DONE WHEN:**
+- K1: a titled guide with instruction-style steps from GPT-6 Luna, saved in the bundle with `provider: "chatgpt"`.
+- K2–K7 each behave as stated, with the recording and deterministic steps intact in K5.
+- The RED cases pass without network; CI is green, including Typecheck (tests).
+- Screenshots of A–E from the real app are in the evidence folder and match the mock's copy.
+**Outside cases / follow-ups:** ChatGPT for the editor assistant; ChatGPT for the agent brief; Codex in other install locations; bundling Codex; Windows and Linux.
+
+## Superseded issues
+None.
+
+## Self-review
+Unbounded-word scan of requirements and DONE WHEN: "each behave" is bounded to K2–K7. "Every exit path" (constraints) is a reason, bounded in RED by the timeout and error cases. "All", "any" and "valid" do not appear in acceptance.

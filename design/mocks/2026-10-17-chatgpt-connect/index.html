@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Showhow · Connect ChatGPT states (prototype)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Inter+Tight:wght@600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --surface:#FFFCF7;--raised:#F9F5EC;--ink:#2F2F2F;--ink-soft:#2F2F2FB3;--muted:#2F2F2F8C;
+  --line:#2F2F2F24;--ink-wash:#2F2F2F14;--chip:#E8E4DC;--panel:#2F2F2F;--on-panel:#FFFCF7;
+  --on-panel-soft:#FFFCF7AA;--on-panel-muted:#FFFCF78C;--on-panel-faint:#FFFCF766;
+  --accent:#82B09A;--accent-tint:#82B09A33;--accent-strong:#33564A;
+  --rec:#E3582D;--rec-wash:#E3582D1F;--rec-ink:#B3431F;
+  --ease:cubic-bezier(0.23,1,0.32,1);
+}
+*{box-sizing:border-box;margin:0}
+html,body{background:#d9d6cf}
+body{font:400 14px/1.45 Inter,system-ui,sans-serif;color:var(--ink);padding-top:44px;min-height:100vh}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+.mono{font-family:'JetBrains Mono',monospace}
+
+/* switcher */
+#switcher{position:fixed;top:0;left:0;right:0;height:44px;background:#fff;border-bottom:1px solid #00000020;display:flex;align-items:center;gap:6px;padding:0 12px;z-index:100;overflow-x:auto;font-family:system-ui,sans-serif}
+#switcher .proto{font-size:11px;color:#666;margin-right:8px;white-space:nowrap}
+#switcher button{font:500 12px system-ui,sans-serif;padding:6px 10px;border-radius:6px;border:1px solid #00000026;background:#fff;white-space:nowrap;transition:background-color 120ms,transform 160ms var(--ease)}
+#switcher button[aria-pressed=true]{background:#222;color:#fff;border-color:#222}
+#switcher button:active{transform:scale(0.96)}
+
+/* frame */
+#frame{position:relative;width:1200px;height:760px;margin:0 auto;background:var(--surface);display:flex;overflow:hidden}
+#side{width:272px;flex:none;background:var(--panel);color:var(--on-panel);padding:18px;display:flex;flex-direction:column}
+.logo{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+.logo i{width:40px;height:40px;background:var(--surface);border:1px solid var(--ink);box-shadow:4px 4px 0 var(--accent);display:grid;place-items:center;margin-right:2px}
+.logo b{font:600 17px 'Inter Tight',sans-serif}
+.label{font:500 10px 'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.6px}
+#side .label{color:var(--on-panel-faint);margin:20px 0 8px 10px}
+.row{padding:10px;border-radius:6px;display:flex;flex-direction:column;gap:5px;align-items:flex-start;cursor:default}
+.row.sel{background:#FFFCF71A}
+.row .t{font:500 13px Inter,sans-serif}
+.row .m{font:500 10px 'JetBrains Mono',monospace;letter-spacing:.6px;color:var(--on-panel-muted);text-transform:uppercase}
+.tag{font:500 10px 'JetBrains Mono',monospace;letter-spacing:.6px;text-transform:uppercase;padding:2px 6px;border-radius:3px}
+.tag.guide{background:var(--accent);color:var(--ink)}
+.tag.no{background:#FFFCF71A;color:var(--on-panel-soft)}
+.tag.fail{background:var(--rec);color:#fff}
+.grow{flex:1}
+
+/* buttons */
+.btn{font:500 11px 'JetBrains Mono',monospace;letter-spacing:.6px;text-transform:uppercase;padding:10px 14px;border-radius:4px;border:1px solid transparent;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;transition:background-color 120ms var(--ease),transform 160ms var(--ease),opacity 120ms}
+.btn:active:not(:disabled){transform:scale(0.96)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.primary{background:var(--accent);color:var(--ink)}
+.btn.dark{background:#2F2F2F;color:#FFFCF7}
+.btn.sec{border-color:var(--line);color:var(--ink)}
+.btn.ghost{color:var(--ink-soft)}
+.btn.side{background:#FFFCF714;color:var(--on-panel);justify-content:flex-start}
+.btn.full{width:100%}
+.btn.chipbg{background:var(--chip)}
+@media (hover:hover) and (pointer:fine){
+  .btn.primary:hover:not(:disabled){background:#8FBBA6}
+  .btn.dark:hover:not(:disabled){background:#3A3A3A}
+  .btn.sec:hover:not(:disabled),.btn.ghost:hover:not(:disabled){background:var(--ink-wash)}
+  #switcher button:hover{background:#eee}
+  #switcher button[aria-pressed=true]:hover{background:#222}
+  .row:not(.sel):hover{background:#FFFCF70D}
+  .tabs button:not(.on):hover{background:var(--ink-wash)}
+}
+.btn:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid var(--accent-strong);outline-offset:2px}
+
+/* main */
+#main{flex:1;padding:44px 48px 0;overflow:hidden;min-width:0}
+h1{font:600 32px/1.15 'Inter Tight',sans-serif;letter-spacing:-.02em}
+.meta{font:500 11px 'JetBrains Mono',monospace;letter-spacing:.6px;color:var(--muted);text-transform:uppercase;margin-top:8px}
+.video{margin-top:18px;height:300px;width:100%;background:#CFCBC2;border-radius:8px;display:grid;place-items:center}
+.video span{font:500 10px 'JetBrains Mono',monospace;letter-spacing:.6px;color:#6b685f}
+.guidecard{margin-top:28px;border:1px solid var(--line);border-radius:8px;padding:20px 24px;display:flex;justify-content:space-between;gap:20px;align-items:flex-start}
+.guidecard h3{font:600 18px 'Inter Tight',sans-serif;margin-bottom:6px}
+.guidecard p{color:var(--muted);max-width:520px;font-size:14px}
+.failcard{margin-top:20px;border:1px solid var(--rec);border-radius:8px;overflow:hidden}
+.failcard .hd{background:var(--rec-wash);padding:16px 24px;display:flex;justify-content:space-between;align-items:center}
+.failcard h3{font:600 20px 'Inter Tight',sans-serif;color:var(--rec-ink);letter-spacing:-.01em}
+.failcard .bd{padding:20px 24px}
+.failcard .bd p{color:var(--ink-soft)}
+.btnrow{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+.hint{font-size:12px;color:var(--muted);margin-top:12px}
+.details{margin-top:14px;font:500 11px 'JetBrains Mono',monospace;background:var(--raised);border:1px solid var(--line);border-radius:6px;padding:10px 12px;color:var(--ink-soft)}
+.details[hidden]{display:none}
+
+/* sheet */
+.scrim{position:absolute;inset:0;background:rgba(47,47,47,.45);display:grid;place-items:center;z-index:10}
+.sheet{width:560px;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:4px 4px 0 #82B09A;animation:in 200ms var(--ease) both;overflow:hidden}
+@keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.sheet .hd{padding:16px 20px 14px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-start}
+.sheet .eyebrow{font:500 10px 'JetBrains Mono',monospace;letter-spacing:.6px;color:var(--muted);text-transform:uppercase}
+.sheet h2{font:600 20px 'Inter Tight',sans-serif;letter-spacing:-.01em;margin-top:6px}
+.x{width:24px;height:24px;display:grid;place-items:center;border-radius:4px;color:var(--ink-soft)}
+.sheet .bd{padding:18px 20px 0}
+.sheet .intro{color:var(--ink-soft)}
+.prov{padding:18px 0 20px;border-bottom:1px solid var(--line)}
+.prov:last-child{border:0}
+.prov .top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.prov h4{font:600 20px 'Inter Tight',sans-serif;letter-spacing:-.01em}
+.prov .sub{font:500 10px 'JetBrains Mono',monospace;letter-spacing:.6px;color:var(--muted);text-transform:uppercase;margin-top:6px}
+.prov p{color:var(--muted);margin:12px 0 14px}
+.sheet .ft{border-top:1px solid var(--line);padding:16px 20px;display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:13px}
+.pill{font:500 10px 'JetBrains Mono',monospace;letter-spacing:.6px;text-transform:uppercase;padding:3px 8px;border-radius:3px;background:var(--chip);color:var(--muted);display:inline-flex;align-items:center;gap:6px;white-space:nowrap;flex:none}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.pill.ok{background:var(--accent-tint);color:var(--accent-strong)}
+.pill.rec{background:var(--rec-wash);color:var(--rec-ink)}
+.code{display:flex;justify-content:space-between;align-items:center;background:var(--raised);border:1px solid var(--line);border-radius:6px;padding:10px 12px;font:500 12px 'JetBrains Mono',monospace;margin-bottom:12px}
+.code .btn{padding:4px 8px}
+.under{font:500 10px 'JetBrains Mono',monospace;letter-spacing:.6px;color:var(--muted);text-transform:uppercase;margin-top:8px}
+.acts{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+/* settings */
+.set{display:flex;gap:32px;margin-top:28px}
+.tabs{width:180px;flex:none;display:flex;flex-direction:column;gap:2px}
+.tabs button{font:500 11px 'JetBrains Mono',monospace;letter-spacing:.6px;text-transform:uppercase;text-align:left;padding:10px 12px;border-radius:4px;color:var(--muted);transition:background-color 120ms}
+.tabs button.on{background:var(--accent-tint);color:var(--ink)}
+.set .content{flex:1;min-width:0}
+.set h2{font:600 18px 'Inter Tight',sans-serif}
+.set .lead{color:var(--muted);margin:6px 0 20px}
+.card{border:1px solid var(--line);border-radius:8px;padding:16px 20px;margin-bottom:14px}
+.card .top{display:flex;justify-content:space-between;align-items:center}
+.card h4{font:600 18px 'Inter Tight',sans-serif}
+.card .line{color:var(--ink-soft);margin:8px 0 12px}
+.card .ctl{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.card .lab{font:500 10px 'JetBrains Mono',monospace;letter-spacing:.6px;color:var(--muted);text-transform:uppercase}
+select{font:500 12px 'JetBrains Mono',monospace;padding:8px 10px;border:1px solid var(--line);border-radius:4px;background:var(--surface);color:var(--ink)}
+.small{font-size:12px;color:var(--muted)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:4px;overflow:hidden;margin-top:8px}
+.seg button{font:500 11px 'JetBrains Mono',monospace;letter-spacing:.6px;text-transform:uppercase;padding:10px 14px;transition:background-color 120ms,transform 160ms var(--ease)}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-checked=true]{background:var(--accent);color:var(--ink)}
+.seg button:active{transform:scale(0.96)}
+
+@media (prefers-reduced-motion:reduce){
+  .sheet{animation-name:in-rm}
+  @keyframes in-rm{from{opacity:0}to{opacity:1}}
+  .btn,.seg button,#switcher button{transition-property:background-color,opacity}
+  .btn:active:not(:disabled),.seg button:active,#switcher button:active{transform:none}
+}
+</style>
+</head>
+<body>
+<nav id="switcher" aria-label="Prototype state switcher">
+  <span class="proto">PROTOTYPE · fake data</span>
+  <button data-s="a">A · Connect (Codex ready)</button>
+  <button data-s="b">B · Codex signed out</button>
+  <button data-s="c">C · Codex not installed</button>
+  <button data-s="d">D · AI connections</button>
+  <button data-s="e">E · Guide failed</button>
+</nav>
+<div id="frame"></div>
+
+<script>
+const $ = (s, r=document) => r.querySelector(s);
+const ICON_X = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 3l8 8M11 3l-8 8"/></svg>';
+const CURSOR = '<svg width="22" height="22" viewBox="0 0 22 22"><path d="M5 3l12 7-5 1.5L9.5 17z" fill="#2F2F2F"/></svg>';
+
+let state = 'a';
+let chat = 'signedin';   // signedin | signedout | notfound | connecting | waiting | connected
+let copied = false, checking = false, details = false, useFor = 'chatgpt', timers = [];
+
+const clear = () => { timers.forEach(clearTimeout); timers = []; };
+const later = (fn, ms) => timers.push(setTimeout(fn, ms));
+
+function sidebar(sel) {
+  const rows = [
+    ['Onboard a teammate to Linear','WINDOW · CHROME · 6:02','no','NO GUIDE'],
+    ['Bug: invoice total rounds wrong','DESKTOP · 2:14','guide','GUIDE'],
+    ['Export monthly report','DESKTOP · 1:37','fail','FAILED'],
+  ];
+  return `<aside id="side">
+    <div class="logo"><i>${CURSOR}</i><b>Showhow</b></div>
+    <button class="btn primary full">New recording</button>
+    <div class="label">Library · 3</div>
+    ${rows.map((r,i)=>`<div class="row ${i===sel?'sel':''}"><span class="t">${r[0]}</span><span class="m">${r[1]}</span><span class="tag ${r[2]}">${r[3]}</span></div>`).join('')}
+    <div class="grow"></div>
+    <button class="btn side full" data-act="settings">Settings</button>
+  </aside>`;
+}
+
+function libraryMain() {
+  return `<main id="main">
+    <h1>Onboard a teammate to Linear</h1>
+    <div class="meta">Window · Chrome · 6:02 · 17 Oct 2026</div>
+    <div class="video"><span>PLACEHOLDER VIDEO · 16:9</span></div>
+    <div class="guidecard"><div><h3>Turn this recording into a guide</h3><p>Showhow transcribes on this Mac. Your connected AI provider uses the transcript and selected frames to write the guide.</p></div><button class="btn primary">Make guide</button></div>
+  </main>`;
+}
+
+function failMain() {
+  return `<main id="main">
+    <h1>Export monthly report</h1>
+    <div class="meta">Desktop · 1:37 · 12 Sep 2026</div>
+    <div class="video"><span>PLACEHOLDER VIDEO · 16:9</span></div>
+    <div class="failcard">
+      <div class="hd"><h3>Couldn't make the guide</h3><span class="tag fail">Failed</span></div>
+      <div class="bd">
+        <p>ChatGPT usage limit reached. It resets in 2 h 14 min. Your recording and the basic steps are safe.</p>
+        <div class="btnrow">
+          <button class="btn dark">Try with OpenRouter</button>
+          <button class="btn sec">Retry with ChatGPT</button>
+          <button class="btn ghost" data-act="details">Details</button>
+        </div>
+        <div class="hint">OpenRouter bills your key, about $0.004 for this guide.</div>
+        <div class="details mono" ${details?'':'hidden'}>codex app-server: rate_limit_exceeded (weekly)</div>
+      </div>
+    </div>
+  </main>`;
+}
+
+function settingsMain() {
+  const opt = (a,v)=>a.map(x=>`<option ${x===v?'selected':''}>${x}</option>`).join('');
+  return `<main id="main">
+    <h1>Settings</h1>
+    <div class="set">
+      <div class="tabs" role="tablist">
+        <button>General</button><button>Recording</button><button class="on" role="tab" aria-selected="true">AI connections</button><button>Appearance</button>
+      </div>
+      <div class="content">
+        <h2>AI connections</h2>
+        <p class="lead">Used for Make guide. Editing and recording never leave this Mac.</p>
+        <div class="card">
+          <div class="top"><h4>ChatGPT</h4><span class="pill ok">Connected</span></div>
+          <div class="line">mohamed@… · Pro Lite · via Codex</div>
+          <div class="ctl"><span class="lab">Model</span><select aria-label="Model">${opt(['GPT-6 Luna','GPT-6.1 Sol','GPT-6 Astra'],'GPT-6 Luna')}</select><span class="small">Usage: 18% of this week's limit</span><span class="grow"></span><button class="btn ghost">Disconnect</button></div>
+        </div>
+        <div class="card">
+          <div class="top"><h4>OpenRouter</h4><span class="pill ok">Connected</span></div>
+          <div class="line">Key ending …a91f</div>
+          <div class="ctl"><span class="lab">Model</span><select aria-label="Model">${opt(['anthropic/claude-haiku-5.5'],'')}</select><span class="grow"></span><button class="btn sec">Replace key</button><button class="btn ghost">Remove</button></div>
+        </div>
+        <div class="lab" style="margin-top:22px">Use for guides</div>
+        <div class="seg" role="radiogroup" aria-label="Use for guides">
+          <button role="radio" aria-checked="${useFor==='chatgpt'}" data-act="use" data-v="chatgpt">ChatGPT (no extra cost)</button>
+          <button role="radio" aria-checked="${useFor==='openrouter'}" data-act="use" data-v="openrouter">OpenRouter (pay per guide)</button>
+        </div>
+        <div class="small" style="margin-top:10px">If the chosen one fails, Showhow offers the other. It never switches by itself.</div>
+      </div>
+    </div>
+  </main>`;
+}
+
+function chatRow() {
+  const P = (cls,t)=>`<span class="pill ${cls}">${t}</span>`;
+  let pill, text, actions;
+  switch (chat) {
+    case 'signedin':
+      pill=P('ok','Codex signed in'); text='Signed in as mohamed@… · Pro Lite plan. Guides use GPT-6 Luna at no extra cost.';
+      actions=`<button class="btn primary" data-act="connect">Connect ChatGPT</button>`; break;
+    case 'connecting':
+      pill=P('ok','Codex signed in'); text='Signed in as mohamed@… · Pro Lite plan. Guides use GPT-6 Luna at no extra cost.';
+      actions=`<button class="btn primary" disabled>Connecting…</button>`; break;
+    case 'connected':
+      pill=P('ok','Connected'); text='Signed in as mohamed@… · Pro Lite plan. Guides use GPT-6 Luna at no extra cost.';
+      actions=`<button class="btn dark" data-act="continue">Continue to Make guide</button>`; break;
+    case 'signedout':
+      pill=P('','Signed out'); text='Codex is installed but not signed in. Sign in with your ChatGPT account in your browser.';
+      actions=`<button class="btn primary" data-act="signin">Sign in with ChatGPT</button></div><div class="under">Opens ChatGPT in your browser</div><div>`; break;
+    case 'waiting':
+      pill=P('','Signed out'); text='Codex is installed but not signed in. Sign in with your ChatGPT account in your browser.';
+      actions=`<button class="btn primary" disabled>Waiting for browser…</button><button class="btn ghost" data-act="cancelsignin">Cancel sign-in</button>`; break;
+    case 'notfound':
+      pill=P('rec','Codex not found'); text='ChatGPT connects through the Codex app. Install it once, then come back.';
+      actions=`</div><div class="code"><span>npm install -g @openai/codex</span><button class="btn ghost" data-act="copy">${copied?'Copied':'Copy'}</button></div><div class="acts"><button class="btn sec" data-act="check" ${checking?'disabled':''}>${checking?'Checking…':'Check again'}</button><button class="btn ghost">What is Codex?</button>`; break;
+  }
+  return `<section class="prov"><div class="top"><div><h4>ChatGPT</h4><div class="sub">Uses your ChatGPT plan through Codex</div></div>${pill}</div><p>${text}</p><div class="acts">${actions}</div></section>`;
+}
+
+function sheet() {
+  return `<div class="scrim"><div class="sheet" role="dialog" aria-label="Connect AI to make guides">
+    <div class="hd"><div><div class="eyebrow">Showhow</div><h2>Connect AI to make guides</h2></div><button class="x" aria-label="Close" data-act="close">${ICON_X}</button></div>
+    <div class="bd">
+      <p class="intro">Recording and editing stay on this Mac. Connect an AI provider when you want a guide.</p>
+      ${chatRow()}
+      <section class="prov"><div class="top"><div><h4>OpenRouter</h4><div class="sub">Use your OpenRouter API key</div></div><span class="pill">Not connected</span></div><p>Pay per guide with your own key. About $0.004 a guide with Claude Haiku 5.5.</p><div class="acts"><button class="btn sec">Connect OpenRouter</button></div></section>
+    </div>
+    <div class="ft"><span>After connecting, check what gets sent.</span><button class="btn sec" data-act="close">Cancel</button></div>
+  </div></div>`;
+}
+
+function render(animate=true) {
+  const f = $('#frame');
+  const hadSheet = !!$('.sheet');
+  let main, sel = 0, over = '';
+  if (state==='d') { main = settingsMain(); sel=-1; }
+  else if (state==='e') { main = failMain(); sel=2; }
+  else { main = libraryMain(); over = sheet(); }
+  f.innerHTML = sidebar(sel) + main + over;
+  if (!animate || hadSheet) { const s=$('.sheet'); if (s) s.style.animation='none'; }
+  document.querySelectorAll('#switcher button[data-s]').forEach(b=>b.setAttribute('aria-pressed', b.dataset.s===state));
+}
+
+function setState(s) {
+  clear(); state=s; copied=false; checking=false; details=false;
+  chat = {a:'signedin', b:'signedout', c:'notfound'}[s] || 'signedin';
+  render(false);
+  // new state: animate sheet fresh
+  const sh=$('.sheet'); if (sh){ sh.style.animation='none'; void sh.offsetWidth; sh.style.animation=''; }
+}
+
+document.addEventListener('click', e => {
+  const sw = e.target.closest('#switcher button[data-s]');
+  if (sw) return setState(sw.dataset.s);
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  switch (el.dataset.act) {
+    case 'connect': chat='connecting'; render(); later(()=>{chat='connected';render();},700); break;
+    case 'signin': chat='waiting'; render(); later(()=>{chat='connected';render();},1500); break;
+    case 'cancelsignin': clear(); chat='signedout'; render(); break;
+    case 'copy': copied=true; render(); later(()=>{copied=false;render();},1200); break;
+    case 'check': checking=true; render(); later(()=>{checking=false;render();},700); break;
+    case 'details': details=!details; render(); break;
+    case 'use': useFor=el.dataset.v; render(); break;
+    case 'settings': setState('d'); break;
+    case 'close': case 'continue': clear(); state='x'; $('.scrim')?.remove(); break;
+  }
+});
+// 'x' = closed sheet; keep switcher unpressed
+setState('a');
+</script>
+</body>
+</html>
