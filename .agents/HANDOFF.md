@@ -5,8 +5,8 @@ Updated: 2026-10-17
 ## In flight
 
 - **#122 AI guide shipped** (PR #126, merged 2026-10-17 as `500cea16`). Make guide runs an AI pass over the deterministic steps through OpenRouter, with `anthropic/claude-haiku-5.5` as the default model (owner decision 2026-10-17, no bake-off). Plan: "Showhow AI guide Plan" in `PLAN.md`. Evidence: `~/dev/loop-evidence/showhow-122/` (READY.md, PROVE.md, PROVE-CI.md, `live-smoke/run-OKsXUE/`). Lane removed; card Done.
-- **Connect ChatGPT** is shaped and approved: "Showhow Connect ChatGPT Plan" in `PLAN.md`, mock in `design/mocks/2026-10-17-chatgpt-connect/`. It uses the owner's own Codex login (`codex app-server`) for Make guide only. Its issue is pending the owner's yes on the publication preview; it builds after #122 (now merged).
-- **Move onto upstream v2:** #115 and #116 are done (#116 merged on stable upstream `v2.0.0` via PR #121). #117 (bundled transcription model) and #118 (size trim) are open and not dispatched.
+- **#128 Connect ChatGPT** is published and deferred (`needs-human`, Creating plan/spec). Retain parked lane w6Q; no implementation or auth changes. The installed Codex version lacks the required proven tool/config isolation. Original approved scope remains in: "Showhow Connect ChatGPT Plan" in `PLAN.md`, mock in `design/mocks/2026-10-17-chatgpt-connect/`. It uses the owner's own Codex login (`codex app-server`) for Make guide only. Issue #128 is published. Resume only after owner direction and supported isolation controls.
+- **Move onto upstream v2:** #115 and #116 are done (#116 merged on stable upstream `v2.0.0` via PR #121). #117 is closed: owner merged PR #130 as `371d940d14d7392ae090b9bfc57b2cf311c6de78`; both boards show Done and its clean lane is removed. Evidence: `~/dev/loop-evidence/showhow-117/READY.md`, `PROVE.md` and `SHOWHOW-COORDINATOR-HANDOFF.md`. #118 (size trim) is Ready to implement and undispatched. Owner approved the handoff index at `/Users/mohamedb/dev/loop-evidence/HANDOFF-INDEX.md`; this documentation PR records the close-out.
 - **Bugs in Todo:** #124 (pressing Stop on the recorder bar becomes a guide step), #125 (a fresh dev-build take would not play in the editor; seen once), #127 (ready-guide view polish: stray "Check what gets sent" link, plain-text Edit/Delete).
 
 ### Earlier context (2026-10-16)
@@ -22,7 +22,7 @@ The move onto upstream v2 is shaped and published: milestone "Move onto upstream
 
 ## Next action
 
-Owner approves the Connect ChatGPT issue preview; then publish it (Ready to implement) and the coordinator dispatches it. Otherwise dispatch #117.
+After the owner merges the #117 close-out documentation PR, dispatch #118 from approved Task 4 using the canonical ticket lane procedure. Measure the untrimmed merged build first; preserve #117 transcription behavior and the parked #128 lane.
 
 ## Open decisions
 
@@ -45,7 +45,7 @@ Owner approves the Connect ChatGPT issue preview; then publish it (Ready to impl
 
 ## Test state
 
-main at `500cea16` (PR #126): all 10 CI checks passed (lint, type check, test typecheck, unit 4616 pass / 2 skip, browser 10, build, Rust and Swift jobs). The #122 real-key macOS 26.6.2 arm64 smoke passed C1–C7 on the owner's narrated recordings. Windows and Linux untested; new non-English strings fall back to English. Earlier: #110 packaged macOS smoke passed at `fc50566a`.
+#122 historical evidence at `500cea16` (PR #126): all 10 CI checks passed (lint, type check, test typecheck, unit 4616 pass / 2 skip, browser 10, build, Rust and Swift jobs). The #122 real-key macOS 26.6.2 arm64 smoke passed C1–C7 on the owner's narrated recordings. Windows and Linux untested; new non-English strings fall back to English. Earlier: #110 packaged macOS smoke passed at `fc50566a`.
 
 ## Cloud blockers
 
@@ -58,3 +58,7 @@ Superseded: #116 merged on stable `v2.0.0` (PR #121). Kept for context only.
 
 
 The previous Next action/final2.1wait is historical and superseded. #115 is closed/Done via #120. Owner chose stable2.0 (Yeah lets do it). #116 is at Creating plan/spec for the exact revised plan/publication gate; no implementation or publication yet. Use refs/tags/upstream/v2.0.0 at eff86dcba48fac490a0e153141bf8537df7ffc54 as proposed actual parent, preserving READY5/current2074dirty source/index/merge metadata/owner media before same-lane reconstruction. #117 native bundled base/offline/fail-open and #118≤400MB remain sequential and not dispatched. No priority;116ui. Refresh source/native/package/owner proof after retarget, then fresh review, one PR and separate ancestry-preserving exact-head owner merge gate. No Showhow release tag until milestone complete. This note describes the proposal, not a delivered stable migration.
+
+### #117 close-out verified 2026-10-17
+
+Main is `371d940d14d7392ae090b9bfc57b2cf311c6de78`. Reviewed head `cc318e87676078838e5df95ac1c5af2bbcc7c67e`: Standards PASS, Requirements PASS, all 11 CI checks pass. Local unit 4,626 pass/1 skip; hosted unit 4,625 pass/2 skip; browser 10 pass. No tests rerun for close-out. Unsigned macOS arm64 directory package only; Windows/Linux runtime, signing/installers and macOS13 hardware untested. Broad package audit remains RED on #118 policies (365.36 MiB). Physical Wi-Fi conditions are owner attestations. Second missing-model take preserves valid media and failure marker but effectively silent audio. Failed identity/CI receipts remain retained. Preserve untracked `design/landing-assets/` and `design/landing.pen`; no release tags.
