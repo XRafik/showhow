@@ -4,6 +4,14 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { listPackage, statFile } from "@electron/asar";
 
+// Runtime npm allow-list, with a reason required for each retained package.
+// The stable-v2 main/preload chunks bundle their JavaScript dependencies. The
+// universal LangChain provider loader is not used: Showhow passes constructed
+// ChatOpenAI/ChatAnthropic/ChatMistralAI instances to createAgent. Electron,
+// original-fs and Node builtins are supplied by Electron; compositor_view.node
+// and ONNX Runtime are filesystem payloads under Resources/electron/native.
+const runtimePackages = {};
+
 // Do not follow symlinks: a macOS framework exposes Versions/A through two aliases.
 async function walk(root, relative = "") {
 	const entries = [];
@@ -19,15 +27,16 @@ async function walk(root, relative = "") {
 async function main() {
 	const [appPath, ...options] = process.argv.slice(2);
 	if (!appPath || (options.length && (options.length !== 2 || options[0] !== "--budget-mb"))) {
-		throw new Error("Usage: node scripts/check-package-contents.mjs <app-path> [--budget-mb 330]");
+		throw new Error("Usage: node scripts/check-package-contents.mjs <app-path> [--budget-mb 400]");
 	}
-	const budgetMb = options.length ? Number(options[1]) : 330;
+	const budgetMb = options.length ? Number(options[1]) : 400;
 	if (!Number.isFinite(budgetMb) || budgetMb <= 0) throw new Error("Budget must be positive");
 	const resources = path.join(appPath, "Contents/Resources");
 	const archive = path.join(resources, "app.asar");
 	const archived = listPackage(archive).map((name) => ({
 		name: name.replace(/^\//, ""),
 		directory: Boolean(statFile(archive, name.replace(/^\//, "")).files),
+		unpacked: Boolean(statFile(archive, name.replace(/^\//, "")).unpacked),
 	}));
 	const disk = await walk(appPath);
 	const packages = new Set();
@@ -38,31 +47,61 @@ async function main() {
 	}
 	const nodeModules = [...packages].sort();
 	const failures = [];
-	if (JSON.stringify(nodeModules) !== '["ws"]')
-		failures.push("R1: node_modules must contain only ws");
+	for (const name of nodeModules) {
+		if (!Object.hasOwn(runtimePackages, name))
+			failures.push(`R1: unexpected runtime npm package ${name}`);
+	}
+	for (const entry of archived) {
+		if (!entry.directory && entry.name.endsWith(".node") && !entry.unpacked)
+			failures.push(`R1: native addon must stay unpacked: ${entry.name}`);
+	}
 	const expectedWallpapers = (
 		await walk(fileURLToPath(new URL("../public/wallpapers", import.meta.url)))
 	)
 		.filter((entry) => !entry.directory)
 		.map((entry) => entry.name)
 		.sort();
+	// Match the longest known relative suffix first: thumbs/wallpaper1.jpg is
+	// a different asset from wallpaper1.jpg, even though their basenames agree.
+	const wallpaperNames = [...expectedWallpapers].sort((a, b) => b.length - a.length);
+	const wallpaperName = (entry) =>
+		!entry.directory && wallpaperNames.find((name) => entry.name.endsWith(`/${name}`));
 	const wallpaperCopies = Object.fromEntries(
 		expectedWallpapers.map((name) => {
 			const copies = [
 				...archived
-					.filter((entry) => !entry.directory && path.posix.basename(entry.name) === name)
+					.filter((entry) => wallpaperName(entry) === name)
 					.map((entry) => `app.asar/${entry.name}`),
-				...disk
-					.filter((entry) => !entry.directory && path.posix.basename(entry.name) === name)
-					.map((entry) => entry.name),
+				...disk.filter((entry) => wallpaperName(entry) === name).map((entry) => entry.name),
 			];
 			if (copies.length !== 1 || copies[0] !== `Contents/Resources/wallpapers/${name}`)
 				failures.push(`R3: ${name} must ship once at Resources/wallpapers`);
 			return [name, copies];
 		}),
 	);
+	const excludedPublicImages = [...archived, ...disk]
+		.filter(
+			(entry) =>
+				!entry.directory && /^(demo\.gif|preview.*\.png)$/.test(path.posix.basename(entry.name)),
+		)
+		.map((entry) => entry.name);
+	for (const name of excludedPublicImages)
+		failures.push(`R3: unreferenced public image must not ship: ${name}`);
+	// main.ts getTrayIcon loads both filenames from VITE_PUBLIC (packaged: dist).
+	// showhow.png is also the renderer favicon/logo; rec-button.png marks recording.
+	const referencedPublicImages = Object.fromEntries(
+		["showhow.png", "rec-button.png"].map((name) => {
+			const iconPath = `dist/${name}`;
+			const entry = archived.find((item) => item.name === iconPath && !item.directory);
+			const size = entry ? statFile(archive, iconPath).size : 0;
+			if (!(size > 0)) failures.push(`R3: referenced icon must ship nonempty at ${iconPath}`);
+			return [name, { path: iconPath, size }];
+		}),
+	);
 	const expectedLocales = [
 		"ar",
+		"cs",
+		"de",
 		"en",
 		"en_GB",
 		"es",
@@ -87,7 +126,7 @@ async function main() {
 		.map((entry) => path.posix.basename(entry.name, ".lproj"))
 		.sort();
 	if (JSON.stringify(chromiumLocales) !== JSON.stringify(expectedLocales))
-		failures.push("R2: Chromium locales must match the 14 supported language packs");
+		failures.push("R2: Chromium locales must match the 15 app locales plus en-GB");
 	// du -sk reports allocated KiB, matching the installed-size acceptance measurement.
 	const installedBytes =
 		Number(
@@ -100,9 +139,12 @@ async function main() {
 		JSON.stringify(
 			{
 				node_modules: nodeModules,
+				runtimePackages,
 				chromiumLocales,
 				lprojCount: chromiumLocales.length,
 				wallpaperCopies,
+				excludedPublicImages,
+				referencedPublicImages,
 				installedBytes,
 				installedMb: installedBytes / 1024 / 1024,
 				budgetMb,
