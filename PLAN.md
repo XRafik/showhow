@@ -355,3 +355,90 @@ Unbounded-word scan of requirements and DONE WHEN: "every later upstream merge" 
 
 ## Implementation notes
 Append each deviation from this plan to `implementation-notes.md` under "Deviations": what changed, why and what was done instead. Commit it with the ticket. Path-scope checks treat it as an owned path.
+
+# Showhow AI guide Plan
+
+## Goal
+The owner records, presses **Make guide** in the library, and gets a titled, step-by-step guide: one step per meaningful click, each with a short imperative instruction, its screenshot and a timestamp that jumps the player. The guide is saved in the bundle (`steps.json`, `steps.md`, `meta.json` title) and is the source for Copy for agent and PDF export later.
+
+## Context and decisions
+- Built on the file layout of the `ticket/116-upstream-v2` branch (PR #121). Checked on 2026-10-17: `electron/showhow/bundle.ts`, `electron/ipc/handlers.ts`, `src/lib/showhow/workflowDocument.ts`, `src/components/showhow/GuideStep.tsx`, `src/components/library/RecordingLibrary.tsx`, `electron/ai-edition/provider-registry.ts`, `llm-config-store.ts` and `llm-provider-auth.ts` all exist there.
+- Existing pieces to build on, not replace: the deterministic doc engine (`buildSteps`, `renderStepsMarkdown`, `serializeStepsJson`, `regenerateDocArtifacts`, `updateWorkflowDocument` in `bundle.ts`; IPC `showhow:regenerate-doc` and `showhow:update-workflow-document`); `WorkflowDocumentUpdate` (title, step label, delete step); upstream's LangChain model factory `createOpenScreenChatModel` (`electron/ai-edition/deep-agent/chat-model.ts`) and its API-key store.
+- Upstream fact (v2.1.0-rc.4): providers are API-key only. ChatGPT and Copilot OAuth were removed in 1.8.0; upstream's code says ChatGPT returns later through the user's own `codex login` via `codex app-server`.
+- Locked frames: `design/mocks/2026-10-15-house-style/pen-final/` Library-06, 08, 09, 10, 11, 16, 19 and 28. They are the approved mock; no new prototype.
+- Earlier decisions reused: AI is in V1 behind an optional connection (2026-10-15); "Check what gets sent" shows the first time per provider only (2026-10-15); Remake keeps the previous guide until the new one succeeds (2026-10-12); a documentation failure never loses a recording (AGENTS.md).
+- Owner answers, shaping session 2026-10-17:
+  1. V1 connects through OpenRouter only. ChatGPT sign-in is a later ticket.
+  2. Default model: a Gemini Flash model on OpenRouter. The build pins the current Flash slug after checking OpenRouter's model list, and records it in `implementation-notes.md`.
+  3. Priority: no.
+- Confirmed assumptions (owner sign-off 2026-10-17):
+  - A. Library-19 keeps the ChatGPT row, disabled with a "Coming later" tag; OpenRouter is the only active row. The AI CONNECTIONS settings tab shows only OpenRouter in V1. Upstream's own provider dialog in the editor is left as upstream ships it.
+  - B. Narration-only guide (Library-16, no clicks): steps come from transcript lines; each step's `ts` is a real transcript segment start, and its screenshot is the video frame at that time, extracted locally.
+  - C. No speech found (Library-28): the guide is still made from clicks and screenshots only, with the designed notice. It is not blocked.
+  - D. Remake shows the Library-11 confirm only when the title or a step was edited or deleted since the last AI pass; otherwise it runs straight away.
+  - E. The AI guide overwrites `steps.json` and `steps.md`; the deterministic steps are kept as `steps.deterministic.json` so a failed pass or a Remake can start from them.
+  - F. Retry on "guide failed" re-runs the AI pass without showing the review again.
+  - Defaults: frames downscaled to 1024 px on the long edge as JPEG; one frame per step selected by default, capped at 20 (spread evenly above 20); structured JSON output; progress lines follow real phases; unit tests use a fake model.
+
+## Bounded requirements
+- Platform for acceptance: macOS 13+ on arm64. Windows and Linux are untested and reported so.
+- Provider: OpenRouter with an API key, through upstream's existing config store. No second key store.
+- Data leaves the Mac only when (1) an OpenRouter key is saved and (2) the review for OpenRouter has been accepted once. What is sent is limited to what the review shows: the transcript (if its toggle is on), the selected frames, the deterministic step labels and timestamps.
+- AI output rules (enforced by a validator, not by trusting the model): each output step lists one or more `sourceIds` drawn from the input steps; unknown or duplicate ids are rejected; output order follows the earliest source `ts`; a merged step takes the `ts`, `coords` and `screenshot` of its earliest source; `redaction` and `includeRevealedText` carry over from the sources (true if any source is true); the label is trimmed and limited to 120 characters; the title is limited to 80 characters. Zero valid steps counts as a failure.
+- Supported cases for acceptance: (C1) narrated recording with clicks; (C2) clicks, no speech; (C3) narration, no clicks; (C4) no OpenRouter key; (C5) provider error (forced with an invalid key or a fake model that throws); (C6) Remake with hand edits; (C7) Remake without hand edits.
+- Excluded: ChatGPT sign-in, other providers in Showhow's UI, the agent brief, Copy for agent, PDF export, the editor's AI assistant, cost display, streaming partial steps.
+
+## Architecture
+- `electron/showhow/aiGuide.ts` (new): pure functions plus one injected model seam.
+  - `buildGuideRequest({ steps, segments, frames, options })` → the prompt messages and the list of what gets sent (used by both the review sheet and the request).
+  - `parseGuideResponse(raw, inputSteps)` → `{ title, steps: Step[] }` or a typed error; applies the output rules above.
+  - `runAiGuide(bundleDir, { model, onPhase })` → reads the bundle, writes `steps.deterministic.json` if absent, calls the model, validates, writes `steps.json`, `steps.md` and the `meta.json` title atomically (the same tmp-and-rename pattern as `updateWorkflowDocument`), and marks the guide state. On any error it restores the deterministic steps and reports `failed`. The model is passed in, so tests use a fake.
+  - Narration-only steps: `Step` gains optional `kind?: "click" | "narration"` (absent means click). Narration steps carry `coords: { cx: 0, cy: 0 }`, which `GuideStep` ignores for `kind: "narration"`. Frames come from the existing frame extractor at the segment start.
+- `ShowhowMeta` gains optional `guide?: { status: "none" | "making" | "ready" | "failed"; provider: "openrouter"; model: string; madeAt?: number; editedSinceAi: boolean; error?: string }`. Older bundles without it read as `none`. `updateWorkflowDocument` sets `editedSinceAi: true` when it changes a title or step on a `ready` guide.
+- Consent: `electron/showhow/aiGuideConsent.ts` (new) stores `{ openrouter: { reviewedAt, alwaysSend } }` under Showhow's preferences (Showhow key name; there is no legacy key).
+- IPC (in `electron/ipc/handlers.ts`, the existing Showhow block): `showhow:ai-guide-status`, `showhow:ai-guide-preview` (what gets sent), `showhow:ai-guide-run` (progress events `transcript` → `sorting` → `writing`), `showhow:ai-guide-consent`. Paths are checked against the recordings root as the existing handlers do.
+- Renderer: `src/lib/showhow/aiGuide.ts` (state machine for the library guide panel) and `src/components/showhow/` sheets for Library-08, 09, 10, 11, 19; Library-06, 16 and 28 extend the guide view in `RecordingLibrary.tsx` and `GuideStep.tsx`. AI CONNECTIONS is a Showhow settings tab that reads and writes upstream's config store for `openrouter` only.
+- Upstream touchpoints: none expected beyond calling `createOpenScreenChatModel` and the config store's existing IPC. If one is needed, it is listed in `docs/architecture/upstream-touchpoints.md`.
+
+## Milestones
+None. One ticket, after #116. Published 2026-10-17: Task 1 = #122.
+
+### Task 1: Make guide with an AI pass over the deterministic steps
+
+**Priority:** no (owner answer, 2026-10-17)
+**Labels:** feature, ui
+**Milestone:** none
+**Depends on:** #116 merged to `main`. Do not start before it lands. Can run alongside #117 and #118 (it only reads `transcript.txt`, whose format #117 keeps).
+**Files:** `electron/showhow/aiGuide.ts`, `electron/showhow/aiGuide.test.ts`, `electron/showhow/aiGuideConsent.ts`, `electron/showhow/aiGuideConsent.test.ts`, `electron/showhow/bundle.ts`, `electron/showhow/bundle.test.ts`, `electron/ipc/handlers.ts` (Showhow block only), `electron/preload.ts` (Showhow API only), `src/lib/showhow/aiGuide.ts`, `src/lib/showhow/aiGuide.test.ts`, `src/lib/showhow/workflowDocument.ts`, `src/components/showhow/` (new guide sheets and tests), `src/components/library/RecordingLibrary.tsx` and its tests, the Showhow settings view for the AI CONNECTIONS tab, `src/i18n/locales/*/` (new Showhow keys), `docs/architecture/showhow-bundles.md`, `docs/architecture/upstream-touchpoints.md` (only if a touchpoint is added), `implementation-notes.md`
+**Requirements:**
+- R1 Make guide on a bundle with an OpenRouter key and accepted review runs the AI pass and shows Library-09 progress, then Library-06 (or Library-16 for C3, or Library-06 with the Library-28 notice for C2).
+- R2 Without an OpenRouter key, Make guide shows Library-19 and sends nothing (C4).
+- R3 The first Make guide after connecting shows Library-08 with the transcript word count, the selected frames and the provider. Cancel sends nothing. Make guide records consent for OpenRouter; later runs skip the sheet.
+- R4 A provider or validation error leaves `steps.json`/`steps.md` equal to the deterministic steps, keeps the video and transcript unchanged, and shows Library-10 with Retry (C5). Retry runs without the review.
+- R5 Remake with `editedSinceAi: true` shows Library-11; Cancel changes nothing; confirm re-runs from `steps.deterministic.json` (C6). Without edits, Remake runs straight away (C7). The previous guide stays on disk until the new one validates.
+- R6 After an AI guide, the existing title edit, step label edit and delete step work and persist, and timestamps jump the player.
+- R7 AI CONNECTIONS tab: save, replace and remove an OpenRouter key; shows the default model and allows changing the model slug. Writes go through upstream's config store.
+**Interfaces:** Consumes `steps.json`, `transcript.txt`, `screenshots/`, `meta.json`, upstream's config store and model factory. Produces `steps.json`, `steps.md`, `steps.deterministic.json`, the `meta.json` title and `guide` field. Read later by Copy for agent and PDF export.
+**Constraints and reasons:** No network in tests (CI must stay offline and free). Never send before key and consent (V1 local-first rule). Showhow code stays in Showhow directories (upstream release merges). Fail open (a guide error must never cost a recording). Do not restructure upstream editor, HUD or recorder components.
+
+- [ ] RED: `electron/showhow/aiGuide.test.ts` fails for: a merge of steps 2–3 keeps step 2's `ts` and `screenshot`; an unknown `sourceId` is rejected; zero steps is a failure; a redacted source keeps the merged step redacted; narration-only input yields `kind: "narration"` steps at segment starts; a throwing fake model leaves `steps.json` byte-equal to the deterministic file.
+- [ ] Implement the bounded behaviour.
+- [ ] GREEN: those cases pass; consent tests (no send before key, no send before consent, consent per provider) pass; renderer state-machine tests cover C1–C7; existing `bundle.test.ts` and `workflowDocument` tests still pass.
+- [ ] Prove and obtain independent review, then open the PR to main.
+
+**Verification:** `npx vitest run electron/showhow src/lib/showhow src/components/showhow src/components/library`; `npm run test`; `npm run test:browser`; `npx tsc --noEmit`; `npm run lint`; `npm run i18n:check`; `npm run branding:check`. Manual macOS arm64 smoke test on a dev build with a real OpenRouter key: C1 on a real narrated recording, C2, C3, C4 and C5, with screenshots of each library state saved to `~/dev/loop-evidence/showhow-<issue>/`.
+**DONE WHEN:**
+- C1: a real narrated recording produces a titled guide with instruction-style steps, screenshots and working timestamp jumps, saved in `steps.json`, `steps.md` and `meta.json`.
+- C2, C3, C4 and C5 each show their designed state (Library-28 notice, 16, 19, 10), and in each case the video, `transcript.txt` and the deterministic steps are intact on disk.
+- C6 and C7 behave as R5; title edit, label edit and delete step work after an AI guide.
+- The unit cases in RED pass with no network; CI is green.
+- Screenshots of Library-06, 08, 09, 10, 11, 16, 19 and the 28 notice from the smoke test are in the evidence folder.
+**Outside cases / follow-ups:** ChatGPT sign-in through `codex app-server`; Claude, OpenAI, Gemini and Mistral rows in Showhow's UI; cost estimates; per-frame picking beyond the review's selection; agent brief and Copy for agent; PDF export; Windows and Linux smoke tests.
+
+**Merge note:** PR #121 also edits `PLAN.md`. This section is appended at the end of the file; expect a small conflict when #116 lands and resolve it then by keeping both sections.
+
+## Superseded issues
+None.
+
+## Self-review
+Unbounded-word scan of requirements and DONE WHEN: "any source is true" (output rules) is bounded to the merged step's own sources. "Each step" and "each case" refer to the named C1–C7 cases and the steps of one guide. "All", "every" and "valid" do not appear in acceptance; "valid steps" in the output rules means steps that pass the named validator rules.
