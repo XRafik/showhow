@@ -101,7 +101,6 @@
     "!dist/fonts/**",
     // Exclude dead-weight node_modules: all frontend and electron code is pre-bundled by Vite (saves ~238 MB)
     "!node_modules/**",
-    "node_modules/ws/**",
     "!*.png",
     "!preview*.png",
     "!*.md",
@@ -164,6 +163,9 @@
   ],
 
   "mac": {
+    // Runtime Chromium packs: translated app locales plus required English fallbacks.
+    // The top-level list remains the canonical translation list checked by i18n.
+    "electronLanguages": ["ar", "cs", "de", "en", "en_GB", "es", "fr", "it", "ja", "ko", "pt_BR", "ru", "tr", "vi", "zh_CN", "zh_TW"],
     // Declared, not merely documented. Electron 41's own LSMinimumSystemVersion is 12.0
     // and the .app inherits it verbatim when this key is absent — so before this line the
     // bundle advertised macOS 12 while its native payload was built for 13, and a
@@ -211,6 +213,9 @@
     }
   },
   "linux": {
+    // Runtime Chromium packs: translated app locales plus required English fallbacks.
+    // The top-level list remains the canonical translation list checked by i18n.
+    "electronLanguages": ["ar", "cs", "de", "en", "en-US", "en-GB", "es", "fr", "it", "ja", "ko", "pt-BR", "ru", "tr", "vi", "zh-CN", "zh-TW"],
     // Cette liste ne suffit PAS à produire un artefact en CI : `build:linux` passe
     // ses cibles en ligne de commande (`electron-builder --linux AppImage deb pacman
     // rpm`), et la CLI REMPLACE `linux.target` au lieu de le compléter. Toute cible
@@ -396,6 +401,9 @@
     ]
   },
   "win": {
+    // Runtime Chromium packs: translated app locales plus required English fallbacks.
+    // The top-level list remains the canonical translation list checked by i18n.
+    "electronLanguages": ["ar", "cs", "de", "en", "en-US", "en-GB", "es", "fr", "it", "ja", "ko", "pt-BR", "ru", "tr", "vi", "zh-CN", "zh-TW"],
     "target": [
       "nsis"
     ],

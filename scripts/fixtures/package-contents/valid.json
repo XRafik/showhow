@@ -1,6 +1,8 @@
 {
 	"locales": [
 		"ar",
+		"cs",
+		"de",
 		"en",
 		"en_GB",
 		"es",
@@ -34,6 +36,25 @@
 		"wallpaper15.jpg",
 		"wallpaper16.jpg",
 		"wallpaper17.jpg",
-		"wallpaper18.jpg"
-	]
+		"wallpaper18.jpg",
+		"thumbs/wallpaper1.jpg",
+		"thumbs/wallpaper2.jpg",
+		"thumbs/wallpaper3.jpg",
+		"thumbs/wallpaper4.jpg",
+		"thumbs/wallpaper5.jpg",
+		"thumbs/wallpaper6.jpg",
+		"thumbs/wallpaper7.jpg",
+		"thumbs/wallpaper8.jpg",
+		"thumbs/wallpaper9.jpg",
+		"thumbs/wallpaper10.jpg",
+		"thumbs/wallpaper11.jpg",
+		"thumbs/wallpaper12.jpg",
+		"thumbs/wallpaper13.jpg",
+		"thumbs/wallpaper14.jpg",
+		"thumbs/wallpaper15.jpg",
+		"thumbs/wallpaper16.jpg",
+		"thumbs/wallpaper17.jpg",
+		"thumbs/wallpaper18.jpg"
+	],
+	"icons": ["showhow.png", "rec-button.png"]
 }

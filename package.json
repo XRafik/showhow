@@ -100,7 +100,7 @@
 		"verify:export": "node scripts/verify-showhow-export.mjs",
 		"test:verify:export": "node --test scripts/verify-showhow-export.node-test.mjs",
 		"branding:check": "node scripts/branding-check.mjs",
-		"check:package": "node scripts/check-package-contents.mjs release/1.6.0/mac-arm64/Showhow.app",
+		"check:package": "node scripts/check-package-contents.mjs release/1.6.0/mac-arm64/Showhow.app --budget-mb 400",
 		"audit:showhow-bundle": "node --experimental-strip-types scripts/audit-showhow-bundle.mjs",
 		"icons:generate": "node scripts/generate-app-icons.mjs",
 		"capture:showhow-preview": "node scripts/capture-showhow-preview.mjs"
