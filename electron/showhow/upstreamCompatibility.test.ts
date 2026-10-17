@@ -9,6 +9,10 @@ import { migrateProjectDataToAxcutDocument } from "../../src/lib/ai-edition/docu
 import { loadUserPreferences } from "../../src/lib/userPreferences";
 
 const sandbox = vi.hoisted(() => {
+	const platformDescriptor = Object.getOwnPropertyDescriptor(process, "platform");
+	const systemVersionDescriptor = Object.getOwnPropertyDescriptor(process, "getSystemVersion");
+	// These compatibility cases exercise Showhow's macOS-only bundle completion seam.
+	Object.defineProperty(process, "platform", { value: "darwin", configurable: true });
 	Object.defineProperty(process, "getSystemVersion", { value: () => "15.0.0", configurable: true });
 	const fs = require("node:fs") as typeof import("node:fs");
 	const os = require("node:os") as typeof import("node:os");
@@ -18,6 +22,8 @@ const sandbox = vi.hoisted(() => {
 		fs.mkdirSync(path.join(root, name), { recursive: true });
 	return {
 		root,
+		platformDescriptor,
+		systemVersionDescriptor,
 		handlers: new Map<string, (...args: unknown[]) => unknown>(),
 		save: vi.fn(async (_options: unknown) => ({ canceled: true })),
 	};
@@ -97,7 +103,17 @@ beforeAll(() => {
 	);
 });
 afterAll(async () => {
-	await fs.rm(sandbox.root, { recursive: true, force: true });
+	try {
+		await fs.rm(sandbox.root, { recursive: true, force: true });
+	} finally {
+		for (const [name, descriptor] of [
+			["platform", sandbox.platformDescriptor],
+			["getSystemVersion", sandbox.systemVersionDescriptor],
+		] as const) {
+			if (descriptor) Object.defineProperty(process, name, descriptor);
+			else Reflect.deleteProperty(process, name);
+		}
+	}
 });
 describe("fc50566a compatibility at the v2 public interfaces", () => {
 	it("L1 preserves authentic .showhow bytes and its serialized media through v2 conversion", async () => {

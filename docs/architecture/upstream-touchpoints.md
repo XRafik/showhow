@@ -702,3 +702,51 @@ adjustment as directed. The complete intended-source allpaths/index/AD12/rename9
 is returned externally. Source writes now HOLD for lead staging/local stable merge commit
 and actual ancestry check, then fresh independent review. No executor staging, commit,
 GUI, capture, audio, permission, reviewer, PR or release action. Count0/noidentity/noverdict.
+
+
+### Review round1 finding1 repair — 2026-10-17
+
+Current clean reviewed merge commit is569860aa6284cf9b9377d5a8f084185faac0a95f with parents
+d2e3d72f12debbb31914bcbdb22b43ba434a22fb and selected stable
+eff86dcba48fac490a0e153141bf8537df7ffc54. Review round1 Standards FAIL / Requirements PASS
+for approved macOS cases; failed-review count is now1 (prior count0 entries are history).
+Reviewer ended; no executor identity probe/verdict or reviewer action. A second actual
+failed review requires the owner stop under Loop policy.
+
+Finding1 is test fixture conformity: upstreamCompatibility.test.ts supplied macOS system
+version but inherited host platform, while actual storeRecordedSessionFiles intentionally
+bundles on Darwin only. The existing L5 path, library pending-resume and recording-completion
+assertions therefore fail on required Ubuntu unit CI. No Windows/Linux product/native
+functionality is introduced. The external Linux-host setup changes process.platform only
+after real Vitest/native tooling boot, preserving real host Rollup selection. Real unmodified
+Vitest file RED exits1 with exactly those3failures/8passing; same real file after fixture
+repair GREEN exits0/11passing under that outerLinux declaration, with outer descriptor
+restoration checked by its afterAll hook. This is a simulated platform boundary on macOS,
+not native Linux or hosted CI acceptance. Independent reviewer/lead AST-VM RED remains history.
+
+The owned test's hoisted sandbox now explicitly sets Darwin before production imports and
+captures original process.platform/getSystemVersion descriptors. afterAll removes the
+owned scratch and restores original descriptors in finally, deleting originally absent
+properties. All original11test bodies and their media-byte/sidecar/IPC/transcript/session
+assertions are byte-identical; no skip, assertion reduction, production/config/native or
+CI change. Normalmac affected/full unit, required test TypeScript and lint are rechecked.
+Package5 remains immutable; actual native/media/owner/font/export/sidecar proofs may reuse
+only after exact production-source/native/generated/package comparisons. No native rebuild,
+new package or owner recording for this fixture-only fix. Exact receipts/preimages/finding
+map/current dirty binding are external in prove-owner-confirmed-20261017/first-review-fix-executor.
+Executor never stages/commits/pushes or launches GUI/capture/audio/permissions; source writes
+HOLD again after transfer, for lead re-proof/commit and fresh independent review.
+
+
+Review finding1 final checks: actual outerLinux Vitest RED1 is8pass/3fail, GREEN1 and
+explicit-descriptor GREEN2 are11pass each; normal macOS affected11pass. The external
+GREEN2 observation confirms process.platform restored to the outerLinux descriptor and
+original getSystemVersion descriptor restored (originally absent); outer harness then
+restores real host descriptor. This is after-boot simulation, not native Linux proof.
+Full unit4,558pass/onepending, required test TypeScript, lint and docs exit0. Existing
+stable tag ancestry at reviewed merge commit569860aa exits0. All36original expect calls
+and all11test bodies are byte-identical. Only the test fixture and these two append-only
+docs change; no skip/config/product/native edits. Runtime/package reuse comparisons and
+exact three-path dirty/index/metadata binding are returned in first-review-fix-executor.
+Source writes HOLD for lead commit/re-proof/fresh round2; failed-review count remains1,
+not reset by source checks. No executor staging/commit/push/reviewer/GUI or native rebuild.
