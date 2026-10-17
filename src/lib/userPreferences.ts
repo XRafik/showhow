@@ -3,20 +3,11 @@ import {
 	DEFAULT_EXPORT_SETTINGS,
 } from "@/components/video-editor/editorDefaults";
 import type { ExportFormat, ExportQuality } from "@/lib/exporter";
-import { readWithLegacyFallback, writeCurrent } from "@/lib/migratingStorage";
+import { readWithLegacyFallback } from "@/lib/migratingStorage";
 import { LEGACY_STORAGE_KEYS, STORAGE_KEYS } from "@/shared/productIdentity";
-import type { AspectRatio } from "@/utils/aspectRatioUtils";
+import { type AspectRatio, isAspectRatio } from "@/utils/aspectRatioUtils";
 
-const VALID_ASPECT_RATIOS: readonly string[] = [
-	"16:9",
-	"9:16",
-	"1:1",
-	"4:3",
-	"4:5",
-	"16:10",
-	"10:16",
-	"native",
-];
+const PREFS_KEY = STORAGE_KEYS.preferences;
 
 export interface UserPreferences {
 	/** Default padding % */
@@ -33,6 +24,10 @@ export interface UserPreferences {
 	projectFolder: string | null;
 	/** Recording HUD control layout */
 	trayLayout: "horizontal" | "vertical";
+	/** Force the Windows native recorder to use the software H.264 encoder */
+	preferSoftwareEncoder: boolean;
+	/** Stop showing the notice that recording fell back to software encoding */
+	hideSoftwareEncoderFallbackNotice: boolean;
 }
 
 export const DEFAULT_PREFS: UserPreferences = {
@@ -43,6 +38,8 @@ export const DEFAULT_PREFS: UserPreferences = {
 	exportFolder: null,
 	projectFolder: null,
 	trayLayout: "horizontal",
+	preferSoftwareEncoder: false,
+	hideSoftwareEncoderFallbackNotice: false,
 };
 
 /** Parses stored preferences without throwing on malformed JSON. */
@@ -60,11 +57,7 @@ export function loadUserPreferences(): UserPreferences {
 	let raw: Record<string, unknown> | null = null;
 	try {
 		raw = safeJsonParse(
-			readWithLegacyFallback(
-				localStorage,
-				STORAGE_KEYS.preferences,
-				LEGACY_STORAGE_KEYS.preferences,
-			),
+			readWithLegacyFallback(localStorage, PREFS_KEY, LEGACY_STORAGE_KEYS.preferences),
 		);
 	} catch {
 		return { ...DEFAULT_PREFS };
@@ -79,10 +72,7 @@ export function loadUserPreferences(): UserPreferences {
 			raw.padding <= 100
 				? raw.padding
 				: DEFAULT_PREFS.padding,
-		aspectRatio:
-			typeof raw.aspectRatio === "string" && VALID_ASPECT_RATIOS.includes(raw.aspectRatio)
-				? (raw.aspectRatio as AspectRatio)
-				: DEFAULT_PREFS.aspectRatio,
+		aspectRatio: isAspectRatio(raw.aspectRatio) ? raw.aspectRatio : DEFAULT_PREFS.aspectRatio,
 		exportQuality:
 			raw.exportQuality === "medium" ||
 			raw.exportQuality === "good" ||
@@ -105,6 +95,14 @@ export function loadUserPreferences(): UserPreferences {
 			raw.trayLayout === "horizontal" || raw.trayLayout === "vertical"
 				? raw.trayLayout
 				: DEFAULT_PREFS.trayLayout,
+		preferSoftwareEncoder:
+			typeof raw.preferSoftwareEncoder === "boolean"
+				? raw.preferSoftwareEncoder
+				: DEFAULT_PREFS.preferSoftwareEncoder,
+		hideSoftwareEncoderFallbackNotice:
+			typeof raw.hideSoftwareEncoderFallbackNotice === "boolean"
+				? raw.hideSoftwareEncoderFallbackNotice
+				: DEFAULT_PREFS.hideSoftwareEncoderFallbackNotice,
 	};
 }
 
@@ -144,7 +142,7 @@ export function saveUserPreferences(partial: Partial<UserPreferences>): void {
 	const current = loadUserPreferences();
 	const merged = { ...current, ...partial };
 	try {
-		writeCurrent(localStorage, STORAGE_KEYS.preferences, JSON.stringify(merged));
+		localStorage.setItem(PREFS_KEY, JSON.stringify(merged));
 	} catch {
 		// localStorage may be unavailable (e.g. private browsing, quota exceeded)
 	}

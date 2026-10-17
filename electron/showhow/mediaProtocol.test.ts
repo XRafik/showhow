@@ -340,8 +340,8 @@ describe("media range and trust boundaries", () => {
 		expect(reader).toBeDefined();
 		const first = await reader?.read();
 		expect(first?.done).toBe(false);
-		expect(first?.value.byteLength).toBeGreaterThan(0);
-		expect(first?.value.byteLength).toBeLessThanOrEqual(65536);
+		expect(first?.value?.byteLength).toBeGreaterThan(0);
+		expect(first?.value?.byteLength).toBeLessThanOrEqual(65536);
 		await reader?.cancel();
 	});
 });

@@ -1,0 +1,4303 @@
+{
+	"sourcePin": "eff86dcba48fac490a0e153141bf8537df7ffc54",
+	"scope": "#116 release-parent intake; runtime exemptions are exact text/count, tooling and attributed source files are named individually",
+	"allowed": [
+		{
+			"file": "CODE_OF_CONDUCT.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "SECURITY.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "THIRD-PARTY-NOTICES.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "build/com.getopenscreen.OpenScreen.metainfo.xml",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "build/flatpak/com.getopenscreen.OpenScreen.yml",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/Cargo.lock",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/Cargo.toml",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/README.md",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor-view-napi/Cargo.toml",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor-view-napi/src/lib.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/Cargo.toml",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/build.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/examples/decode_bench_macos.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/examples/decode_pure_macos.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/examples/live_free_run_bench_macos.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/src/audio.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/src/compositor_linux.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/src/compositor_macos.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/src/compositor_windows.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/src/cursor.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/src/d3d_linux.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/src/d3d_windows.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/src/export_control.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/src/export_probe.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/src/gif_export.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/src/lib.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/src/linux_decode.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/src/live.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/src/pipeline_linux.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/src/pipeline_macos.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/src/pipeline_windows.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/src/regions.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/src/segmentation.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/src/text_fonts.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/src/text_linux.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/src/text_macos.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/tests/animated_background.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/tests/click_impact_render.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/tests/common/nv12.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/tests/compose_linux.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/tests/cpu_backend_linux.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/tests/cursor_model_render.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/tests/cursor_tap_render.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/tests/device_frame_render.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/tests/export_timing.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/tests/follow_camera_render.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/tests/held_frame_clock.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/tests/no_camera_stand_in.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/tests/output_geometry_golden.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/tests/privacy_blur_under_zoom.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/tests/programme_time_seek.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/tests/remux_seek_index.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/tests/render_frames_match_export.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/tests/screen_trail_render.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/tests/shared_frame_handoff.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/tests/tilt_parallax_render.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/tests/tilted_depth_of_field.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/tests/tilted_depth_slot_inert.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/compositor/tests/window_frame_render.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/fixture/fixture.json",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/poc-d3d/Cargo.toml",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/poc-d3d/src/app.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/poc-d3d/src/bench.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "crates/poc-d3d/src/main.rs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "design/DESIGN.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "design/SKILL.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "design/_ds_manifest.json",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "design/components/display/Badge.jsx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "design/components/display/Card.jsx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "design/components/display/Chip.jsx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "design/components/display/ProgressBar.jsx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "design/components/editor/ChatBubble.jsx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "design/components/editor/FacetRailButton.jsx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "design/components/editor/MediaCard.jsx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "design/components/editor/ProposalCard.jsx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "design/components/editor/TimelinePill.jsx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "design/components/editor/editor.card.html",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "design/components/forms/Button.jsx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "design/components/forms/ChoiceRow.jsx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "design/components/forms/IconButton.jsx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "design/components/forms/SegmentedControl.jsx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "design/components/forms/Select.jsx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "design/components/forms/Slider.jsx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "design/components/forms/Switch.jsx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "design/components/forms/TextField.jsx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "design/cursors/3d-direction.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "design/cursors/README.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "design/cursors/requirements.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "design/guidelines/brand-logo.card.html",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "design/openscreen-editor-v2.html",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "design/openscreen-editor.html",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "design/openscreen-widget.html",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "design/readme.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "design/styles.css",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "design/tokens/colors.css",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "design/tokens/effects.css",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "design/tokens/fonts.css",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "design/tokens/spacing.css",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "design/tokens/typography.css",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "design/ui_kits/editor/README.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "design/ui_kits/editor/index.html",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "docs/cli.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "docs/shader-effects.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "electron-builder.json5",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "electron/about.ts",
+			"reason": "legal attribution and historical upstream comments; visible product identity is Showhow",
+			"lines": [
+				{
+					"text": "*  \"contributors\" and not \"OpenScreen\": getopenscreen is a GitHub organisation, not a legal",
+					"count": 1
+				},
+				{
+					"text": "*  (\"openscreen\") in dev, so the About box would disagree with its own title bar. */",
+					"count": 1
+				},
+				{
+					"text": "*  electron-builder's `productName` (\"Openscreen\") when packaged and to package.json's `name`",
+					"count": 1
+				},
+				{
+					"text": "/** The block under \"Openscreen <version>\". Untranslated on purpose: every line is a version",
+					"count": 1
+				},
+				{
+					"text": "export const COPYRIGHT = \"© 2025-2026 OpenScreen contributors — MIT License\";",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/ai-edition/agent-tools.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/ai-edition/agent-tools.ts",
+			"reason": "upstream internal symbols, schema/API comments and legacy serialization compatibility; visible app labels are Showhow",
+			"lines": [
+				{
+					"text": "* the MCP server's when an MCP client is refused (`openscreen-mcp-server.ts`).",
+					"count": 1
+				},
+				{
+					"text": "export const OPENSCREEN_TOOL_NAMES = [",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/ai-edition/caption-tools.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/ai-edition/caption-translate.ts",
+			"reason": "upstream internal symbols, schema/API comments and legacy serialization compatibility; visible app labels are Showhow",
+			"lines": [
+				{
+					"text": "import { createOpenScreenChatModel, messageContentToText } from \"./deep-agent/chat-model\";",
+					"count": 1
+				},
+				{
+					"text": "let model: Awaited<ReturnType<typeof createOpenScreenChatModel>>;",
+					"count": 1
+				},
+				{
+					"text": "model = await createOpenScreenChatModel({",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/ai-edition/chat-persistence.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/ai-edition/chat-persistence.ts",
+			"reason": "upstream internal symbols, schema/API comments and legacy serialization compatibility; visible app labels are Showhow",
+			"lines": [
+				{
+					"text": "// Local Agent chat sidecars live beside the project's .openscreen document.",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/ai-edition/chat-service.compaction.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/ai-edition/chat-service.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/ai-edition/chat-service.toolloop.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/ai-edition/chat-service.ts",
+			"reason": "upstream internal symbols, schema/API comments and legacy serialization compatibility; visible app labels are Showhow",
+			"lines": [
+				{
+					"text": "const chatModel = await createOpenScreenChatModel({",
+					"count": 1
+				},
+				{
+					"text": "const result = await invokeOpenScreenAgent({",
+					"count": 1
+				},
+				{
+					"text": "const { createOpenScreenChatModel, messageContentToText } = await import(",
+					"count": 1
+				},
+				{
+					"text": "const { invokeOpenScreenAgent } = await import(\"./deep-agent/service\");",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/ai-edition/deep-agent/chat-model.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/ai-edition/deep-agent/chat-model.ts",
+			"reason": "upstream internal symbols, schema/API comments and legacy serialization compatibility; visible app labels are Showhow",
+			"lines": [
+				{
+					"text": "// ./agent-provider-capabilities.ts) is only consumed by createOpenScreenChatModel,",
+					"count": 1
+				},
+				{
+					"text": "// createOpenScreenChatModel normalizes the provider before calling in.",
+					"count": 1
+				},
+				{
+					"text": "config: OpenScreenChatModelConfig,",
+					"count": 1
+				},
+				{
+					"text": "const config: OpenScreenChatModelConfig = {",
+					"count": 1
+				},
+				{
+					"text": "export async function createOpenScreenChatModel(",
+					"count": 1
+				},
+				{
+					"text": "export const OPENAI_COMPATIBLE_NO_AUTH_API_KEY = \"openscreen-openai-compatible-no-auth\";",
+					"count": 1
+				},
+				{
+					"text": "export interface OpenScreenChatModelConfig {",
+					"count": 1
+				},
+				{
+					"text": "input: OpenScreenChatModelConfig,",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/ai-edition/deep-agent/service.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/ai-edition/deep-agent/service.ts",
+			"reason": "upstream internal symbols, schema/API comments and legacy serialization compatibility; visible app labels are Showhow",
+			"lines": [
+				{
+					"text": "// Exporting is the example of a missing tool only where there is none: `openscreen mcp` has exportVideo.",
+					"count": 1
+				},
+				{
+					"text": "const chatModel = await createOpenScreenChatModel(model);",
+					"count": 1
+				},
+				{
+					"text": "createOpenScreenChatModel,",
+					"count": 1
+				},
+				{
+					"text": "export async function invokeOpenScreenAgent(args: InvokeArgs): Promise<InvokeResult> {",
+					"count": 1
+				},
+				{
+					"text": "export interface OpenScreenAgentSink {",
+					"count": 1
+				},
+				{
+					"text": "model: OpenScreenChatModelConfig;",
+					"count": 1
+				},
+				{
+					"text": "sink: OpenScreenAgentSink,",
+					"count": 2
+				},
+				{
+					"text": "sink: OpenScreenAgentSink;",
+					"count": 1
+				},
+				{
+					"text": "type OpenScreenChatModelConfig,",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/ai-edition/document-service.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/ai-edition/document-service.ts",
+			"reason": "legacy persisted project extensions and upstream document IPC comments; new writes use Showhow",
+			"lines": [
+				{
+					"text": "* OpenScreen processes that write projects. `openscreen mcp` runs beside the app",
+					"count": 1
+				},
+				{
+					"text": "* The project an OpenScreen editor holds, in this process or another, or `null`.",
+					"count": 1
+				},
+				{
+					"text": "* to it go through that editor, `openscreen mcp`'s through the app (#1174), so this is",
+					"count": 1
+				},
+				{
+					"text": "// (`openscreen mcp`): see markOpenInEditor. Not a `.openscreen`, so never listed.",
+					"count": 1
+				},
+				{
+					"text": "// Persists one .openscreen JSON per project under userData/projects/ (the file",
+					"count": 1
+				},
+				{
+					"text": "// Prefer the canonical `.openscreen` file, falling back to a not-yet-migrated",
+					"count": 1
+				},
+				{
+					"text": "// Relink here rather than in the .openscreen import handlers, because this",
+					"count": 1
+				},
+				{
+					"text": "// Which project the app's editor holds, for the OpenScreen processes beside it",
+					"count": 1
+				},
+				{
+					"text": "// renamed to `.openscreen` on first access. Slim port of",
+					"count": 1
+				},
+				{
+					"text": "// trailing `.openscreen`, so an interrupted write's leftover is invisible to",
+					"count": 1
+				},
+				{
+					"text": "const extension = [PROJECT_FILE_EXTENSION, \".openscreen\", LEGACY_PROJECT_FILE_EXTENSION].find(",
+					"count": 1
+				},
+				{
+					"text": "for (const extension of [\".openscreen\", LEGACY_PROJECT_FILE_EXTENSION]) {",
+					"count": 1
+				},
+				{
+					"text": "path.join(this.projectsRoot, `${safeProjectId(projectId)}.openscreen`),",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/ai-edition/style-preset-service.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/ai-edition/style-preset-service.ts",
+			"reason": "legacy persisted preset extension and upstream comments; copy-preserving Showhow writes",
+			"lines": [
+				{
+					"text": "// One `<name>.openscreenpreset` JSON per preset, in a folder the user can see (Documents/",
+					"count": 1
+				},
+				{
+					"text": "// OpenScreen Presets in production), so presets can be shared by copying files. The folder",
+					"count": 1
+				},
+				{
+					"text": "`${name.slice(0, -\".openscreenpreset\".length)}${STYLE_PRESET_FILE_EXTENSION}`,",
+					"count": 1
+				},
+				{
+					"text": "for (const name of names.filter((file) => file.endsWith(\".openscreenpreset\"))) {",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/ai-edition/text-measure.ts",
+			"reason": "upstream internal symbols, schema/API comments and legacy serialization compatibility; visible app labels are Showhow",
+			"lines": [
+				{
+					"text": "// directory `OPENSCREEN_FONTS_DIR` names once the compositor is loaded).",
+					"count": 1
+				},
+				{
+					"text": "process.env.OPENSCREEN_FONTS_DIR,",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/app-settings.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/atomic-rename.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/cli/args.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/cli/args.ts",
+			"reason": "retained upstream CLI/MCP identifiers and documentation; entry points hidden and MCP startup off",
+			"lines": [
+				{
+					"text": "--project <out.openscreen>",
+					"count": 1
+				},
+				{
+					"text": "// (`openscreen sources -o \"$OUT\"`) reaches us as an empty argument, and every",
+					"count": 1
+				},
+				{
+					"text": "// Pure argv parser for the OpenScreen CLI. No Electron imports so it can be",
+					"count": 1
+				},
+				{
+					"text": "// `--no-sandbox`) so `Openscreen --no-sandbox export demo.openscreen` still",
+					"count": 1
+				},
+				{
+					"text": "export const CLI_USAGE = `OpenScreen CLI",
+					"count": 1
+				},
+				{
+					"text": "if (!projectPath) throw new Error(\"captions requires a <project.openscreen> path\");",
+					"count": 1
+				},
+				{
+					"text": "if (!projectPath) throw new Error(\"info requires a <project.openscreen> path\");",
+					"count": 1
+				},
+				{
+					"text": "if (!projectPath) throw new Error(\"pack requires a <project.openscreen> path\");",
+					"count": 1
+				},
+				{
+					"text": "if (!request.projectPath) throw new Error(\"export requires a <project.openscreen> path\");",
+					"count": 1
+				},
+				{
+					"text": "if (!value.endsWith(\".openscreen\")) {",
+					"count": 1
+				},
+				{
+					"text": "openscreen captions <project.openscreen>           Transcribe (on-device Whisper) and turn captions on",
+					"count": 1
+				},
+				{
+					"text": "openscreen export <project.openscreen> [options]   Render a project to MP4/GIF",
+					"count": 1
+				},
+				{
+					"text": "openscreen help                                    Show this help",
+					"count": 1
+				},
+				{
+					"text": "openscreen info <project.openscreen> [--json]      Inspect a project file",
+					"count": 1
+				},
+				{
+					"text": "openscreen mcp                                     Serve the agent tools over MCP on stdio",
+					"count": 1
+				},
+				{
+					"text": "openscreen pack <project.openscreen> --out <dir>   Copy project + media into one portable folder",
+					"count": 1
+				},
+				{
+					"text": "openscreen record [options]                        Record the screen headlessly",
+					"count": 1
+				},
+				{
+					"text": "openscreen sources [--json] [-o <file>]            List displays, windows, microphones and cameras",
+					"count": 1
+				},
+				{
+					"text": "throw new Error(`--project must end in .openscreen, got \"${value}\"`);",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/cli/cliMain.ts",
+			"reason": "retained upstream CLI/MCP identifiers and documentation; entry points hidden and MCP startup off",
+			"lines": [
+				{
+					"text": "// A consumer closing the pipe (`openscreen export | head`) must not crash the",
+					"count": 1
+				},
+				{
+					"text": "// nothing about where it stopped, and `openscreen sources` has hung on roughly",
+					"count": 1
+				},
+				{
+					"text": "// stdout/stderr may be a closed pipe (`openscreen export | head`); writes must",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/cli/openGui.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/cli/openGui.ts",
+			"reason": "retained upstream CLI/MCP identifiers and documentation; entry points hidden and MCP startup off",
+			"lines": [
+				{
+					"text": "// `Openscreen mcp` (and `record`, `export`) run the app's own executable, so LaunchServices",
+					"count": 1
+				},
+				{
+					"text": "// counts them as a running copy of OpenScreen. Finder, the Dock and `open` then hand a launch",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/cli/projectCommands.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/cli/projectCommands.ts",
+			"reason": "retained upstream CLI/MCP identifiers and documentation; entry points hidden and MCP startup off",
+			"lines": [
+				{
+					"text": "/** What `openscreen info` reports, read off either shape of project file. */",
+					"count": 1
+				},
+				{
+					"text": "// `openscreen pack` and `openscreen info`. They live outside cliMain.ts so they",
+					"count": 1
+				},
+				{
+					"text": "// with the .openscreen file. Same rule as the loader's sibling fallback.",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/cli/runnerHost.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/install-channel.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/install-channel.ts",
+			"reason": "upstream source comments or internal tooling identifiers; retained to keep release-parent adapters narrow",
+			"lines": [
+				{
+					"text": "// How this copy of OpenScreen was installed, and therefore WHO is allowed to update it.",
+					"count": 1
+				},
+				{
+					"text": "// ponytail: a distro that REPACKAGES our .pacman (the AUR `openscreen` package does exactly",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/ipc/nativeBridge.presets.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/ipc/recordingPrefs.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/lingeringOverlay.ts",
+			"reason": "upstream source comments or internal tooling identifiers; retained to keep release-parent adapters narrow",
+			"lines": [
+				{
+					"text": "// once the HUD and the editor were gone `window-all-closed` never fired: OpenScreen stayed",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/mcp/app-channel.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/mcp/app-channel.ts",
+			"reason": "retained upstream CLI/MCP identifiers and documentation; entry points hidden and MCP startup off",
+			"lines": [
+				{
+					"text": "\"OpenScreen stopped answering during this call, so whether it took effect is unknown. Call getCurrentDocument with the same projectId to check before retrying.\";",
+					"count": 1
+				},
+				{
+					"text": "* The app's side: serve the document tools to `openscreen mcp` through `runTool`, the",
+					"count": 1
+				},
+				{
+					"text": "* `openscreen mcp`'s runner: each call goes to the running app when there is one, and",
+					"count": 1
+				},
+				{
+					"text": "// How `openscreen mcp` reaches the running app, so the app stays the one writer of",
+					"count": 1
+				},
+				{
+					"text": "// Not the media tools' own setPointerTrack: `openscreen mcp` records its takes itself,",
+					"count": 1
+				},
+				{
+					"text": "// So calls over this channel edit as `openscreen mcp` does, whatever the in-app",
+					"count": 1
+				},
+				{
+					"text": "// The channel is MCP itself. The app serves the same `createOpenScreenMcpServer` on",
+					"count": 1
+				},
+				{
+					"text": "// a named pipe (Windows) or a Unix socket, and `openscreen mcp` is its client: each",
+					"count": 1
+				},
+				{
+					"text": "// and `openscreen mcp` keeps working on files. Move it to the runtime dir if that bites.",
+					"count": 1
+				},
+				{
+					"text": "// it listens, and removes it as it quits. `openscreen mcp` shares that userData, reads",
+					"count": 1
+				},
+				{
+					"text": "// this user may connect, which grants nothing new: it could run `openscreen mcp`.",
+					"count": 1
+				},
+				{
+					"text": "const client = new Client({ name: \"openscreen-mcp\", version });",
+					"count": 1
+				},
+				{
+					"text": "const session = createOpenScreenMcpServer(deps, runTool);",
+					"count": 1
+				},
+				{
+					"text": "createOpenScreenMcpServer,",
+					"count": 1
+				},
+				{
+					"text": "if (process.platform === \"win32\") return `\\\\\\\\.\\\\pipe\\\\openscreen-mcp-${randomUUID()}`;",
+					"count": 1
+				},
+				{
+					"text": "} from \"./openscreen-mcp-server\";",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/mcp/app-recorder.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/mcp/app-recorder.ts",
+			"reason": "retained upstream CLI/MCP identifiers and documentation; entry points hidden and MCP startup off",
+			"lines": [
+				{
+					"text": "\"the OpenScreen editor has changes it has not saved yet, and the take closes it. Ask the user to save them, then try again.\",",
+					"count": 1
+				},
+				{
+					"text": "`The recording failed: OpenScreen did not hand the take to its editor within ${seconds(timing.saveMs)} s. The recording bar says why.`,",
+					"count": 1
+				},
+				{
+					"text": "`The take was saved to ${videoPath}, but the OpenScreen editor did not open it within ${seconds(timing.openMs)} s.`,",
+					"count": 1
+				},
+				{
+					"text": "`capture had not started after ${seconds(timing.startMs)} s. OpenScreen's recording bar says why.`,",
+					"count": 1
+				},
+				{
+					"text": "if (current || deps.isRecording()) throw new Error(\"OpenScreen is already recording a take.\");",
+					"count": 1
+				},
+				{
+					"text": "import type { McpDocumentHost } from \"./openscreen-mcp-server\";",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/mcp/editor-document-host.ts",
+			"reason": "retained upstream CLI/MCP identifiers and documentation; entry points hidden and MCP startup off",
+			"lines": [
+				{
+					"text": "import type { McpApplyResult, McpDocumentHost } from \"./openscreen-mcp-server\";",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/mcp/effects-contract.ts",
+			"reason": "retained upstream CLI/MCP identifiers and documentation; entry points hidden and MCP startup off",
+			"lines": [
+				{
+					"text": "* (`openscreen://effects/contract`): too long for a tool description, and versioned with the",
+					"count": 1
+				},
+				{
+					"text": "export const EFFECTS_CONTRACT = `# OpenScreen shader effects — WGSL contract 1",
+					"count": 1
+				},
+				{
+					"text": "export const EFFECTS_CONTRACT_URI = \"openscreen://effects/contract\";",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/mcp/macNamedTake.ts",
+			"reason": "retained upstream CLI/MCP identifiers and documentation; entry points hidden and MCP startup off",
+			"lines": [
+				{
+					"text": "\"OpenScreen needs the Screen Recording permission to record a window or display it is told to, without asking which one. Ask the user to turn OpenScreen on under System Settings > Privacy & Security > Screen & System Audio Recording, then try again.\";",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/mcp/mcp-controller.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/mcp/mcp-controller.ts",
+			"reason": "retained upstream CLI/MCP identifiers and documentation; entry points hidden and MCP startup off",
+			"lines": [
+				{
+					"text": "/** The app's shared runner, so checkpoints outlive a restart and `openscreen mcp` sees them. */",
+					"count": 1
+				},
+				{
+					"text": "} from \"./openscreen-mcp-server\";",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/mcp/media-tools.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/mcp/media-tools.ts",
+			"reason": "retained upstream CLI/MCP identifiers and documentation; entry points hidden and MCP startup off",
+			"lines": [
+				{
+					"text": "\"Create a new project, in the look new projects start with in OpenScreen (the style preset marked for them, else the last edited project's), as the editor's New does. Empty, or from a video file laid out as one clip, as the editor lays out an opened video, with zooms planned from the clicks when the video is an OpenScreen recording with its pointer track; autoZooms says how many.\",",
+					"count": 1
+				},
+				{
+					"text": "\"Drive the app with the real mouse when you can: OpenScreen records the pointer, draws a clean cursor and zooms on the clicks as the editor does: clicks close in time and on screen share one zoom, and the first seconds and the end stay on the whole screen. If you drive it from a script instead (Playwright, CDP), the screen pointer never moves: log each action as the script runs it, then hand the log to setPointerTrack after stopRecording.\",",
+					"count": 1
+				},
+				{
+					"text": "\"For a take driven by a script (Playwright, CDP, a browser extension) rather than the real mouse: the screen pointer never moved, so the video has no cursor and no zoom. Give the pointer's path here and OpenScreen draws it, gliding between your actions, and zooms on its clicks as for a real mouse. It replaces the pointer recorded with the take, then plans zooms on the new clicks as stopRecording does, clear of the zooms already there; autoZoomsAdded says how many. Only for a take recorded by this server. It is an edit like any other: on a project that is not open in the editor it needs a checkpoint (stopRecording made one), and restoreCheckpoint undoes it, the pointer track included.\",",
+					"count": 1
+				},
+				{
+					"text": "\"OpenScreen records the screen, turns each take into a project you edit with the document tools, and exports it as a video.\",",
+					"count": 1
+				},
+				{
+					"text": "\"Render a project to an MP4 (H.264) or a GIF with OpenScreen's compositor: the background, cursor, zooms, cuts, speed changes and annotations as edited. Returns the file's path; call getFrames with the projectId to check it at the ruler seconds you edited with. The video's shape follows the project's format (setAspectRatio). The options are the Export dialog's: quality and fps for an MP4; gifFrameRate, gifSize and gifLoop for a GIF.\",",
+					"count": 1
+				},
+				{
+					"text": "\"The project's title in OpenScreen. Default: the video's file name, or Untitled Project.\",",
+					"count": 1
+				},
+				{
+					"text": "\"These projects are in the OpenScreen app's project list, so the user can open one in its editor.\",",
+					"count": 1
+				},
+				{
+					"text": "/** Fractions of the recorded window (or display), as OpenScreen records a real pointer. */",
+					"count": 1
+				},
+				{
+					"text": "/** Records the takes. Default: a hidden record runner, as `openscreen mcp` does. */",
+					"count": 1
+				},
+				{
+					"text": "/** `openscreen mcp`'s recorder: a hidden record runner, and the take laid out as a project here. */",
+					"count": 1
+				},
+				{
+					"text": "/** setPointerTrack as `openscreen mcp` forwards it to the app: with its takes' start times. */",
+					"count": 1
+				},
+				{
+					"text": "// One implementation, two recorders. `openscreen mcp` records in a hidden runner of its",
+					"count": 1
+				},
+				{
+					"text": "// Served next to the document tools by both servers, the in-app one and `openscreen",
+					"count": 1
+				},
+				{
+					"text": "// The rate OpenScreen's own pointer sampler records at.",
+					"count": 1
+				},
+				{
+					"text": "`No project was created: OpenScreen lets MCP clients create projects only while the user allows it. Ask the user to turn on ${MCP_EDITS_SETTING}.`,",
+					"count": 1
+				},
+				{
+					"text": "const GATED_MESSAGE = `Nothing was recorded or exported: OpenScreen lets MCP clients record and export only while the user allows it. Ask the user to turn on ${MCP_EDITS_SETTING}.`;",
+					"count": 1
+				},
+				{
+					"text": "description: `List the displays and windows OpenScreen can record, the microphones and the cameras. Pass startRecording a display's index or part of a window's title, and part of a microphone's or a camera's name. microphoneLabelsUnavailable or cameraLabelsUnavailable true means their names need a permission the user has not granted, so the list is empty: ask the user to allow it. ${HIDDEN_WINDOWS_NOTE}`,",
+					"count": 1
+				},
+				{
+					"text": "http: \"It goes through OpenScreen's recording bar, as the editor's Record button does: the editor closes for the take, so this is refused while the editor has unsaved changes, and the bar's countdown applies. On Linux the system's portal asks the user what to record, whatever window or display says. On macOS the take records the window or display named here, even where the bar otherwise asks in Apple's picker (macOS 15.2 or later); that needs OpenScreen's Screen Recording permission, and without it the call is refused. The bar records with these settings, and gets the user's own back once the take ends.\",",
+					"count": 1
+				},
+				{
+					"text": "http: \"Recording is the app's own: startRecording hands over to OpenScreen's recording bar, as the editor's Record button does, so the editor closes for the take, and stopRecording opens the take in the editor, where the user sees each edit land and can undo it. Its zooms on the clicks follow Record mode's Auto-zoom after recording, as for any take.\",",
+					"count": 1
+				},
+				{
+					"text": "http: \"Stop the recording. OpenScreen's editor opens the take as a new project, as it does after any recording: one clip, plus the zooms planned from the recorded clicks when Record mode's Auto-zoom after recording is on, and autoZooms says how many. Returns the projectId to edit, now open in the editor, a checkpointId that restores the take as it opened, and the take's videoPath.\",",
+					"count": 1
+				},
+				{
+					"text": "http: \"The editor keeps the project it has open: the new one is in OpenScreen's project list, for the user to open.\",",
+					"count": 1
+				},
+				{
+					"text": "stdio: \"It is in the OpenScreen app's project list, so the user can open it in its editor.\",",
+					"count": 1
+				},
+				{
+					"text": "title: z.string().optional().describe(\"The project's title in OpenScreen.\"),",
+					"count": 1
+				},
+				{
+					"text": "} from \"./openscreen-mcp-server\";",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/mcp/openscreen-mcp-server.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/mcp/openscreen-mcp-server.ts",
+			"reason": "retained upstream CLI/MCP identifiers and documentation; entry points hidden and MCP startup off"
+		},
+		{
+			"file": "electron/mcp/project-tools.ts",
+			"reason": "retained upstream CLI/MCP identifiers and documentation; entry points hidden and MCP startup off",
+			"lines": [
+				{
+					"text": "\"Add a video or audio file from disk to the project's media, as the editor's Import does. It does not place it on the timeline. An audio file is then played by a track you lay with addAudio. A video becomes the project's footage when it has none yet (a project createProject made without a video): replaceTimeline then lays it out. Returns the new assetId and the file's durationSec, null when OpenScreen could not read it (the editor reads it again when it opens the project).\",",
+					"count": 1
+				},
+				{
+					"text": "\"Rename the project: its title in OpenScreen's project list and in the editor's top bar, as renaming it there does. Changes nothing else.\",",
+					"count": 1
+				},
+				{
+					"text": "// (openscreen-mcp-server.ts), so the project open in the editor changes there, live",
+					"count": 1
+				},
+				{
+					"text": "// app's channel serves them too, so `openscreen mcp` hands them to the running app.",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/mcp/stdio-server.ts",
+			"reason": "retained upstream CLI/MCP identifiers and documentation; entry points hidden and MCP startup off",
+			"lines": [
+				{
+					"text": "// When the OpenScreen app runs, it is the authority: each document tool call is",
+					"count": 1
+				},
+				{
+					"text": "// `openscreen mcp`: the MCP tools on stdin/stdout, for the agent that started",
+					"count": 1
+				},
+				{
+					"text": "// user's rights, as it would launch `openscreen record` or `openscreen export`.",
+					"count": 1
+				},
+				{
+					"text": "const server = createOpenScreenMcpServer(deps, runTool, media);",
+					"count": 1
+				},
+				{
+					"text": "createOpenScreenMcpServer,",
+					"count": 1
+				},
+				{
+					"text": "} from \"./openscreen-mcp-server\";",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/mcp/transcribe-tool.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/media/audioPeaks.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/media/audioPeaks.ts",
+			"reason": "upstream source comments or internal tooling identifiers; retained to keep release-parent adapters narrow",
+			"lines": [
+				{
+					"text": "const env = process.env.OPENSCREEN_FFMPEG_PATH?.trim();",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/media/extensionClip.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/media/mediaLinksRegistry.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/media/mediaLinksRegistry.ts",
+			"reason": "upstream source comments or internal tooling identifiers; retained to keep release-parent adapters narrow",
+			"lines": [
+				{
+					"text": "// stays exactly where it was recorded. This registry lets OpenScreen re-find",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/media/projectMediaRelinker.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/native-bridge/cursor/recording/macNativeCursorRecordingSession.ts",
+			"reason": "native helper/addon discovery, IPC and legacy environment compatibility; internal symbols preserved",
+			"lines": [
+				{
+					"text": "// (OpenScreenMacOSCursorHelper/main.swift), which is what puts OpenScreen in the",
+					"count": 1
+				},
+				{
+					"text": "// The return value is the signal, not a side effect: it says whether OpenScreen.app",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/native-bridge/cursor/recording/pipeWireCursorRecordingSession.ts",
+			"reason": "native helper/addon discovery, IPC and legacy environment compatibility; internal symbols preserved",
+			"lines": [
+				{
+					"text": "const HELPER_NAME = \"openscreen-pipewire-helper\";",
+					"count": 1
+				},
+				{
+					"text": "const envPath = process.env.OPENSCREEN_LINUX_CURSOR_HELPER_EXE?.trim();",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/native-bridge/cursor/recording/windowsNativeRecordingSession.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/native-bridge/helperCoordinates.ts",
+			"reason": "native helper/addon discovery, IPC and legacy environment compatibility; internal symbols preserved",
+			"lines": [
+				{
+					"text": "* Converts a rect from Electron's coordinate space into the one OpenScreen's",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/native-bridge/screen/macPickerSession.ts",
+			"reason": "native helper/addon discovery, IPC and legacy environment compatibility; internal symbols preserved",
+			"lines": [
+				{
+					"text": "* been tried yet; `OPENSCREEN_MAC_SOURCE_PICKER=legacy` forces the app's own picker.",
+					"count": 1
+				},
+				{
+					"text": "process.env.OPENSCREEN_MAC_SOURCE_PICKER !== \"legacy\" &&",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/native-bridge/services/compositorViewService.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/native-bridge/services/compositorViewService.ts",
+			"reason": "native helper/addon discovery, IPC and legacy environment compatibility; internal symbols preserved",
+			"lines": [
+				{
+					"text": "*  view on read-back. `OPENSCREEN_PREVIEW_READBACK=1` forces read-back, to compare. */",
+					"count": 1
+				},
+				{
+					"text": "* Points `OPENSCREEN_FONTS_DIR` at the font files the compositor draws captions and annotations",
+					"count": 1
+				},
+				{
+					"text": "* `OPENSCREEN_COMPOSITOR_VIEW_NODE` env var and the candidate path list.",
+					"count": 1
+				},
+				{
+					"text": "const target = outPath ?? path.join(app.getPath(\"temp\"), \"openscreen-native-export.gif\");",
+					"count": 1
+				},
+				{
+					"text": "const target = outPath ?? path.join(app.getPath(\"temp\"), \"openscreen-native-export.mp4\");",
+					"count": 1
+				},
+				{
+					"text": "if (process.env.OPENSCREEN_FONTS_DIR) {",
+					"count": 1
+				},
+				{
+					"text": "if (process.env.OPENSCREEN_PREVIEW_READBACK === \"1\" || !this.sharedTextureApi()) {",
+					"count": 1
+				},
+				{
+					"text": "process.env.OPENSCREEN_FONTS_DIR = dir;",
+					"count": 1
+				},
+				{
+					"text": "this.options.envOverride ?? process.env.OPENSCREEN_COMPOSITOR_VIEW_NODE ?? null;",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/native/pipewire-capture/Cargo.lock",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/pipewire-capture/Cargo.toml",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/pipewire-capture/build.rs",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/pipewire-capture/csrc/pw_audio.c",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/pipewire-capture/csrc/pw_internal.h",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/pipewire-capture/csrc/pw_shim.c",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/pipewire-capture/csrc/pw_shim.h",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/pipewire-capture/docs/dmabuf-vaapi-plan.md",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/pipewire-capture/src/capture.rs",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/pipewire-capture/src/dmabuf_import.rs",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/pipewire-capture/src/encoder.rs",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/pipewire-capture/src/events.rs",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/pipewire-capture/src/input.rs",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/pipewire-capture/src/main.rs",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/pipewire-capture/src/shim.rs",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/screencapturekit/Package.swift",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/screencapturekit/Sources/OpenScreenCaptureCore/AudioBufferListSampleBuffer.swift",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/screencapturekit/Sources/OpenScreenCaptureCore/AudioTrackMixer.swift",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/screencapturekit/Sources/OpenScreenCaptureCore/CaptureSizing.swift",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/screencapturekit/Sources/OpenScreenCaptureCore/CaptureWindowExclusion.swift",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/screencapturekit/Sources/OpenScreenCaptureCore/HelperOutput.swift",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/screencapturekit/Sources/OpenScreenCaptureCore/MicrophoneDeviceSelection.swift",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/screencapturekit/Sources/OpenScreenCaptureCore/PickerSessionCommand.swift",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/screencapturekit/Sources/OpenScreenCaptureCore/VideoColor.swift",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/screencapturekit/Sources/OpenScreenCaptureCore/VideoTimestampGate.swift",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/screencapturekit/Sources/ShowhowScreenCaptureKitHelper/PickerSession.swift",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/screencapturekit/Sources/ShowhowScreenCaptureKitHelper/ScreenCaptureRecorder.swift",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/screencapturekit/Sources/ShowhowScreenCaptureKitHelper/SystemAudioTap.swift",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/screencapturekit/Tests/OpenScreenCaptureCoreTests/AudioBufferListSampleBufferTests.swift",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/screencapturekit/Tests/OpenScreenCaptureCoreTests/AudioTrackMixerTests.swift",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/screencapturekit/Tests/OpenScreenCaptureCoreTests/CaptureSizingTests.swift",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/screencapturekit/Tests/OpenScreenCaptureCoreTests/CaptureWindowExclusionTests.swift",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/screencapturekit/Tests/OpenScreenCaptureCoreTests/MicrophoneDeviceSelectionTests.swift",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/screencapturekit/Tests/OpenScreenCaptureCoreTests/PickerSessionCommandTests.swift",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/screencapturekit/Tests/OpenScreenCaptureCoreTests/VideoColorTests.swift",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/screencapturekit/Tests/OpenScreenCaptureCoreTests/VideoTimestampGateTests.swift",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/wgc-capture/CMakeLists.txt",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/wgc-capture/src/audio_sample_utils.cpp",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/wgc-capture/src/audio_sample_utils_test.cpp",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/wgc-capture/src/cursor-sampler.cpp",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/wgc-capture/src/desktop_icon_cover.cpp",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/wgc-capture/src/dpi_awareness.h",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/wgc-capture/src/dshow_webcam_capture.cpp",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/wgc-capture/src/main.cpp",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/wgc-capture/src/mf_encoder.cpp",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/wgc-capture/src/mf_encoder.h",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/wgc-capture/src/mf_encoder_color_test.cpp",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/wgc-capture/src/monitor_utils.cpp",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/wgc-capture/src/realtime_scheduling.h",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/wgc-capture/src/wasapi_device_watcher.h",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/wgc-capture/src/wasapi_loopback_capture.cpp",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/wgc-capture/src/wasapi_render_keepalive.h",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/wgc-capture/src/webcam_capture.cpp",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/wgc-capture/src/webcam_format_test.cpp",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/wgc-capture/src/wgc_session.cpp",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/wgc-capture/src/wgc_session.h",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/whisper-stt/CMakeLists.txt",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/whisper-stt/src/main.cpp",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/native/whisper-stt/whisper-patches/char-dtw.cpp",
+			"reason": "attributed upstream native symbols, source/tests and build metadata; executable names adapted separately"
+		},
+		{
+			"file": "electron/permissions/macPermissions.ts",
+			"reason": "upstream source comments or internal tooling identifiers; retained to keep release-parent adapters narrow",
+			"lines": [
+				{
+					"text": "* The macOS privacy permissions OpenScreen uses, read and requested in one place.",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/preload.ts",
+			"reason": "upstream source comments or internal tooling identifiers; retained to keep release-parent adapters narrow",
+			"lines": [
+				{
+					"text": "// The project the editor holds, for `openscreen mcp` in another process (#1138).",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/processGoneLog.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/recording/deviceNameMatching.ts",
+			"reason": "upstream source comments or internal tooling identifiers; retained to keep release-parent adapters narrow",
+			"lines": [
+				{
+					"text": "* opens nearly every Windows endpoint name (getopenscreen/openscreen#404, #405).",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/recording/diskSpaceCheck.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/recording/nativeMacCaptureStop.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/recording/nativeWindowsCaptureStop.ts",
+			"reason": "upstream source comments or internal tooling identifiers; retained to keep release-parent adapters narrow",
+			"lines": [
+				{
+					"text": "* (`OPENSCREEN_WGC_STOP_BUDGET_MS`, 50s — see the stop sequence in",
+					"count": 1
+				},
+				{
+					"text": "* (getopenscreen/openscreen#387).",
+					"count": 1
+				},
+				{
+					"text": "* (getopenscreen/openscreen#404).",
+					"count": 1
+				},
+				{
+					"text": "* in the same picker session: the take after a Restart was lost (getopenscreen/openscreen#995).",
+					"count": 1
+				},
+				{
+					"text": "* source, the kill switch, or an older helper (getopenscreen/openscreen#894).",
+					"count": 1
+				},
+				{
+					"text": "* the take came back with no voice and no word (getopenscreen/openscreen#700).",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/recording/recordingsDirManager.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/recording/recordingsLocationStore.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/recording/webm-seek-index.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/stt/extractAudio.integration.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/stt/extractAudio.ts",
+			"reason": "upstream source comments or internal tooling identifiers; retained to keep release-parent adapters narrow",
+			"lines": [
+				{
+					"text": "\"Reinstall Showhow, or set OPENSCREEN_FFMPEG_PATH to an ffmpeg executable.\",",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/stt/gpuDetector.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/stt/gpuDetector.ts",
+			"reason": "upstream source comments or internal tooling identifiers; retained to keep release-parent adapters narrow",
+			"lines": [
+				{
+					"text": "*   1. `OPENSCREEN_WHISPER_SERVER_EXE` env override (debug builds)",
+					"count": 1
+				},
+				{
+					"text": "const envPath = process.env.OPENSCREEN_WHISPER_SERVER_EXE?.trim();",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/stt/index.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/stt/modelManager.ts",
+			"reason": "pinned upstream model distribution URL and internal download user-agent; no provider/model port",
+			"lines": [
+				{
+					"text": "\"https://github.com/getopenscreen/openscreen/releases/download/v0.0.0-ctc-aligners-1\";",
+					"count": 1
+				},
+				{
+					"text": "* there is no runtime `--int8` flag; OpenScreen ships the q8_0 quantized",
+					"count": 1
+				},
+				{
+					"text": "headers: { \"user-agent\": \"openscreen-stt\" },",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/stt/wav.ts",
+			"reason": "upstream source comments or internal tooling identifiers; retained to keep release-parent adapters narrow",
+			"lines": [
+				{
+					"text": "const tmpDir = await mkdtemp(path.join(os.tmpdir(), \"openscreen-stt-\"));",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/stt/whisperServer.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/update-checker.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/usage-ping.ts",
+			"reason": "upstream source comments or internal tooling identifiers; retained to keep release-parent adapters narrow",
+			"lines": [
+				{
+					"text": "// addresses. The website FAQ (\"Does OpenScreen work offline?\") lists this payload; keep it",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/windows.contentProtection.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "electron/windows.ts",
+			"reason": "upstream content-protection diagnostic environment compatibility and CLI documentation",
+			"lines": [
+				{
+					"text": "\"(OPENSCREEN_DISABLE_CONTENT_PROTECTION=1) — it will appear in screen captures, \" +",
+					"count": 1
+				},
+				{
+					"text": "\"in screen captures. Set OPENSCREEN_FORCE_CONTENT_PROTECTION=1 to re-test.\",",
+					"count": 1
+				},
+				{
+					"text": "\"including recordings. Set OPENSCREEN_FORCE_CONTENT_PROTECTION=1 to re-test.\",",
+					"count": 1
+				},
+				{
+					"text": "* with OPENSCREEN_DISABLE_CONTENT_PROTECTION=1, never without.",
+					"count": 1
+				},
+				{
+					"text": "/** A hidden window running one of the CLI runners (src/cli/): `openscreen <command>`, or a",
+					"count": 1
+				},
+				{
+					"text": "const CONTENT_PROTECTION_DISABLED = process.env[\"OPENSCREEN_DISABLE_CONTENT_PROTECTION\"] === \"1\";",
+					"count": 1
+				},
+				{
+					"text": "const CONTENT_PROTECTION_FORCED = process.env[\"OPENSCREEN_FORCE_CONTENT_PROTECTION\"] === \"1\";",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "implementation-notes.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "index.html",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "nix/compositor-view.nix",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "nix/pipewire-helper.nix",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "nix/whisper-stt.nix",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "public/mediapipe/selfie_segmentation/selfie_segmentation_landscape.onnx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "scripts/appimage-updates.cjs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "scripts/appimage-updates.test.mjs",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "scripts/before-pack.cjs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "scripts/before-pack.test.mjs",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "scripts/build-linux-compositor-addon.mjs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "scripts/build-linux-pipewire-helper.mjs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "scripts/build-macos-compositor-addon.mjs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "scripts/build-windows-compositor-addon.mjs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "scripts/build-windows-wgc-helper.mjs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "scripts/check-docs.mjs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "scripts/check-macos-deployment-target.test.mjs",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "scripts/fetch-ffmpeg-macos.mjs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "scripts/fetch-ffmpeg.mjs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "scripts/fetch-onnxruntime.mjs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "scripts/fetch-onnxruntime.test.mjs",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "scripts/generate-third-party-licenses.mjs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "scripts/generate-third-party-licenses.test.mjs",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "scripts/mac-update-feed.test.mjs",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "scripts/stage-vcomp-runtime.mjs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "scripts/stage-whisper-stt.sh",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "scripts/test-linux-audio-timeline.mjs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "scripts/test-macos-audio-timeline.mjs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "scripts/test-whisper-stt.mjs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "scripts/test-windows-audio-timeline.mjs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "scripts/test-windows-camera-selection.mjs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "scripts/test-windows-microphone-selection.mjs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "scripts/verify-appx-native.ps1",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "scripts/verify-linux-package.sh",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "scripts/windows-helper-arch.mjs",
+			"reason": "inherited upstream build/tooling metadata and attribution; excluded publishers are not wired into Showhow releases"
+		},
+		{
+			"file": "skills/openscreen-demo/SKILL.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "src/assets/openscreen-mark.png",
+			"reason": "unreferenced upstream source artwork; app surfaces import the Showhow mark"
+		},
+		{
+			"file": "src/cli/CliCaptionsRunner.tsx",
+			"reason": "retained upstream CLI/MCP identifiers and documentation; entry points hidden and MCP startup off",
+			"lines": [
+				{
+					"text": "// Hidden-window runner for `openscreen captions`: transcribes the project's primary media",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/cli/CliExportRunner.tsx",
+			"reason": "retained upstream CLI/MCP identifiers and documentation; entry points hidden and MCP startup off",
+			"lines": [
+				{
+					"text": "// Hidden-window runner for `openscreen export`. Loads an .openscreen project,",
+					"count": 1
+				},
+				{
+					"text": "// is what made a 1.25x timeline stop the bar at 80% (OpenScreen#371).",
+					"count": 1
+				},
+				{
+					"text": "return filePath.replace(/\\.(openscreen|json)$/i, \"\") + newExtension;",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/cli/CliRecordRunner.test.tsx",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "src/cli/CliRecordRunner.tsx",
+			"reason": "retained upstream CLI/MCP identifiers and documentation; entry points hidden and MCP startup off",
+			"lines": [
+				{
+					"text": "\"Re-list sources with `openscreen sources` and pick one that is currently shared.\",",
+					"count": 1
+				},
+				{
+					"text": "* editor settings at their defaults — ready for `openscreen export` or the GUI. */",
+					"count": 1
+				},
+				{
+					"text": "/** A minimal .openscreen project referencing the finished recording, with all",
+					"count": 1
+				},
+				{
+					"text": "// Hidden-window runner for `openscreen record`. Reuses the full recording",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/cli/CliSourcesRunner.tsx",
+			"reason": "retained upstream CLI/MCP identifiers and documentation; entry points hidden and MCP startup off",
+			"lines": [
+				{
+					"text": "// Hidden-window runner for `openscreen sources`: enumerates capturable",
+					"count": 1
+				},
+				{
+					"text": "// catch below is no defence: it fires on rejection, not on silence. `openscreen",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/cli/captionProject.ts",
+			"reason": "retained upstream CLI/MCP identifiers and documentation; entry points hidden and MCP startup off",
+			"lines": [
+				{
+					"text": "// What `openscreen captions` does to a project, kept out of the runner window so it is",
+					"count": 1
+				},
+				{
+					"text": "// render time, so `openscreen export` burns them in and the editor shows them editable.",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/cli/exportProject.ts",
+			"reason": "retained upstream CLI/MCP identifiers and documentation; entry points hidden and MCP startup off",
+			"lines": [
+				{
+					"text": "// What `openscreen export` reads from a project file, and the loader for the shape the editor",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/cli/loadCliProject.ts",
+			"reason": "retained upstream CLI/MCP identifiers and documentation; entry points hidden and MCP startup off",
+			"lines": [
+				{
+					"text": "// Migrate the .openscreen project onto the AxcutDocument the native",
+					"count": 1
+				},
+				{
+					"text": "// What `openscreen export` and `openscreen captions` read from a project file, in the",
+					"count": 1
+				},
+				{
+					"text": "throw new Error(\"Project file is not a valid .openscreen project\");",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/components/ai-edition/EditorEmptyState.test.tsx",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "src/components/ai-edition/EditorEmptyState.tsx",
+			"reason": "upstream internal symbols, schema/API comments and legacy serialization compatibility; visible app labels are Showhow",
+			"lines": [
+				{
+					"text": "// user who already has a .openscreen project without media attached).",
+					"count": 1
+				},
+				{
+					"text": "const projectFile = files.find((f) => /\\.(showhow|openscreen)$/i.test(f.name));",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/components/ai-edition/ExportDialog.showInFolder.test.tsx",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "src/components/ai-edition/ExportDialog.tsx",
+			"reason": "upstream internal symbols, schema/API comments and legacy serialization compatibility; visible app labels are Showhow",
+			"lines": [
+				{
+					"text": "// OpenScreen#371 came from — the bar climbed to 80% and the export finished",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/components/ai-edition/McpServerSettings.tsx",
+			"reason": "retained upstream CLI/MCP identifiers and documentation; entry points hidden and MCP startup off",
+			"lines": [
+				{
+					"text": "const CODEX_TOKEN_ENV = \"OPENSCREEN_MCP_TOKEN\";",
+					"count": 1
+				},
+				{
+					"text": "return `claude mcp add --transport http openscreen ${url} --header \"Authorization: Bearer ${token}\"`;",
+					"count": 1
+				},
+				{
+					"text": "return `codex mcp add openscreen --url ${url} --bearer-token-env-var ${CODEX_TOKEN_ENV}`;",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/components/ai-edition/NewEditorShell.module.css",
+			"reason": "upstream internal symbols, schema/API comments and legacy serialization compatibility; visible app labels are Showhow",
+			"lines": [
+				{
+					"text": "* Mirrors design/openscreen-editor.html. Tokens come from",
+					"count": 1
+				},
+				{
+					"text": "* per the v4 design (design/OpenScreen Editor v4.dc.html pillStyle) — no",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/components/ai-edition/RightPanes.audioTrack.test.tsx",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "src/components/ai-edition/RightPanes.tsx",
+			"reason": "upstream internal symbols, schema/API comments and legacy serialization compatibility; visible app labels are Showhow",
+			"lines": [
+				{
+					"text": "// Six right-rail panes matching design/openscreen-editor.html. Each control",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/components/ai-edition/importProjectFile.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "src/components/ai-edition/recordingImport.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "src/components/ai-edition/v4/EditorShellV4.module.css",
+			"reason": "upstream internal symbols, schema/API comments and legacy serialization compatibility; visible app labels are Showhow",
+			"lines": [
+				{
+					"text": "* Ported 1:1 from design/OpenScreen Editor v4.dc.html. All colors read the",
+					"count": 1
+				},
+				{
+					"text": "/* OpenScreen Editor v4 shell — Media / Edit / Rec modes.",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/components/ai-edition/v4/EditorTopBar.tsx",
+			"reason": "upstream internal symbols, schema/API comments and legacy serialization compatibility; visible app labels are Showhow",
+			"lines": [
+				{
+					"text": "OpenScreen menu, and on Ctrl+S. */}",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/components/ai-edition/v4/MediaStage.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "src/components/ai-edition/v4/RecStage.test.tsx",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "src/components/launch/HudIcons.tsx",
+			"reason": "upstream source comments or internal tooling identifiers; retained to keep release-parent adapters narrow",
+			"lines": [
+				{
+					"text": "// Custom glyphs matching the Claude Design \"OpenScreen Recording Widget\"",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/components/launch/LaunchWindow.test.tsx",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "src/hooks/useScreenRecorder.ts",
+			"reason": "upstream source comments or internal tooling identifiers; retained to keep release-parent adapters narrow",
+			"lines": [
+				{
+					"text": "// the stored metadata has to agree. It is user-visible: `openscreen",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/hooks/useTheme.ts",
+			"reason": "read-only legacy persisted theme key fallback",
+			"lines": [
+				{
+					"text": "const legacy = localStorage.getItem(\"openscreen-theme\");",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/hooks/webcamDeviceIdentity.ts",
+			"reason": "upstream source comments or internal tooling identifiers; retained to keep release-parent adapters narrow",
+			"lines": [
+				{
+					"text": "* (getopenscreen/openscreen#387).",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/i18n/locales/ar/dialogs.json",
+			"reason": "upstream internal translation key or explicit legacy file-format compatibility; visible product names are Showhow",
+			"lines": [
+				{
+					"text": "\"openscreenProject\": \"مشروع Showhow\",",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/i18n/locales/cs/dialogs.json",
+			"reason": "upstream internal translation key or explicit legacy file-format compatibility; visible product names are Showhow",
+			"lines": [
+				{
+					"text": "\"openscreenProject\": \"Projekt Showhow\",",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/i18n/locales/cs/editor.json",
+			"reason": "upstream internal translation key or explicit legacy file-format compatibility; visible product names are Showhow",
+			"lines": [
+				{
+					"text": "\"dragDropHint\": \"nebo přetáhněte soubor projektu .showhow, .openscreen sem\",",
+					"count": 1
+				},
+				{
+					"text": "\"unsupportedFormatMessage\": \"Sem lze přetáhnout pouze soubory projektů .showhow, .openscreen. Pro import video souboru použijte tlačítko „Importovat video soubor…” na této obrazovce.\",",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/i18n/locales/de/dialogs.json",
+			"reason": "upstream internal translation key or explicit legacy file-format compatibility; visible product names are Showhow",
+			"lines": [
+				{
+					"text": "\"openscreenProject\": \"Showhow-Projekt\",",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/i18n/locales/de/editor.json",
+			"reason": "upstream internal translation key or explicit legacy file-format compatibility; visible product names are Showhow",
+			"lines": [
+				{
+					"text": "\"dragDropHint\": \"oder zieh eine .showhow, .openscreen-Projektdatei hierher\",",
+					"count": 1
+				},
+				{
+					"text": "\"unsupportedFormatMessage\": \"Hier können nur .showhow, .openscreen-Projektdateien abgelegt werden. Um eine Videodatei zu importieren, nutze auf diesem Bildschirm die Schaltfläche „Video importieren“.\",",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/i18n/locales/en/dialogs.json",
+			"reason": "upstream internal translation key or explicit legacy file-format compatibility; visible product names are Showhow",
+			"lines": [
+				{
+					"text": "\"openscreenProject\": \"Showhow project\",",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/i18n/locales/es/dialogs.json",
+			"reason": "upstream internal translation key or explicit legacy file-format compatibility; visible product names are Showhow",
+			"lines": [
+				{
+					"text": "\"openscreenProject\": \"Proyecto Showhow\",",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/i18n/locales/fr/dialogs.json",
+			"reason": "upstream internal translation key or explicit legacy file-format compatibility; visible product names are Showhow",
+			"lines": [
+				{
+					"text": "\"openscreenProject\": \"Projet Showhow\",",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/i18n/locales/it/dialogs.json",
+			"reason": "upstream internal translation key or explicit legacy file-format compatibility; visible product names are Showhow",
+			"lines": [
+				{
+					"text": "\"openscreenProject\": \"Progetto Showhow\",",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/i18n/locales/ja-JP/dialogs.json",
+			"reason": "upstream internal translation key or explicit legacy file-format compatibility; visible product names are Showhow",
+			"lines": [
+				{
+					"text": "\"openscreenProject\": \"Showhow プロジェクト\",",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/i18n/locales/ko-KR/dialogs.json",
+			"reason": "upstream internal translation key or explicit legacy file-format compatibility; visible product names are Showhow",
+			"lines": [
+				{
+					"text": "\"openscreenProject\": \"Showhow 프로젝트\",",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/i18n/locales/pt-BR/dialogs.json",
+			"reason": "upstream internal translation key or explicit legacy file-format compatibility; visible product names are Showhow",
+			"lines": [
+				{
+					"text": "\"openscreenProject\": \"Projeto Showhow\",",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/i18n/locales/ru/dialogs.json",
+			"reason": "upstream internal translation key or explicit legacy file-format compatibility; visible product names are Showhow",
+			"lines": [
+				{
+					"text": "\"openscreenProject\": \"Проект Showhow\",",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/i18n/locales/tr/dialogs.json",
+			"reason": "upstream internal translation key or explicit legacy file-format compatibility; visible product names are Showhow",
+			"lines": [
+				{
+					"text": "\"openscreenProject\": \"Showhow Projesi\",",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/i18n/locales/vi/dialogs.json",
+			"reason": "upstream internal translation key or explicit legacy file-format compatibility; visible product names are Showhow",
+			"lines": [
+				{
+					"text": "\"openscreenProject\": \"Dự án Showhow\",",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/i18n/locales/zh-CN/dialogs.json",
+			"reason": "upstream internal translation key or explicit legacy file-format compatibility; visible product names are Showhow",
+			"lines": [
+				{
+					"text": "\"openscreenProject\": \"Showhow 项目\",",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/i18n/locales/zh-TW/dialogs.json",
+			"reason": "upstream internal translation key or explicit legacy file-format compatibility; visible product names are Showhow",
+			"lines": [
+				{
+					"text": "\"openscreenProject\": \"Showhow 專案\",",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/lib/ai-edition/annotations/fontTables.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "src/lib/ai-edition/annotations/fontTables.ts",
+			"reason": "upstream internal symbols, schema/API comments and legacy serialization compatibility; visible app labels are Showhow",
+			"lines": [
+				{
+					"text": "// 610 px réels, et le compositeur renvoyait « OpenScreen » à la ligne, hors de la boîte.",
+					"count": 1
+				},
+				{
+					"text": "// étroite pour l'Inter gras d'une annotation : « Demo OpenScreen » à 64 px mesurait 538 px pour",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/lib/ai-edition/captions/captions.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "src/lib/ai-edition/document/insertion.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "src/lib/ai-edition/document/migrate.ts",
+			"reason": "upstream internal symbols, schema/API comments and legacy serialization compatibility; visible app labels are Showhow",
+			"lines": [
+				{
+					"text": "// Bidirectional migration between OpenScreen's v2 EditorProjectData and the",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/lib/ai-edition/document/transcribe.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "src/lib/ai-edition/document/transcribe.ts",
+			"reason": "upstream internal symbols, schema/API comments and legacy serialization compatibility; visible app labels are Showhow",
+			"lines": [
+				{
+					"text": "// Adapter: wraps OpenScreen's existing local Whisper pipeline (transformers.js,",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/lib/ai-edition/document/transcript.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "src/lib/ai-edition/schema/index.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "src/lib/ai-edition/schema/index.ts",
+			"reason": "upstream internal symbols, schema/API comments and legacy serialization compatibility; visible app labels are Showhow",
+			"lines": [
+				{
+					"text": "* Whether a parsed `.openscreen` file is an AxcutDocument — what the editor saves, at any",
+					"count": 1
+				},
+				{
+					"text": "//      so OpenScreen's existing regions + appearance settings survive the merge.",
+					"count": 1
+				},
+				{
+					"text": "// Legacy OpenScreen appearance / export settings that the v3 schema doesn't",
+					"count": 1
+				},
+				{
+					"text": "// OpenScreen additions to the axcut document. Mirrors src/components/video-editor/types.ts",
+					"count": 1
+				},
+				{
+					"text": "// OpenScreen's AI-edition merge (Phase 0, see technical-documentation/architecture/document-model.md):",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/lib/ai-edition/store/mcpDocumentHost.ts",
+			"reason": "upstream internal symbols, schema/API comments and legacy serialization compatibility; visible app labels are Showhow",
+			"lines": [
+				{
+					"text": "// `openscreen mcp` runs in a process of its own and cannot ask this window, so the",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/lib/ai-edition/stylePresets.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "src/lib/ai-edition/stylePresets.ts",
+			"reason": "stable serialized factory ID and legacy format discriminator read compatibility",
+			"lines": [
+				{
+					"text": "(json.format !== STYLE_PRESET_FORMAT && json.format !== \"openscreen-style-preset\")",
+					"count": 1
+				},
+				{
+					"text": "export const FACTORY_STYLE_PRESET_ID = \"openscreen-factory\";",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/lib/ai-edition/transcription/status.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "src/lib/cliContracts.ts",
+			"reason": "retained upstream CLI/MCP identifiers and documentation; entry points hidden and MCP startup off",
+			"lines": [
+				{
+					"text": "* Record: a ready-to-save .openscreen project object built by the runner.",
+					"count": 1
+				},
+				{
+					"text": "/** Absolute path to the .openscreen project file (updated in place). */",
+					"count": 1
+				},
+				{
+					"text": "/** Absolute path to the .openscreen project file. */",
+					"count": 1
+				},
+				{
+					"text": "/** When set, write a ready-to-export .openscreen project here after recording. */",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/lib/cliSourcePick.ts",
+			"reason": "retained upstream CLI/MCP identifiers and documentation; entry points hidden and MCP startup off",
+			"lines": [
+				{
+					"text": "// Which enumerated source `openscreen record` (and the MCP's startRecording) records: the first",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/lib/cursor/cursorThemes.ts",
+			"reason": "upstream source comments or internal tooling identifiers; retained to keep release-parent adapters narrow",
+			"lines": [
+				{
+					"text": "* Bundled cursor themes. These six packs are original OpenScreen artwork. Their raster",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/lib/exporter/outputFrameCount.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "src/lib/exporter/outputFrameCount.ts",
+			"reason": "upstream source comments or internal tooling identifiers; retained to keep release-parent adapters narrow",
+			"lines": [
+				{
+					"text": "// That is the \"frozen at ~80%\" in OpenScreen#371, quite literally. A clip covered by a 1.25x",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/lib/exporter/voiceoverMix.ts",
+			"reason": "upstream source comments or internal tooling identifiers; retained to keep release-parent adapters narrow",
+			"lines": [
+				{
+					"text": "// Post-export voiceover mixing for the CLI (`openscreen export --audio`).",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/lib/textFonts.ts",
+			"reason": "upstream source comments or internal tooling identifiers; retained to keep release-parent adapters narrow",
+			"lines": [
+				{
+					"text": "// privately when it starts (`OPENSCREEN_FONTS_DIR`, set by compositorViewService.ts) and never",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/native/browserShim.presets.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "src/native/browserShim.ts",
+			"reason": "upstream source comments or internal tooling identifiers; retained to keep release-parent adapters narrow",
+			"lines": [
+				{
+					"text": "console.info(\"[openscreen] browser-mode shims active (no Electron)\");",
+					"count": 1
+				},
+				{
+					"text": "{ id: \"window:100\", name: \"OpenScreen\", display_id: \"\", thumbnail: null, appIcon: null },",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/native/contracts.ts",
+			"reason": "upstream source comments or internal tooling identifiers; retained to keep release-parent adapters narrow",
+			"lines": [
+				{
+					"text": "// One `<name>.openscreenpreset` file per preset in Documents/OpenScreen Presets. The",
+					"count": 1
+				},
+				{
+					"text": "// v3/v4 AxcutDocument projects live under userData/projects/<id>.openscreen",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/native/hooks/useNativeCompositorView.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "src/native/sceneDescription.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "src/native/sceneDescription.ts",
+			"reason": "upstream source comments or internal tooling identifiers; retained to keep release-parent adapters narrow",
+			"lines": [
+				{
+					"text": "* multiclip contract. `openscreen export` and getFrames share it, beside `buildSceneDescription`",
+					"count": 1
+				},
+				{
+					"text": "// caption annotations `openscreen captions` writes, whose box is the editor's",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/styles/design-tokens.css",
+			"reason": "upstream source comments or internal tooling identifiers; retained to keep release-parent adapters narrow",
+			"lines": [
+				{
+					"text": "/* OpenScreen design system — light + dark.",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "technical-documentation/README.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "technical-documentation/architecture/ai-agent.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "technical-documentation/architecture/cursor.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "technical-documentation/architecture/decisions.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "technical-documentation/architecture/document-model.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "technical-documentation/architecture/export-pipeline.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "technical-documentation/architecture/llm-providers.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "technical-documentation/architecture/mcp-server.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "technical-documentation/architecture/overview.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "technical-documentation/architecture/preview.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "technical-documentation/architecture/recording.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "technical-documentation/architecture/transcription-and-captions.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "technical-documentation/engineering/build-and-packaging.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "technical-documentation/engineering/ci-workflows.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "technical-documentation/engineering/release-and-secrets.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "technical-documentation/engineering/rendering-performance.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "technical-documentation/engineering/tooltips.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "technical-documentation/engineering/webcam-segmentation-backend-port.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "technical-documentation/engineering/webcam-segmentation-bench-brief.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "technical-documentation/engineering/webcam-segmentation.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "technical-documentation/testing/manual-e2e-checklist.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "technical-documentation/testing/native-cursor-diagnostics.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "tests/e2e/gif-export.spec.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "tools/stt-eval/whispercpp-dtw-poc/REPORT.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "tools/stt-eval/word-timing/README.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "tools/stt-eval/word-timing/corpus-texts.mjs",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "tools/stt-eval/word-timing/lib.mjs",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/README.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/blog/2026-06-15-picking-up-openscreen.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/blog/2026-07-19-eight-first-time-contributors.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/blog/2026-08-04-local-whisper-and-a-rust-compositor.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/blog/2026-08-24-store-and-crash-safe-recordings.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/blog/2026-09-09-an-export-benchmark-hard-to-fake.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/blog/2026-09-27-making-of-v2-a-demo-is-never-ugly.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/blog/authors.yml",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/docs/ai-editing.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/docs/captions.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/docs/cli.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/docs/editing-timeline.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/docs/effects.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/docs/export.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/docs/faq.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/docs/guides/product-demo-video.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/docs/installation.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/docs/intro.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/docs/media-library.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/docs/quick-start.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/docs/recording.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/docusaurus.config.ts",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/TRANSLATING.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/code.source.json",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/de/code.json",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/de/docusaurus-plugin-content-docs/current.json",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/de/docusaurus-plugin-content-docs/current/ai-editing.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/de/docusaurus-plugin-content-docs/current/captions.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/de/docusaurus-plugin-content-docs/current/cli.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/de/docusaurus-plugin-content-docs/current/editing-timeline.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/de/docusaurus-plugin-content-docs/current/effects.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/de/docusaurus-plugin-content-docs/current/export.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/de/docusaurus-plugin-content-docs/current/faq.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/de/docusaurus-plugin-content-docs/current/guides/product-demo-video.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/de/docusaurus-plugin-content-docs/current/installation.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/de/docusaurus-plugin-content-docs/current/intro.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/de/docusaurus-plugin-content-docs/current/media-library.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/de/docusaurus-plugin-content-docs/current/quick-start.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/de/docusaurus-plugin-content-docs/current/recording.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/de/docusaurus-plugin-content-pages/alternatives/camtasia.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/de/docusaurus-plugin-content-pages/alternatives/loom.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/de/docusaurus-plugin-content-pages/alternatives/screen-studio.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/de/docusaurus-plugin-content-pages/compare/openscreen-vs-cap.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/de/docusaurus-plugin-content-pages/compare/openscreen-vs-obs.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/de/docusaurus-plugin-content-pages/features/auto-zoom.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/de/docusaurus-plugin-content-pages/features/captions.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/de/docusaurus-plugin-content-pages/screen-recorder-linux.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/de/docusaurus-plugin-content-pages/screen-recorder-mac.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/de/docusaurus-plugin-content-pages/screen-recorder-windows.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/de/docusaurus-theme-classic/navbar.json",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/es/code.json",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/es/docusaurus-plugin-content-docs/current.json",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/es/docusaurus-plugin-content-docs/current/ai-editing.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/es/docusaurus-plugin-content-docs/current/captions.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/es/docusaurus-plugin-content-docs/current/cli.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/es/docusaurus-plugin-content-docs/current/editing-timeline.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/es/docusaurus-plugin-content-docs/current/effects.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/es/docusaurus-plugin-content-docs/current/export.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/es/docusaurus-plugin-content-docs/current/faq.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/es/docusaurus-plugin-content-docs/current/guides/product-demo-video.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/es/docusaurus-plugin-content-docs/current/installation.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/es/docusaurus-plugin-content-docs/current/intro.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/es/docusaurus-plugin-content-docs/current/media-library.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/es/docusaurus-plugin-content-docs/current/quick-start.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/es/docusaurus-plugin-content-docs/current/recording.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/es/docusaurus-plugin-content-pages/alternatives/camtasia.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/es/docusaurus-plugin-content-pages/alternatives/loom.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/es/docusaurus-plugin-content-pages/alternatives/screen-studio.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/es/docusaurus-plugin-content-pages/compare/openscreen-vs-cap.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/es/docusaurus-plugin-content-pages/compare/openscreen-vs-obs.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/es/docusaurus-plugin-content-pages/features/auto-zoom.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/es/docusaurus-plugin-content-pages/features/captions.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/es/docusaurus-plugin-content-pages/screen-recorder-linux.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/es/docusaurus-plugin-content-pages/screen-recorder-mac.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/es/docusaurus-plugin-content-pages/screen-recorder-windows.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/es/docusaurus-theme-classic/navbar.json",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/fr/code.json",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/fr/docusaurus-plugin-content-docs/current.json",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/fr/docusaurus-plugin-content-docs/current/ai-editing.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/fr/docusaurus-plugin-content-docs/current/captions.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/fr/docusaurus-plugin-content-docs/current/cli.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/fr/docusaurus-plugin-content-docs/current/editing-timeline.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/fr/docusaurus-plugin-content-docs/current/effects.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/fr/docusaurus-plugin-content-docs/current/export.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/fr/docusaurus-plugin-content-docs/current/faq.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/fr/docusaurus-plugin-content-docs/current/guides/product-demo-video.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/fr/docusaurus-plugin-content-docs/current/installation.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/fr/docusaurus-plugin-content-docs/current/intro.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/fr/docusaurus-plugin-content-docs/current/media-library.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/fr/docusaurus-plugin-content-docs/current/quick-start.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/fr/docusaurus-plugin-content-docs/current/recording.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/fr/docusaurus-plugin-content-pages/alternatives/camtasia.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/fr/docusaurus-plugin-content-pages/alternatives/loom.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/fr/docusaurus-plugin-content-pages/alternatives/screen-studio.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/fr/docusaurus-plugin-content-pages/compare/openscreen-vs-cap.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/fr/docusaurus-plugin-content-pages/compare/openscreen-vs-obs.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/fr/docusaurus-plugin-content-pages/features/auto-zoom.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/fr/docusaurus-plugin-content-pages/features/captions.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/fr/docusaurus-plugin-content-pages/screen-recorder-linux.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/fr/docusaurus-plugin-content-pages/screen-recorder-mac.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/fr/docusaurus-plugin-content-pages/screen-recorder-windows.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/fr/docusaurus-theme-classic/navbar.json",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/ja/code.json",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/ja/docusaurus-plugin-content-docs/current.json",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/ja/docusaurus-plugin-content-docs/current/ai-editing.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/ja/docusaurus-plugin-content-docs/current/captions.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/ja/docusaurus-plugin-content-docs/current/cli.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/ja/docusaurus-plugin-content-docs/current/editing-timeline.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/ja/docusaurus-plugin-content-docs/current/effects.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/ja/docusaurus-plugin-content-docs/current/export.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/ja/docusaurus-plugin-content-docs/current/faq.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/ja/docusaurus-plugin-content-docs/current/guides/product-demo-video.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/ja/docusaurus-plugin-content-docs/current/installation.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/ja/docusaurus-plugin-content-docs/current/intro.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/ja/docusaurus-plugin-content-docs/current/media-library.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/ja/docusaurus-plugin-content-docs/current/quick-start.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/ja/docusaurus-plugin-content-docs/current/recording.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/ja/docusaurus-plugin-content-pages/alternatives/camtasia.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/ja/docusaurus-plugin-content-pages/alternatives/loom.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/ja/docusaurus-plugin-content-pages/alternatives/screen-studio.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/ja/docusaurus-plugin-content-pages/compare/openscreen-vs-cap.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/ja/docusaurus-plugin-content-pages/compare/openscreen-vs-obs.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/ja/docusaurus-plugin-content-pages/features/auto-zoom.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/ja/docusaurus-plugin-content-pages/features/captions.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/ja/docusaurus-plugin-content-pages/screen-recorder-linux.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/ja/docusaurus-plugin-content-pages/screen-recorder-mac.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/ja/docusaurus-plugin-content-pages/screen-recorder-windows.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/ja/docusaurus-theme-classic/navbar.json",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/pt-BR/code.json",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/pt-BR/docusaurus-plugin-content-docs/current.json",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/pt-BR/docusaurus-plugin-content-docs/current/ai-editing.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/pt-BR/docusaurus-plugin-content-docs/current/captions.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/pt-BR/docusaurus-plugin-content-docs/current/cli.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/pt-BR/docusaurus-plugin-content-docs/current/editing-timeline.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/pt-BR/docusaurus-plugin-content-docs/current/effects.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/pt-BR/docusaurus-plugin-content-docs/current/export.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/pt-BR/docusaurus-plugin-content-docs/current/faq.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/pt-BR/docusaurus-plugin-content-docs/current/guides/product-demo-video.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/pt-BR/docusaurus-plugin-content-docs/current/installation.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/pt-BR/docusaurus-plugin-content-docs/current/intro.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/pt-BR/docusaurus-plugin-content-docs/current/media-library.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/pt-BR/docusaurus-plugin-content-docs/current/quick-start.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/pt-BR/docusaurus-plugin-content-docs/current/recording.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/pt-BR/docusaurus-plugin-content-pages/alternatives/camtasia.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/pt-BR/docusaurus-plugin-content-pages/alternatives/loom.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/pt-BR/docusaurus-plugin-content-pages/alternatives/screen-studio.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/pt-BR/docusaurus-plugin-content-pages/compare/openscreen-vs-cap.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/pt-BR/docusaurus-plugin-content-pages/compare/openscreen-vs-obs.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/pt-BR/docusaurus-plugin-content-pages/features/auto-zoom.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/pt-BR/docusaurus-plugin-content-pages/features/captions.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/pt-BR/docusaurus-plugin-content-pages/screen-recorder-linux.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/pt-BR/docusaurus-plugin-content-pages/screen-recorder-mac.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/pt-BR/docusaurus-plugin-content-pages/screen-recorder-windows.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/pt-BR/docusaurus-theme-classic/navbar.json",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-CN/code.json",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-CN/docusaurus-plugin-content-docs/current.json",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-CN/docusaurus-plugin-content-docs/current/ai-editing.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-CN/docusaurus-plugin-content-docs/current/captions.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-CN/docusaurus-plugin-content-docs/current/cli.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-CN/docusaurus-plugin-content-docs/current/editing-timeline.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-CN/docusaurus-plugin-content-docs/current/effects.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-CN/docusaurus-plugin-content-docs/current/export.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-CN/docusaurus-plugin-content-docs/current/faq.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-CN/docusaurus-plugin-content-docs/current/guides/product-demo-video.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-CN/docusaurus-plugin-content-docs/current/installation.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-CN/docusaurus-plugin-content-docs/current/intro.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-CN/docusaurus-plugin-content-docs/current/media-library.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-CN/docusaurus-plugin-content-docs/current/quick-start.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-CN/docusaurus-plugin-content-docs/current/recording.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-CN/docusaurus-plugin-content-pages/alternatives/camtasia.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-CN/docusaurus-plugin-content-pages/alternatives/loom.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-CN/docusaurus-plugin-content-pages/alternatives/screen-studio.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-CN/docusaurus-plugin-content-pages/compare/openscreen-vs-cap.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-CN/docusaurus-plugin-content-pages/compare/openscreen-vs-obs.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-CN/docusaurus-plugin-content-pages/features/auto-zoom.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-CN/docusaurus-plugin-content-pages/features/captions.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-CN/docusaurus-plugin-content-pages/screen-recorder-linux.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-CN/docusaurus-plugin-content-pages/screen-recorder-mac.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-CN/docusaurus-plugin-content-pages/screen-recorder-windows.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-CN/docusaurus-theme-classic/navbar.json",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-TW/code.json",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-TW/docusaurus-plugin-content-docs/current.json",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-TW/docusaurus-plugin-content-docs/current/ai-editing.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-TW/docusaurus-plugin-content-docs/current/captions.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-TW/docusaurus-plugin-content-docs/current/cli.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-TW/docusaurus-plugin-content-docs/current/editing-timeline.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-TW/docusaurus-plugin-content-docs/current/effects.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-TW/docusaurus-plugin-content-docs/current/export.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-TW/docusaurus-plugin-content-docs/current/faq.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-TW/docusaurus-plugin-content-docs/current/guides/product-demo-video.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-TW/docusaurus-plugin-content-docs/current/installation.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-TW/docusaurus-plugin-content-docs/current/intro.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-TW/docusaurus-plugin-content-docs/current/media-library.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-TW/docusaurus-plugin-content-docs/current/quick-start.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-TW/docusaurus-plugin-content-docs/current/recording.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-TW/docusaurus-plugin-content-pages/alternatives/camtasia.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-TW/docusaurus-plugin-content-pages/alternatives/loom.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-TW/docusaurus-plugin-content-pages/alternatives/screen-studio.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-TW/docusaurus-plugin-content-pages/compare/openscreen-vs-cap.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-TW/docusaurus-plugin-content-pages/compare/openscreen-vs-obs.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-TW/docusaurus-plugin-content-pages/features/auto-zoom.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-TW/docusaurus-plugin-content-pages/features/captions.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-TW/docusaurus-plugin-content-pages/screen-recorder-linux.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-TW/docusaurus-plugin-content-pages/screen-recorder-mac.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-TW/docusaurus-plugin-content-pages/screen-recorder-windows.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/i18n/zh-TW/docusaurus-theme-classic/navbar.json",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/media/README.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/media/backgrounds.json",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/media/loops.json",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/package-lock.json",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/package.json",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/scripts/gen-recreation.mjs",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/scripts/media/publish-backgrounds.mjs",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/scripts/media/publish-loops.mjs",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/sidebars.ts",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/src/analytics.ts",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/src/components/DemoLoop/labels.ts",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/src/components/Recreation/fixture-slim.json",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/src/components/Recreation/generated.ts",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/src/components/Recreation/index.tsx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/src/components/ReleaseBadge/index.tsx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/src/css/custom.css",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/src/lib/background-media.ts",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/src/lib/demo-loop.ts",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/src/lib/download-target.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "website/src/lib/download-target.ts",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/src/lib/locale-routes.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "website/src/lib/release.test.ts",
+			"reason": "regression tooling: upstream names, legacy fixtures and internal contract expectations; not application copy"
+		},
+		{
+			"file": "website/src/lib/release.ts",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/src/lib/structured-data.ts",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/src/pages/alternatives/camtasia.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/src/pages/alternatives/loom.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/src/pages/alternatives/screen-studio.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/src/pages/compare/openscreen-vs-cap.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/src/pages/compare/openscreen-vs-obs.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/src/pages/download.tsx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/src/pages/features/auto-zoom.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/src/pages/features/captions.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/src/pages/index.tsx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/src/pages/screen-recorder-linux.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/src/pages/screen-recorder-mac.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/src/pages/screen-recorder-windows.mdx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/src/theme/Footer/index.tsx",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/static/blog/tags/rendering/index.html",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/static/discord/index.html",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/static/llms.txt",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/static/robots.txt",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/wrangler.jsonc",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/www-redirect/index.js",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "website/www-redirect/wrangler.jsonc",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "workbench/README.md",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "workbench/l0/judge.wb.ts",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "workbench/l0/persist.wb.ts",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "workbench/l0/scenario-checks.wb.ts",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "workbench/l0/scenario-pack.wb.ts",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "workbench/l0/transcript.wb.ts",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "workbench/l1/end-to-end.wb.ts",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "workbench/lib/env.ts",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "workbench/lib/prompts.ts",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "workbench/lib/real-fixture.ts",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "workbench/lib/transcript.ts",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "workbench/lib/wire.ts",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "workbench/scenarios/consent.scn.ts",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "workbench/scenarios/contract.wb.ts",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "workbench/scenarios/out-of-scope-styling.scn.ts",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "workbench/scenarios/wizard-enhance.scn.ts",
+			"reason": "attributed upstream documentation/design/website/workbench source; not packaged Showhow application copy"
+		},
+		{
+			"file": "config/upstream-branding-allowlist.json",
+			"reason": "explicit reviewed classification of inherited upstream identities and attribution"
+		},
+		{
+			"file": "electron/showhow/upstreamCompatibility.test.ts",
+			"reason": "authentic synthetic fc50566a fixture/provenance or legacy compatibility regression test; source bytes retained"
+		},
+		{
+			"file": "electron/showhow/documentCompatibility.test.ts",
+			"reason": "authentic synthetic fc50566a fixture/provenance or legacy compatibility regression test; source bytes retained"
+		},
+		{
+			"file": "tests/fixtures/legacy/README.md",
+			"reason": "authentic synthetic fc50566a fixture/provenance or legacy compatibility regression test; source bytes retained"
+		},
+		{
+			"file": "tests/fixtures/legacy/hashes.json",
+			"reason": "authentic synthetic fc50566a fixture/provenance or legacy compatibility regression test; source bytes retained"
+		},
+		{
+			"file": "tests/fixtures/legacy/fc50566a/renderer-storage.json",
+			"reason": "authentic synthetic fc50566a fixture/provenance or legacy compatibility regression test; source bytes retained"
+		},
+		{
+			"file": "tests/fixtures/legacy/fc50566a/legacy.openscreen",
+			"reason": "authentic synthetic fc50566a fixture/provenance or legacy compatibility regression test; source bytes retained"
+		},
+		{
+			"file": "tests/fixtures/legacy/fc50566a/legacy.showhow",
+			"reason": "authentic synthetic fc50566a fixture/provenance or legacy compatibility regression test; source bytes retained"
+		},
+		{
+			"file": "tests/fixtures/legacy/fc50566a/bundle/transcript.txt",
+			"reason": "authentic synthetic fc50566a fixture/provenance or legacy compatibility regression test; source bytes retained"
+		},
+		{
+			"file": "tests/fixtures/legacy/fc50566a/bundle/video.webm",
+			"reason": "authentic synthetic fc50566a fixture/provenance or legacy compatibility regression test; source bytes retained"
+		},
+		{
+			"file": "tests/fixtures/legacy/fc50566a/bundle/steps.json",
+			"reason": "authentic synthetic fc50566a fixture/provenance or legacy compatibility regression test; source bytes retained"
+		},
+		{
+			"file": "tests/fixtures/legacy/fc50566a/bundle/steps.md",
+			"reason": "authentic synthetic fc50566a fixture/provenance or legacy compatibility regression test; source bytes retained"
+		},
+		{
+			"file": "tests/fixtures/legacy/fc50566a/bundle/meta.json",
+			"reason": "authentic synthetic fc50566a fixture/provenance or legacy compatibility regression test; source bytes retained"
+		},
+		{
+			"file": "tests/fixtures/legacy/fc50566a/profile/recordings/before-synthetic.webm",
+			"reason": "authentic synthetic fc50566a fixture/provenance or legacy compatibility regression test; source bytes retained"
+		},
+		{
+			"file": "tests/fixtures/legacy/fc50566a/profile/recordings/fixture-session.session.json",
+			"reason": "authentic synthetic fc50566a fixture/provenance or legacy compatibility regression test; source bytes retained"
+		},
+		{
+			"file": "tests/fixtures/legacy/fc50566a/sessionData/Local Storage/leveldb/000003.log",
+			"reason": "authentic synthetic fc50566a fixture/provenance or legacy compatibility regression test; source bytes retained"
+		},
+		{
+			"file": "tests/fixtures/legacy/fc50566a/sessionData/Local Storage/leveldb/MANIFEST-000001",
+			"reason": "authentic synthetic fc50566a fixture/provenance or legacy compatibility regression test; source bytes retained"
+		},
+		{
+			"file": "tests/fixtures/legacy/fc50566a/sessionData/Local Storage/leveldb/LOCK",
+			"reason": "authentic synthetic fc50566a fixture/provenance or legacy compatibility regression test; source bytes retained"
+		},
+		{
+			"file": "tests/fixtures/legacy/fc50566a/sessionData/Local Storage/leveldb/CURRENT",
+			"reason": "authentic synthetic fc50566a fixture/provenance or legacy compatibility regression test; source bytes retained"
+		},
+		{
+			"file": "tests/fixtures/legacy/fc50566a/sessionData/Local Storage/leveldb/LOG",
+			"reason": "authentic synthetic fc50566a fixture/provenance or legacy compatibility regression test; source bytes retained"
+		},
+		{
+			"file": "docs/architecture/upstream-touchpoints.md",
+			"reason": "required #116 upstream path and identifier-role inventory, compatibility and attribution documentation"
+		},
+		{
+			"file": "NOTICE.md",
+			"reason": "legal attribution preserving original author and named upstream release parent"
+		},
+		{
+			"file": "electron/native-bridge/cursor/recording/macNativeCursorRecordingSession.test.ts",
+			"reason": "synthetic public helper discovery tests require exact legacy override inputs",
+			"lines": [
+				{
+					"text": "vi.stubEnv(\"OPENSCREEN_MAC_CURSOR_HELPER_EXE\", \"/owned-fixture/legacy-cursor\");",
+					"count": 2
+				},
+				{
+					"text": "vi.stubEnv(\"SHOWHOW_MAC_CURSOR_HELPER_EXE\", \"\"); vi.stubEnv(\"OPENSCREEN_MAC_CURSOR_HELPER_EXE\", \"\");",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/showhow/singleInstanceLock.test.ts",
+			"reason": "legacy lock-directory compatibility assertions and owned temporary fixture names",
+			"lines": [
+				{
+					"text": "const dir = fs.mkdtempSync(path.join(os.tmpdir(), \"openscreen-lock-test-\"));",
+					"count": 1
+				},
+				{
+					"text": "return [path.join(dir, \"showhow.lock\"), path.join(dir, \"openscreen.lock\")];",
+					"count": 1
+				},
+				{
+					"text": "expect.stringMatching(/^openscreen-single-instance-.+\\.lock$/),",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/showhow/singleInstanceLock.ts",
+			"reason": "legacy lock-directory discovery is deliberately retained to prevent dual active instances",
+			"lines": [
+				{
+					"text": "const LOCK_DIR_PREFIXES = [\"showhow-single-instance\", \"openscreen-single-instance\"];",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": ".github/scripts/set-release-version.test.mjs",
+			"reason": "upstream version tooling test data; no runtime product copy",
+			"lines": [
+				{
+					"text": "'\\t\"name\": \"openscreen\",',",
+					"count": 2
+				},
+				{
+					"text": "'\\t\\t\\t\"name\": \"openscreen\",',",
+					"count": 1
+				},
+				{
+					"text": "`${JSON.stringify({ name: \"openscreen\", version: \"1.8.0\" }, null, \"\\t\")}\\n`,",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": ".github/scripts/stable-release-notes.test.mjs",
+			"reason": "upstream-only release machinery assertions pending explicit exclusion disposition",
+			"lines": [
+				{
+					"text": "'STAR_LINE=\"If OpenScreen saves you time, a star on the repo helps others find it.\"',",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": ".github/workflows/ci.yml",
+			"reason": "pinned native Cargo package names and supported environment contracts; no helper rename",
+			"lines": [
+				{
+					"text": "cargo test -p openscreen-compositor --lib --tests",
+					"count": 2
+				},
+				{
+					"text": "cargo check -p openscreen-compositor -p compositor-view-napi --all-targets",
+					"count": 1
+				},
+				{
+					"text": "OPENSCREEN_REQUIRE_CPU_BACKEND: \"1\"",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "crates/compositor/src/gif_export_control.rs",
+			"reason": "pinned stable internal atomic temporary-file prefix and its tests; no new native source change",
+			"lines": [
+				{
+					"text": "let path = parent.join(format!(\".openscreen-gif-{}-{nonce}.partial\", std::process::id()));",
+					"count": 1
+				},
+				{
+					"text": "let path = std::env::temp_dir().join(format!(\"openscreen-gif-test-{}-{nonce}\", std::process::id()));",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/cli/args.ts",
+			"reason": "hidden inherited developer CLI command and serialized project suffix compatibility",
+			"lines": [
+				{
+					"text": "openscreen sources [--json] [-o <file>]            List displays, windows and microphones",
+					"count": 1
+				},
+				{
+					"text": "openscreen captions <project.openscreen>           Add auto-captions (on-device Whisper) to a project",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/native-bridge/screen/macScreenAccess.test.ts",
+			"reason": "synthetic public helper discovery tests require exact legacy override inputs",
+			"lines": [
+				{
+					"text": "vi.stubEnv(\"OPENSCREEN_SCK_CAPTURE_EXE\", \"/owned-fixture/legacy-capture\");",
+					"count": 1
+				},
+				{
+					"text": "vi.stubEnv(\"OPENSCREEN_SCK_CAPTURE_EXE\", \"\");",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/native/screencapturekit/Sources/OpenScreenMacOSCursorHelper/main.swift",
+			"reason": "pinned stable Swift module/target/discovery or internal queue/device identifiers; owner explicitly preserves native names",
+			"lines": [],
+			"pathRole": "pinned stable Swift helper/module target path; content remains occurrence-audited"
+		},
+		{
+			"file": "electron/native/screencapturekit/Sources/OpenScreenScreenCaptureKitHelper/PickerSession.swift",
+			"reason": "pinned stable Swift module/target/discovery or internal queue/device identifiers; owner explicitly preserves native names",
+			"lines": [
+				{
+					"text": "import OpenScreenCaptureCore",
+					"count": 1
+				},
+				{
+					"text": "/// OpenScreenCaptureCore function it calls.",
+					"count": 1
+				},
+				{
+					"text": "return OpenScreenCaptureCore.desktopIconWindowIDs(candidates).map { Int($0) }",
+					"count": 1
+				}
+			],
+			"pathRole": "pinned stable Swift helper/module target path; content remains occurrence-audited"
+		},
+		{
+			"file": "electron/native/screencapturekit/Sources/OpenScreenScreenCaptureKitHelper/ScreenCaptureRecorder.swift",
+			"reason": "pinned stable Swift module/target/discovery or internal queue/device identifiers; owner explicitly preserves native names",
+			"lines": [
+				{
+					"text": "import OpenScreenCaptureCore",
+					"count": 1
+				},
+				{
+					"text": "private let sampleQueue = DispatchQueue(label: \"app.openscreen.sck-helper.samples\")",
+					"count": 1
+				},
+				{
+					"text": "private let stateQueue = DispatchQueue(label: \"app.openscreen.sck-helper.state\")",
+					"count": 1
+				},
+				{
+					"text": "private let tapControlQueue = DispatchQueue(label: \"app.openscreen.sck-helper.system-audio-control\")",
+					"count": 1
+				},
+				{
+					"text": "struct OpenScreenScreenCaptureKitHelper {",
+					"count": 1
+				}
+			],
+			"pathRole": "pinned stable Swift helper/module target path; content remains occurrence-audited"
+		},
+		{
+			"file": "electron/native/screencapturekit/Sources/OpenScreenScreenCaptureKitHelper/SystemAudioTap.swift",
+			"reason": "pinned stable Swift module/target/discovery or internal queue/device identifiers; owner explicitly preserves native names",
+			"lines": [
+				{
+					"text": "import OpenScreenCaptureCore",
+					"count": 1
+				},
+				{
+					"text": "private let queue = DispatchQueue(label: \"app.openscreen.sck-helper.system-audio-tap\")",
+					"count": 1
+				},
+				{
+					"text": "kAudioAggregateDeviceNameKey: \"OpenScreen system audio\",",
+					"count": 1
+				}
+			],
+			"pathRole": "pinned stable Swift helper/module target path; content remains occurrence-audited"
+		},
+		{
+			"file": "nix/package.nix",
+			"reason": "unchanged stable native environment-variable contracts",
+			"lines": [
+				{
+					"text": "# OPENSCREEN_FFMPEG_PATH is checked before every other candidate in",
+					"count": 1
+				},
+				{
+					"text": "# OPENSCREEN_LINUX_CURSOR_HELPER_EXE is the first candidate in",
+					"count": 1
+				},
+				{
+					"text": "--set OPENSCREEN_FFMPEG_PATH \"${ffmpegLgpl}/bin/ffmpeg\" \\",
+					"count": 1
+				},
+				{
+					"text": "--set OPENSCREEN_COMPOSITOR_VIEW_NODE \"${compositor-view}/lib/compositor_view.node\" \\",
+					"count": 1
+				},
+				{
+					"text": "--set OPENSCREEN_LINUX_CURSOR_HELPER_EXE \"${lib.getExe pipewire-helper}\" \\",
+					"count": 1
+				},
+				{
+					"text": "--set OPENSCREEN_WHISPER_SERVER_EXE \"${lib.getExe whisper-stt}\"",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/cli/CliCaptionsRunner.tsx",
+			"reason": "hidden inherited CLI and legacy serialized project suffix",
+			"lines": [
+				{
+					"text": "// Hidden-window runner for `openscreen captions`: transcribes the project's",
+					"count": 1
+				},
+				{
+					"text": "throw new Error(\"Project file is not a valid .openscreen project\");",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/cli/CliExportRunner.tsx",
+			"reason": "hidden inherited CLI and legacy serialized project suffix",
+			"lines": [
+				{
+					"text": "// Migrate the .openscreen project onto the AxcutDocument the native",
+					"count": 1
+				},
+				{
+					"text": "throw new Error(\"Project file is not a valid .openscreen project\");",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/cli/CliSourcesRunner.tsx",
+			"reason": "hidden inherited CLI diagnostic comment",
+			"lines": [
+				{
+					"text": "// cannot initialise -- it can simply never return. `openscreen sources` hung",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/cli/captionAnnotations.ts",
+			"reason": "hidden inherited CLI and legacy serialized project suffix",
+			"lines": [
+				{
+					"text": "// CLI-only: the v4 editor renders captions natively, but `openscreen captions`",
+					"count": 1
+				},
+				{
+					"text": "// still writes caption *annotations* into .openscreen projects. Only the",
+					"count": 1
+				},
+				{
+					"text": "// `.openscreen` projects carry no transcript, so the CLI cannot write the editor's transcript-",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/lib/ai-edition/stylePresets.ts",
+			"reason": "persisted preset extension/format and validation message describing that legacy format; not application title",
+			"lines": [
+				{
+					"text": "export const STYLE_PRESET_FILE_EXTENSION = \".openscreenpreset\";",
+					"count": 1
+				},
+				{
+					"text": "export const STYLE_PRESET_FORMAT = \"openscreen-style-preset\";",
+					"count": 1
+				},
+				{
+					"text": "throw new TypeError(\"Not an OpenScreen style preset file.\");",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/lib/ai-edition/timeline/clip-parts.test.ts",
+			"reason": "fixture paths assert the existing serialized media-directory convention",
+			"lines": [
+				{
+					"text": "\"C:/rec/.openscreen-extensions/synth_2_3600.mp4\",",
+					"count": 1
+				},
+				{
+					"text": "`C:${BS}rec${BS}.openscreen-extensions${BS}w1_1000.mp4`,",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/lib/ai-edition/timeline/clip-parts.ts",
+			"reason": "persistent extension media-directory convention must remain readable",
+			"lines": [
+				{
+					"text": "export const EXTENSIONS_DIR = \".openscreen-extensions\";",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "src/lib/cursor/cursorThemes.ts",
+			"reason": "required accurate attribution for the five original upstream artwork packs",
+			"lines": [
+				{
+					"text": "* Bundled cursor themes. These five packs are original OpenScreen artwork. Their raster",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "electron/native-bridge/cursor/recording/macNativeCursorRecordingSession.test.ts",
+			"reason": "synthetic legacy helper env input; formatting split previous same-line fixture setup",
+			"lines": [
+				{
+					"text": "vi.stubEnv(\"OPENSCREEN_MAC_CURSOR_HELPER_EXE\", \"\");",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": ".github/scripts/stable-release-notes.test.mjs",
+			"reason": "exact retained Showhow publisher legacy release-secret fallback assertion",
+			"lines": [
+				{
+					"text": "\"secrets.SHOWHOW_RELEASE_TOKEN || secrets.OPENSCREEN_RELEASE_TOKEN\",",
+					"count": 1
+				}
+			]
+		}
+	]
+}

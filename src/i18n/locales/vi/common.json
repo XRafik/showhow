@@ -4,9 +4,18 @@
 		"save": "Lưu",
 		"delete": "Xóa",
 		"close": "Đóng",
+		"resetToDefault": "Đặt lại về mặc định",
 		"share": "Chia sẻ",
 		"done": "Hoàn tất",
 		"open": "Mở",
+		"checkForUpdates": "Kiểm tra bản cập nhật",
+		"updateSettings": "Cài đặt cập nhật",
+		"updateModeNotify": "Thông báo khi có bản cập nhật",
+		"updateModeDownload": "Tự động tải bản cập nhật",
+		"updateModeDownloadAndInstall": "Tự động tải và cài đặt bản cập nhật",
+		"viewRelease": "Xem bản phát hành",
+		"downloadUpdate": "Tải bản cập nhật",
+		"restartNow": "Khởi động lại ngay",
 		"upload": "Tải lên",
 		"export": "Xuất",
 		"showInFolder": "Hiển thị trong thư mục",
@@ -14,6 +23,7 @@
 		"edit": "Chỉnh sửa",
 		"view": "Xem",
 		"window": "Cửa sổ",
+		"help": "Trợ giúp",
 		"quit": "Thoát",
 		"stopRecording": "Dừng ghi hình",
 		"undo": "Hoàn tác",
@@ -35,16 +45,34 @@
 		"services": "Dịch vụ",
 		"hide": "Ẩn Showhow",
 		"hideOthers": "Ẩn ứng dụng khác",
-		"unhide": "Hiển thị tất cả"
+		"unhide": "Hiển thị tất cả",
+		"saveDiagnostics": "Lưu thông tin chẩn đoán",
+		"starOnGithub": "Gắn sao trên GitHub",
+		"permissions": "Quyền…",
+		"closeNotification": "Đóng thông báo"
 	},
-	"playback": {
-		"play": "Phát",
-		"pause": "Tạm dừng",
-		"fullscreen": "Toàn màn hình",
-		"exitFullscreen": "Thoát toàn màn hình"
+	"updates": {
+		"available": "Đã có Showhow {{latestVersion}}. Bạn đang dùng phiên bản {{currentVersion}}.",
+		"current": "Showhow đang ở phiên bản mới nhất ({{currentVersion}}).",
+		"readyToInstall": "Đã tải xuống Showhow {{latestVersion}}. Khởi động lại để hoàn tất cài đặt.",
+		"downloaded": "Đã tải Showhow {{latestVersion}}.",
+		"blockedRecording": "Hãy kết thúc bản ghi trước khi cài đặt bản cập nhật.",
+		"blockedLocation": "Hãy chuyển Showhow vào thư mục Applications trước khi cập nhật.",
+		"failed": "Không thể kiểm tra bản cập nhật.",
+		"downloadFailed": "Không thể tải xuống bản cập nhật."
+	},
+	"units": {
+		"pixelsPerSecond": "{{value}} px/giây",
+		"pixels": "{{value}} px"
 	},
 	"locale": {
 		"name": "Tiếng Việt",
 		"short": "VI"
+	},
+	"recordingSource": {
+		"window": "Cửa sổ",
+		"screen": "Màn hình",
+		"virtual": "Màn hình ảo",
+		"unknown": "Ghi màn hình"
 	}
 }

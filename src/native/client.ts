@@ -1,16 +1,59 @@
 import {
+	type AiEditionAssetResult,
+	type AiEditionCaptionTranslateResult,
+	type AiEditionChatBudget,
+	type AiEditionChatCompactResult,
+	type AiEditionChatResult,
+	type AiEditionChatRewindResult,
+	type AiEditionChatSession,
+	type AiEditionChatSessionSummary,
+	type AiEditionDocumentResult,
+	type AiEditionLlmConfig,
+	type AiEditionLlmDisconnectResult,
+	type AiEditionLlmProviderModelsResult,
+	type AiEditionLlmSnapshot,
+	type AiEditionMcpStatus,
+	type AiEditionProjectSummary,
 	type CursorCapabilities,
 	type CursorRecordingData,
 	type CursorTelemetryPoint,
 	NATIVE_BRIDGE_CHANNEL,
+	type NativeBridgeError,
+	type NativeBridgeErrorCode,
 	type NativeBridgeRequest,
 	type NativeBridgeResponse,
 	type NativePlatform,
 	type ProjectContext,
 	type ProjectFileResult,
 	type ProjectPathResult,
+	type StylePreset,
+	type StylePresetAppearance,
+	type StylePresetDeleteResult,
+	type StylePresetRevealResult,
 	type SystemCapabilities,
 } from "./contracts";
+
+/**
+ * A failed bridge request, carrying the bridge's error code so a caller can tell one
+ * failure from another without matching on message text — e.g. `NAME_TAKEN` from a style
+ * preset create/rename. Still an `Error` with the same message as before.
+ */
+export class NativeBridgeRequestError extends Error {
+	readonly code: NativeBridgeErrorCode;
+	readonly retryable: boolean;
+
+	constructor(error: NativeBridgeError) {
+		super(error.message);
+		this.name = "NativeBridgeRequestError";
+		this.code = error.code;
+		this.retryable = error.retryable;
+	}
+}
+
+/** True when a style preset create/rename failed because the name is already used. */
+export function isStylePresetNameTakenError(error: unknown): boolean {
+	return error instanceof NativeBridgeRequestError && error.code === "NAME_TAKEN";
+}
 
 function createRequestId() {
 	if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -43,7 +86,7 @@ export async function invokeNativeBridge<TData = unknown>(
 export async function requireNativeBridgeData<TData>(request: NativeBridgeRequest): Promise<TData> {
 	const response = await invokeNativeBridge<TData>(request);
 	if (!response.ok) {
-		throw new Error(response.error.message);
+		throw new NativeBridgeRequestError(response.error);
 	}
 
 	return response.data;
@@ -135,6 +178,247 @@ export const nativeBridgeClient = {
 				domain: "cursor",
 				action: "getTelemetry",
 				payload: videoPath ? { videoPath } : {},
+			}),
+	},
+	aiEdition: {
+		listProjects: () =>
+			requireNativeBridgeData<AiEditionProjectSummary[]>({
+				domain: "aiEdition",
+				action: "document.listProjects",
+			}),
+		get: (projectId: string) =>
+			requireNativeBridgeData<AiEditionDocumentResult>({
+				domain: "aiEdition",
+				action: "document.get",
+				payload: { projectId },
+			}),
+		create: (title?: string) =>
+			requireNativeBridgeData<AiEditionDocumentResult>({
+				domain: "aiEdition",
+				action: "document.create",
+				payload: { title },
+			}),
+		save: (document: unknown) =>
+			requireNativeBridgeData<AiEditionDocumentResult>({
+				domain: "aiEdition",
+				action: "document.save",
+				payload: { document },
+			}),
+		delete: (projectId: string) =>
+			requireNativeBridgeData<AiEditionDocumentResult>({
+				domain: "aiEdition",
+				action: "document.delete",
+				payload: { projectId },
+			}),
+		addAsset: (projectId: string, path: string, label?: string, kind?: "video" | "audio") =>
+			requireNativeBridgeData<AiEditionAssetResult>({
+				domain: "aiEdition",
+				action: "document.addAsset",
+				payload: { projectId, path, label, kind },
+			}),
+		removeAsset: (projectId: string, assetId: string) =>
+			requireNativeBridgeData<AiEditionAssetResult>({
+				domain: "aiEdition",
+				action: "document.removeAsset",
+				payload: { projectId, assetId },
+			}),
+		llmGetSnapshot: () =>
+			requireNativeBridgeData<AiEditionLlmSnapshot>({
+				domain: "aiEdition",
+				action: "llm.getSnapshot",
+			}),
+		llmSetConfig: (config: AiEditionLlmConfig) =>
+			requireNativeBridgeData<AiEditionDocumentResult>({
+				domain: "aiEdition",
+				action: "llm.setConfig",
+				payload: { config },
+			}),
+		llmSetApiKey: (providerId: string, apiKey: string) =>
+			requireNativeBridgeData<AiEditionDocumentResult>({
+				domain: "aiEdition",
+				action: "llm.setApiKey",
+				payload: { providerId, apiKey },
+			}),
+		llmRemoveApiKey: (providerId: string) =>
+			requireNativeBridgeData<AiEditionDocumentResult>({
+				domain: "aiEdition",
+				action: "llm.removeApiKey",
+				payload: { providerId },
+			}),
+		llmDisconnect: (providerId: string) =>
+			requireNativeBridgeData<AiEditionLlmDisconnectResult>({
+				domain: "aiEdition",
+				action: "llm.disconnect",
+				payload: { providerId },
+			}),
+		llmListProviderModels: (providerId: string) =>
+			requireNativeBridgeData<AiEditionLlmProviderModelsResult>({
+				domain: "aiEdition",
+				action: "llm.listProviderModels",
+				payload: { providerId },
+			}),
+		mcpGetStatus: () =>
+			requireNativeBridgeData<AiEditionMcpStatus>({
+				domain: "aiEdition",
+				action: "mcp.getStatus",
+			}),
+		mcpSetEnabled: (enabled: boolean) =>
+			requireNativeBridgeData<AiEditionMcpStatus>({
+				domain: "aiEdition",
+				action: "mcp.setEnabled",
+				payload: { enabled },
+			}),
+		mcpSetPort: (port: number) =>
+			requireNativeBridgeData<AiEditionMcpStatus>({
+				domain: "aiEdition",
+				action: "mcp.setPort",
+				payload: { port },
+			}),
+		mcpSetAllowEdits: (allowEdits: boolean) =>
+			requireNativeBridgeData<AiEditionMcpStatus>({
+				domain: "aiEdition",
+				action: "mcp.setAllowEdits",
+				payload: { allowEdits },
+			}),
+		mcpRegenerateToken: () =>
+			requireNativeBridgeData<AiEditionMcpStatus>({
+				domain: "aiEdition",
+				action: "mcp.regenerateToken",
+			}),
+		chatRun: (
+			projectId: string,
+			sessionId: string,
+			message: string,
+			document?: unknown,
+		): Promise<AiEditionChatResult> =>
+			requireNativeBridgeData<AiEditionChatResult>({
+				domain: "aiEdition",
+				action: "chat.run",
+				payload: { projectId, sessionId, message, document },
+			}),
+		chatUndoLastBatch: (projectId: string, sessionId: string) =>
+			requireNativeBridgeData<AiEditionChatResult>({
+				domain: "aiEdition",
+				action: "chat.undoLastBatch",
+				payload: { projectId, sessionId },
+			}),
+		chatListSessions: (projectId: string) =>
+			requireNativeBridgeData<AiEditionChatSessionSummary[]>({
+				domain: "aiEdition",
+				action: "chat.listSessions",
+				payload: { projectId },
+			}),
+		chatCreateSession: (projectId: string, title?: string) =>
+			requireNativeBridgeData<AiEditionChatSessionSummary>({
+				domain: "aiEdition",
+				action: "chat.createSession",
+				payload: { projectId, title },
+			}),
+		chatSelectSession: (projectId: string, sessionId: string) =>
+			requireNativeBridgeData<AiEditionChatSession | null>({
+				domain: "aiEdition",
+				action: "chat.selectSession",
+				payload: { projectId, sessionId },
+			}),
+		chatRenameSession: (projectId: string, sessionId: string, title: string) =>
+			requireNativeBridgeData<AiEditionChatSessionSummary | null>({
+				domain: "aiEdition",
+				action: "chat.renameSession",
+				payload: { projectId, sessionId, title },
+			}),
+		chatDeleteSession: (projectId: string, sessionId: string) =>
+			requireNativeBridgeData<{ success: boolean }>({
+				domain: "aiEdition",
+				action: "chat.deleteSession",
+				payload: { projectId, sessionId },
+			}),
+		chatBudget: (projectId: string, sessionId: string) =>
+			requireNativeBridgeData<AiEditionChatBudget | null>({
+				domain: "aiEdition",
+				action: "chat.budget",
+				payload: { projectId, sessionId },
+			}),
+		chatCompact: (projectId: string, sessionId: string) =>
+			requireNativeBridgeData<AiEditionChatCompactResult | null>({
+				domain: "aiEdition",
+				action: "chat.compact",
+				payload: { projectId, sessionId },
+			}),
+		chatRewind: (projectId: string, sessionId: string, messageId: string) =>
+			requireNativeBridgeData<AiEditionChatRewindResult | { success: false; error: string }>({
+				domain: "aiEdition",
+				action: "chat.rewind",
+				payload: { projectId, sessionId, messageId },
+			}),
+		chatContextUsage: (projectId: string, sessionId: string) =>
+			requireNativeBridgeData<AiEditionChatBudget | null>({
+				domain: "aiEdition",
+				action: "chat.contextUsage",
+				payload: { projectId, sessionId },
+			}),
+		chatCompactNow: (projectId: string, sessionId: string) =>
+			requireNativeBridgeData<AiEditionChatCompactResult | null>({
+				domain: "aiEdition",
+				action: "chat.compactNow",
+				payload: { projectId, sessionId },
+			}),
+		/** Translate transcript segments for the caption layer through the
+		 *  configured chat provider. Returns segmentId → translated text; the
+		 *  caller stores it in the caption translation layer. */
+		translateCaptions: (input: {
+			segments: Array<{ id: string; text: string }>;
+			targetLanguage: string;
+			sourceLanguage?: string;
+		}) =>
+			requireNativeBridgeData<AiEditionCaptionTranslateResult>({
+				domain: "aiEdition",
+				action: "captions.translate",
+				payload: input,
+			}),
+	},
+	/** Style presets. `create` and `rename` reject with a `NativeBridgeRequestError` whose
+	 *  `code` is `"NAME_TAKEN"` when the name is in use — see `isStylePresetNameTakenError`. */
+	presets: {
+		list: () =>
+			requireNativeBridgeData<StylePreset[]>({
+				domain: "presets",
+				action: "list",
+			}),
+		create: (name: string, appearance: StylePresetAppearance) =>
+			requireNativeBridgeData<StylePreset>({
+				domain: "presets",
+				action: "create",
+				payload: { name, appearance },
+			}),
+		rename: (id: string, name: string) =>
+			requireNativeBridgeData<StylePreset>({
+				domain: "presets",
+				action: "rename",
+				payload: { id, name },
+			}),
+		update: (id: string, appearance: StylePresetAppearance) =>
+			requireNativeBridgeData<StylePreset>({
+				domain: "presets",
+				action: "update",
+				payload: { id, appearance },
+			}),
+		delete: (id: string) =>
+			requireNativeBridgeData<StylePresetDeleteResult>({
+				domain: "presets",
+				action: "delete",
+				payload: { id },
+			}),
+		setForNewProjects: (id: string | null) =>
+			requireNativeBridgeData<{ success: true }>({
+				domain: "presets",
+				action: "setForNewProjects",
+				payload: { id },
+			}),
+		reveal: (id: string) =>
+			requireNativeBridgeData<StylePresetRevealResult>({
+				domain: "presets",
+				action: "reveal",
+				payload: { id },
 			}),
 	},
 };

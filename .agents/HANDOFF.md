@@ -40,3 +40,8 @@ main at `fc50566a`: CI (lint, type check, unit and browser tests, build) passed 
 ## Cloud blockers
 
 None. Native macOS acceptance stays manual.
+
+
+## Owner stable retarget correction — 2026-10-17 Europe/London
+
+The previous Next action/final2.1wait is historical and superseded. #115 is closed/Done via #120. Owner chose stable2.0 (Yeah lets do it). #116 is at Creating plan/spec for the exact revised plan/publication gate; no implementation or publication yet. Use refs/tags/upstream/v2.0.0 at eff86dcba48fac490a0e153141bf8537df7ffc54 as proposed actual parent, preserving READY5/current2074dirty source/index/merge metadata/owner media before same-lane reconstruction. #117 native bundled base/offline/fail-open and #118≤400MB remain sequential and not dispatched. No priority;116ui. Refresh source/native/package/owner proof after retarget, then fresh review, one PR and separate ancestry-preserving exact-head owner merge gate. No Showhow release tag until milestone complete. This note describes the proposal, not a delivered stable migration.

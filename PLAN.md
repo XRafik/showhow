@@ -191,59 +191,60 @@ Append each deviation from this plan to `implementation-notes.md` under "Deviati
 Rebuild Showhow on the upstream OpenScreen v2 codebase, so the owner gets v2's editor, Rust compositor, native transcription and AI editing assistant, and can take later upstream releases through reviewed merges. Today's Showhow behaviour (recording bundles, library, workflow documents, Showhow identity, legacy data) keeps working on the new base. The six V1 features are shaped afterwards on this base.
 
 ## Context and decisions
-- Evidence, gathered 2026-10-16 from a read-only upstream clone (no remote added):
-  - Upstream `main` is at `bb4660b1` (`v2.1.0-rc.3`), 458 commits after `v2.0.0` and 192 after the assessment's `9c55596e`.
-  - v2 runs on Electron 41.2.1. The Rust compositor (`crates/compositor`, Metal + VideoToolbox on macOS) reaches the app as the napi-rs addon `compositor_view.node` (`crates/compositor-view-napi`), which also embeds the live preview view.
-  - v2's main process is about 38,600 lines of TypeScript in 227 files under `electron/`; Showhow's is about 10,500, of which about 3,700 are the Showhow layer.
-  - v2 keeps `<video path>.cursor.json` (`electron/recording/nativeMacCaptureStop.ts`, `electron/cli/projectCommands.ts`, `electron/mcp/media-tools.ts`).
-  - v2 migrates old `EditorProjectData` projects into its `AxcutDocument` model (`src/lib/ai-edition/document/migrate.ts`).
-  - v2 ships seven original cursor packs and a generated `THIRD-PARTY-NOTICES.md`; the 17 Sweezy packs are gone.
-  - v2 transcribes with native whisper.cpp (`electron/stt/`) and downloads its default `small` model from Hugging Face on first use. It has no `@xenova/transformers` dependency.
-  - Prior assessment: `docs/research/2026-10-12-openscreen-v2-assessment.md`.
-- Owner decisions, shaping session 2026-10-16:
-  1. Runtime: stay on Electron. A WebKit shell would mean rewriting v2's main process and compositor binding and re-porting every upstream release.
-  2. Upstream is a release parent: Showhow merges each upstream release tag through a reviewed PR.
-  3. Design split by ownership: Showhow-owned screens (library, settings, guide and brief views, Copy for agent, PDF) follow the Final frames; upstream screens (editor, HUD, recorder) take the Showhow look through theme tokens, CSS and small wrapper slots without restructuring upstream components.
-  4. This plan covers the move only. V1 features are shaped later.
-  5. Transcription: v2's native engine, with a small model bundled in the app.
-  6. No gap on `main`: the v2 base and the Showhow-layer port land in one PR.
-- Confirmed assumptions:
-  - Real `git merge` of the upstream tag into Showhow history, so later release merges have a merge base. `UPSTREAM.md` allows a permanent tags-only `upstream` remote.
-  - Work starts on `v2.1.0-rc.3`; Task 2 merges to `main` only on the final `v2.1.0` tag.
-  - User-visible "OpenScreen" text becomes Showhow. Internal names (helper binaries, the `openscreen` CLI, the MCP server id, the `.openscreen` extension) stay as upstream has them unless they are persisted or user-visible. CLI and MCP stay in the code, hidden and off.
-  - Bundled model: whisper.cpp `base` multilingual, quantised (about 60–80 MB). Larger models stay downloadable through v2's model manager.
-  - Size: Task 4 records v2's untrimmed baseline, then targets ≤ 400 MB installed on macOS arm64, model included.
-  - Browser companion code and tests are deleted, not archived. The three held macOS recorder fixes are closed as covered by v2. Issues #54–#63 stay parked for re-triage after the milestone. Upstream's AI editing assistant stays as upstream ships it, optional and off until configured.
-  - Windows and Linux are reported as untested; native acceptance is a manual macOS smoke test.
-- Priority: no, for all four tasks (owner answer).
+- Owner retarget, 2026-10-16 UTC / 2026-10-17 Europe/London: after asking about stable v2.0.0, the owner replied **“Yeah lets do it”**. Stable v2.0.0 is settled; this draft revises scope, preservation and publication, not that product choice.
+- Actual release parent: `refs/tags/upstream/v2.0.0` = `eff86dcba48fac490a0e153141bf8537df7ffc54`, official release published 2026-10-03, prerelease false, remote ref type commit. The permanent upstream remote remains tags-only with namespaced refs; no upstream branches are tracked.
+- Source research: `docs/research/2026-10-16-openscreen-v2.0.0-seam-assessment.md`, with pinned primary-source links and untrusted claim ledger. Source facts are not runtime acceptance. Official compare and local objects agree rc.3 is447ahead/16behind stable, with divergent histories. `bb4660b11d2e1f87f5f5fc57dd6acb14e248109f` was a separate shaping snapshot, not rc.3; the actual rc.3 pin is `523a3e4c47cf7566cc5c759ad5275f7edcd3382e`. Do not use the stale458count for these tags.
+- Stable already has Electron41.2.1, the Rust compositor/napi addon, v2 editor/Axcut migration, native GIF and whisper.cpp APIs. Its five named original cursor packs plus built-in default replace the stale seven-pack description. Stable checked-in THIRD-PARTY-NOTICES.md is not generated; the selected npm/Rust licence-text generator is an explicit narrow adaptation from the pinned RC source, not a stable feature.
+- Task1/#115 remains closed/Done through PR#120. Its RC policy/assessment refresh is historical completed work. This ticket/#116 owns the dated stable correction, policy and revised-plan updates; do not reopen115 or create another plan issue/PR automatically.
+- Settled choices retained: Electron; free/local-first; attributed release-parent merges; one ticket/worktree/PR; no gap on main; upstream editor/HUD/recorder themed through tokens/CSS/wrappers without component restructuring; existing Showhow screens keep their look; optional upstream AI remains off until configured; CLI/MCP hidden and MCP off; redesigned V1/provider connections later.
+- Reuse the approved house-style mock and final frames at `design/mocks/2026-10-15-house-style/` and `design/showhow.pen`. No new UI/prototype decision.
+- Older-base trade-off: three held macOS recorder patches are not demonstrated covered by stable2.0. The former RC-era covered disposition is historical; keep them held for re-triage unless a named #116 acceptance failure requires a minimal scoped fix. Source ancestry/symbol absence is not a native-failure verdict and grants no patch/native-overlay authority.
+- #116 retains today's renderer Whisper-tiny bundle pipeline. #117 moves bundles to native whisper.cpp with bundled quantised multilingual base and necessary local VAD; #118 measures/trims the resulting app to≤400MB installed on macOS arm64, model included. No early native-model port or size trim in116.
+- Stable model management has fixed small-q8/VAD support and optional CTC, not a larger-model selection catalogue/UI. Preserve that existing optional support while adding the bundled-base default in117. Exact transcript equality between native editor and renderer tiny, visual cursor-overlay alignment and Copy path interaction are not extra116approval gates.
+- No task is priority (existing owner answer);116 retains feature,ui;117/118 retain feature and unsatisfied dependency order. Windows/Linux native behaviour remains explicitly untested, with existing CI compilation obligations.
+- Prior READY5/RC package/owner media are preserved historical BEFORE evidence. They do not accept stable runtime code. Authentic fc50566a originals/hashes can be reused as inputs after verification; source/native/build/packaged/owner acceptance is refreshed after retarget.
 
 ## Bounded requirements
 - Supported platform for acceptance: macOS 13+ on arm64. Windows and Linux builds must compile in CI where they do today; their native behaviour is untested and stated so.
-- Upstream base: tag `v2.1.0` (development on `v2.1.0-rc.3`). Later upstream tags are follow-ups.
+- Upstream base: stable tag `v2.0.0` at `eff86dcba48fac490a0e153141bf8537df7ffc54`. Later upstream tags are follow-ups.
 - Identity kept unchanged: `appId` `com.bedarstudios.showhow` and `productName` `Showhow` (changing them moves userData and resets macOS TCC grants, `electron-builder.json5:10`).
 - Legacy cases that must pass (Task 2): (L1) a `.showhow` project saved by Showhow `main` at `fc50566a` opens in the v2 editor and the file's bytes are unchanged after opening; (L2) a `.openscreen` project from the same build opens without being overwritten, and the next save defaults to a new `.showhow` file; (L3) bundles recorded by `fc50566a` appear in the library and open; (L4) the recordings folder and the preferences set in a `fc50566a` profile survive the first launch of the new build; (L5) a new recording writes `<video path>.cursor.json` and the editor reads it.
-- Excluded from this milestone: the six V1 features in their new design, ChatGPT sign-in, upstream CLI and MCP exposure, Windows and Linux native fixes, upstream releases after `v2.1.0`.
+- Excluded from this milestone: the six V1 features in their new design, ChatGPT sign-in, upstream CLI and MCP exposure, Windows and Linux native fixes, upstream releases after `v2.0.0`.
 
 ## Architecture
-- After Task 2, the tree is upstream `v2.1.0` plus a Showhow layer. Showhow-owned code stays in `electron/showhow/`, `src/lib/showhow/`, `src/components/showhow/` and `src/components/library/`. Edits to upstream files are kept to identity, theming, wiring and slot points, and each one is listed in `docs/architecture/upstream-touchpoints.md` (new) so release merges know where conflicts will come from.
+- After Task 2, the tree is based on the actual stable `v2.0.0` release parent plus focused Showhow adaptations. Showhow-owned code stays in `electron/showhow/`, `src/lib/showhow/`, `src/components/showhow/` and `src/components/library/`. Upstream screen edits stay at identity, theming, wiring and slot points; exact Task2 persistence/build/decoder exceptions are separately bounded. The edited upstream paths are listed in `docs/architecture/upstream-touchpoints.md` (new) so release merges know where conflicts will come from.
 - Theming on upstream screens goes through Showhow design tokens (`src/lib/showhow/designTokens.ts`, `theme.ts`) mapped onto upstream's CSS variables and Tailwind config, not by forking upstream components.
 - Transcription after Task 3: bundle transcripts call v2's `electron/stt/` engine from the main process. `transcript.txt` keeps its current timestamped format (`src/lib/showhow/transcriptFormat.ts`) and its fail-open rule (`docs/architecture/showhow-bundles.md`: a failure still writes `transcript.txt` with `(transcription failed)`).
+
+## Same-lane preservation and reconstruction protocol — Task2 entry gate
+
+Current base/HEAD remains `d2e3d72f12debbb31914bcbdb22b43ba434a22fb`, pending RC MERGE_HEAD `523a3e4c47cf7566cc5c759ad5275f7edcd3382e`; READY5 SHA08838f95da931e61f7053c61a65e80f55e309073f4e89609e18019bc7530f746 and2,074path manifest SHA16cab7be3b3cf80bb394255e237c83b1a7e32566a17421b2d1dddeeebbda1026 identify the historical candidate. Before changing it:
+
+1. In a new exclusive evidence archive, preserve source modes/symlinks/deletions and staged/unstaged/untracked bytes, binary diffs, raw index plus HEAD/ORIG_HEAD/MERGE_HEAD/MERGE_MSG/MERGE_MODE/AUTO_MERGE and other present merge state. Preserve committed graph/refs with a verified bundle plus immutable pins. A Git bundle alone is not the dirty archive.
+2. Preserve ignored generated/native payloads, dependency/lock state and immutable package separately; verify owner-physical-1/2 recordings/bundles and15authentic fc50566a fixture hashes. No real recordings/private/.env contents copied. Extract source/index archive into an external plain scratch directory and require exact byte/mode/deletion equality before replacement. No new Git worktree/lane.
+3. After the archive gate, `git merge --quit` forgets only the old pending merge, leaving source/index intact; preserve before/after evidence. Move named untracked collisions and stale ignored native outputs to exclusive external quarantine. Restore the fixed baseline using a reviewed NUL list of current-index/baseline tracked paths with explicit preimage/postimage checks: `git restore --source=<fixed-base> --staged --worktree --pathspec-from-file=<verified-list> --pathspec-file-nul`. No blind hard reset, merge abort, clean, stash/pop or force checkout. HEAD/branch/workspace stay fixed. Stop on mismatch; retained RC archive supplies a verified rollback, not patch-only recovery.
+4. Perform actual `git merge --no-ff --no-commit refs/tags/upstream/v2.0.0` in the same checkout; preserve conflicts/raw RED receipts. Resolve stable source plus Showhow base, then replay focused owned modules/adapters and selected decoder/licence work. Do not overlay the current RC tree or forward-port447commits. Classify each edited upstream hunk in touchpoints and add same-package coverage.
+5. Rebuild stable source/helpers/compositor/STT/package serially with isolated tools/roots, run fresh native/source/browser/branding/i18n/real-export proof and target-macOS owner smoke. Preserve historical RC receipt/media rather than relabelling PASS. Tools/SDK and unchanged authentic fixture bytes may be reused as inputs after hash/source compatibility checks; RC binaries/tests/owner success are not stable runtime acceptance.
+6. The lead creates the real local stable-parent merge commit as candidate-bound ancestry proof before fresh review; the executor never commits. Only then prove stable ancestry on HEAD. Obtain fresh canonical independent review with its one-shot identity gate, one review-ready PR and current-head hosted CI. Exact-head owner merge approval is separate and uses GitHub MERGE COMMIT; coordinator checks stable ancestor on main. No tag until milestone completion.
+
+The external approved packet contains the detailed reconstruction/rollback protocol and command preconditions. Do not start reconstruction until the owner approves this revised plan and exact publication preview. Failed-review0 and identity unattempted/no verdict carry forward; old review/identity receipts cannot replace fresh review.
 
 ## Milestones
 **Move onto upstream v2** (GitHub milestone 12). Published 2026-10-16: Task 1 = #115, Task 2 = #116, Task 3 = #117, Task 4 = #118.
 
-Task 1 → Task 2 → Task 3 → Task 4, in order. Outcome: Showhow `main` is upstream `v2.1.0` plus the Showhow layer, transcribes with v2's engine and ships at ≤ 400 MB. No `v*` release tag is pushed until the milestone is done.
+Task 1 → Task 2 → Task 3 → Task 4, in order. Outcome: Showhow `main` contains the actual upstream `v2.0.0` release parent plus the Showhow layer, transcribes with v2's engine and ships at ≤ 400 MB. No `v*` release tag is pushed until the milestone is done.
 
-### Task 1: Rewrite the upstream policy and refresh the v2 evidence
+### Task 1: Rewrite the upstream policy and refresh the v2 evidence — completed #115
 
 **Priority:** no
 **Labels:** feature
 **Milestone:** Move onto upstream v2
 **Depends on:** none
+**Status:** Historical completed Task1; #115 closed via #120. The original RC requirements below record that completed work. Stable retarget corrections belong to Task2/#116.
 **Files:** `UPSTREAM.md`, `docs/research/2026-10-12-openscreen-v2-assessment.md` (append a dated refresh section), `AGENTS.md`, `.agents/CONTEXT.md`, `ROADMAP.md`, `implementation-notes.md`
 **Requirements:**
 - `UPSTREAM.md` describes the release-parent model: a permanent `upstream` remote that fetches tags only; one reviewed merge PR per upstream release tag (`v*` without `-`, or a named rc used as a development base); the per-merge checklist (identity diff review, `docs/architecture/upstream-touchpoints.md` update, branding check, the Task 2 legacy cases L1–L5, macOS smoke test); and what is still excluded (upstream release pipeline, publishers, package identity, product branding).
-- The assessment gains a refresh section against `v2.1.0-rc.3` (`bb4660b1`) covering: runtime and compositor binding, transcription engine and model download, project migration, cursor packs and notices, and the list of Showhow-layer features with their v2 counterpart (or none).
+- The assessment gains a refresh section against `v2.1.0-rc.3` (actual tag523a3e4; bb4660b1 was the separate original shaping snapshot) covering: runtime and compositor binding, transcription engine and model download, project migration, cursor packs and notices, and the list of Showhow-layer features with their v2 counterpart (or none).
 - `AGENTS.md` and `.agents/CONTEXT.md` replace "never merge the full source branch" with the release-parent rule. `ROADMAP.md` drops "no API key" in favour of "optional AI connections".
 **Interfaces:** Read by Task 2's executor and every later upstream merge.
 **Constraints and reasons:** Docs only; no code. The policy must keep the ban on reintroducing upstream's RC pipeline and publishers (AGENTS.md, "Pull requests and releases").
@@ -257,22 +258,31 @@ Task 1 → Task 2 → Task 3 → Task 4, in order. Outcome: Showhow `main` is up
 **DONE WHEN:** the PR changes only the listed files; `UPSTREAM.md` contains the remote rule, the merge checklist and the exclusions; the refresh section covers the five named topics with upstream commit links; branding and lint pass.
 **Outside cases / follow-ups:** none.
 
-### Task 2: Showhow on upstream v2.1.0
+### Task 2: Showhow on upstream v2.0.0
 
 **Priority:** no
 **Labels:** feature, ui
 **Milestone:** Move onto upstream v2
-**Depends on:** Task 1
-**Files:** the merge commit of upstream `v2.1.0` into the ticket branch, plus: `electron/showhow/**`, `src/lib/showhow/**`, `src/components/showhow/**`, `src/components/library/**`, `src/components/launch/**`, `electron/bootstrap.ts`, `electron/main.ts`, `electron/preload.ts`, `electron/ipc/handlers.ts` (identity and wiring only), `electron-builder.json5`, `package.json`, `vite.config.ts`, `src/App.tsx`, `src/i18n/locales/**`, `src/assets/fonts/**`, `public/cursors/**`, `scripts/branding-check.mjs`, `scripts/audit-showhow-bundle.mjs`, `docs/architecture/showhow-bundles.md`, `docs/architecture/upstream-touchpoints.md` (new), `tests/fixtures/legacy/**` (new), `NOTICE.md`, `implementation-notes.md`. Deleted: `electron/showhow/bridge*`, `electron/showhow/companionStepCapture*`, `src/lib/showhow/browserCompanion*`, `src/lib/showhow/companion/**`, `scripts/build-browser-companion.mjs`, `scripts/check-bridge-bundle.mjs`, and the browser-companion source folder.
+**Depends on:** Task 1 (#115, closed/Done)
+**Files:** the real merge commit of upstream `v2.0.0` (`eff86dcba48fac490a0e153141bf8537df7ffc54`) into this same ticket branch, plus: `electron/showhow/**`, `src/lib/showhow/**`, `src/components/showhow/**`, `src/components/library/**`, `src/components/launch/**`, `electron/bootstrap.ts`, `electron/main.ts`, `electron/preload.ts`, `electron/ipc/handlers.ts` (identity and wiring only), `electron-builder.json5`, `package.json`, `vite.config.ts`, `src/App.tsx`, `src/i18n/locales/**`, `src/assets/fonts/**`, `public/cursors/**`, `scripts/branding-check.mjs`, `scripts/audit-showhow-bundle.mjs`, `docs/architecture/showhow-bundles.md`, `docs/architecture/upstream-touchpoints.md` (new), `tests/fixtures/legacy/**` (new), `NOTICE.md`, `implementation-notes.md`. Deleted: `electron/showhow/bridge*`, `electron/showhow/companionStepCapture*`, `src/lib/showhow/browserCompanion*`, `src/lib/showhow/companion/**`, `scripts/build-browser-companion.mjs`, `scripts/check-bridge-bundle.mjs`, and the browser-companion source folder.
+
+**Explicit stable-retarget ownership:** the preceding original patterns/deletions remain; the following narrow paths are also owned for the stated stable port, including the five previously approved additions.
+
+- Prior approved native/export/build additions: `crates/compositor/src/pipeline_macos.rs`, `scripts/verify-showhow-export.mjs`, `scripts/verify-showhow-export.node-test.mjs`, `docs/testing/verification-recipe.md`, `.github/workflows/build.yml`.
+- Policy/research/plan corrections: `PLAN.md`, `UPSTREAM.md`, `AGENTS.md`, `.agents/CONTEXT.md`, `.agents/HANDOFF.md`, `.agents/decisions.md`, `docs/research/2026-10-16-openscreen-v2.0.0-seam-assessment.md`, `docs/research/2026-10-12-openscreen-v2-assessment.md`, `config/branding-allowlist.json`, `config/upstream-branding-allowlist.json`. Preserve prior decisions/notes as history; append corrections.
+- Explicit stable identity, persistence, wrapper/API wiring and same-package verification paths: `electron/windows.ts`, `electron/electron-env.d.ts`, `src/native/contracts.ts`, `src/lib/recordingSession.ts`, `src/lib/recordingSession.test.ts`, `src/lib/projectFilePolicy.ts`, `src/lib/projectFilePolicy.test.ts`, `src/components/video-editor/types.ts`, `src/components/video-editor/projectPersistence.ts`, `src/components/video-editor/projectPersistence.test.ts`, `electron/ai-edition/document-service.ts`, `electron/ai-edition/document-service.test.ts`, `src/components/ai-edition/recordingImport.ts`, `src/components/ai-edition/recordingImport.test.ts`, `src/components/ai-edition/importProjectFile.test.ts`, `src/components/ai-edition/EditorEmptyState.tsx`, `src/components/ai-edition/ExportDialog.tsx`, `src/components/ai-edition/ProviderSettings.tsx`, `src/components/ai-edition/ProviderSettings.test.tsx`, `src/components/ai-edition/v4/EditorTopBar.tsx`, `src/components/ai-edition/v4/EditorTopBar.test.tsx`, `src/components/ai-edition/v4/EditorTopBar.stylePresets.test.tsx`, `src/index.css`, `src/main.tsx`, `src/hooks/useTheme.ts`, `src/lib/userPreferences.ts`, `src/lib/customFonts.ts`, `src/lib/customFonts.test.ts`, `src/contexts/I18nContext.tsx`, `src/contexts/I18nContext.test.tsx`, `src/i18n/config.ts`, `src/i18n/__tests__/visibleBrandTranslations.test.ts`, `src/lib/cursor/cursorThemes.ts`, `src/lib/cursor/cursorThemes.test.ts`, `src/hooks/useScreenRecorder.ts`, `src/hooks/useScreenRecorder.test.ts`, `src/hooks/useScreenRecorder.nativeMacStartWarning.test.tsx`, `electron/ipc/handlers.test.ts`, `electron/ipc/showhowMacStepCaptureReason.test.ts`, `electron/ipc/showhowRegenerateDoc.test.ts`, `electron/about.ts`, `electron/star-prompt.ts`, `electron/update-checker.ts`, `electron/update-checker.test.ts`, `package-lock.json`, `biome.json`, `.gitignore`, `vitest.config.ts`, `vitest.browser.config.ts`, `scripts/i18n-check.mjs`, `scripts/i18n-check.test.mjs`, `scripts/before-pack.cjs`, `scripts/before-pack.test.mjs`, `scripts/generate-third-party-licenses.mjs`, `scripts/generate-third-party-licenses.test.mjs`, `THIRD-PARTY-NOTICES.md`. Identity-only UI edits, public seam adapters and tests; no upstream component restructure or unrelated feature port.
+- `biome.json`, `vitest.config.ts` and `vitest.browser.config.ts` are limited to required stable integration, formatting and generated/immutable-artifact handling. Preserve enabled lint rules and required source/unit/browser/native checks. Do not disable rules, ignore required checks, widen application exclusions or reduce assertion/suite coverage to obtain GREEN.
+- Conditional helper compatibility only: `electron/native-bridge/helperIdentity.ts`, `electron/native-bridge/helperIdentity.test.ts`, `electron/native-bridge/screen/macScreenAccess.ts`, `electron/native-bridge/screen/macScreenAccess.test.ts`, `electron/native-bridge/cursor/recording/macNativeCursorRecordingSession.ts`, `electron/native-bridge/cursor/recording/macNativeCursorRecordingSession.test.ts`. Edit only if preserved Showhow helper-name/override regression fixtures show stable discovery drops a supported read; use mapped fallback reads. Otherwise leave these paths unchanged. Keep stable Swift targets/core/helper sources and internal names; no cghidEventTap change or broad RC native overlay. Any further path needs a concrete scope return.
+
 **Requirements:**
-- R2.1 The branch history contains upstream `v2.1.0` as a merge parent (`git merge-base --is-ancestor v2.1.0 HEAD` exits 0).
-- R2.2 Identity: `appId`, `productName`, app icon, user-visible app name and window titles are Showhow's. User-visible "OpenScreen" strings in the 13 locales are replaced; `npm run branding:check` passes. Internal identifiers follow the confirmed rule; each one kept or renamed is listed in `upstream-touchpoints.md` with its role (persisted, IPC, helper discovery, user-visible).
-- R2.3 The Showhow layer works on v2: recordings save a bundle per `docs/architecture/showhow-bundles.md` (video, `cursor.json`, `meta.json`, `transcript.txt`, `screenshots/`); the library is the home window and lists bundles; workflow documents generate as on `fc50566a`; the media protocol serves bundle files.
+- R2.1 After the approved preservation/reconstruction, a real merge commit contains upstream stable `eff86dcba48fac490a0e153141bf8537df7ffc54` as its release parent. `git merge-base --is-ancestor refs/tags/upstream/v2.0.0 HEAD` exits0 after that commit exists; MERGE_HEAD alone is not proof. No final2.1wait remains because the selected stable tag already exists.
+- R2.2 Identity: `appId`, `productName`, app icon, user-visible app name and window titles are Showhow's. User-visible "OpenScreen" strings in the locale set actually shipped by the stable-derived app are replaced; record the locale inventory; `npm run branding:check` passes. Internal identifiers follow the confirmed rule; each one kept or renamed is listed in `upstream-touchpoints.md` with its role (persisted, IPC, helper discovery, user-visible).
+- R2.3 The Showhow layer works on v2: recordings save a bundle per `docs/architecture/showhow-bundles.md` (video, `<video path>.cursor.json`, `meta.json`, `transcript.txt`, `steps.json`, `steps.md`, `screenshots/`; empty-step/no-audio/failure cases follow the bundle contract); the library is the home window and lists bundles; workflow documents generate as on `fc50566a`; the media protocol serves bundle files.
 - R2.4 Transcription keeps working with today's Whisper-tiny renderer pipeline (replaced in Task 3).
 - R2.5 The v2 editor replaces the inherited editor. Opening a bundle from the library opens it in the v2 editor.
 - R2.6 Upstream screens (editor, HUD, recorder) use Showhow tokens for colour, type (Inter Tight) and radius through upstream's CSS variables; no upstream component is restructured. Showhow-owned screens keep their current look.
 - R2.7 Legacy cases L1–L5 pass, using fixtures in `tests/fixtures/legacy/` made with the `fc50566a` build.
-- R2.8 The browser companion and the 17 Sweezy cursor packs are absent from the source tree and the packaged app. Upstream's `THIRD-PARTY-NOTICES.md` generation runs in the build.
+- R2.8 Browser companion and17Sweezy packs are absent from source/package. Preserve stable five named original packs plus built-in default and safe unknown-theme fallback. Ship the accurately updated checked-in `THIRD-PARTY-NOTICES.md` and `NOTICE.md`. Selectively adapt the pinned RC npm/Rust licence-text generator and its actual same-package `.test.mjs` into stable, wire `licenses:generate`, beforePack presence/freshness guard and packaged `build-licenses/THIRD-PARTY-LICENSES.txt`; verify resolved stable dependency texts and native source/licence obligations. This is an explicit narrow backport: stable has no such generator, and notices must not be called generated.
 - R2.9 Upstream CLI and MCP are not reachable from Showhow's UI and MCP is off by default.
 **Interfaces:** Consumes upstream's recording, editor and document APIs. Produces the same bundle layout and `showhow:*` IPC channels the library and workflow code use today (minus companion channels).
 **Constraints and reasons:**
@@ -280,7 +290,9 @@ Task 1 → Task 2 → Task 3 → Task 4, in order. Outcome: Showhow `main` is up
 - A bundle or transcript failure must never discard a valid recording (AGENTS.md).
 - Legacy files are never overwritten on open (AGENTS.md compatibility constraints).
 - Keep edits to upstream files minimal and listed, because every later release merge pays for them.
-- Do not merge to `main` before the final `v2.1.0` tag exists; if the tag is late, keep the PR open and rebase the merge onto it.
+- Before replacing the pending RC merge, archive/extract/hash-verify the current staged/unstaged/untracked source, raw index/merge metadata, ignored native/generated payloads, package and both owner sessions. Follow the same-lane reconstruction protocol below; no blind reset/abort/clean, no RC tree overlay. Stable already exists; remove the superseded final2.1wait only through this approved plan/policy update.
+- Carry only the selected received-frame CPU-presenter correction/tests in `pipeline_macos.rs`; stable has the same decoder gap. Do not import RC cancellation, click-sound, updater, glossary or capture-helper changes unrelated to R2.2–R2.9/L1–L5.
+- Future GitHub landing requires an ancestry-preserving MERGE COMMIT, never squash/rebase, and a separate exact-PR/head owner yes; coordinator verifies stable tag ancestry on main. No release tag until milestone completion.
 
 - [ ] RED: with fixtures made from `fc50566a`, new tests for L1–L5 and a bundle-save test at the v2 recording seam fail on the branch after the raw upstream merge (before the Showhow layer is ported).
 - [ ] Merge, re-apply identity, port the layer, delete the companion and Sweezy packs, apply theming, write `upstream-touchpoints.md`.
@@ -288,30 +300,31 @@ Task 1 → Task 2 → Task 3 → Task 4, in order. Outcome: Showhow `main` is up
 - [ ] Prove and obtain independent review, then open the PR to main.
 
 **Verification:**
-- `git merge-base --is-ancestor v2.1.0 HEAD`: exit 0.
+- `git merge-base --is-ancestor refs/tags/upstream/v2.0.0 HEAD`: exit 0.
 - `npm run lint`, `npx tsc --noEmit`, `npm run test`, `npm run test:browser`, `npm run i18n:check`, `npm run branding:check`: pass.
-- `npm run verify:export -- --evidence-dir artifacts/verification-recipe/<new-dir>` against the new editor (update the recipe's locators if v2 renamed them; record that in `implementation-notes.md`).
+- `npm run verify:export -- --evidence-dir artifacts/verification-recipe/<new-dir>` against the exact rebuilt stable-derived package in fresh isolated scratch roots; retain the approved pre-main OS/Electron path isolation, native export controls, full decode/palette and owned cleanup assertions. Record stable locator or bounded setup adaptations in `implementation-notes.md`; real repository command PASS is required, not support tests alone.
 - Manual macOS arm64 smoke test on a packaged build, with screenshots: first launch on a copied `fc50566a` profile (L4); library lists old bundles (L3); a new narrated recording saves a full bundle (L5, R2.3); the bundle opens in the v2 editor (R2.5); old `.showhow` and `.openscreen` projects open (L1, L2); HUD and editor show Showhow theming (R2.6).
 - `grep -rli sweezy public src electron` finds nothing; the packaged `Resources` has no companion or Sweezy files.
-**DONE WHEN:** the six verification items above pass and their evidence (command output, screenshots, file hashes for L1/L2) is in the PR; `upstream-touchpoints.md` lists each edited upstream file; the PR states Windows and Linux as untested; the PR merges only after `v2.1.0` final is tagged upstream.
-**Outside cases / follow-ups:** redesigned V1 screens; ChatGPT/OpenRouter connections in Showhow's provider boundary; native Windows and Linux checks; recipe changes beyond locator updates.
+**DONE WHEN:** the six verification items above pass and their evidence (command output, screenshots, file hashes for L1/L2) is in the PR; `upstream-touchpoints.md` lists each edited upstream file; the PR states Windows and Linux as untested; actual stable2.0ancestry, refreshed candidate-bound source/native/build/packaged evidence and fresh separate Standards/Requirements PASS are present before Ship; the eventual merge has a separate owner gate and preserves ancestry.
+**Outside cases / follow-ups:** redesigned V1 screens; ChatGPT/OpenRouter connections in Showhow's provider boundary; native Windows/Linux runtime acceptance; new model port/size trim; arbitrary recipe weakening or paths beyond the explicitly approved adaptation.
 
 ### Task 3: Bundle transcripts from v2's native engine with a bundled model
 
 **Priority:** no
 **Labels:** feature
 **Milestone:** Move onto upstream v2
-**Depends on:** Task 2
-**Files:** `electron/showhow/**` (transcript job), `src/lib/showhow/generateTranscript.ts`, `src/lib/showhow/transcriptFormat.ts`, `src/lib/captioning/**` (removal of the Whisper-tiny worker), `electron/stt/modelManager.ts` (bundled-model lookup only), `scripts/fetch-caption-model.mjs` (replaced by a pinned whisper.cpp model fetch), `electron-builder.json5`, `package.json`, `THIRD-PARTY-NOTICES` inputs, `docs/architecture/showhow-bundles.md`, `docs/architecture/upstream-touchpoints.md`, `implementation-notes.md`
+**Depends on:** Task 2 (#116)
+**Files:** `electron/showhow/**` (transcript job), `src/lib/showhow/generateTranscript.ts`, `src/lib/showhow/transcriptFormat.ts`, `src/lib/captioning/**` (remove only obsolete renderer-tiny files if present; preserve stable native-captioning utilities and UI), actual selected `src/lib/showhow/whisperTiny/**` (remove the Showhow renderer-tiny implementation), `src/components/showhow/BundleTranscript.tsx` and its same-package test (retire/wire the renderer consumer), `vite.config.ts` (remove only the obsolete tiny worker/alias wiring), `electron/stt/modelManager.ts`, `electron/stt/modelManager.test.ts` (coherent bundled-base/local-VAD resolution and ensure/digest checks, preserving fixed small/VAD APIs), `scripts/fetch-caption-model.mjs` (replaced by a pinned whisper.cpp model fetch), `electron-builder.json5`, `package.json`, `THIRD-PARTY-NOTICES.md` and the selected licence-generation inputs, `docs/architecture/showhow-bundles.md`, `docs/architecture/upstream-touchpoints.md`, `implementation-notes.md`
 **Requirements:**
-- R3.1 A new recording's `transcript.txt` is produced by v2's whisper.cpp engine using the bundled `base` multilingual quantised model, with no network access needed.
+- R3.1 A new recording's `transcript.txt` is produced by v2's whisper.cpp engine using the bundled `base` multilingual quantised model, with no network access needed, including a local VAD when required by the selected native path.
 - R3.2 `transcript.txt` keeps today's timestamped line format; existing `transcriptFormat` tests pass unchanged.
 - R3.3 Fail-open: when transcription fails (cases: model file missing, engine error, zero-length audio), `transcript.txt` contains `(transcription failed)` and the recording and bundle stay intact.
 - R3.4 The model is fetched at build time from a pinned Hugging Face revision with its SHA-256 checked; its licence is recorded in the third-party notices.
 - R3.5 `@xenova/transformers`, `onnxruntime-web` and the `caption-assets` Whisper-tiny files are gone from `package.json` and the packaged app.
-- R3.6 v2's model manager still offers its larger downloadable models; the bundled model is used when no larger one is chosen.
+- R3.6 Bundled base is the default for Showhow bundle jobs; preserve stable fixed small-q8/VAD download/cache support and optional CTC behaviour for existing consumers. Stable has no general model catalogue/selection UI: do not add one or claim one exists. Resolve local VAD and ensure/digest checks without a required first-use download for the bundled offline path. Optional CTC acquisition must not block offline bundle transcription.
 **Interfaces:** The bundle save path requests a transcript job; the job writes `transcript.txt` through the existing `showhow:write-transcript` contract or its main-process equivalent.
-**Constraints and reasons:** Keep the edit to `electron/stt/` to a bundled-model lookup, listed in `upstream-touchpoints.md`, so upstream merges stay cheap.
+**Constraints and reasons:** Keep changes at coherent model-path/ensure and bundle-job seams. Stable prepare() ensures whisper and VAD before modelPaths; overriding a filename after ensure is insufficient. Stable helper hard-codes WHISPER_AHEADS_SMALL. Native compatibility is a Build question, not a source-only failure verdict.
+**Conditional exact additional ownership:** `electron/stt/index.ts` and `electron/stt/index.test.ts` only if the offline bundle-job mode/optional aligner preparation cannot be expressed through the existing model-manager interface; `electron/stt/whisperServer.ts` and `electron/stt/whisperServer.test.ts` only for passing that bounded model/DTW mode to the existing helper; `electron/native/whisper-stt/src/main.cpp` only for base/small model-aware DTW initialisation if pinned native API/RED demonstrates the fixed SMALL preset needs correction; `scripts/test-whisper-stt.mjs` for same-helper base/small/offline regression. No native model catalogue, new server protocol, glossary or broad STT rewrite. If these conditions do not arise, leave the paths unchanged; further paths need a new concrete scope preview.
 
 - [ ] RED: a test at the transcript-job seam expects the native engine and the bundled model path and fails; a fail-open test for the three named failure cases fails or is absent.
 - [ ] Wire the job to `electron/stt/`, bundle the pinned model, remove the old stack.
@@ -319,7 +332,8 @@ Task 1 → Task 2 → Task 3 → Task 4, in order. Outcome: Showhow `main` is up
 - [ ] Prove and obtain independent review, then open the PR to main.
 
 **Verification:** `npm run lint`, `npx tsc --noEmit`, `npm run test`, `npm run test:browser`; `node scripts/check-package-contents.mjs <app>` shows no `@xenova`/`onnxruntime-web`; manual macOS smoke test with Wi-Fi off: a narrated 30-second recording produces a timestamped `transcript.txt`; with the model file renamed, a recording still saves and `transcript.txt` says `(transcription failed)`.
-**DONE WHEN:** the four verification items pass with evidence in the PR (transcript excerpt, failure-case transcript, package report, pinned revision and hash).
+**Additional bounded native verification:** exercise bundled base and existing small with the actual helper; when a conditional model/DTW change is required, its same-package test and `scripts/test-whisper-stt.mjs` cover both model modes. Offline preparation must use local VAD without waiting for optional network alignment. Retain missing-model/engine-error/zero-audio fail-open receipts.
+**DONE WHEN:** the source/browser/package/offline verification plus the named conditional native cases pass with evidence in the PR (transcript excerpt, failure-case transcript, package report, pinned revision and hashes for the bundled base/local VAD).
 **Outside cases / follow-ups:** transcript glossary (upstream `13db77e5`); word-level alignment use in guides.
 
 ### Task 4: Re-apply the size trim to the v2 build
@@ -327,14 +341,14 @@ Task 1 → Task 2 → Task 3 → Task 4, in order. Outcome: Showhow `main` is up
 **Priority:** no
 **Labels:** feature
 **Milestone:** Move onto upstream v2
-**Depends on:** Task 3
+**Depends on:** Task 3 (#117)
 **Files:** `electron-builder.json5`, `vite.config.ts` (only if needed), `scripts/check-package-contents.mjs`, `scripts/check-package-contents.node-test.mjs`, `scripts/fixtures/package-contents/**`, `package.json` (scripts only), `implementation-notes.md`
 **Requirements:**
-- R4.1 Record the untrimmed v2 installed size and arm64 DMG size at Task 3's merge commit before changing anything.
+- R4.1 Record the untrimmed stable-v2.0-derived, post-#117 installed size and arm64 DMG size at Task 3's merge commit before changing anything.
 - R4.2 The packaged app's `app.asar` and `app.asar.unpacked` contain only the `node_modules` packages the built main process loads at runtime; the audit's allow-list names each one with the reason.
-- R4.3 Chromium language packs are limited to the 13 app locales plus `en` and `en-GB`; wallpapers ship once; unreferenced `public/` images are excluded (same rules as Task 1 of the size plan, #110).
+- R4.3 Chromium language packs are limited to the app locale set recorded from the stable-derived build plus required `en` and `en-GB`; wallpapers ship once; unreferenced `public/` images are excluded (same rules as Task 1 of the size plan, #110).
 - R4.4 Installed macOS arm64 size ≤ 400 MB, model included.
-- R4.5 No regression on these packaged-app paths: launch to library, native recording saves a bundle, offline transcript, v2 editor opens with a wallpaper background, `npm run verify:export` passes.
+- R4.5 No regression on these named packaged-app paths: launch to library, native recording saves a bundle, offline transcript, v2 editor opens with a wallpaper background, `npm run verify:export` passes.
 **Interfaces:** `node scripts/check-package-contents.mjs <app-path> --budget-mb 400`.
 **Constraints and reasons:** Packaging config only; do not move dependencies between `dependencies` and `devDependencies`, so upstream merges of `package.json` stay simple. Native addons (`compositor_view.node`, ONNX Runtime) stay unpacked.
 
@@ -348,13 +362,17 @@ Task 1 → Task 2 → Task 3 → Task 4, in order. Outcome: Showhow `main` is up
 **Outside cases / follow-ups:** dropping the webcam segmentation ONNX Runtime if Showhow doesn't use it; Windows and Linux size checks.
 
 ## Superseded issues
-None closed by this plan. The three held macOS recorder fixes (upstream `29736d4d`, `f261fa45`, `52eda0e6`) were never filed as issues; they are recorded as covered by v2 in Task 1's refresh section. Issues #54–#63 stay open and parked for re-triage after the milestone.
+None closed or reopened by this plan. The three held macOS recorder patches (`29736d4d`, `f261fa45`, `52eda0e6`) were never filed as issues. The earlier covered-by-v2 disposition was RC-era planning history, not demonstrated stable-v2.0.0 coverage. These commits are not stable ancestors and the inspected microphone-selection/first-frame timing/failed-start cleanup/restart-message symbols are absent in stable. Neither fact alone proves a native failure or semantic noncoverage. Keep the three patches held for later re-triage; do not import them automatically. Only a failure of a named #116 R2.3 recording-save/fail-open or L5 sidecar/editor-read acceptance case can justify assessing a minimal scoped repair. Preserve stable helpers and the no-overlay rule; if the necessary repair exceeds named ownership, return its exact source/test paths and reproduction for approval. This adds no no-input/restart test or other new acceptance gate. Issues #54–#63 stay open and parked for re-triage after the milestone.
 
 ## Self-review
-Unbounded-word scan of requirements and DONE WHEN: "every later upstream merge" (Task 1 interfaces) and "every later release merge" (Task 2 constraints) are reasons, not acceptance. "Each upstream release tag" in R1 is bounded by the policy's tag rule. "Each one kept or renamed" (R2.2) and "each edited upstream file" (Task 2 DONE WHEN) are bounded by the diff against `v2.1.0`. "All", "any" and "valid" do not appear in acceptance; "each one" in R4.2 is bounded by the audit allow-list.
+Unbounded-word scan of requirements and DONE WHEN: "every later upstream merge" (Task 1 interfaces) and "every later release merge" (Task 2 constraints) are reasons, not acceptance. "Each upstream release tag" in R1 is bounded by the policy's tag rule. "Each one kept or renamed" (R2.2) and "each edited upstream file" (Task 2 DONE WHEN) are bounded by the diff against selected stable `v2.0.0`. "All", "any" and "valid" do not appear in acceptance; "each one" in R4.2 is bounded by the audit allow-list.
 
 ## Implementation notes
 Append each deviation from this plan to `implementation-notes.md` under "Deviations": what changed, why and what was done instead. Commit it with the ticket. Path-scope checks treat it as an owned path.
+
+## Stable-retarget self-review and approval boundary
+
+Requirements and DONE WHEN were scanned for every/all/any/valid. Valid recordings are bounded to the existing recording/save failure cases and L1–L5; all files means the named archive manifest or shipped locale/payload inventory, not arbitrary files. R4.2 runtime dependencies are the measured built-main allow-list. Existing visual/priority decisions are reused. No new product assumption question: owner settled2.0. This full external draft and exact GitHub update/move/metadata payloads need final plan/publication approval before implementation or external writes. No additional plan PR or issue is created automatically.
 
 # Showhow AI guide Plan
 
@@ -362,9 +380,9 @@ Append each deviation from this plan to `implementation-notes.md` under "Deviati
 The owner records, presses **Make guide** in the library, and gets a titled, step-by-step guide: one step per meaningful click, each with a short imperative instruction, its screenshot and a timestamp that jumps the player. The guide is saved in the bundle (`steps.json`, `steps.md`, `meta.json` title) and is the source for Copy for agent and PDF export later.
 
 ## Context and decisions
-- Built on the file layout of the `ticket/116-upstream-v2` branch (PR #121). Checked on 2026-10-17: `electron/showhow/bundle.ts`, `electron/ipc/handlers.ts`, `src/lib/showhow/workflowDocument.ts`, `src/components/showhow/GuideStep.tsx`, `src/components/library/RecordingLibrary.tsx`, `electron/ai-edition/provider-registry.ts`, `llm-config-store.ts` and `llm-provider-auth.ts` all exist there.
+- Built on `main` after #116 (PR #121, merged 2026-10-17 on stable upstream `v2.0.0`). Checked on `main` on 2026-10-17: `electron/showhow/bundle.ts`, `electron/ipc/handlers.ts`, `src/lib/showhow/workflowDocument.ts`, `src/components/showhow/GuideStep.tsx`, `src/components/library/RecordingLibrary.tsx`, `electron/ai-edition/provider-registry.ts`, `llm-config-store.ts`, `llm-provider-auth.ts` and `deep-agent/chat-model.ts` all exist there.
 - Existing pieces to build on, not replace: the deterministic doc engine (`buildSteps`, `renderStepsMarkdown`, `serializeStepsJson`, `regenerateDocArtifacts`, `updateWorkflowDocument` in `bundle.ts`; IPC `showhow:regenerate-doc` and `showhow:update-workflow-document`); `WorkflowDocumentUpdate` (title, step label, delete step); upstream's LangChain model factory `createOpenScreenChatModel` (`electron/ai-edition/deep-agent/chat-model.ts`) and its API-key store.
-- Upstream fact (v2.1.0-rc.4): providers are API-key only. ChatGPT and Copilot OAuth were removed in 1.8.0; upstream's code says ChatGPT returns later through the user's own `codex login` via `codex app-server`.
+- Upstream fact (stable `v2.0.0` on `main`, and `v2.1.0-rc.4`): providers are API-key only. ChatGPT and Copilot OAuth were removed in 1.8.0; upstream's code says ChatGPT returns later through the user's own `codex login` via `codex app-server`.
 - Locked frames: `design/mocks/2026-10-15-house-style/pen-final/` Library-06, 08, 09, 10, 11, 16, 19 and 28. They are the approved mock; no new prototype.
 - Earlier decisions reused: AI is in V1 behind an optional connection (2026-10-15); "Check what gets sent" shows the first time per provider only (2026-10-15); Remake keeps the previous guide until the new one succeeds (2026-10-12); a documentation failure never loses a recording (AGENTS.md).
 - Owner answers, shaping session 2026-10-17:

@@ -3,9 +3,10 @@ export const SHORTCUT_ACTIONS = [
 	"addZoom",
 	"addTrim",
 	"addSpeed",
+	"addCameraFullscreen",
 	"addAnnotation",
-	"addBlur",
-	"addKeyframe",
+	"addAudio",
+	"addVoiceover",
 	"deleteSelected",
 	"playPause",
 	"copySelected",
@@ -63,7 +64,7 @@ export const FIXED_SHORTCUTS: FixedShortcut[] = [
 	{
 		i18nKey: "panTimeline",
 		label: "Pan Timeline",
-		display: "Shift + Ctrl + Scroll",
+		display: "Scroll",
 		bindings: [],
 	},
 	{ i18nKey: "zoomTimeline", label: "Zoom Timeline", display: "Ctrl + Scroll", bindings: [] },
@@ -112,9 +113,11 @@ export const DEFAULT_SHORTCUTS: ShortcutsConfig = {
 	addZoom: { key: "z" },
 	addTrim: { key: "t" },
 	addSpeed: { key: "s" },
+	addCameraFullscreen: { key: "c" },
 	addAnnotation: { key: "a" },
-	addBlur: { key: "b" },
-	addKeyframe: { key: "f" },
+	addAudio: { key: "m" },
+	// Record a voiceover over the timeline from the playhead.
+	addVoiceover: { key: "v" },
 	deleteSelected: { key: "d", ctrl: true },
 	playPause: { key: " " },
 	copySelected: { key: "c", ctrl: true },
@@ -126,9 +129,10 @@ export const SHORTCUT_LABELS: Record<ShortcutAction, string> = {
 	addZoom: "Add Zoom",
 	addTrim: "Add Trim",
 	addSpeed: "Add Speed",
+	addCameraFullscreen: "Add Full Camera",
 	addAnnotation: "Add Annotation",
-	addBlur: "Add Blur",
-	addKeyframe: "Add Keyframe",
+	addAudio: "Add Audio",
+	addVoiceover: "Record Voiceover",
 	deleteSelected: "Delete Selected",
 	playPause: "Play / Pause",
 	copySelected: "Copy Selected",
@@ -178,6 +182,25 @@ export function formatBinding(binding: ShortcutBinding, isMac: boolean): string 
 	if (binding.alt) parts.push(isMac ? "⌥" : "Alt");
 	parts.push(KEY_LABELS[binding.key] ?? binding.key.toUpperCase());
 	return parts.join(" + ");
+}
+
+/**
+ * The label a fixed row shows. Rows bound to the primary modifier are built from their bindings,
+ * so macOS gets ⌘ like the configurable rows; the rest keep their hand-written `display`.
+ */
+export function formatFixedShortcut(shortcut: FixedShortcut, isMac: boolean): string {
+	if (!shortcut.bindings.some((binding) => binding.ctrl)) return shortcut.display;
+	return shortcut.bindings.map((binding) => formatBinding(binding, isMac)).join(" / ");
+}
+
+/**
+ * The chip a tooltip shows for a fixed shortcut: its first binding only. Redo has two
+ * (Ctrl + Shift + Z, Ctrl + Y), and a tooltip names one, so the label a dialog row shows
+ * (`formatFixedShortcut`) would be too long for it. `undefined` when the row has no binding.
+ */
+export function formatFirstFixedBinding(i18nKey: string, isMac: boolean): string | undefined {
+	const first = FIXED_SHORTCUTS.find((shortcut) => shortcut.i18nKey === i18nKey)?.bindings[0];
+	return first ? formatBinding(first, isMac) : undefined;
 }
 
 export function mergeWithDefaults(partial: Partial<ShortcutsConfig>): ShortcutsConfig {

@@ -241,6 +241,7 @@ test("packaged initialization sets appData before bootstrap can reset userData a
 		getPath: (key) => observed[key],
 	};
 	const originalHome = process.env.HOME;
+	const isolatedOs = { homedir: () => "/real-home-must-not-be-read" };
 	const paths = {
 		appData: "/private/synthetic/appData",
 		userData: "/private/synthetic/appData/Showhow",
@@ -249,14 +250,19 @@ test("packaged initialization sets appData before bootstrap can reset userData a
 	};
 	vm.runInNewContext(makePackagedInitialization(paths), {
 		require: (name) =>
-			name === "electron"
-				? { app }
-				: name === "node:path"
-					? { join: (...parts) => parts.join("/") }
-					: {},
+			name === "node:os"
+				? isolatedOs
+				: name === "electron"
+					? { app }
+					: name === "node:path"
+						? { join: (...parts) => parts.join("/") }
+						: name === "node:fs"
+							? { mkdirSync: () => undefined }
+							: {},
 		process: { pid: 100, execPath: "/synthetic/Showhow.app/Contents/MacOS/Showhow" },
 	});
 	assert.deepEqual(observed, paths);
+	assert.equal(isolatedOs.homedir(), paths.home);
 	// Production bootstrap selects appData/Showhow, so it must already be private.
 	assert.equal(`${observed.appData}/Showhow`, paths.userData);
 	assert.equal(process.env.HOME, originalHome);
@@ -330,4 +336,61 @@ test("a rejected startup location terminates the paused owned child before its f
 		if (child.exitCode === null) child.kill();
 		await exited;
 	}
+});
+
+test("known synthetic content rejects black and solid decodable frames", async () => {
+	const { validateSyntheticFrame } = await import("./verify-showhow-export.mjs");
+	assert.throws(() => validateSyntheticFrame(Buffer.alloc(128 * 72 * 3)), /colour-bar/);
+	assert.throws(() => validateSyntheticFrame(Buffer.alloc(128 * 72 * 3, 255)), /colour-bar/);
+	assert.throws(() => validateSyntheticFrame(Buffer.alloc(3)), /Incomplete/);
+	const pixels = Buffer.alloc(128 * 72 * 3);
+	const palette = [
+		[255, 0, 0],
+		[0, 255, 0],
+		[0, 0, 255],
+		[255, 255, 255],
+	];
+	for (let i = 0; i < pixels.length; i++) pixels[i] = palette[Math.floor(i / 3) % 4][i % 3];
+	assert.equal(validateSyntheticFrame(pixels).valid, true);
+});
+
+test("pre-main packaged initialization prepares a fresh realpath-checkable recordings root", async (t) => {
+	const fs = await import("node:fs");
+	const path = await import("node:path");
+	const os = await import("node:os");
+	const vm = await import("node:vm");
+	const { makePackagedInitialization } = await import("./verify-showhow-export.mjs");
+	const root = fs.mkdtempSync(path.join(os.tmpdir(), "showhow-pre-main-directories-"));
+	t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+	const home = path.join(root, "home");
+	fs.mkdirSync(home, { mode: 0o700 });
+	const recordings = path.join(home, "Showhow", "Recordings");
+	assert.equal(fs.existsSync(recordings), false);
+	const originalHome = process.env.HOME;
+	const isolatedOs = { homedir: () => "/unowned-home" };
+	const initialize = () =>
+		vm.runInNewContext(makePackagedInitialization({ home }), {
+			require: (name) =>
+				({
+					electron: { app: { setPath: () => undefined, getPath: () => home } },
+					"node:os": isolatedOs,
+					"node:fs": fs,
+					"node:path": path,
+				})[name],
+			process: { pid: 100 },
+		});
+	initialize();
+	assert.doesNotThrow(
+		() => fs.realpathSync(recordings),
+		"recordings root must exist before production main import and strict containment",
+	);
+	assert.equal(
+		fs.realpathSync(recordings),
+		path.join(fs.realpathSync(home), "Showhow", "Recordings"),
+	);
+	const sentinel = path.join(recordings, "preserved.txt");
+	fs.writeFileSync(sentinel, "preserve existing bytes");
+	initialize();
+	assert.equal(fs.readFileSync(sentinel, "utf8"), "preserve existing bytes");
+	assert.equal(process.env.HOME, originalHome);
 });

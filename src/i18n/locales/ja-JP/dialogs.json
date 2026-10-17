@@ -57,21 +57,35 @@
 		"detailLoadProject": "別のプロジェクトを読み込む前にプロジェクトを保存しますか？",
 		"saveAndLoadProject": "保存してプロジェクトを読み込む",
 		"discardAndLoadProject": "破棄してプロジェクトを読み込む",
+		"newProject": "新規プロジェクト",
+		"importVideo": "動画ファイルをインポート…",
 		"loadProject": "プロジェクトを読み込む…",
 		"saveProject": "プロジェクトを保存…",
 		"saveProjectAs": "プロジェクトを名前を付けて保存…",
-		"newProject": "新規プロジェクト",
-		"importVideo": "動画ファイルを読み込む…"
+		"modal": {
+			"closeTitle": "閉じる前に変更を保存しますか？",
+			"closeBody": "プロジェクトに未保存の変更があります。今すぐ保存するか、破棄するか、エディターにとどまってください。",
+			"newTitle": "新しいプロジェクトを作成する前に変更を保存しますか？",
+			"openTitle": "別のプロジェクトを開く前に変更を保存しますか？",
+			"recordTitle": "新しい録画を開始する前に変更を保存しますか？",
+			"sharedBody": "現在のプロジェクトに未保存の変更があります。先に保存するか、破棄するか、キャンセルしてください。",
+			"notSavedYet": "現在のプロジェクトはまだディスクに保存されていません。",
+			"discard": "破棄",
+			"saveAndContinue": "保存して続行",
+			"saving": "保存中…"
+		}
 	},
 	"fileDialogs": {
 		"saveGif": "エクスポートしたGIFを保存",
 		"saveVideo": "エクスポートした動画を保存",
 		"selectVideo": "動画ファイルを選択",
+		"selectAudio": "オーディオファイルを選択",
 		"saveProject": "Showhow プロジェクトを保存",
 		"openProject": "Showhow プロジェクトを開く",
 		"gifImage": "GIF 画像",
 		"mp4Video": "MP4 動画",
 		"videoFiles": "動画ファイル",
+		"audioFiles": "オーディオファイル",
 		"allFiles": "すべてのファイル",
 		"showhowProject": "Showhow プロジェクト"
 	}

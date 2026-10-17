@@ -195,6 +195,12 @@ export function validateGif(bytes, probe, decode) {
 function runtimeInitialization(paths) {
 	return `const paths = ${JSON.stringify(paths)};
 for (const [key, value] of Object.entries(paths)) app.setPath(key, value);
+// Prepare the owned library before production import and strict realpath checks.
+// The harness-created home is private; mkdir is idempotent and preserves existing files.
+if (paths.home) {
+  fs.mkdirSync(path.join(paths.home, "Showhow", "Recordings"), { recursive: true, mode: 0o700 });
+  os.homedir = () => paths.home;
+}
 globalThis.__showhowVerificationRuntime = () => {
   const current = Object.fromEntries(Object.keys(paths).map(key => [key, app.getPath(key)]));
   const tmpdir = os.tmpdir();
@@ -202,7 +208,7 @@ globalThis.__showhowVerificationRuntime = () => {
     const lock = path.join(tmpdir, prefix + "-uid-" + process.getuid() + ".lock");
     return { path: lock, pid: Number(fs.readFileSync(path.join(lock, "pid"), "utf8")) };
   });
-  return { paths: current, recordings: path.join(current.userData, "recordings"), tmpdir, locks, pid: process.pid, electronVersion: process.versions.electron, isPackaged: app.isPackaged, executable: process.execPath, appPath: app.getAppPath() };
+  return { paths: current, osHome: os.homedir(), recordings: path.join(os.homedir(), "Showhow", "Recordings"), tmpdir, locks, pid: process.pid, electronVersion: process.versions.electron, isPackaged: app.isPackaged, executable: process.execPath, appPath: app.getAppPath() };
 };
 `;
 }
@@ -522,9 +528,21 @@ export async function runVerification(evidenceDirectory, { appPath } = {}) {
 		runRoot = fs.mkdtempSync(path.join(os.tmpdir(), "showhow-verify-"));
 		fs.chmodSync(runRoot, 0o700);
 		const paths = Object.fromEntries(
-			["appData", "userData", "sessionData", "downloads", "temp", "logs", "crashDumps", "home"].map(
-				(key) => [key, path.join(runRoot, key)],
-			),
+			[
+				"appData",
+				"userData",
+				"sessionData",
+				"downloads",
+				"temp",
+				"logs",
+				"crashDumps",
+				"home",
+				"documents",
+				"desktop",
+				"music",
+				"pictures",
+				"videos",
+			].map((key) => [key, path.join(runRoot, key)]),
 		);
 		paths.userData = path.join(paths.appData, "Showhow");
 		for (const directory of Object.values(paths)) fs.mkdirSync(directory, { mode: 0o700 });
@@ -590,6 +608,7 @@ export async function runVerification(evidenceDirectory, { appPath } = {}) {
 		for (const target of [
 			...Object.values(runtime.paths),
 			runtime.recordings,
+			runtime.osHome,
 			runtime.tmpdir,
 			...runtime.locks.map((lock) => lock.path),
 		]) {
@@ -606,6 +625,7 @@ export async function runVerification(evidenceDirectory, { appPath } = {}) {
 			"Actual runtime profile, recordings, temp and both stable locks are contained; lock PIDs equal child PID",
 		);
 		stage = "editor";
+		fs.mkdirSync(runtime.recordings, { recursive: true });
 		const clip = path.join(runtime.recordings, "verification-synthetic.webm");
 		fs.copyFileSync(fixture, clip, fs.constants.COPYFILE_EXCL);
 		if (sha256(clip) !== result.fixture.before) throw new Error("Synthetic clip copy mismatch");
@@ -632,50 +652,12 @@ export async function runVerification(evidenceDirectory, { appPath } = {}) {
 		editor.setDefaultTimeout(15_000);
 		await editor.waitForLoadState("domcontentloaded", { timeout: 30_000 });
 		if (!editor.url().includes("windowType=editor")) throw new Error("Unexpected editor window");
-		result.initialCodecs = await editor.evaluate(() => ({
-			videoDecoder: typeof VideoDecoder,
-			videoEncoder: typeof VideoEncoder,
-			secureContext: window.isSecureContext,
-			url: document.URL,
-		}));
-		// Existing GIF e2e requires an editor reload: initial file load may lack WebCodecs.
-		await editor.reload({ waitUntil: "domcontentloaded", timeout: 30_000 });
-		await editor.waitForFunction(
-			() => typeof VideoDecoder === "function" && typeof VideoEncoder === "function",
-			null,
-			{ timeout: 15_000 },
-		);
-		result.exportCodecs = await editor.evaluate(() => ({
-			videoDecoder: typeof VideoDecoder,
-			videoEncoder: typeof VideoEncoder,
-			secureContext: window.isSecureContext,
-			url: document.URL,
-		}));
-		assertObserved("Editor reload exposed actual WebCodecs decoder and encoder before export");
-		await editor.waitForFunction(
-			() =>
-				[...document.querySelectorAll("video")].some(
-					(video) =>
-						video.readyState >= 2 &&
-						Number.isFinite(video.duration) &&
-						video.duration >= 1 &&
-						video.duration <= 4,
-				),
-			null,
-			{ timeout: 30_000 },
-		);
-		await editor.locator("canvas").first().waitFor({ state: "visible", timeout: 30_000 });
-		result.video = await editor.evaluate(() =>
-			[...document.querySelectorAll("video")]
-				.filter((video) => video.readyState >= 2)
-				.map((video) => ({
-					duration: video.duration,
-					width: video.videoWidth,
-					height: video.videoHeight,
-				})),
-		);
+		// V2 renders native compositor textures rather than a DOM video/canvas.
+		await editor.getByRole("button", { name: "Export", exact: true }).waitFor();
 		await editor.screenshot({ path: path.join(evidence, "editor.png") });
-		assertObserved("Production IPC loaded synthetic video with finite duration and visible canvas");
+		assertObserved(
+			"Production video-path IPC opened the v2 editor; media content is checked after export",
+		);
 		stage = "export";
 		const output = path.join(paths.downloads, "verification-export.gif");
 		await app.evaluate(({ ipcMain }, target) => {
@@ -687,14 +669,17 @@ export async function runVerification(evidenceDirectory, { appPath } = {}) {
 				return { success: true, path: target, canceled: false };
 			});
 		}, output);
-		await editor.getByTestId("testId-export-panel-button").click();
-		await editor.getByTestId("testId-gif-format-button").click();
+		await editor.getByRole("button", { name: "Export", exact: true }).click();
+		await editor.getByRole("button", { name: "GIF", exact: true }).click();
 		// Production finally closes ExportDialog; the success toast is its completed UI.
 		const completedUI = editor
-			.getByText("GIF exported successfully", { exact: true })
+			.getByTestId("export-show-in-folder")
 			.waitFor({ state: "visible", timeout: 120_000 });
 		completedUI.catch(() => undefined);
-		await editor.getByTestId("testId-export-button").click();
+		await editor
+			.getByRole("dialog")
+			.getByRole("button", { name: "Export GIF", exact: true })
+			.click();
 		await Promise.all([
 			completedUI,
 			waitUntil(
@@ -703,7 +688,7 @@ export async function runVerification(evidenceDirectory, { appPath } = {}) {
 				"production filesystem export",
 			),
 		]);
-		result.completionUI = "GIF exported successfully";
+		result.completionUI = "export-show-in-folder";
 		await editor.screenshot({
 			path: path.join(evidence, "complete.png"),
 			animations: "disabled",
@@ -711,7 +696,7 @@ export async function runVerification(evidenceDirectory, { appPath } = {}) {
 				"[data-sonner-toast] { transition: none !important; } [data-description] { visibility: hidden !important; }",
 			mask: [editor.locator("[data-description]")],
 		});
-		assertObserved("Renderer completed GIF export and production writer created real file");
+		assertObserved("Native exporter completed GIF export and created real file");
 		stage = "decode";
 		const probe = JSON.parse(
 			checked(prereq.tools.ffprobe.path, [
@@ -752,6 +737,27 @@ export async function runVerification(evidenceDirectory, { appPath } = {}) {
 			error: decode.error?.message ?? null,
 		};
 		result.media = validateGif(fs.readFileSync(output), probe, decode);
+		const pixels = spawnSync(
+			prereq.tools.ffmpeg.path,
+			[
+				"-v",
+				"error",
+				"-i",
+				output,
+				"-frames:v",
+				"1",
+				"-vf",
+				"scale=128:72",
+				"-pix_fmt",
+				"rgb24",
+				"-f",
+				"rawvideo",
+				"-",
+			],
+			{ timeout: 30_000, maxBuffer: 1024 * 1024 },
+		);
+		if (pixels.status !== 0) throw new Error("Synthetic frame extraction failed");
+		result.syntheticContent = validateSyntheticFrame(pixels.stdout);
 		result.media.sha256 = sha256(output);
 		fs.copyFileSync(output, path.join(evidence, "export.gif"), fs.constants.COPYFILE_EXCL);
 		result.journey = true;
@@ -895,4 +901,21 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
 			process.exitCode = 1;
 		}
 	}
+}
+
+// This palette assertion is only for the committed synthetic colour-bar fixture.
+// It must not be used to reject intentionally dark user recordings.
+export function validateSyntheticFrame(rgb) {
+	if (rgb.length !== 128 * 72 * 3) throw new Error("Incomplete synthetic RGB frame");
+	const counts = { red: 0, green: 0, blue: 0, white: 0 };
+	for (let i = 0; i < rgb.length; i += 3) {
+		const [r, g, b] = rgb.subarray(i, i + 3);
+		if (r > 160 && g < 110 && b < 110) counts.red++;
+		if (g > 160 && r < 110 && b < 110) counts.green++;
+		if (b > 160 && r < 110 && g < 110) counts.blue++;
+		if (r > 180 && g > 180 && b > 180) counts.white++;
+	}
+	if (Object.values(counts).some((count) => count < 128 * 72 * 0.02))
+		throw new Error("Export does not retain the known synthetic colour-bar content");
+	return { valid: true, counts };
 }

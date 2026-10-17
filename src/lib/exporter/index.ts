@@ -1,11 +1,8 @@
-export { FrameRenderer } from "./frameRenderer";
-export { calculateOutputDimensions, GifExporter } from "./gifExporter";
 export {
 	calculateEffectiveSourceDimensions,
 	calculateMp4ExportSettings,
 	type Mp4ExportSettings,
 } from "./mp4ExportSettings";
-export { VideoMuxer } from "./muxer";
 export { StreamingVideoDecoder } from "./streamingDecoder";
 export type {
 	ExportConfig,
@@ -14,6 +11,7 @@ export type {
 	ExportQuality,
 	ExportResult,
 	ExportSettings,
+	ExportVideoCodec,
 	GifExportConfig,
 	GifFrameRate,
 	GifSizePreset,
@@ -25,5 +23,3 @@ export {
 	isValidGifFrameRate,
 	VALID_GIF_FRAME_RATES,
 } from "./types";
-export { VideoFileDecoder } from "./videoDecoder";
-export { VideoExporter } from "./videoExporter";

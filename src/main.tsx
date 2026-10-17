@@ -3,8 +3,10 @@ import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import { I18nProvider } from "./contexts/I18nContext";
 import { clearStaleSourceCache } from "./lib/exporter/localSourceFile";
-import { initTheme } from "./lib/showhow/theme";
+import "./hooks/rendererConsoleForwarder";
 import "./index.css";
+import "./lib/showhow/upstreamTheme.css";
+import { initTheme } from "./lib/showhow/theme";
 
 initTheme();
 

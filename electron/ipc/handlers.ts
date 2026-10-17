@@ -1,5 +1,4 @@
 import { type ChildProcessWithoutNullStreams, spawn } from "node:child_process";
-import { randomBytes } from "node:crypto";
 import { EventEmitter } from "node:events";
 import { constants as fsConstants } from "node:fs";
 import fs from "node:fs/promises";
@@ -14,11 +13,25 @@ import {
 	desktopCapturer,
 	dialog,
 	ipcMain,
+	safeStorage,
 	screen,
 	shell,
 	systemPreferences,
 } from "electron";
-import type { NativeMacRecordingRequest } from "../../src/lib/nativeMacRecording";
+import { DEFAULT_WEBCAM_QUALITY, type WebcamQualityId } from "../../src/hooks/webcamCaptureTarget";
+import {
+	type AxcutDocument,
+	isAxcutDocumentFile,
+	parseDocumentFile,
+} from "../../src/lib/ai-edition/schema";
+import {
+	type NativeLinuxRecordingRequest,
+	portalCursorMode,
+} from "../../src/lib/nativeLinuxRecording";
+import {
+	collectMacCaptureExcludedWindowIds,
+	type NativeMacRecordingRequest,
+} from "../../src/lib/nativeMacRecording";
 import type { NativeWindowsRecordingRequest } from "../../src/lib/nativeWindowsRecording";
 import {
 	type CursorCaptureMode,
@@ -30,48 +43,131 @@ import {
 	type RecordingSession,
 	type StoreRecordedSessionInput,
 } from "../../src/lib/recordingSession";
-import type { StepCaptureReason } from "../../src/lib/showhow/recordingLibrary";
+import type { WorkflowDocumentUpdate } from "../../src/lib/showhow/workflowDocument";
 import type {
 	CursorRecordingData,
 	CursorRecordingSample,
-	NativeCursorAsset,
 	ProjectFileResult,
 	ProjectPathResult,
 } from "../../src/native/contracts";
-import { mainLogBuffer } from "../diagnostics/main-log-buffer";
+import { PRODUCT_NAME } from "../about";
+import {
+	compactSessionNow,
+	createSession,
+	deleteSession,
+	getSessionContextUsage,
+	listSessions,
+	renameSession,
+	rewindToMessage,
+	runChat,
+	selectSession,
+} from "../ai-edition/chat-service";
+import type { CursorTelemetryReader } from "../ai-edition/deep-agent/service";
+import { DocumentService } from "../ai-edition/document-service";
+import { LlmConfigStore } from "../ai-edition/llm-config-store";
+import { StylePresetService } from "../ai-edition/style-preset-service";
+import { AppSettingsStore } from "../app-settings";
+import { isDiagnosticModeEnabled, mainLogBuffer } from "../diagnostics/main-log-buffer";
 import { mainT } from "../i18n";
+import { getInstallChannel } from "../install-channel";
 import { RECORDINGS_DIR } from "../main";
+import { EditorDocumentHost } from "../mcp/editor-document-host";
+import { McpController } from "../mcp/mcp-controller";
+import { McpSettingsStore } from "../mcp/mcp-settings-store";
+import { type AudioPeaksResult, getAudioPeaks } from "../media/audioPeaks";
+import {
+	readCursorRecordingFile as readCursorRecordingFileFrom,
+	readCursorSidecar,
+	readCursorTelemetryFile as readCursorTelemetryFileFrom,
+} from "../media/cursorSidecar";
+import { findMediaLinksByFingerprint, registerMediaLinks } from "../media/mediaLinksRegistry";
+import { relinkProjectMedia } from "../media/projectMediaRelinker";
+import { showOpenDialogOver, showSaveDialogOver } from "../messageBox";
+import {
+	type LinuxCaptureSourceKind,
+	LinuxNativeCaptureSession,
+} from "../native-bridge/capture/linuxNativeCaptureSession";
 import { createCursorRecordingSession } from "../native-bridge/cursor/recording/factory";
-import { requestMacCursorAccessibilityAccess } from "../native-bridge/cursor/recording/macNativeCursorRecordingSession";
+import {
+	isMacCursorHelperUnavailable,
+	requestMacCursorAccessibilityAccess,
+} from "../native-bridge/cursor/recording/macNativeCursorRecordingSession";
+import { findPipeWireCursorHelperPath } from "../native-bridge/cursor/recording/pipeWireCursorRecordingSession";
 import type { CursorRecordingSession } from "../native-bridge/cursor/recording/session";
+import { toHelperRect } from "../native-bridge/helperCoordinates";
 import { HELPER_IDENTITIES, orderedHelperCandidates } from "../native-bridge/helperIdentity";
+import {
+	isMacPickerSourceId,
+	MAC_PICKER_SOURCE_PREFIX,
+	type MacPickerSelection,
+	MacPickerSession,
+	macSystemPickerEnabled,
+	markMacSystemPickerUnavailable,
+} from "../native-bridge/screen/macPickerSession";
+import { CompositorViewService } from "../native-bridge/services/compositorViewService";
+import { getMacPermissions, showPermissionsWindow } from "../permissions";
 import {
 	getDefaultProjectFileName,
 	getWritableExistingProjectPath,
 	isSupportedProjectPath,
-	PROJECT_OPEN_FILTER_EXTENSIONS,
-	PROJECT_SAVE_FILTER_EXTENSIONS,
 } from "../projectFilePolicy";
-import { patchWebmDurationOnDisk } from "../recording/webm-duration";
-import { ShowhowBridgeServer } from "../showhow/bridgeServer";
+import { scoreDeviceNameMatch } from "../recording/deviceNameMatching";
 import {
-	type BrowserStepRecord,
-	createRecordingBundle,
-	persistBrowserSteps,
+	describeSalvagedTake,
+	nativeMacSalvageTarget,
+	salvageNativeMacCapture,
+} from "../recording/nativeMacCaptureSalvage";
+import {
+	type NativeMacCaptureExit,
+	nativeMacDiscardTargets,
+	sendNativeMacStopCommand,
+	waitForNativeMacCaptureStop,
+} from "../recording/nativeMacCaptureStop";
+import {
+	isSalvageableFragmentedCapture,
+	NATIVE_WINDOWS_SALVAGEABLE_OUTPUT_BYTES,
+	readMicrophoneDefaulted,
+	readMicrophoneUnavailable,
+	readSecondaryWindowsApplied,
+	readWebcamFormat,
+	readWebcamUnavailable,
+	terminateNativeWindowsCapture,
+	waitForNativeWindowsCaptureStop,
+} from "../recording/nativeWindowsCaptureStop";
+import { patchWebmDurationOnDisk } from "../recording/webm-duration";
+import { reindexRecordingOnDisk } from "../recording/webm-seek-index";
+import {
+	describeMacPickerSource,
+	describeRecordingSource,
+	enumerationIncludesSourceKind,
+	mergeEnumeratedSources,
+	rememberedPickerSourceName,
+	resolveRecordingSource,
+	restoreRecordingSourceAfterEnumeration,
+	shouldEnumerateRecordingSources,
+	shouldPersistSelectedSource,
+} from "../recording-source-settings";
+import {
 	regenerateDocArtifacts,
 	SHOWHOW_RECORDINGS_ROOT,
 	updateWorkflowDocument,
-	type WorkflowDocumentUpdate,
 } from "../showhow/bundle";
-import { applyCompanionStepCapture } from "../showhow/companionStepCapture";
-import { listRecordings, regenerateRecordingDoc } from "../showhow/recordingLibrary";
-import { mapCursorSampleToTelemetryPoint } from "./cursorTelemetry";
+import { finishShowhowRecording } from "../showhow/finishRecording";
+import {
+	listRecordings,
+	readRecordingEntry,
+	regenerateRecordingDoc,
+} from "../showhow/recordingLibrary";
+import { restorePendingBundleTranscript } from "../showhow/resumeTranscript";
 import { registerNativeBridgeHandlers } from "./nativeBridge";
+import { createNativeMacMidCaptureErrorWatch } from "./nativeMacMidCaptureErrorWatch";
+import { registerRecordingPrefsHandlers } from "./recordingPrefs";
 import { RecordingStreamRegistry, registerRecordingStreamHandlers } from "./recordingStream";
+import { type SelectSourceContext, selectSourceWithOwnership } from "./selectSourceOwnership";
 import { copyShowhowBundlePath } from "./showhowLibrary";
 
+const PROJECT_FILE_EXTENSION = "showhow";
 export const SHORTCUTS_FILE = path.join(app.getPath("userData"), "shortcuts.json");
-
 function isWorkflowDocumentUpdate(value: unknown): value is WorkflowDocumentUpdate {
 	if (typeof value !== "object" || value === null || !("type" in value)) return false;
 	if (value.type === "title") return "title" in value && typeof value.title === "string";
@@ -96,7 +192,35 @@ const ALLOWED_IMPORT_VIDEO_EXTENSIONS = new Set([
 	".ts",
 ]);
 const PREVIEW_AUDIO_DIR = path.join(app.getPath("userData"), "preview-audio");
+// See the save-recorded-voiceover handler: an upper bound on renderer-supplied
+// bytes written to disk, well past any plausible take.
+const MAX_RECORDED_VOICEOVER_BYTES = 512 * 1024 * 1024;
 const nativeMacCaptureEvents = new EventEmitter();
+
+// Enumeration walks every display and window and grabs a thumbnail of each, so it
+// is allowed to be slow on a loaded machine. It is not allowed to be unbounded.
+// Deliberately above the CLI runner's own 20s bound, so the more specific message
+// there still wins for `openscreen sources`; this is the backstop for everything
+// else that calls get-sources.
+const GET_SOURCES_TIMEOUT_MS = 30_000;
+
+/**
+ * Reject if `work` has not settled within `ms`.
+ *
+ * The abandoned promise keeps running — there is no way to cancel a
+ * desktopCapturer call — so this bounds the *wait*, not the work. That is the
+ * whole available remedy: an unbounded await leaves a caller with no error and no
+ * way out, which is strictly worse than a late failure it can report.
+ */
+function withDeadline<T>(work: Promise<T>, ms: number, message: string): Promise<T> {
+	let timer: ReturnType<typeof setTimeout> | undefined;
+	return Promise.race([
+		work,
+		new Promise<never>((_resolve, reject) => {
+			timer = setTimeout(() => reject(new Error(message)), ms);
+		}),
+	]).finally(() => clearTimeout(timer)) as Promise<T>;
+}
 
 // Paths the user approved via file picker or project load (i.e. outside the default dirs).
 const approvedPaths = new Set<string>();
@@ -106,7 +230,7 @@ function approveFilePath(filePath: string): void {
 }
 
 function getAllowedReadDirs(): string[] {
-	return [RECORDINGS_DIR];
+	return [RECORDINGS_DIR, SHOWHOW_RECORDINGS_ROOT];
 }
 
 function isPathWithinDir(filePath: string, dirPath: string): boolean {
@@ -135,19 +259,36 @@ function resolveApprovedVideoPath(videoPath?: string | null): string | null {
 }
 
 // Attach the parent window only when valid, to avoid passing a destroyed BrowserWindow to dialogs.
-function buildDialogOptions<T extends Electron.OpenDialogOptions | Electron.SaveDialogOptions>(
-	baseOptions: T,
-	parentWindow: BrowserWindow | null,
-): T & { parent?: BrowserWindow } {
-	const mainWindow = parentWindow;
-	if (mainWindow && !mainWindow.isDestroyed()) {
-		return { ...baseOptions, parent: mainWindow };
-	}
-	return baseOptions;
-}
-
 function hasAllowedImportVideoExtension(filePath: string): boolean {
 	return ALLOWED_IMPORT_VIDEO_EXTENSIONS.has(path.extname(filePath).toLowerCase());
+}
+
+// Imported audio (issue #350). Kept separate from the video set so the two
+// pickers stay honest — an audio picker must not approve a video path and vice
+// versa. A SUBSET of SUPPORTED_AUDIO_EXTENSIONS in the document service, which
+// also accepts `.webm`: that gate is told the kind by its caller, while this one
+// only has the extension to go on and `.webm` is far more often a video.
+const ALLOWED_IMPORT_AUDIO_EXTENSIONS = new Set([
+	".mp3",
+	".wav",
+	".m4a",
+	".aac",
+	".flac",
+	".ogg",
+	".opus",
+]);
+
+function hasAllowedImportAudioExtension(filePath: string): boolean {
+	return ALLOWED_IMPORT_AUDIO_EXTENSIONS.has(path.extname(filePath).toLowerCase());
+}
+
+// Video OR audio. The type-specific pickers stay honest (see the audio set's
+// comment), but the generic media READS — peaks, binary, file-info, chunk — serve
+// whichever kind the document points at, so they must accept both. Gating them on
+// video alone dropped every imported audio path once `approvedPaths` was empty
+// (a project reopen), and the waveform was lost for good (issue #350).
+function hasAllowedImportMediaExtension(filePath: string): boolean {
+	return hasAllowedImportVideoExtension(filePath) || hasAllowedImportAudioExtension(filePath);
 }
 
 function runProcess(
@@ -246,8 +387,13 @@ async function prepareSupplementalPreviewAudioTrack(videoPath: string) {
 	return { success: true, path: pathToFileURL(outputPath).toString() };
 }
 
-async function approveReadableVideoPath(
-	filePath?: string | null,
+// Shared core behind the media path approvers. `hasAllowedExtension` is the ONLY
+// thing that differs between video and audio imports, so it is the single knob:
+// an already-approved path passes regardless, otherwise the extension gate,
+// optional trusted-dir confinement, and a stat check decide whether to approve.
+async function approveReadableMediaPath(
+	filePath: string | null | undefined,
+	hasAllowedExtension: (p: string) => boolean,
 	trustedDirs?: string[],
 ): Promise<string | null> {
 	const normalizedPath = normalizeVideoSourcePath(filePath);
@@ -259,7 +405,7 @@ async function approveReadableVideoPath(
 		return normalizedPath;
 	}
 
-	if (!hasAllowedImportVideoExtension(normalizedPath)) {
+	if (!hasAllowedExtension(normalizedPath)) {
 		return null;
 	}
 
@@ -284,6 +430,62 @@ async function approveReadableVideoPath(
 
 	approveFilePath(normalizedPath);
 	return normalizedPath;
+}
+
+function approveReadableVideoPath(
+	filePath?: string | null,
+	trustedDirs?: string[],
+): Promise<string | null> {
+	return approveReadableMediaPath(filePath, hasAllowedImportVideoExtension, trustedDirs);
+}
+
+function approveReadableAudioPath(
+	filePath?: string | null,
+	trustedDirs?: string[],
+): Promise<string | null> {
+	return approveReadableMediaPath(filePath, hasAllowedImportAudioExtension, trustedDirs);
+}
+
+/**
+ * A path a generic read may use — and NOT a way to obtain one.
+ *
+ * `approveReadableMediaPath` grants approval to any existing file with a media extension.
+ * Behind a picker or a document load that is the point; behind `read-binary-file` it meant
+ * the renderer could name any media file on the machine and have its bytes handed back,
+ * which is a capability no generic handler should carry (CWE-200).
+ *
+ * Approval is granted in exactly three places now: the recordings directory, a file the user
+ * picked, and the assets a loaded project declares (`approveDocumentMedia`). Everything else
+ * spends one.
+ */
+function readableApprovedPath(filePath?: string | null): string | null {
+	const normalizedPath = normalizeVideoSourcePath(filePath);
+	if (!normalizedPath) return null;
+	if (!isPathAllowed(normalizedPath)) return null;
+	// The extension check stays: an approval granted for a recording must not become a way
+	// to read the project file, the log, or anything else sitting beside it.
+	if (!hasAllowedImportMediaExtension(normalizedPath)) return null;
+	return normalizedPath;
+}
+
+/** Grant the media a loaded project declares. The document is the app's own file, and this
+ *  is what the picker's approval decays into once the app restarts. */
+/**
+ * `trustedDirs`, when given, confines the grant to media inside them: a project file read from
+ * an arbitrary path gets the same rule as a v2 project (`getApprovedProjectSession`). Without
+ * it, as for the editor's own projects, every declared path is granted.
+ */
+function approveDocumentMedia(document: AxcutDocument, trustedDirs?: string[]): void {
+	const trusted = (filePath: string) =>
+		!trustedDirs || trustedDirs.some((dir) => isPathWithinDir(filePath, dir));
+	for (const asset of document.assets ?? []) {
+		const media = normalizeVideoSourcePath(asset.originalPath);
+		if (media && hasAllowedImportMediaExtension(media) && trusted(media)) approveFilePath(media);
+		const camera = normalizeVideoSourcePath(asset.cameraTrack?.sourcePath);
+		if (camera && hasAllowedImportMediaExtension(camera) && trusted(camera)) {
+			approveFilePath(camera);
+		}
+	}
 }
 
 function resolveRecordingOutputPath(fileName: string): string {
@@ -328,6 +530,37 @@ async function finalizeRecordingFile(
 	return streamed;
 }
 
+/**
+ * Give a finalized recording a usable container, by whichever route works.
+ *
+ * MediaRecorder omits the `Duration` header, so without repair the editor sees
+ * `duration = Infinity` and cannot scale its timeline.
+ *
+ * Two routes, in order of quality:
+ *   1. A full container remux through libavformat's matroska muxer (Linux, where
+ *      capture goes through MediaRecorder). The muxer derives `Duration` from
+ *      the real packet timestamps rather than from the renderer's wall-clock
+ *      measurement, and writes `Cues`/`SeekHead` on the way past.
+ *   2. The EBML header patch, which splices the caller's `durationMs` into the
+ *      Info section. Used on Windows/macOS, and on Linux whenever the remux is
+ *      unavailable (no addon, or a `.node` predating it) or fails.
+ *
+ * Both rewrite the file exactly once, so route 1 is not the more expensive one —
+ * it is the same I/O for a strictly better result. Either way a failure leaves
+ * the original file intact; a recording is never lost to a failed repair.
+ */
+async function repairRecordingContainer(filePath: string, durationMs: number): Promise<void> {
+	const reindexed = await reindexRecordingOnDisk(filePath);
+	if (reindexed.reindexed) {
+		console.info(
+			`[recording] re-muxed ${path.basename(filePath)}: ${reindexed.packets} packets, ` +
+				`${reindexed.streams} streams, ${reindexed.wallS.toFixed(3)}s`,
+		);
+		return;
+	}
+	await patchWebmDurationOnDisk(filePath, durationMs);
+}
+
 export async function getApprovedProjectSession(
 	project: unknown,
 	projectFilePath?: string,
@@ -349,21 +582,47 @@ export async function getApprovedProjectSession(
 		return null;
 	}
 
-	// Only auto-approve media within the project's dir, RECORDINGS_DIR, or the
-	// canonical Showhow recordings root (where bundled recordings live after a
-	// restart), so a crafted project file can't approve reads to arbitrary locations.
-	const trustedDirs = [RECORDINGS_DIR, SHOWHOW_RECORDINGS_ROOT];
+	// Only auto-approve media within the project's dir or RECORDINGS_DIR, so a crafted
+	// project file can't approve reads to arbitrary locations.
+	const trustedDirs = [RECORDINGS_DIR];
 	if (projectFilePath) {
 		trustedDirs.push(path.dirname(path.resolve(projectFilePath)));
 	}
 
-	const screenVideoPath = await approveReadableVideoPath(media.screenVideoPath, trustedDirs);
+	// Packed/portable projects: when the stored absolute path no longer exists
+	// (project moved to another machine or directory), fall back to a file with
+	// the same basename next to the project file (see `openscreen pack`).
+	const resolveWithSiblingFallback = async (mediaPath: string): Promise<string> => {
+		if (!projectFilePath) return mediaPath;
+		const exists = await fs
+			.stat(mediaPath)
+			.then((stats) => stats.isFile())
+			.catch(() => false);
+		if (exists) return mediaPath;
+		const sibling = path.join(
+			path.dirname(path.resolve(projectFilePath)),
+			path.basename(mediaPath),
+		);
+		const siblingExists = await fs
+			.stat(sibling)
+			.then((stats) => stats.isFile())
+			.catch(() => false);
+		return siblingExists ? sibling : mediaPath;
+	};
+
+	const screenVideoPath = await approveReadableVideoPath(
+		await resolveWithSiblingFallback(media.screenVideoPath),
+		trustedDirs,
+	);
 	if (!screenVideoPath) {
 		throw new Error("Project references an invalid or unsupported screen video path");
 	}
 
 	const webcamVideoPath = media.webcamVideoPath
-		? await approveReadableVideoPath(media.webcamVideoPath, trustedDirs)
+		? await approveReadableVideoPath(
+				await resolveWithSiblingFallback(media.webcamVideoPath),
+				trustedDirs,
+			)
 		: undefined;
 	if (media.webcamVideoPath && !webcamVideoPath) {
 		throw new Error("Project references an invalid or unsupported webcam video path");
@@ -386,105 +645,69 @@ type AttachNativeMacWebcamRecordingInput = {
 	recordingId?: number;
 	webcam?: RecordedVideoAssetInput;
 	cursorCaptureMode?: CursorCaptureMode;
-	stepCaptureReason?: StepCaptureReason;
+	/**
+	 * Webcam clip duration (ms), head start included. A streamed webcam file carries
+	 * no Duration header and the renderer no longer holds the blob to patch, so the
+	 * main process repairs the container on disk with this value.
+	 */
+	durationMs?: number;
+	/** See {@link ProjectMedia.webcamOffsetMs}. */
+	webcamOffsetMs?: number;
 };
 
 let selectedSource: SelectedSource | null = null;
 let selectedDesktopSource: DesktopCapturerSource | null = null;
 let lastEnumeratedSources = new Map<string, DesktopCapturerSource>();
+const selectSourceGeneration = { value: 0 };
 let currentProjectPath: string | null = null;
 let currentRecordingSession: RecordingSession | null = null;
 
-// --- Showhow desktop bridge (localhost WebSocket for the companion extension) -
-// Bound strictly to 127.0.0.1 so the bridge is never reachable from the network
-// or cloud. Best-effort: a bind failure is logged and never blocks recording.
-const SHOWHOW_BRIDGE_HOST = "127.0.0.1" as const;
-const SHOWHOW_BRIDGE_PORT = Number(process.env.SHOWHOW_BRIDGE_PORT ?? 8765);
-const SHOWHOW_BRIDGE_TOKEN = randomBytes(32).toString("base64url");
-const showhowBridge = new ShowhowBridgeServer({ pairingToken: SHOWHOW_BRIDGE_TOKEN });
-let showhowBridgeStarted = false;
-
-async function ensureShowhowBridgeStarted(): Promise<void> {
-	if (showhowBridgeStarted) return;
-	showhowBridgeStarted = true;
-	try {
-		await showhowBridge.start({ host: SHOWHOW_BRIDGE_HOST, port: SHOWHOW_BRIDGE_PORT });
-		console.info("[showhow-bridge] listening on 127.0.0.1:" + showhowBridge.port);
-	} catch (error) {
-		// Bridge is best-effort: a failure to bind must never block recording or
-		// discard video. The companion simply stays unpaired.
-		console.error("[showhow-bridge] failed to start:", error);
-	}
+// Durable source of truth for the mic/camera/system-audio/cursor/source
+// choices a user makes in the editor's Rec-mode stage, so the HUD window's
+// useScreenRecorder (a separate renderer, own process, own React tree) picks
+// up those choices instead of silently reverting to its own defaults when
+// startNewRecording() switches windows. Persisted in AppSettingsStore and
+// broadcast on change; not project content.
+export interface RecordingPrefs {
+	micEnabled: boolean;
+	micDeviceId: string | null;
+	/**
+	 * The microphone's LABEL, carried beside its id because the native Windows
+	 * helper selects by name and Chromium selects by id.
+	 *
+	 * Without it, a HUD rebuilt for a new recording restored the id and had to
+	 * re-derive the name from its own `enumerateDevices()` — which needs a full
+	 * getUserMedia permission round-trip first, and an auto-started recording
+	 * beat it. The request then went out with no name at all, and the helper
+	 * answers that by recording the Windows default endpoint instead of the
+	 * microphone the user picked (getopenscreen/openscreen#404).
+	 */
+	micDeviceName: string | null;
+	camEnabled: boolean;
+	camDeviceId: string | null;
+	/** Camera label paired with the preferred id for restart-safe resolution. */
+	camDeviceName: string | null;
+	/** Capture resolution for the camera. See WEBCAM_QUALITY_PRESETS. */
+	camQuality: WebcamQualityId;
+	systemAudioEnabled: boolean;
+	cursorCaptureMode: CursorCaptureMode;
+	hideDesktopIcons: boolean;
+	/** Whether a fresh take gets automatic zooms on import. Persisted; defaults on. */
+	autoZoomEnabled: boolean;
 }
-
-/**
- * Drain ingested browser-tier steps from the bridge and persist them into the
- * bundle as browser-tier step artifacts with recording-relative `ts`. Companion
- * failure never stops or discards the video: on a mid-recording disconnect with
- * no ingested steps, the bundle's step capture is marked unavailable with a
- * structured `companion-disconnected`/`companion-unpaired` reason so the desktop
- * tier remains usable. Never throws, and never overrides an already-available
- * bundle (desktop clicks were extracted) with a companion degradation reason.
- */
-async function applyBrowserStepsToBundle(bundleDir: string): Promise<void> {
-	let browserSteps: BrowserStepRecord[] = [];
-	try {
-		browserSteps = await showhowBridge.drainSteps();
-	} catch (error) {
-		console.error("[showhow-bridge] drainSteps failed:", error);
-	}
-	const { source, alreadyAvailable } = await readBundleSourceAndAvailability(bundleDir);
-	await applyCompanionStepCapture({
-		browserSteps,
-		bundleSource: source,
-		bundleAlreadyAvailable: alreadyAvailable,
-		isCompanionConnected: showhowBridge.isCompanionConnected(),
-		hadMidRecordingDisconnect: showhowBridge.hadMidRecordingDisconnect(),
-		persistSteps: (steps) => persistBrowserSteps(bundleDir, steps),
-		markStepCapture: (mark) => markBundleStepCapture(bundleDir, mark),
-	});
-}
-
-/** Read a bundle's source and current stepCapture availability. Never throws. */
-async function readBundleSourceAndAvailability(
-	bundleDir: string,
-): Promise<{ source: "desktop" | "browser"; alreadyAvailable: boolean }> {
-	try {
-		const metaPath = path.join(bundleDir, "meta.json");
-		const meta = JSON.parse(await fs.readFile(metaPath, "utf-8")) as {
-			source?: unknown;
-			stepCapture?: unknown;
-		};
-		const source = meta.source === "browser" ? "browser" : "desktop";
-		const alreadyAvailable =
-			typeof meta.stepCapture === "object" &&
-			meta.stepCapture !== null &&
-			(meta.stepCapture as { status?: unknown }).status === "available";
-		return { source, alreadyAvailable };
-	} catch (error) {
-		console.error("[showhow-bridge] readBundleSourceAndAvailability failed:", error);
-		return { source: "desktop", alreadyAvailable: false };
-	}
-}
-
-/** Rewrite a bundle's meta.json stepCapture field. Never throws. */
-async function markBundleStepCapture(
-	bundleDir: string,
-	stepCapture: {
-		status: "available" | "unavailable";
-		message?: string;
-		reason?: import("../../src/lib/showhow/recordingLibrary").StepCaptureReason;
-	},
-): Promise<void> {
-	try {
-		const metaPath = path.join(bundleDir, "meta.json");
-		const meta = JSON.parse(await fs.readFile(metaPath, "utf-8")) as { stepCapture?: unknown };
-		meta.stepCapture = stepCapture;
-		await fs.writeFile(metaPath, JSON.stringify(meta, null, 2), "utf-8");
-	} catch (error) {
-		console.error("[showhow-bridge] markBundleStepCapture failed:", error);
-	}
-}
+const defaultRecordingPrefs: RecordingPrefs = {
+	micEnabled: false,
+	micDeviceId: null,
+	micDeviceName: null,
+	camEnabled: false,
+	camDeviceId: null,
+	camDeviceName: null,
+	camQuality: DEFAULT_WEBCAM_QUALITY,
+	systemAudioEnabled: false,
+	cursorCaptureMode: "editable-overlay",
+	hideDesktopIcons: false,
+	autoZoomEnabled: true,
+};
 
 // Cached source from the user's pick. Used by setDisplayMediaRequestHandler in main.ts for cursor-free capture.
 export function getSelectedDesktopSource(): DesktopCapturerSource | null {
@@ -524,7 +747,6 @@ function isTrustedProjectPath(filePath?: string | null) {
 	return normalizePath(filePath) === normalizePath(currentProjectPath);
 }
 
-const CURSOR_TELEMETRY_VERSION = 2;
 const CURSOR_SAMPLE_INTERVAL_MS = 33;
 const MAX_CURSOR_SAMPLES = 60 * 60 * 30; // 1 hour @ 30Hz
 
@@ -541,8 +763,89 @@ let nativeWindowsCursorRecordingStartMs = 0;
 let nativeWindowsPauseStartedAtMs: number | null = null;
 let nativeWindowsPauseRanges: Array<{ startMs: number; endMs: number }> = [];
 let nativeWindowsIsPaused = false;
-const NATIVE_WINDOWS_CAPTURE_STOP_TIMEOUT_MS = 60_000;
+/**
+ * The MP4 flavour the helper reported for THIS run, or null if it never said.
+ * Read at stop, not for reporting: it is what decides whether a capture that
+ * failed to finalize still left a playable file behind.
+ */
+let nativeWindowsCaptureContainer: string | null = null;
+/** Cuts a surviving helper's output loose so it cannot pollute the next recording. */
+let nativeWindowsCaptureDrainCleanup: (() => void) | null = null;
+
+function detachNativeWindowsCaptureOutputDrain() {
+	nativeWindowsCaptureDrainCleanup?.();
+	nativeWindowsCaptureDrainCleanup = null;
+}
+
+function resetNativeWindowsCaptureState() {
+	nativeWindowsCaptureDrainCleanup = null;
+	nativeWindowsCaptureProcess = null;
+	nativeWindowsCaptureTargetPath = null;
+	nativeWindowsCaptureWebcamTargetPath = null;
+	nativeWindowsCaptureRecordingId = null;
+	nativeWindowsCursorOffsetMs = 0;
+	nativeWindowsCursorCaptureMode = "editable-overlay";
+	nativeWindowsCursorRecordingStartMs = 0;
+	nativeWindowsPauseStartedAtMs = null;
+	nativeWindowsPauseRanges = [];
+	nativeWindowsIsPaused = false;
+	nativeWindowsCaptureContainer = null;
+}
+
+/** Reads the file, then defers the judgement to the tested predicate. */
+async function salvageNativeWindowsFragmentedCapture(screenVideoPath: string | null) {
+	if (!screenVideoPath) {
+		return false;
+	}
+	const stats = await fs.stat(screenVideoPath).catch(() => null);
+	return isSalvageableFragmentedCapture(nativeWindowsCaptureContainer, stats?.size ?? null);
+}
+
+/**
+ * Best-effort removal of the files a failed or discarded native Windows capture
+ * left behind. Each removal is isolated: a helper that outlived its kill still
+ * holds the MP4 open on Windows, and an EBUSY there must not mask why we were
+ * cleaning up in the first place.
+ */
+async function removeNativeWindowsCaptureOutputs(
+	screenVideoPath: string | null,
+	webcamVideoPath: string | null,
+	options: { onlyIfUnusable?: boolean } = {},
+) {
+	const targets = [
+		screenVideoPath,
+		webcamVideoPath,
+		screenVideoPath ? `${screenVideoPath}.cursor.json` : null,
+	];
+
+	for (const target of targets) {
+		if (!target || !isPathWithinDir(target, RECORDINGS_DIR)) {
+			continue;
+		}
+		try {
+			if (options.onlyIfUnusable && target !== `${screenVideoPath}.cursor.json`) {
+				const stats = await fs.stat(target).catch(() => null);
+				if (stats && stats.size >= NATIVE_WINDOWS_SALVAGEABLE_OUTPUT_BYTES) {
+					console.warn(
+						"[native-wgc] keeping a capture output that may still be playable:",
+						target,
+						stats.size,
+					);
+					continue;
+				}
+			}
+			await fs.rm(target, { force: true });
+		} catch (error) {
+			console.warn("[native-wgc] could not remove leftover capture output:", target, error);
+		}
+	}
+}
 let nativeMacCaptureProcess: ChildProcessWithoutNullStreams | null = null;
+/**
+ * Apple's system picker session (macOS 15.2+), started on first use and kept for the app's
+ * life: the pick it holds cannot leave that process. See macPickerSession.ts.
+ */
+let macPickerSession: MacPickerSession | null = null;
 let nativeMacCaptureOutput = "";
 let nativeMacCaptureTargetPath: string | null = null;
 let nativeMacCaptureRecordingId: number | null = null;
@@ -552,137 +855,206 @@ let nativeMacCursorRecordingStartMs = 0;
 let nativeMacPauseStartedAtMs: number | null = null;
 let nativeMacPauseRanges: Array<{ startMs: number; endMs: number }> = [];
 let nativeMacIsPaused = false;
+/**
+ * How each macOS helper exited, recorded by its output drain on `close` — the
+ * point at which its output has been read in full.
+ */
+const nativeMacCaptureExits = new WeakMap<ChildProcessWithoutNullStreams, NativeMacCaptureExit>();
+/**
+ * Each macOS helper's own output. The shared `nativeMacCaptureOutput` belongs to
+ * the current take; a helper whose stop timed out keeps talking after the next
+ * take has started, and its late `recording-stopped` must not settle that take.
+ */
+const nativeMacCaptureOutputs = new WeakMap<ChildProcessWithoutNullStreams, string>();
+/**
+ * Why the last macOS take ended before it was stopped, keyed by the file it was
+ * kept in. Handed to whatever opens that recording next — the editor or the CLI —
+ * because the HUD that ran the stop closes as the editor opens.
+ */
+let nativeMacRecordingWarning: { screenVideoPath: string; message: string } | null = null;
+/** True while stop-native-mac-recording runs: the take is ending on purpose. */
+let nativeMacStopInFlight = false;
 // Global frame of the region captured by the SCK helper (see getSelectedSourceBounds).
 let activeMacCaptureBounds: Rectangle | null = null;
+let linuxNativeCaptureSession: LinuxNativeCaptureSession | null = null;
+let linuxNativeCaptureRecordingId: number | null = null;
+let linuxNativeCaptureCursorMode: CursorCaptureMode = "editable-overlay";
+/** What the portal granted for the running capture, for the tray's label. */
+let linuxNativeCaptureSourceLabel: string | null = null;
+/**
+ * A portal session negotiated ahead of the countdown, waiting to be armed.
+ *
+ * Held here rather than in the renderer because the helper is a child process of
+ * THIS process: a renderer that reloads, or a countdown abandoned without a
+ * cancel, would otherwise leak a live ScreenCast session — the compositor's
+ * "screen is being shared" indicator with nothing recording behind it.
+ */
+let preparedLinuxCapture: {
+	session: LinuxNativeCaptureSession;
+	outputPath: string;
+	/** What the helper was actually spawned with. See [`captureSettingsOf`]. */
+	request: NativeLinuxRecordingRequest;
+} | null = null;
+/**
+ * Identifies the prepare that is still waiting on the picker.
+ *
+ * The slot above is only filled AFTER an await with no upper bound — a human is
+ * reading a dialog. For that whole window it is null, so without this token a
+ * cancel would find nothing to cancel and a second prepare would find nothing to
+ * supersede: the first session would then assign itself afterwards and stay
+ * alive, holding a ScreenCast grant and the compositor's sharing indicator with
+ * nothing recording behind it.
+ */
+let preparingLinuxCaptureToken: symbol | null = null;
 
-function normalizeCursorSample(sample: unknown): CursorRecordingSample | null {
-	if (!sample || typeof sample !== "object") {
+/**
+ * Claims the prepared session when it matches the recording about to start.
+ *
+ * A mismatch means the prepare was for a recording that never happened, so it is
+ * discarded rather than reused: arming it would record against the wrong output
+ * path, and leaving it would strand a portal session.
+ */
+function takePreparedLinuxSession(
+	outputPath: string,
+	request: NativeLinuxRecordingRequest,
+): LinuxNativeCaptureSession | null {
+	const prepared = preparedLinuxCapture;
+	if (!prepared) {
 		return null;
 	}
-
-	const point = sample as Partial<CursorRecordingSample>;
-	const interactionType =
-		point.interactionType === "click" ||
-		point.interactionType === "mouseup" ||
-		point.interactionType === "move"
-			? point.interactionType
-			: "move";
-	return {
-		timeMs:
-			typeof point.timeMs === "number" && Number.isFinite(point.timeMs)
-				? Math.max(0, point.timeMs)
-				: 0,
-		cx: typeof point.cx === "number" && Number.isFinite(point.cx) ? point.cx : 0.5,
-		cy: typeof point.cy === "number" && Number.isFinite(point.cy) ? point.cy : 0.5,
-		assetId: typeof point.assetId === "string" ? point.assetId : null,
-		visible: typeof point.visible === "boolean" ? point.visible : true,
-		cursorType: typeof point.cursorType === "string" ? point.cursorType : null,
-		interactionType,
-	};
+	preparedLinuxCapture = null;
+	if (prepared.outputPath !== outputPath) {
+		console.warn("[native-linux] discarding a prepared session for a different recording");
+		prepared.session.discard();
+		return null;
+	}
+	// EVERY CAPTURE SETTING IS FIXED AT SPAWN. `arm()` only writes `record`, so a
+	// prepared helper is already running with the audio and cursor settings it
+	// was created with — and the HUD does not lock its controls during the
+	// countdown, so the user really can change them in between. Reusing the
+	// session would record one thing while the app believed another, including
+	// the cursor mode that decides whether the editor draws its own pointer.
+	if (captureSettingsOf(prepared.request) !== captureSettingsOf(request)) {
+		console.info("[native-linux] settings changed during the countdown; renegotiating");
+		prepared.session.discard();
+		return null;
+	}
+	return prepared.session;
 }
 
-function normalizeCursorAsset(asset: unknown): NativeCursorAsset | null {
-	if (!asset || typeof asset !== "object") {
-		return null;
-	}
-
-	const candidate = asset as Partial<NativeCursorAsset>;
-	if (typeof candidate.id !== "string" || typeof candidate.imageDataUrl !== "string") {
-		return null;
-	}
-
-	return {
-		id: candidate.id,
-		platform:
-			candidate.platform === "win32" ? "win32" : process.platform === "darwin" ? "darwin" : "linux",
-		imageDataUrl: candidate.imageDataUrl,
-		width:
-			typeof candidate.width === "number" && Number.isFinite(candidate.width)
-				? Math.max(1, Math.round(candidate.width))
-				: 1,
-		height:
-			typeof candidate.height === "number" && Number.isFinite(candidate.height)
-				? Math.max(1, Math.round(candidate.height))
-				: 1,
-		hotspotX:
-			typeof candidate.hotspotX === "number" && Number.isFinite(candidate.hotspotX)
-				? Math.max(0, Math.round(candidate.hotspotX))
-				: 0,
-		hotspotY:
-			typeof candidate.hotspotY === "number" && Number.isFinite(candidate.hotspotY)
-				? Math.max(0, Math.round(candidate.hotspotY))
-				: 0,
-		scaleFactor:
-			typeof candidate.scaleFactor === "number" && Number.isFinite(candidate.scaleFactor)
-				? Math.max(0.1, candidate.scaleFactor)
-				: undefined,
-		cursorType: typeof candidate.cursorType === "string" ? candidate.cursorType : null,
-	};
+/** The request fields baked into the helper's spawn arguments, canonicalised. */
+function captureSettingsOf(request: NativeLinuxRecordingRequest): string {
+	return JSON.stringify({
+		fps: request.video?.fps ?? null,
+		bitrate: request.video?.bitrate ?? null,
+		system: request.audio?.system?.enabled ?? false,
+		microphone: request.audio?.microphone?.enabled ?? false,
+		deviceName: request.audio?.microphone?.deviceName ?? null,
+		gain: request.audio?.microphone?.gain ?? null,
+		cursor: normalizeCursorCaptureMode(request?.cursor?.mode) ?? "editable-overlay",
+	});
 }
 
-async function readCursorRecordingFile(targetVideoPath: string): Promise<CursorRecordingData> {
-	const telemetryPath = `${targetVideoPath}.cursor.json`;
-	try {
-		const content = await fs.readFile(telemetryPath, "utf-8");
-		const parsed = JSON.parse(content);
-		const rawSamples = Array.isArray(parsed)
-			? parsed
-			: Array.isArray(parsed?.samples)
-				? parsed.samples
-				: [];
-		const rawAssets = Array.isArray(parsed?.assets) ? parsed.assets : [];
+/** Tears down a prepared-but-unarmed session, e.g. an abandoned countdown. */
+function discardPreparedLinuxCapture(reason: string) {
+	// Invalidate any negotiation still in flight, so the session it is about to
+	// produce is discarded on arrival instead of stranded.
+	preparingLinuxCaptureToken = null;
+	if (!preparedLinuxCapture) {
+		return;
+	}
+	console.info(`[native-linux] discarding the prepared capture: ${reason}`);
+	preparedLinuxCapture.session.discard();
+	preparedLinuxCapture = null;
+}
 
-		const samples = rawSamples
-			.map((sample: unknown) => normalizeCursorSample(sample))
-			.filter((sample: CursorRecordingSample | null): sample is CursorRecordingSample =>
-				Boolean(sample),
-			)
-			.sort((a: CursorRecordingSample, b: CursorRecordingSample) => a.timeMs - b.timeMs);
+/**
+ * Names what the portal handed over, for the tray tooltip.
+ *
+ * There is no window title to show: the ScreenCast portal reports a kind and a
+ * PipeWire node id, never a name. Reporting the kind is the most that can be
+ * said honestly, and an unknown kind stays unknown — calling it "Screen" would
+ * be the same guess that put a window's name on a full-screen recording.
+ */
+function linuxSourceLabel(kind?: LinuxCaptureSourceKind): string {
+	switch (kind) {
+		case "window":
+			return mainT("common", "recordingSource.window");
+		case "monitor":
+			return mainT("common", "recordingSource.screen");
+		case "virtual":
+			return mainT("common", "recordingSource.virtual");
+		default:
+			return mainT("common", "recordingSource.unknown");
+	}
+}
+/**
+ * NO PORTAL RESTORE TOKEN IS KEPT, AND THAT IS DELIBERATE.
+ *
+ * A token used to be persisted here so the compositor's picker would not appear
+ * on every recording. It is gone because it made "record this window" record the
+ * whole screen instead. A restore token is bound to the source it was minted
+ * for, so once any monitor had been approved the portal restored that monitor on
+ * every later run and stopped raising the picker at all — and `SelectSources`
+ * has no parameter naming a source, so the app could not ask for anything else.
+ * On Wayland the picker IS the source chooser; suppressing it left the user with
+ * no way to change what they were recording.
+ *
+ * Answering the picker each time is the cost of being able to choose at all.
+ */
 
-		const assets = rawAssets
-			.map((asset: unknown) => normalizeCursorAsset(asset))
-			.filter((asset: NativeCursorAsset | null): asset is NativeCursorAsset => Boolean(asset));
+// ponytail: the sidecar readers used to live here, ~150 lines of parsing wedged
+// between the capture state machine and the asset-path helpers, reachable only
+// through IPC. They now live in `electron/media/cursorSidecar.ts` — Node-pure,
+// injectable, testable — because the agent needed to read the same file and
+// could not import an IPC handler. What is left here is the binding of
+// `RECORDINGS_DIR` (an `app.getPath` at main-module scope) to those readers.
+//
+// ponytail: a FUNCTION, not a captured object. `main.ts` imports this module and
+// this module imports `RECORDINGS_DIR` back from it, so at the moment this file
+// is evaluated that binding is still in its temporal dead zone — reading it here
+// threw `Cannot access 'RECORDINGS_DIR' before initialization` and the app died
+// before its first window. Every call site is already inside a handler, i.e.
+// long after both modules finished loading.
+const cursorSidecarOptions = () => ({ recordingsDir: RECORDINGS_DIR });
 
-		return {
-			version:
-				typeof parsed?.version === "number" && Number.isFinite(parsed.version) ? parsed.version : 1,
-			provider: parsed?.provider === "native" ? "native" : "none",
-			samples,
-			assets,
-		};
-	} catch (error) {
-		const nodeError = error as NodeJS.ErrnoException;
-		if (nodeError.code === "ENOENT") {
+const readCursorRecordingFile = (targetVideoPath: string) =>
+	readCursorRecordingFileFrom(targetVideoPath, cursorSidecarOptions());
+
+const readCursorTelemetryFile = (targetVideoPath: string) =>
+	readCursorTelemetryFileFrom(targetVideoPath, cursorSidecarOptions());
+
+/**
+ * The agent's door onto cursor telemetry — the last mile of D-TELEM.
+ *
+ * ponytail: `resolveApprovedVideoPath` is not ceremony. The asset path comes
+ * from the DOCUMENT rather than from the model, but the document is a file on
+ * disk that the user (or a future import path) can put anything in, and the
+ * sidecar path is DERIVED from it. Reusing the same allow-list the video loaders
+ * use means a crafted `originalPath` cannot walk this into reading an arbitrary
+ * JSON file. A refused path yields "unavailable", not "no-sidecar": we did not
+ * look, and the model must not report otherwise.
+ */
+const agentCursorTelemetryReader: CursorTelemetryReader = {
+	probe: async ({ originalPath }) => {
+		const approved = resolveApprovedVideoPath(originalPath);
+		if (!approved) return false;
+		return (await readCursorSidecar(approved, cursorSidecarOptions())).found;
+	},
+	read: async ({ assetId, originalPath }) => {
+		const approved = resolveApprovedVideoPath(originalPath);
+		if (!approved) {
 			return {
-				version: CURSOR_TELEMETRY_VERSION,
-				provider: "none",
-				samples: [],
-				assets: [],
+				status: "unavailable",
+				assetId,
+				note: "The asset's file is outside the folders this app may read, so its cursor sidecar was not opened.",
 			};
 		}
-
-		console.error("Failed to load cursor telemetry:", error);
-		throw error;
-	}
-}
-
-async function readCursorTelemetryFile(targetVideoPath: string) {
-	try {
-		const recordingData = await readCursorRecordingFile(targetVideoPath);
-		return {
-			success: true,
-			samples: recordingData.samples.map(mapCursorSampleToTelemetryPoint),
-		};
-	} catch (error) {
-		console.error("Failed to load cursor telemetry:", error);
-		return {
-			success: false,
-			message: "Failed to load cursor telemetry",
-			error: String(error),
-			samples: [],
-		};
-	}
-}
+		const sidecar = await readCursorSidecar(approved, cursorSidecarOptions());
+		if (!sidecar.found) return { status: "no-sidecar", assetId };
+		return { status: "ok", assetId, samples: sidecar.data.samples };
+	},
+};
 
 function resolveAssetBasePath() {
 	try {
@@ -698,7 +1070,57 @@ function resolveAssetBasePath() {
 	}
 }
 
+/** Whether sources come from Apple's picker in this run. */
+function macPickerOwnsSources() {
+	return macSystemPickerEnabled();
+}
+
+async function getMacPickerSession(): Promise<MacPickerSession | null> {
+	if (!macPickerOwnsSources()) {
+		return null;
+	}
+	if (macPickerSession) {
+		return macPickerSession;
+	}
+	const helperPath = await findNativeMacCaptureHelperPath();
+	const session = helperPath ? new MacPickerSession(helperPath) : null;
+	if (!session || !(await session.start())) {
+		// A helper that predates `--picker-session`, or none at all: the app's own picker
+		// and the Screen Recording grant, for the rest of this run.
+		console.warn("[mac-picker] falling back to the app's own source picker");
+		markMacSystemPickerUnavailable();
+		return null;
+	}
+	macPickerSession = session;
+	return session;
+}
+
+function selectedSourceFromPick(
+	pick: MacPickerSelection,
+): SelectedSource & { id: string; display_id: string } {
+	const display =
+		pick.displayId !== null
+			? screen.getAllDisplays().find((candidate) => candidate.id === pick.displayId)
+			: undefined;
+	const name =
+		pick.kind === "window" ? pick.title || pick.appName || "Window" : display?.label || "Screen";
+	return {
+		id: `${MAC_PICKER_SOURCE_PREFIX}${pick.kind}:${pick.windowId ?? pick.displayId ?? 0}`,
+		name,
+		display_id: pick.displayId !== null ? String(pick.displayId) : "",
+	};
+}
+
 function getSelectedSourceBounds() {
+	// A pick from Apple's picker carries its own frame; there is no desktopCapturer
+	// display to look up for it.
+	if (isMacPickerSourceId(selectedSource?.id)) {
+		const pick = macPickerSession?.getSelection();
+		if (pick) {
+			return pick.bounds;
+		}
+	}
+
 	// Single-window capture records only the window's region, not the whole display.
 	// Normalizing the cursor against display bounds leaves a fixed offset in the export,
 	// so prefer the helper-reported window frame when capturing a window.
@@ -809,40 +1231,6 @@ function isWindowsGraphicsCaptureOsSupported() {
 	return Number.isFinite(build) && build >= 19041;
 }
 
-function normalizeNativeDeviceName(value: string) {
-	return value
-		.toLowerCase()
-		.replace(/[^a-z0-9]+/g, " ")
-		.trim();
-}
-
-function scoreNativeDeviceName(candidateName: string, candidateId: string, requestedName?: string) {
-	const candidate = normalizeNativeDeviceName(candidateName);
-	const id = normalizeNativeDeviceName(candidateId);
-	const requested = normalizeNativeDeviceName(requestedName ?? "");
-	if (!requested) {
-		return 0;
-	}
-	if (candidate === requested) {
-		return 1000;
-	}
-	if (candidate.includes(requested) || requested.includes(candidate)) {
-		return 900;
-	}
-	if (id.includes(requested) || requested.includes(id)) {
-		return 800;
-	}
-
-	return requested
-		.split(/\s+/)
-		.filter((word) => word.length > 1 && !["camera", "webcam", "video", "input"].includes(word))
-		.reduce((score, word) => {
-			if (candidate.includes(word)) return score + 100;
-			if (id.includes(word)) return score + 50;
-			return score;
-		}, 0);
-}
-
 function queryDirectShowVideoInputRegistry() {
 	return new Promise<string>((resolve) => {
 		const proc = spawn(
@@ -887,7 +1275,7 @@ async function resolveDirectShowWebcamClsid(deviceName?: string) {
 	let best: { clsid: string; friendlyName?: string; score: number } | null = null;
 	for (const entry of entries) {
 		if (!entry.clsid) continue;
-		const score = scoreNativeDeviceName(entry.friendlyName ?? "", entry.clsid, deviceName);
+		const score = scoreDeviceNameMatch(entry.friendlyName ?? "", entry.clsid, deviceName);
 		if (!best || score > best.score) {
 			best = { clsid: entry.clsid, friendlyName: entry.friendlyName, score };
 		}
@@ -907,6 +1295,16 @@ async function resolveDirectShowWebcamClsid(deviceName?: string) {
 }
 
 async function startCursorRecording(recordingId?: number) {
+	// On Linux the native capture helper already produces cursor samples, from
+	// the SAME portal session that produces the pixels. Spawning the cursor-only
+	// helper alongside it would open a SECOND portal session — and since
+	// SelectSources may be called once per session, that means a second picker
+	// in front of the user, for a stream nothing consumes. The double prompt is
+	// precisely what the native path exists to remove.
+	if (linuxNativeCaptureSession) {
+		return;
+	}
+
 	if (cursorRecordingSession) {
 		pendingCursorRecordingData = await cursorRecordingSession.stop();
 		cursorRecordingSession = null;
@@ -952,6 +1350,37 @@ async function writePendingCursorTelemetry(videoPath: string) {
 		await fs.writeFile(telemetryPath, JSON.stringify(pendingCursorRecordingData, null, 2), "utf-8");
 	}
 	pendingCursorRecordingData = null;
+}
+
+// P4 — proactively seeds the media-links registry for a fresh recording so
+// its camera/cursor-telemetry links can still be found later even if the
+// screen video is moved, renamed, or imported into a different project.
+// Best-effort: a registry write hiccup must never fail the recording flow.
+async function registerRecordingMediaLinks(
+	screenVideoPath: string,
+	options: {
+		webcamVideoPath?: string;
+		webcamOffsetMs?: number;
+		cursorCaptureMode?: CursorCaptureMode;
+	},
+) {
+	try {
+		const cursorTelemetryPath = `${screenVideoPath}.cursor.json`;
+		const hasCursorTelemetry = await fs
+			.access(cursorTelemetryPath, fsConstants.F_OK)
+			.then(() => true)
+			.catch(() => false);
+		await registerMediaLinks(RECORDINGS_DIR, screenVideoPath, {
+			...(options.webcamVideoPath ? { webcamVideoPath: options.webcamVideoPath } : {}),
+			...(options.webcamVideoPath && Number.isFinite(options.webcamOffsetMs)
+				? { webcamOffsetMs: options.webcamOffsetMs }
+				: {}),
+			...(hasCursorTelemetry ? { cursorTelemetryPath } : {}),
+			...(options.cursorCaptureMode ? { cursorCaptureMode: options.cursorCaptureMode } : {}),
+		});
+	} catch (error) {
+		console.warn("[media-links] failed to register recording links:", error);
+	}
 }
 
 function shiftPendingCursorTelemetry(offsetMs: number) {
@@ -1045,8 +1474,10 @@ function waitForNativeWindowsCaptureStart(proc: ChildProcessWithoutNullStreams) 
 			reject(new Error("Timed out waiting for native Windows capture to start"));
 		}, 12000);
 
-		const onOutput = (chunk: Buffer) => {
-			nativeWindowsCaptureOutput += chunk.toString();
+		// Observes only. `attachNativeWindowsCaptureOutputDrain` is the single
+		// writer of `nativeWindowsCaptureOutput` and is registered first, so the
+		// chunk that triggers this call is already in the buffer.
+		const onOutput = () => {
 			if (nativeWindowsCaptureOutput.includes("Recording started")) {
 				cleanup();
 				resolve();
@@ -1080,63 +1511,76 @@ function waitForNativeWindowsCaptureStart(proc: ChildProcessWithoutNullStreams) 
 	});
 }
 
-function waitForNativeWindowsCaptureStop(proc: ChildProcessWithoutNullStreams) {
-	return new Promise<string>((resolve, reject) => {
-		const timer = setTimeout(() => {
-			cleanup();
-			if (!proc.killed) {
-				proc.kill();
-			}
-			reject(
-				new Error(
-					`Timed out waiting for native Windows capture to stop. Output path: ${
-						nativeWindowsCaptureTargetPath ?? "unknown"
-					}. Output: ${nativeWindowsCaptureOutput.trim()}`,
-				),
-			);
-		}, NATIVE_WINDOWS_CAPTURE_STOP_TIMEOUT_MS);
-		const onOutput = (chunk: Buffer) => {
-			nativeWindowsCaptureOutput += chunk.toString();
-		};
-		const onClose = (code: number | null) => {
-			cleanup();
-			const match = nativeWindowsCaptureOutput.match(/Recording stopped\. Output path: (.+)/);
-			if (match?.[1]) {
-				resolve(match[1].trim());
-				return;
-			}
-			if (code === 0 && nativeWindowsCaptureTargetPath) {
-				resolve(nativeWindowsCaptureTargetPath);
-				return;
-			}
-			reject(
-				new Error(
-					nativeWindowsCaptureOutput.trim() ||
-						`Native Windows capture exited with code=${code ?? "unknown"}`,
-				),
-			);
-		};
-		const onError = (error: Error) => {
-			cleanup();
-			reject(error);
-		};
-		const cleanup = () => {
-			clearTimeout(timer);
-			proc.stdout.off("data", onOutput);
-			proc.stderr.off("data", onOutput);
-			proc.off("close", onClose);
-			proc.off("error", onError);
-		};
+/**
+ * Keeps reading the helper for as long as it lives.
+ *
+ * `waitForNativeWindowsCaptureStart` drops every listener the moment it sees
+ * "Recording started", so until this existed the whole recording ran unobserved:
+ * helper warnings and `[stop-timing]` diagnostics were discarded, which is why
+ * issue #252 had no helper-side evidence from a real app run and had to be
+ * reproduced by driving the .exe by hand. macOS has had this since it shipped
+ * (`attachNativeMacCaptureOutputDrain`); Windows never did.
+ */
+function attachNativeWindowsCaptureOutputDrain(proc: ChildProcessWithoutNullStreams) {
+	const drain = (chunk: Buffer) => {
+		nativeWindowsCaptureOutput += chunk.toString();
+	};
+	const cleanup = () => {
+		proc.stdout.off("data", drain);
+		proc.stderr.off("data", drain);
+	};
 
-		proc.stdout.on("data", onOutput);
-		proc.stderr.on("data", onOutput);
-		proc.once("close", onClose);
-		proc.once("error", onError);
+	proc.stdout.on("data", drain);
+	proc.stderr.on("data", drain);
+	proc.once("close", cleanup);
+	// An 'error' event with no listener throws, and in the main process that is
+	// an uncaught exception rather than a rejected promise. Both streams need a
+	// sink for the whole life of the helper: stdin raises EPIPE when the helper
+	// died before we wrote to it, and `kill()` on a wedged process re-emits its
+	// failure on the ChildProcess itself.
+	// All four emitters, not just stdin: `cleanup` only drops 'data', so an
+	// abandoned-but-still-alive helper leaves these pipes open with no consumer,
+	// and an ECONNRESET when the OS finally reaps it would take down the main
+	// process.
+	proc.stdin.on("error", (error) => {
+		console.warn("[native-wgc] helper stdin error:", error);
 	});
+	proc.stdout.on("error", (error) => {
+		console.warn("[native-wgc] helper stdout error:", error);
+	});
+	proc.stderr.on("error", (error) => {
+		console.warn("[native-wgc] helper stderr error:", error);
+	});
+	proc.on("error", (error) => {
+		console.warn("[native-wgc] helper process error:", error);
+	});
+
+	// Returned so an abandoned helper can be cut loose. A process that survived
+	// both kill attempts keeps writing, and `nativeWindowsCaptureOutput` is
+	// shared with whatever recording starts next.
+	return cleanup;
 }
 
-function readNativeWindowsWebcamFormat(output: string) {
-	const lines = output.split(/\r?\n/).filter((line) => line.includes('"event":"webcam-format"'));
+/**
+ * Sends `stop` and closes the command channel behind it.
+ *
+ * The helper treats stdin EOF as a stop too, so ending the stream is a free
+ * second signal if the write itself is lost.
+ */
+function sendNativeWindowsStopCommand(proc: ChildProcessWithoutNullStreams) {
+	if (!proc.stdin.writable) {
+		return false;
+	}
+
+	proc.stdin.write("stop\n");
+	proc.stdin.end();
+	return true;
+}
+
+function readNativeWindowsEncoderSelection(output: string) {
+	const lines = output
+		.split(/\r?\n/)
+		.filter((line) => line.includes('"event":"encoder-selection"'));
 	const lastLine = lines.at(-1);
 	if (!lastLine) {
 		return null;
@@ -1144,10 +1588,21 @@ function readNativeWindowsWebcamFormat(output: string) {
 
 	try {
 		return JSON.parse(lastLine) as {
-			width?: number;
-			height?: number;
-			fps?: number;
-			deviceName?: string;
+			video?: string;
+			// Which MP4 flavour the helper actually wrote, `fragmented-mp4` or
+			// `mp4`. It reports this because the fragmented sink degrades to the
+			// plain one rather than failing a recording, so the flavour is a
+			// per-run outcome and not a property of the version. This is the only
+			// thing that can answer "was this file supposed to survive a kill?",
+			// which is what `salvageNativeWindowsFragmentedCapture` asks.
+			container?: string;
+			preferSoftwareEncoder?: boolean;
+			// Whether BeginWriting() actually landed on a hardware H.264 MFT, as
+			// opposed to `video` above, which only says which configuration path
+			// was tried. "default" plus a software runtime means the machine never
+			// got hardware acceleration in the first place -- see
+			// kVideoEncoderRuntime* in mf_encoder.h.
+			videoEncoderRuntime?: string;
 		};
 	} catch {
 		return null;
@@ -1180,32 +1635,71 @@ function inspectNativeMacCaptureOutput() {
 	}
 }
 
-function attachNativeMacCaptureOutputDrain(proc: ChildProcessWithoutNullStreams) {
+function attachNativeMacCaptureOutputDrain(
+	proc: ChildProcessWithoutNullStreams,
+	onTakeEnded: () => void,
+	onSystemAudioUnavailable: () => void,
+) {
 	let lineBuffer = "";
+	// Hooked here rather than on `nativeMacCaptureEvents`, which the start wait
+	// replays from the buffer: the drain sees each line once, live.
+	const watchLiveTake = createNativeMacMidCaptureErrorWatch(
+		() => nativeMacCaptureProcess === proc && !nativeMacStopInFlight,
+		onTakeEnded,
+		onSystemAudioUnavailable,
+	);
 	const drain = (chunk: Buffer) => {
 		const text = chunk.toString();
-		nativeMacCaptureOutput += text;
+		nativeMacCaptureOutputs.set(proc, (nativeMacCaptureOutputs.get(proc) ?? "") + text);
+		// Only the current take's helper feeds the shared buffer and event bus that the
+		// start wait, the microphone check and the diagnostics bundle read.
+		const isCurrent = nativeMacCaptureProcess === proc;
+		if (isCurrent) {
+			nativeMacCaptureOutput += text;
+		}
 		lineBuffer += text;
 		const lines = lineBuffer.split(/\r?\n/);
 		lineBuffer = lines.pop() ?? "";
 		for (const line of lines) {
 			const event = tryParseNativeHelperEvent(line.trim());
 			if (event) {
-				dispatchNativeMacHelperEvent(event);
+				if (isCurrent) {
+					dispatchNativeMacHelperEvent(event);
+				}
+				watchLiveTake(event);
 			}
 		}
 	};
-	const cleanup = () => {
+	// Registered right after spawn, before the stop wait can listen for `close`, so
+	// the wait always finds the exit recorded when its own listener runs.
+	const onClose = (code: number | null, signal: NodeJS.Signals | null) => {
+		nativeMacCaptureExits.set(proc, { code, signal });
 		proc.stdout.off("data", drain);
 		proc.stderr.off("data", drain);
-		proc.off("close", cleanup);
-		proc.off("error", cleanup);
+		watchLiveTake.exited();
 	};
 
 	proc.stdout.on("data", drain);
 	proc.stderr.on("data", drain);
-	proc.once("close", cleanup);
-	proc.once("error", cleanup);
+	proc.once("close", onClose);
+	// A ChildProcess `error` with no listener throws in the main process.
+	proc.on("error", (error) => {
+		console.warn("[native-sck] helper process error:", error);
+	});
+	// `sendNativeMacStopCommand` checks the pipe first, but the helper can still die
+	// between that check and the write. The main-process guard would swallow the
+	// EPIPE; a listener here keeps it from being raised as uncaught at all.
+	proc.stdin.on("error", (error) => {
+		console.warn("[native-sck] helper command pipe error:", error);
+	});
+	// The output pipes too, as the Windows drain does: the guard only swallows a few
+	// codes, and any other stream error would take the main process down.
+	proc.stdout.on("error", (error) => {
+		console.warn("[native-sck] helper stdout error:", error);
+	});
+	proc.stderr.on("error", (error) => {
+		console.warn("[native-sck] helper stderr error:", error);
+	});
 }
 
 function waitForNativeMacCaptureStart(proc: ChildProcessWithoutNullStreams) {
@@ -1234,64 +1728,6 @@ function waitForNativeMacCaptureStart(proc: ChildProcessWithoutNullStreams) {
 				new Error(
 					nativeMacCaptureOutput.trim() ||
 						`Native macOS capture exited before recording started (code=${code ?? "unknown"})`,
-				),
-			);
-		};
-		const onError = (error: Error) => {
-			cleanup();
-			reject(error);
-		};
-		const cleanup = () => {
-			clearTimeout(timer);
-			nativeMacCaptureEvents.off("helper-event", onOutput);
-			proc.off("close", onClose);
-			proc.off("error", onError);
-		};
-
-		nativeMacCaptureEvents.on("helper-event", onOutput);
-		proc.once("close", onClose);
-		proc.once("error", onError);
-		inspectNativeMacCaptureOutput();
-	});
-}
-
-function waitForNativeMacCaptureStop(proc: ChildProcessWithoutNullStreams) {
-	return new Promise<string>((resolve, reject) => {
-		const timer = setTimeout(() => {
-			cleanup();
-			reject(
-				new Error(
-					`Timed out waiting for native macOS capture to stop. Output path: ${
-						nativeMacCaptureTargetPath ?? "unknown"
-					}. Output: ${nativeMacCaptureOutput.trim()}`,
-				),
-			);
-		}, 30_000);
-
-		const inspect = (event: Record<string, unknown>) => {
-			if (event.event === "recording-stopped") {
-				cleanup();
-				resolve(String(event.screenPath ?? nativeMacCaptureTargetPath ?? ""));
-				return;
-			}
-			if (event.event === "error") {
-				cleanup();
-				reject(new Error(String(event.message ?? event.code ?? "Native macOS capture failed")));
-			}
-		};
-
-		const onOutput = (event: Record<string, unknown>) => inspect(event);
-		const onClose = (code: number | null) => {
-			if (code === 0 && nativeMacCaptureTargetPath) {
-				cleanup();
-				resolve(nativeMacCaptureTargetPath);
-				return;
-			}
-			cleanup();
-			reject(
-				new Error(
-					nativeMacCaptureOutput.trim() ||
-						`Native macOS capture exited with code=${code ?? "unknown"}`,
 				),
 			);
 		};
@@ -1390,9 +1826,131 @@ async function loadRecordedSessionForVideoPath(
 	}
 }
 
+// P4 — resolves the camera (and cursor-telemetry path, though callers that
+// only care about the camera can ignore it) for a screen-recording video,
+// trying the cheap path-adjacency sidecar first (handles "just recorded" and
+// pre-existing recordings) and falling back to the fingerprint registry
+// (handles the file having been moved/renamed/imported from elsewhere).
+// `videoPath` must already be normalized + approved by the caller.
+async function resolveMediaLinksForVideo(videoPath: string): Promise<{
+	webcamVideoPath?: string;
+	webcamOffsetMs?: number;
+	cursorTelemetryPath?: string;
+	resolvedVia: "sidecar" | "fingerprint" | "none";
+}> {
+	const session = await loadRecordedSessionForVideoPath(videoPath);
+	const cursorTelemetryPath = `${videoPath}.cursor.json`;
+	const hasCursorTelemetry = await fs
+		.access(cursorTelemetryPath, fsConstants.F_OK)
+		.then(() => true)
+		.catch(() => false);
+
+	if (session?.webcamVideoPath || hasCursorTelemetry) {
+		// Opportunistic backfill so the link survives a later move even if this
+		// recording predates the registry, or if its sidecar doesn't travel with it.
+		await registerMediaLinks(RECORDINGS_DIR, videoPath, {
+			...(session?.webcamVideoPath ? { webcamVideoPath: session.webcamVideoPath } : {}),
+			...(session?.webcamVideoPath && Number.isFinite(session.webcamOffsetMs)
+				? { webcamOffsetMs: session.webcamOffsetMs }
+				: {}),
+			...(hasCursorTelemetry ? { cursorTelemetryPath } : {}),
+		}).catch((error) => console.warn("[media-links] backfill failed:", error));
+
+		return {
+			...(session?.webcamVideoPath
+				? {
+						webcamVideoPath: session.webcamVideoPath,
+						webcamOffsetMs: session.webcamOffsetMs ?? 0,
+					}
+				: {}),
+			...(hasCursorTelemetry ? { cursorTelemetryPath } : {}),
+			resolvedVia: "sidecar",
+		};
+	}
+
+	try {
+		const links = await findMediaLinksByFingerprint(RECORDINGS_DIR, videoPath);
+		if (links?.webcamVideoPath || links?.cursorTelemetryPath) {
+			let webcamVideoPath = links.webcamVideoPath;
+			if (webcamVideoPath && !isPathAllowed(webcamVideoPath)) {
+				webcamVideoPath =
+					(await approveReadableVideoPath(webcamVideoPath, [RECORDINGS_DIR])) ?? undefined;
+			}
+			return {
+				...(webcamVideoPath ? { webcamVideoPath, webcamOffsetMs: links.webcamOffsetMs ?? 0 } : {}),
+				...(links.cursorTelemetryPath ? { cursorTelemetryPath: links.cursorTelemetryPath } : {}),
+				resolvedVia: "fingerprint",
+			};
+		}
+	} catch (error) {
+		console.warn("[media-links] fingerprint lookup failed:", error);
+	}
+
+	return { resolvedVia: "none" };
+}
+
+/**
+ * Writes the diagnostic bundle a bug report needs: app/OS facts, the native
+ * helpers' raw stdout/stderr (which is where `[stop-timing]` and
+ * `encoder-selection` land — see nativeWindowsCaptureStop.ts), and the main
+ * process's own recent console output. Shared by the renderer's IPC call and
+ * the menu/tray "Save Diagnostics" entry point in main.ts, which has no
+ * renderer-side `projectState`/`logs` to offer and does not need to.
+ */
+export async function exportDiagnosticFile(payload: {
+	error: string;
+	stack?: string;
+	projectState: unknown;
+	logs: string[];
+}) {
+	const { filePath, canceled } = await dialog.showSaveDialog({
+		title: "Save Diagnostic File",
+		defaultPath: `showhow-diagnostic-${Date.now()}.json`,
+		filters: [{ name: "JSON", extensions: ["json"] }],
+	});
+
+	if (canceled || !filePath) return { success: false, canceled: true };
+
+	const HELPER_OUTPUT_MAX_BYTES = 64 * 1024;
+	const tail = (s: string, max: number) => (s.length <= max ? s : s.slice(s.length - max));
+
+	const diagnostic = {
+		timestamp: new Date().toISOString(),
+		appVersion: app.getVersion(),
+		platform: process.platform,
+		arch: process.arch,
+		// The same fact the About box leads with, and for the same reason: it is what
+		// explains why a copy does or does not offer an update check. This file is the
+		// artifact users actually attach, so it must not be the one that omits it.
+		channel: getInstallChannel(),
+		osRelease: os.release(),
+		osVersion: os.version(),
+		totalMemoryMB: Math.round(os.totalmem() / 1024 / 1024),
+		nodeVersion: process.versions.node,
+		electronVersion: process.versions.electron,
+		chromeVersion: process.versions.chrome,
+		error: payload.error,
+		stack: payload.stack,
+		projectState: payload.projectState,
+		recentLogs: payload.logs,
+		helperOutput: {
+			windows: tail(nativeWindowsCaptureOutput, HELPER_OUTPUT_MAX_BYTES),
+			mac: tail(nativeMacCaptureOutput, HELPER_OUTPUT_MAX_BYTES),
+		},
+		mainProcessLogs: mainLogBuffer.snapshot(),
+	};
+
+	try {
+		await fs.writeFile(filePath, JSON.stringify(diagnostic, null, 2), "utf-8");
+		return { success: true, path: filePath };
+	} catch (error) {
+		console.error("Failed to write diagnostic file:", error);
+		return { success: false, error: String(error) };
+	}
+}
+
 export function registerIpcHandlers(
 	createEditorWindow: () => void,
-	createLibraryWindow: () => void,
 	createSourceSelectorWindow: () => BrowserWindow,
 	createCountdownOverlayWindow: () => BrowserWindow,
 	createNotesWindowWrapper: () => BrowserWindow,
@@ -1403,49 +1961,106 @@ export function registerIpcHandlers(
 	onRecordingStateChange?: (recording: boolean, sourceName: string) => void,
 	_switchToHud?: () => void,
 ) {
-	// Start the localhost companion bridge once. Best-effort; never blocks IPC.
-	void ensureShowhowBridgeStarted();
-
-	async function requestScreenAccess() {
-		if (process.platform !== "darwin") {
-			return { success: true, granted: true, status: "granted" };
-		}
-
-		try {
-			const status = systemPreferences.getMediaAccessStatus("screen");
-			if (status === "granted") {
-				return { success: true, granted: true, status };
+	const appSettings = new AppSettingsStore(app.getPath("userData"));
+	const broadcastSelectedSource = (source: SelectedSource | null) => {
+		for (const window of BrowserWindow.getAllWindows()) {
+			if (!window.isDestroyed()) {
+				window.webContents.send("selected-source-changed", source);
 			}
-
-			// Screen recording has no askForMediaAccess equivalent, so trigger the
-			// TCC prompt without opening OpenScreen's source selector above it.
-			if (status === "not-determined") {
-				const mainWin = getMainWindow();
-				if (mainWin && !mainWin.isDestroyed()) {
-					if (!mainWin.isVisible()) {
-						mainWin.show();
-					}
-					mainWin.focus();
-				}
-				app.focus({ steal: true });
-				desktopCapturer
-					.getSources({ types: ["screen"], thumbnailSize: { width: 1, height: 1 } })
-					.catch(() => {
-						// Permission probing failure is reported by the explicit status check below.
-					});
-				return { success: true, granted: false, status: "not-determined" };
-			}
-
-			return { success: true, granted: false, status };
-		} catch (error) {
-			console.error("Failed to request screen access:", error);
-			return { success: false, granted: false, status: "unknown", error: String(error) };
 		}
-	}
+	};
+	const sameSelectedSource = (left: SelectedSource | null, right: SelectedSource | null) =>
+		left?.id === right?.id && left?.name === right?.name && left?.display_id === right?.display_id;
+
+	// Issue #738: the renderer's `navigator.clipboard.writeText` is always denied
+	// here (NotAllowedError: Write permission denied — Electron withholds the
+	// clipboard-sanitized-write permission from the renderer), so chat's
+	// "Copy message" fell to its error toast and the clipboard kept its old
+	// content. Main's `clipboard` module has no such permission gate; the
+	// preload exposes this as `copyToClipboard`.
+	ipcMain.handle("clipboard:write-text", (_event, text: unknown) => {
+		if (typeof text !== "string") {
+			throw new TypeError("clipboard:write-text expects a string");
+		}
+		clipboard.writeText(text);
+	});
 
 	ipcMain.handle("get-sources", async (_, opts) => {
-		const sources = await desktopCapturer.getSources(opts);
-		lastEnumeratedSources = new Map(sources.map((source) => [source.id, source]));
+		// desktopCapturer.getSources can never settle where the GL stack cannot be
+		// reached -- a container, a CI runner, a host whose ANGLE fails to
+		// initialise. Bounded here rather than per-caller because every caller has
+		// the same exposure and none of them can cancel this call: the CLI runners
+		// (`sources`, `record`) and the GUI pickers (SourceSelector, RecStage) all
+		// await it, and a renderer-side race would only stop *waiting* while this
+		// keeps running and its reply goes to nobody. Rejecting is what turns an
+		// indefinite spinner into the pickers' existing error branch.
+		// How long it actually took, under the existing diagnostic flag. The bound
+		// above turned an indefinite hang into a named failure, which is where the
+		// open question starts rather than ends: on a headless runner `openscreen
+		// sources` gets an answer within 20s four times in five while `record` --
+		// the same call with the same options -- exceeds 30s every time. A duration
+		// on both paths is what tells those apart; a threshold alone cannot.
+		const startedAt = Date.now();
+		const diagnostic = isDiagnosticModeEnabled();
+		let sources: Awaited<ReturnType<typeof desktopCapturer.getSources>>;
+		try {
+			sources = await withDeadline(
+				desktopCapturer.getSources(opts),
+				GET_SOURCES_TIMEOUT_MS,
+				`Desktop source enumeration did not return within ${GET_SOURCES_TIMEOUT_MS}ms. ` +
+					"This usually means the display or GPU stack cannot be reached — check that a display server is available.",
+			);
+		} catch (error) {
+			if (diagnostic) {
+				// The reason, not an assumption about it: this catch also sees a
+				// getSources that rejected on its own, well inside the deadline, and
+				// calling that a timeout would point the next reader at the wrong thing.
+				// The deadline error carries its own wording.
+				const reason = error instanceof Error ? error.message : String(error);
+				console.info(
+					`[get-sources] failed after ${Date.now() - startedAt}ms (types=${(opts?.types ?? []).join(",")}): ${reason}`,
+				);
+			}
+			throw error;
+		}
+		if (diagnostic) {
+			console.info(
+				`[get-sources] returned ${sources.length} source(s) in ${Date.now() - startedAt}ms (types=${(opts?.types ?? []).join(",")})`,
+			);
+		}
+		lastEnumeratedSources = mergeEnumeratedSources(lastEnumeratedSources, sources, opts?.types);
+		const previousSelectedSource = selectedSource;
+		const currentLive = selectedSource?.id
+			? sources.find((source) => source.id === selectedSource?.id)
+			: null;
+		if (currentLive) {
+			selectedSource = {
+				id: currentLive.id,
+				name: currentLive.name,
+				display_id: currentLive.display_id,
+			};
+			selectedDesktopSource = currentLive;
+		} else if (enumerationIncludesSourceKind(opts?.types, selectedSource?.id)) {
+			selectedSource = null;
+			selectedDesktopSource = null;
+			const restored = resolveRecordingSource(
+				appSettings.getSnapshot().lastSource,
+				process.platform,
+				sources,
+				{ waylandPortal: process.platform === "linux" && Boolean(findPipeWireCursorHelperPath()) },
+			);
+			if (restored) {
+				selectedSource = {
+					id: restored.id,
+					name: restored.name,
+					display_id: restored.display_id,
+				};
+				selectedDesktopSource = lastEnumeratedSources.get(restored.id) ?? null;
+			}
+		}
+		if (!sameSelectedSource(previousSelectedSource, selectedSource)) {
+			broadcastSelectedSource(selectedSource);
+		}
 		return sources.map((source) => ({
 			id: source.id,
 			name: source.name,
@@ -1455,40 +2070,226 @@ export function registerIpcHandlers(
 		}));
 	});
 
-	ipcMain.handle("select-source", async (_, source: SelectedSource) => {
-		selectedSource = source;
-		// Reuse the exact source object returned during enumeration to avoid
-		// Windows window-source id mismatches across separate getSources() calls.
-		selectedDesktopSource =
-			typeof source.id === "string" ? (lastEnumeratedSources.get(source.id) ?? null) : null;
+	const selectSourceContext: SelectSourceContext<DesktopCapturerSource> = {
+		generation: selectSourceGeneration,
+		getSelected: () => ({ source: selectedSource, live: selectedDesktopSource }),
+		setSelected: (source, live) => {
+			selectedSource = source;
+			selectedDesktopSource = live;
+		},
+		getCached: (id) => lastEnumeratedSources.get(id) ?? null,
+		replaceCache: (sources) => {
+			lastEnumeratedSources = new Map(sources.map((candidate) => [candidate.id, candidate]));
+		},
+	};
 
-		if (!selectedDesktopSource && typeof source.id === "string") {
-			try {
-				const sources = await desktopCapturer.getSources({
-					types: ["screen", "window"],
-					thumbnailSize: { width: 0, height: 0 },
-					fetchWindowIcons: true,
-				});
-				lastEnumeratedSources = new Map(sources.map((candidate) => [candidate.id, candidate]));
-				selectedDesktopSource = lastEnumeratedSources.get(source.id) ?? null;
-			} catch {
-				selectedDesktopSource = null;
+	ipcMain.handle(
+		"select-source",
+		async (_, source: SelectedSource, options?: { persist?: boolean }) => {
+			const next = await selectSourceWithOwnership(
+				selectSourceContext,
+				{ id: source.id, name: source.name, display_id: source.display_id },
+				options,
+				{
+					getSources: () =>
+						desktopCapturer.getSources({
+							types: ["screen", "window"],
+							thumbnailSize: { width: 0, height: 0 },
+							fetchWindowIcons: true,
+						}),
+					persist: (live) => {
+						appSettings.setLastSource(
+							describeRecordingSource(process.platform, live as Required<SelectedSource>),
+						);
+					},
+					broadcast: broadcastSelectedSource,
+					shouldPersist: shouldPersistSelectedSource,
+				},
+			);
+			if (next) {
+				const sourceSelectorWin = getSourceSelectorWindow();
+				if (sourceSelectorWin) {
+					sourceSelectorWin.close();
+				}
+			}
+			return next;
+		},
+	);
+
+	/**
+	 * The HUD and the notes window belong to this process, not to the helper, so a display
+	 * pick would record them unless the picker is told to leave them out.
+	 */
+	function macPickerExcludedWindowIds() {
+		const appWindowSourceIds = [getMainWindow(), getNotesWindow()]
+			.filter((window): window is BrowserWindow => !!window && !window.isDestroyed())
+			.map((window) => window.getMediaSourceId());
+		return collectMacCaptureExcludedWindowIds(appWindowSourceIds);
+	}
+
+	async function presentMacSystemPicker(session: MacPickerSession) {
+		const excludedWindowIds = macPickerExcludedWindowIds();
+		// Out of the way while the picker is up. The HUD window is far larger than the bar
+		// it draws (a transparent reserve above it), and Apple's picker targets windows by
+		// their frame, not by where clicks land -- so that invisible rectangle hid every
+		// window behind it from the picker. Its exclusion from the capture is by window id,
+		// so hiding it does not bring it back into a display pick.
+		const hud = getMainWindow();
+		const hideHud = !!hud && !hud.isDestroyed() && hud.isVisible();
+		if (hideHud) {
+			hud.hide();
+		}
+		let pick: MacPickerSelection | null;
+		try {
+			pick = await session.present(
+				excludedWindowIds,
+				appSettings.getSnapshot().recording.hideDesktopIcons,
+			);
+		} finally {
+			if (hideHud && !hud.isDestroyed()) {
+				hud.showInactive();
 			}
 		}
-		const mainWin = getMainWindow();
-		if (mainWin && !mainWin.isDestroyed()) {
-			mainWin.webContents.send("selected-source-changed", selectedSource);
+		if (!pick) {
+			// Same signal our own picker window sends when it closes without a choice: the HUD
+			// stops waiting to record after a selection.
+			for (const window of BrowserWindow.getAllWindows()) {
+				if (!window.isDestroyed()) {
+					window.webContents.send("source-selector-closed");
+				}
+			}
+			return;
 		}
-		const sourceSelectorWin = getSourceSelectorWindow();
-		if (sourceSelectorWin) {
-			sourceSelectorWin.close();
+		const picked = selectedSourceFromPick(pick);
+		selectedSource = picked;
+		selectedDesktopSource = null;
+		// Written only so the next launch can name it: the pick itself dies with the helper.
+		try {
+			appSettings.setLastSource(describeMacPickerSource(picked, pick.kind));
+		} catch (error) {
+			console.warn("Failed to persist the picked recording source:", error);
+		}
+		broadcastSelectedSource(selectedSource);
+	}
+
+	app.on("will-quit", () => {
+		macPickerSession?.dispose();
+	});
+
+	// For the renderer's own source lists (the AI editor's recording stage): with Apple's
+	// picker they must hand the choice to `open-source-selector` rather than enumerate.
+	ipcMain.handle("uses-system-source-picker", () => macPickerOwnsSources());
+
+	// Named in the HUD and Record mode after a relaunch, while `get-selected-source` still
+	// answers null: the pick cannot be restored, so it is never reported as selected.
+	ipcMain.handle("get-last-picked-source", () =>
+		rememberedPickerSourceName(appSettings.getSnapshot().lastSource, macPickerOwnsSources()),
+	);
+
+	ipcMain.handle("get-selected-source", async () => {
+		const previousSelectedSource = selectedSource;
+		if (process.platform === "linux" && findPipeWireCursorHelperPath()) {
+			selectedSource = null;
+			selectedDesktopSource = null;
+			if (!sameSelectedSource(previousSelectedSource, null)) {
+				broadcastSelectedSource(null);
+			}
+			return null;
+		}
+		if (macPickerOwnsSources()) {
+			// Apple's picker owns the choice. A pick lives only as long as the helper session
+			// that holds it, so there is nothing to restore -- and enumerating here would ask
+			// for the very Screen Recording grant the picker makes unnecessary. A source the
+			// CLI selected by id in this run is still answered as it is: `record` picks by
+			// name, headless, and keeps the per-take helper.
+			if (!isMacPickerSourceId(selectedSource?.id)) {
+				return selectedDesktopSource ? selectedSource : null;
+			}
+			// A screen pick that would record the current HUD or notes window is no pick at all:
+			// answering null makes the next Record present the picker again (#965).
+			macPickerSession?.forgetSelectionUnlessExcluding(macPickerExcludedWindowIds());
+			if (!macPickerSession?.getSelection()) {
+				selectedSource = null;
+				selectedDesktopSource = null;
+				broadcastSelectedSource(null);
+			}
+			return selectedSource;
+		}
+		const lastSource = appSettings.getSnapshot().lastSource;
+		const liveSelected =
+			selectedSource?.id != null
+				? {
+						id: selectedSource.id,
+						name: selectedSource.name,
+						display_id: selectedSource.display_id ?? "",
+					}
+				: null;
+		if (!shouldEnumerateRecordingSources(liveSelected, lastSource)) {
+			return selectedSource;
+		}
+		const sources = await withDeadline(
+			desktopCapturer.getSources({
+				types: ["screen", "window"],
+				thumbnailSize: { width: 0, height: 0 },
+				fetchWindowIcons: false,
+			}),
+			GET_SOURCES_TIMEOUT_MS,
+			`Desktop source restoration did not return within ${GET_SOURCES_TIMEOUT_MS}ms.`,
+		);
+		const decision = restoreRecordingSourceAfterEnumeration({
+			selectedBefore: liveSelected,
+			selectedAfter:
+				selectedSource?.id != null
+					? {
+							id: selectedSource.id,
+							name: selectedSource.name,
+							display_id: selectedSource.display_id ?? "",
+						}
+					: null,
+			lastSourceBefore: lastSource,
+			lastSourceAfter: appSettings.getSnapshot().lastSource,
+			platform: process.platform,
+			sources,
+		});
+		if (!decision.apply) {
+			return selectedSource;
+		}
+		lastEnumeratedSources = new Map(sources.map((source) => [source.id, source]));
+		const restored = decision.restored;
+		selectedDesktopSource = restored ? (lastEnumeratedSources.get(restored.id) ?? null) : null;
+		selectedSource = restored
+			? { id: restored.id, name: restored.name, display_id: restored.display_id }
+			: null;
+		if (!sameSelectedSource(previousSelectedSource, selectedSource)) {
+			broadcastSelectedSource(selectedSource);
 		}
 		return selectedSource;
 	});
 
-	ipcMain.handle("get-selected-source", () => {
-		return selectedSource;
-	});
+	registerRecordingPrefsHandlers(
+		defaultRecordingPrefs,
+		getMainWindow,
+		() => BrowserWindow.getAllWindows(),
+		(previous, next) => {
+			// Apple's picker bakes the exclusions into the filter it hands back, so a pick made
+			// before "Hide desktop icons" changed would still record the desktop the old way.
+			// Dropping it makes the HUD ask for a new pick instead of ignoring the toggle.
+			if (
+				previous.hideDesktopIcons !== next.hideDesktopIcons &&
+				isMacPickerSourceId(selectedSource?.id)
+			) {
+				selectedSource = null;
+				broadcastSelectedSource(null);
+			}
+			// Turning system audio on is when its grant becomes wanted: ask now, so the prompt
+			// never lands on a take that is already counting down.
+			if (!previous.systemAudioEnabled && next.systemAudioEnabled && macPickerOwnsSources()) {
+				void getMacPermissions()
+					.askForSystemAudioOnce()
+					.catch((error) => console.warn("[permissions] system audio request failed:", error));
+			}
+		},
+	);
 
 	ipcMain.handle("request-camera-access", async () => {
 		if (process.platform !== "darwin") {
@@ -1522,72 +2323,69 @@ export function registerIpcHandlers(
 		}
 	});
 
-	ipcMain.handle("request-screen-access", async () => {
-		return requestScreenAccess();
-	});
-
 	ipcMain.handle("request-native-mac-cursor-access", async () => {
 		const access = await requestMacCursorAccessibilityAccess();
 
-		// When the editable cursor can't get Accessibility trust, pop a native dialog
-		// that deep-links to the Accessibility pane (mirrors the Screen Recording flow).
+		// Pop the native Accessibility dialog ONLY for a genuine denial — the helper ran,
+		// asked, and was told no. Every other !granted status means the helper never got
+		// to ask (absent from the build, killed by the loader, crashed, hung), and telling
+		// the user to grant a permission they may well already hold is what made #515
+		// impossible to escape. Those degrade silently instead; the recorder falls back to
+		// position-only cursor telemetry and the countdown still runs.
 		if (process.platform === "darwin" && !access.granted) {
-			const mainWin = getMainWindow();
-			const detail =
-				access.status === "missing-helper"
-					? "The cursor helper couldn't be found in this build, so the editable cursor can't be enabled. Rebuild the native helper (npm run build:native:mac) or switch the HUD cursor mode to system."
-					: "Allow Showhow under System Settings → Privacy & Security → Accessibility, then press record again to start the countdown.";
-			const messageOptions = {
-				type: "warning",
-				buttons: ["Open Accessibility Settings", "Cancel"],
-				defaultId: 0,
-				cancelId: 1,
-				message: "Accessibility access is required for the editable cursor",
-				detail,
-			} satisfies Electron.MessageBoxOptions;
-			const result =
-				mainWin && !mainWin.isDestroyed()
-					? await dialog.showMessageBox(mainWin, messageOptions)
-					: await dialog.showMessageBox(messageOptions);
-			if (result.response === 0) {
-				await shell.openExternal(
-					"x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility",
+			if (isMacCursorHelperUnavailable(access.status)) {
+				console.warn(
+					`[cursor-macos] editable cursor unavailable (status=${access.status}${
+						access.error ? `, error=${access.error}` : ""
+					}); the app ${
+						access.accessibilityTrusted ? "does" : "does not"
+					} hold Accessibility trust. Recording continues with position-only cursor telemetry.`,
 				);
+				return access;
 			}
+
+			// Accessibility improves cursor shape hints but is not required to record.
+			// Remember that the helper raised the system prompt so a later visit to the
+			// permissions window can direct the user to Settings, but don't reopen that
+			// window from every Record press.
+			getMacPermissions().noteRequested("accessibility");
 		}
 
 		return access;
 	});
 
 	ipcMain.handle("open-source-selector", async () => {
-		const access = await requestScreenAccess();
-		if (!access.granted) {
-			if (process.platform === "darwin" && access.status !== "not-determined") {
-				const mainWin = getMainWindow();
-				const messageOptions = {
-					type: "warning",
-					buttons: ["Open System Settings", "Cancel"],
-					defaultId: 0,
-					cancelId: 1,
-					message: "Screen Recording permission is required",
-					detail:
-						"Allow Showhow in macOS System Settings, then come back and choose a screen or window.",
-				} satisfies Electron.MessageBoxOptions;
-				const result =
-					mainWin && !mainWin.isDestroyed()
-						? await dialog.showMessageBox(mainWin, messageOptions)
-						: await dialog.showMessageBox(messageOptions);
-				if (result.response === 0) {
-					await shell.openExternal(
-						"x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture",
-					);
-				}
+		// Nothing to open on Linux WHEN THE NATIVE HELPER IS THERE. The selector's
+		// own `desktopCapturer.getSources()` raises a portal dialog — a SECOND
+		// one, for a session that is thrown away — and whatever it returns cannot
+		// reach the helper, because `SelectSources` has no parameter naming a
+		// source. Refusing keeps that dialog from appearing at all.
+		//
+		// Without the helper the recorder falls back to Chromium's capture, which
+		// DOES consume a source id, so the picker has to stay reachable there or
+		// that path could never start.
+		if (process.platform === "linux" && findPipeWireCursorHelperPath()) {
+			return { opened: false, reason: "portal-owns-selection" };
+		}
+
+		const pickerSession = await getMacPickerSession();
+		if (pickerSession) {
+			// Answered at once: the pick arrives later through `selected-source-changed`, which
+			// is how the HUD already learns about a choice made in our own picker window.
+			void presentMacSystemPicker(pickerSession);
+			return { opened: true };
+		}
+
+		// Chromium's picker can only list sources once THIS process can capture, which on
+		// macOS means granted, and granted before launch: the app's own read is cached for
+		// the life of the process. Anything short of that belongs in the permissions
+		// window, which says what is missing and offers the relaunch when that is all.
+		if (process.platform === "darwin") {
+			const permissions = await getMacPermissions().read();
+			if (permissions.screen !== "granted" || permissions.screenRequiresRelaunch) {
+				showPermissionsWindow();
+				return { opened: false, reason: "screen-access-required" };
 			}
-			return {
-				opened: false,
-				reason: "screen-access-required",
-				access,
-			};
 		}
 
 		const sourceSelectorWin = getSourceSelectorWindow();
@@ -1617,10 +2415,6 @@ export function registerIpcHandlers(
 		createEditorWindow();
 	});
 
-	ipcMain.handle("switch-to-library", () => {
-		createLibraryWindow();
-	});
-
 	ipcMain.handle("switch-to-hud", () => {
 		_switchToHud?.();
 		return { success: true };
@@ -1628,6 +2422,15 @@ export function registerIpcHandlers(
 
 	ipcMain.handle("start-new-recording", () => {
 		_switchToHud?.();
+		const hudWindow = getMainWindow();
+		if (hudWindow && !hudWindow.isDestroyed()) {
+			const sendAutoStart = () => hudWindow.webContents.send("hud-auto-start-recording");
+			if (hudWindow.webContents.isLoading()) {
+				hudWindow.webContents.once("did-finish-load", sendAutoStart);
+			} else {
+				sendAutoStart();
+			}
+		}
 		return { success: true };
 	});
 
@@ -1693,6 +2496,290 @@ export function registerIpcHandlers(
 			: { success: true, available: false, reason: "missing-helper" };
 	});
 
+	ipcMain.handle("is-native-linux-capture-available", async () => {
+		if (process.platform !== "linux") {
+			return { success: true, available: false, reason: "unsupported-platform" };
+		}
+
+		const helperPath = findPipeWireCursorHelperPath();
+		return helperPath
+			? { success: true, available: true, helperPath }
+			: { success: true, available: false, reason: "missing-helper" };
+	});
+
+	/**
+	 * Raises the compositor's picker and stops there, holding the grant.
+	 *
+	 * Best-effort by contract: every failure returns `success: false` rather than
+	 * throwing, because the caller's fallback is simply to start normally and get
+	 * the picker after its countdown — the behaviour that shipped before this
+	 * existed. Nothing downstream may depend on a prepare having succeeded.
+	 */
+	ipcMain.handle(
+		"prepare-native-linux-recording",
+		async (_, request: NativeLinuxRecordingRequest) => {
+			if (process.platform !== "linux") {
+				return { success: false, reason: "unsupported-platform" };
+			}
+			if (linuxNativeCaptureSession) {
+				return { success: false, reason: "already-recording" };
+			}
+			discardPreparedLinuxCapture("superseded by a new prepare");
+			const token = Symbol("prepare-native-linux-recording");
+			preparingLinuxCaptureToken = token;
+
+			try {
+				if (!findPipeWireCursorHelperPath()) {
+					return { success: false, reason: "missing-helper" };
+				}
+				const recordingId =
+					typeof request?.recordingId === "number" && Number.isFinite(request.recordingId)
+						? request.recordingId
+						: Date.now();
+				const outputPath = path.join(RECORDINGS_DIR, `${RECORDING_FILE_PREFIX}${recordingId}.mp4`);
+				const cursorCaptureMode =
+					normalizeCursorCaptureMode(request?.cursor?.mode) ?? "editable-overlay";
+
+				await fs.mkdir(RECORDINGS_DIR, { recursive: true });
+
+				const session = new LinuxNativeCaptureSession({
+					outputPath,
+					cursorMode: portalCursorMode(cursorCaptureMode),
+					fps: request.video.fps,
+					...(request.video.bitrate ? { bitrate: request.video.bitrate } : {}),
+					audio: {
+						system: { enabled: request.audio.system.enabled },
+						microphone: {
+							enabled: request.audio.microphone.enabled,
+							...(request.audio.microphone.deviceName
+								? { deviceName: request.audio.microphone.deviceName }
+								: {}),
+							gain: request.audio.microphone.gain,
+						},
+					},
+					maxCursorSamples: MAX_CURSOR_SAMPLES,
+					deferStart: true,
+				});
+
+				await session.start();
+				// The picker is up now. No timeout: a human is reading a dialog.
+				await session.waitUntilSourceSelected();
+
+				// Cancelled or superseded while the picker was up. Discard rather
+				// than assign: this grant is for a recording nobody is waiting for
+				// any more, and keeping it would leave the sharing indicator on.
+				if (preparingLinuxCaptureToken !== token) {
+					session.discard();
+					return { success: false, reason: "cancelled" };
+				}
+				preparingLinuxCaptureToken = null;
+
+				preparedLinuxCapture = { session, outputPath, request };
+				return {
+					success: true,
+					recordingId,
+					sourceKind: session.grantedSourceKind ?? null,
+				};
+			} catch (error) {
+				console.warn("Could not prepare the native Linux capture:", error);
+				discardPreparedLinuxCapture("prepare failed");
+				return { success: false, error: String(error) };
+			}
+		},
+	);
+
+	/** Drops a prepared session, e.g. when the countdown was cancelled. */
+	ipcMain.handle("cancel-native-linux-prepare", async () => {
+		discardPreparedLinuxCapture("cancelled by the renderer");
+		return { success: true };
+	});
+
+	ipcMain.handle(
+		"start-native-linux-recording",
+		async (_, request: NativeLinuxRecordingRequest) => {
+			try {
+				if (process.platform !== "linux") {
+					return { success: false, error: "Native Linux capture requires Linux." };
+				}
+				if (linuxNativeCaptureSession) {
+					return { success: false, error: "Native Linux capture is already running." };
+				}
+				if (!findPipeWireCursorHelperPath()) {
+					return { success: false, error: "Native Linux capture helper is not available." };
+				}
+
+				const recordingId =
+					typeof request?.recordingId === "number" && Number.isFinite(request.recordingId)
+						? request.recordingId
+						: Date.now();
+				const outputPath = path.join(RECORDINGS_DIR, `${RECORDING_FILE_PREFIX}${recordingId}.mp4`);
+				const cursorCaptureMode =
+					normalizeCursorCaptureMode(request?.cursor?.mode) ?? "editable-overlay";
+
+				await fs.mkdir(RECORDINGS_DIR, { recursive: true });
+
+				// A session prepared before the countdown, if there was one. Taking
+				// it here rather than requiring it is what keeps every caller
+				// working: a path that never prepared still gets a full start
+				// below, just with the picker after its countdown instead of
+				// before. Nothing has to know which path it is on.
+				const prepared = takePreparedLinuxSession(outputPath, request);
+				const session =
+					prepared ??
+					new LinuxNativeCaptureSession({
+						outputPath,
+						cursorMode: portalCursorMode(cursorCaptureMode),
+						fps: request.video.fps,
+						...(request.video.bitrate ? { bitrate: request.video.bitrate } : {}),
+						audio: {
+							system: { enabled: request.audio.system.enabled },
+							microphone: {
+								enabled: request.audio.microphone.enabled,
+								...(request.audio.microphone.deviceName
+									? { deviceName: request.audio.microphone.deviceName }
+									: {}),
+								gain: request.audio.microphone.gain,
+							},
+						},
+						maxCursorSamples: MAX_CURSOR_SAMPLES,
+					});
+
+				console.info("[native-linux] starting capture", {
+					outputPath,
+					prepared: Boolean(prepared),
+					cursor: { mode: cursorCaptureMode },
+					audio: request.audio,
+					video: request.video,
+				});
+
+				if (!prepared) {
+					await session.start();
+					// Blocks until the user answers the portal picker, which has no
+					// upper bound. On this path the countdown has already run.
+					await session.waitUntilSourceSelected();
+				}
+				// Idempotent, and a no-op for a session that was not deferred.
+				session.arm();
+				await session.waitUntilCapturing();
+
+				linuxNativeCaptureSession = session;
+				linuxNativeCaptureRecordingId = recordingId;
+				linuxNativeCaptureCursorMode = cursorCaptureMode;
+
+				// The portal's answer, not an in-app selection — on Wayland there
+				// is none to have. This used to read `selectedSource || { name:
+				// "Screen" }`, so the tray confidently displayed the name of a
+				// window the capture had never been told about.
+				linuxNativeCaptureSourceLabel = linuxSourceLabel(session.grantedSourceKind);
+				if (onRecordingStateChange) {
+					onRecordingStateChange(true, linuxNativeCaptureSourceLabel);
+				}
+
+				return { success: true, recordingId, path: outputPath };
+			} catch (error) {
+				console.error("Failed to start native Linux recording:", error);
+				linuxNativeCaptureSession = null;
+				linuxNativeCaptureRecordingId = null;
+				linuxNativeCaptureCursorMode = "editable-overlay";
+				return { success: false, error: String(error) };
+			}
+		},
+	);
+
+	ipcMain.handle("pause-native-linux-recording", async () => {
+		if (!linuxNativeCaptureSession) {
+			return { success: false, error: "Native Linux capture is not running." };
+		}
+		linuxNativeCaptureSession.pause();
+		return { success: true };
+	});
+
+	ipcMain.handle("resume-native-linux-recording", async () => {
+		if (!linuxNativeCaptureSession) {
+			return { success: false, error: "Native Linux capture is not running." };
+		}
+		linuxNativeCaptureSession.resume();
+		return { success: true };
+	});
+
+	ipcMain.handle("stop-native-linux-recording", async (_, discard?: boolean) => {
+		const session = linuxNativeCaptureSession;
+		const recordingId = linuxNativeCaptureRecordingId ?? Date.now();
+		const cursorCaptureMode = linuxNativeCaptureCursorMode;
+
+		if (!session) {
+			return { success: false, error: "Native Linux capture is not running." };
+		}
+
+		try {
+			if (discard) {
+				session.discard();
+				const discarded = path.join(RECORDINGS_DIR, `${RECORDING_FILE_PREFIX}${recordingId}.mp4`);
+				await Promise.all([
+					fs.rm(discarded, { force: true }),
+					fs.rm(`${discarded}.cursor.json`, { force: true }),
+				]);
+				return { success: true, discarded: true };
+			}
+
+			const result = await session.stop();
+
+			// The helper collects cursor samples itself, from the same portal
+			// session that produced the pixels, so there is no separate sampler
+			// to stop and no clock offset to correct — the two are one recording.
+			if (cursorCaptureMode === "editable-overlay" && result.cursor.samples.length > 0) {
+				await fs.writeFile(
+					`${result.path}.cursor.json`,
+					JSON.stringify(result.cursor, null, 2),
+					"utf-8",
+				);
+			}
+
+			const session_: RecordingSession = {
+				screenVideoPath: result.path,
+				createdAt: recordingId,
+				cursorCaptureMode,
+			};
+			setCurrentRecordingSessionState(session_);
+			currentProjectPath = null;
+
+			const sessionManifestPath = path.join(
+				RECORDINGS_DIR,
+				`${path.parse(result.path).name}${RECORDING_SESSION_SUFFIX}`,
+			);
+			await fs.writeFile(sessionManifestPath, JSON.stringify(session_, null, 2), "utf-8");
+			await registerRecordingMediaLinks(result.path, { cursorCaptureMode });
+
+			console.info("[native-linux] capture stored", {
+				path: result.path,
+				frames: result.frames,
+				droppedFrames: result.droppedFrames,
+				durationMs: result.durationMs,
+				videoEncoder: result.videoEncoder,
+				cursorSamples: result.cursor.samples.length,
+			});
+
+			return {
+				success: true,
+				path: result.path,
+				session: session_,
+				message: "Native Linux recording session stored successfully",
+			};
+		} catch (error) {
+			console.error("Failed to stop native Linux recording:", error);
+			return { success: false, error: String(error) };
+		} finally {
+			linuxNativeCaptureSession = null;
+			linuxNativeCaptureRecordingId = null;
+			linuxNativeCaptureCursorMode = "editable-overlay";
+			const stoppedLabel = linuxNativeCaptureSourceLabel ?? linuxSourceLabel();
+			linuxNativeCaptureSourceLabel = null;
+			if (onRecordingStateChange) {
+				onRecordingStateChange(false, stoppedLabel);
+			}
+		}
+	});
+
 	ipcMain.handle(
 		"start-native-windows-recording",
 		async (_, request: NativeWindowsRecordingRequest) => {
@@ -1734,6 +2821,11 @@ export function registerIpcHandlers(
 							null)
 						: getSelectedDisplay();
 				const bounds = sourceDisplay?.bounds ?? getSelectedSourceBounds();
+				// `bounds` is DIPs; the helper matches it against physical monitor rects
+				// (getopenscreen/openscreen#346). Converted here, at the wire, and not in
+				// `getSelectedSourceBounds` — the cursor session shares that getter and
+				// converts on its own side.
+				const helperBounds = toHelperRect(bounds);
 				const displayId =
 					typeof request.source.displayId === "number" && Number.isFinite(request.source.displayId)
 						? request.source.displayId
@@ -1743,9 +2835,17 @@ export function registerIpcHandlers(
 					: null;
 				const cursorCaptureMode =
 					normalizeCursorCaptureMode(request.cursor?.mode) ?? "editable-overlay";
+				const envPreferSoftwareEncoder = (process.env.OPENSCREEN_WGC_PREFER_SOFTWARE_ENCODER ?? "")
+					.trim()
+					.toLowerCase();
+				const preferSoftwareEncoder =
+					request.preferSoftwareEncoder === true ||
+					envPreferSoftwareEncoder === "true" ||
+					envPreferSoftwareEncoder === "1";
 				const config = {
 					schemaVersion: 2,
 					recordingId,
+					preferSoftwareEncoder,
 					outputPath,
 					sourceType: request.source.type,
 					sourceId: request.source.sourceId,
@@ -1754,10 +2854,10 @@ export function registerIpcHandlers(
 					fps: request.video.fps,
 					videoWidth: request.video.width,
 					videoHeight: request.video.height,
-					displayX: bounds.x,
-					displayY: bounds.y,
-					displayW: bounds.width,
-					displayH: bounds.height,
+					displayX: helperBounds.x,
+					displayY: helperBounds.y,
+					displayW: helperBounds.width,
+					displayH: helperBounds.height,
 					hasDisplayBounds: true,
 					captureSystemAudio: request.audio.system.enabled,
 					captureMic: request.audio.microphone.enabled,
@@ -1773,6 +2873,9 @@ export function registerIpcHandlers(
 					webcamFps: request.webcam.fps,
 					captureCursor: cursorCaptureMode === "system",
 					cursorCaptureMode,
+					hideDesktopIcons:
+						request.source.type === "display" &&
+						appSettings.getSnapshot().recording.hideDesktopIcons,
 					outputs: {
 						screenPath: outputPath,
 						webcamPath: webcamOutputPath,
@@ -1782,7 +2885,7 @@ export function registerIpcHandlers(
 						sourceId: request.source.sourceId,
 						displayId: Number.isFinite(displayId) ? displayId : null,
 						windowHandle: request.source.windowHandle ?? null,
-						bounds,
+						bounds: helperBounds,
 					},
 					video: request.video,
 					audio: request.audio,
@@ -1797,8 +2900,12 @@ export function registerIpcHandlers(
 					source: request.source,
 					audio: request.audio,
 					webcam: request.webcam,
+					encoder: { preferSoftwareEncoder },
 					cursor: { mode: cursorCaptureMode },
-					bounds,
+					// Both spaces, deliberately: the helper's own errors quote the physical
+					// rect, and a report that only carried the DIP one would be read against
+					// numbers it never saw (getopenscreen/openscreen#346).
+					bounds: { dip: bounds, helper: helperBounds },
 					sourceId: selectedSource?.id ?? null,
 					usedDisplayMatch: Boolean(sourceDisplay),
 					outputPath,
@@ -1828,15 +2935,14 @@ export function registerIpcHandlers(
 					pendingCursorRecordingData = null;
 				}
 
-				// Trigger the companion bridge epoch handshake (best-effort).
-				showhowBridge.setRecordingEpoch(cursorStartTimeMs);
-
 				const proc = spawn(helperPath, [JSON.stringify(config)], {
 					cwd: RECORDINGS_DIR,
 					stdio: ["pipe", "pipe", "pipe"],
 					windowsHide: true,
 				});
 				nativeWindowsCaptureProcess = proc;
+				nativeWindowsCaptureDrainCleanup = attachNativeWindowsCaptureOutputDrain(proc);
+				console.info("[native-wgc] helper spawned", { pid: proc.pid });
 
 				await waitForNativeWindowsCaptureStart(proc);
 				const captureStartedAtMs = Date.now();
@@ -1844,11 +2950,19 @@ export function registerIpcHandlers(
 					cursorCaptureMode === "editable-overlay"
 						? Math.max(0, captureStartedAtMs - cursorStartTimeMs)
 						: 0;
-				const webcamFormat = readNativeWindowsWebcamFormat(nativeWindowsCaptureOutput);
+				const webcamFormat = readWebcamFormat(nativeWindowsCaptureOutput);
+				const encoderSelection = readNativeWindowsEncoderSelection(nativeWindowsCaptureOutput);
+				// Captured now because stop may have no helper left to ask. A helper
+				// killed mid-recording is exactly the case where this matters most.
+				nativeWindowsCaptureContainer = encoderSelection?.container ?? null;
 				console.info("[native-wgc] capture started", {
 					captureStartedAtMs,
 					cursorOffsetMs: nativeWindowsCursorOffsetMs,
 					webcamFormat,
+					encoderSelection,
+					// Logged only: menus missing from a window take on Windows before 11
+					// 24H2 are a platform limit, not something to put in front of the user.
+					secondaryWindowsApplied: readSecondaryWindowsApplied(nativeWindowsCaptureOutput),
 				});
 
 				const source = selectedSource || { name: "Screen" };
@@ -1856,25 +2970,49 @@ export function registerIpcHandlers(
 					onRecordingStateChange(true, source.name);
 				}
 
+				// Reported at start, not at stop: the helper decides the camera is a
+				// lost cause during its own init — before it announces "Recording
+				// started", so the warning is already in the buffer here — and telling
+				// the user now, while the take is still worth restarting, beats telling
+				// them at the end. Keyed on the helper's own event rather than on a
+				// missing `webcamFormat`: absence of the format line also means "the
+				// line could not be parsed", which would put a red toast on a recording
+				// whose camera is working perfectly.
+				const webcamUnavailable =
+					request.webcam.enabled && readWebcamUnavailable(nativeWindowsCaptureOutput);
+				// Same shape as the camera notice: the helper records the Windows
+				// default input rather than failing, so this take is usable but is
+				// almost certainly the wrong microphone.
+				const microphoneDefaulted =
+					request.audio.microphone.enabled && readMicrophoneDefaulted(nativeWindowsCaptureOutput);
+				if (microphoneDefaulted) {
+					console.warn("[native-wgc] recording the default input; the microphone was not named", {
+						deviceId: request.audio.microphone.deviceId,
+						deviceName: request.audio.microphone.deviceName,
+					});
+				}
+				if (webcamUnavailable) {
+					console.warn("[native-wgc] recording without a camera; the helper could not open it", {
+						deviceId: request.webcam.deviceId,
+						deviceName: request.webcam.deviceName,
+					});
+				}
+
 				return {
 					success: true,
 					recordingId,
 					path: outputPath,
 					helperPath,
+					videoEncoderSelection: encoderSelection?.video ?? null,
+					videoEncoderRuntime: encoderSelection?.videoEncoderRuntime ?? null,
+					webcamUnavailable,
+					microphoneDefaulted,
 				};
 			} catch (error) {
 				console.error("Failed to start native Windows recording:", error);
 				nativeWindowsCaptureProcess?.kill();
-				nativeWindowsCaptureProcess = null;
-				nativeWindowsCaptureTargetPath = null;
-				nativeWindowsCaptureWebcamTargetPath = null;
-				nativeWindowsCaptureRecordingId = null;
-				nativeWindowsCursorOffsetMs = 0;
-				nativeWindowsCursorCaptureMode = "editable-overlay";
-				nativeWindowsCursorRecordingStartMs = 0;
-				nativeWindowsPauseStartedAtMs = null;
-				nativeWindowsPauseRanges = [];
-				nativeWindowsIsPaused = false;
+				detachNativeWindowsCaptureOutputDrain();
+				resetNativeWindowsCaptureState();
 				await stopCursorRecording();
 				return { success: false, error: String(error) };
 			}
@@ -1906,13 +3044,36 @@ export function registerIpcHandlers(
 			const outputPath = path.join(RECORDINGS_DIR, `${RECORDING_FILE_PREFIX}${recordingId}.mp4`);
 			const cursorCaptureMode =
 				normalizeCursorCaptureMode(request.cursor?.mode) ?? "editable-overlay";
-			try {
-				await desktopCapturer.getSources({
-					types: ["screen"],
-					thumbnailSize: { width: 1, height: 1 },
-				});
-			} catch {
-				// The helper reports the final ScreenCaptureKit permission status.
+			// A source from Apple's picker records through the session that holds the pick,
+			// and needs no Screen Recording grant -- so nothing here may go near one.
+			const pickerSession = isMacPickerSourceId(request.source.sourceId) ? macPickerSession : null;
+			// Normally caught by `get-selected-source` first; this is the last word (#965).
+			pickerSession?.forgetSelectionUnlessExcluding(macPickerExcludedWindowIds());
+			const pick = pickerSession?.getSelection() ?? null;
+			if (isMacPickerSourceId(request.source.sourceId) && !pick) {
+				selectedSource = null;
+				broadcastSelectedSource(null);
+				return {
+					success: false,
+					error: "The screen or window you picked is no longer available. Pick it again.",
+				};
+			}
+			if (!pickerSession) {
+				try {
+					await desktopCapturer.getSources({
+						types: ["screen"],
+						thumbnailSize: { width: 1, height: 1 },
+					});
+				} catch {
+					// The helper reports the final ScreenCaptureKit permission status.
+				}
+			}
+			// A picked take records system audio from a Core Audio tap, under its own "System
+			// Audio Recording Only" grant (see SystemAudioTap.swift). The helper raises that
+			// prompt itself if it was never answered, so note it: the permissions window then
+			// offers System Settings rather than a prompt macOS will not show again.
+			if (pickerSession && request.audio?.system?.enabled) {
+				getMacPermissions().noteRequested("systemAudio");
 			}
 			if (request.audio?.microphone?.enabled) {
 				const micStatus = systemPreferences.getMediaAccessStatus("microphone");
@@ -1925,11 +3086,23 @@ export function registerIpcHandlers(
 					? (screen.getAllDisplays().find((display) => display.id === request.source.displayId) ??
 						null)
 					: getSelectedDisplay();
-			const bounds = request.source.bounds ?? sourceDisplay?.bounds ?? getSelectedSourceBounds();
+			const bounds =
+				pick?.bounds ?? request.source.bounds ?? sourceDisplay?.bounds ?? getSelectedSourceBounds();
+			const captureExcludedWindowSourceIds: string[] = [];
+			if (request.source.type === "display") {
+				for (const window of [getMainWindow(), getNotesWindow()]) {
+					if (window && !window.isDestroyed()) {
+						captureExcludedWindowSourceIds.push(window.getMediaSourceId());
+					}
+				}
+			}
 			const config: NativeMacRecordingRequest = {
 				...request,
 				schemaVersion: 1,
 				recordingId,
+				excludedWindowIds: collectMacCaptureExcludedWindowIds(captureExcludedWindowSourceIds),
+				hideDesktopIcons:
+					request.source.type === "display" && appSettings.getSnapshot().recording.hideDesktopIcons,
 				source: {
 					...request.source,
 					bounds,
@@ -1957,6 +3130,7 @@ export function registerIpcHandlers(
 			console.info("[native-sck] starting macOS capture", {
 				helperPath,
 				source: config.source,
+				excludedWindowIds: config.excludedWindowIds,
 				audio: config.audio,
 				webcam: config.webcam,
 				cursor: config.cursor,
@@ -1973,6 +3147,8 @@ export function registerIpcHandlers(
 			nativeMacPauseStartedAtMs = null;
 			nativeMacPauseRanges = [];
 			nativeMacIsPaused = false;
+			nativeMacStopInFlight = false;
+			nativeMacRecordingWarning = null;
 			activeMacCaptureBounds = null;
 
 			const cursorStartTimeMs = Date.now();
@@ -1983,19 +3159,53 @@ export function registerIpcHandlers(
 				pendingCursorRecordingData = null;
 			}
 
-			// Trigger the companion bridge epoch handshake so browser steps
-			// carry recording-relative timestamps. Best-effort; never blocks.
-			showhowBridge.setRecordingEpoch(cursorStartTimeMs);
-
-			const proc = spawn(helperPath, [JSON.stringify(config)], {
-				cwd: RECORDINGS_DIR,
-				stdio: ["pipe", "pipe", "pipe"],
-			});
+			const proc = pickerSession
+				? pickerSession.startTake(config)
+				: spawn(helperPath, [JSON.stringify(config)], {
+						cwd: RECORDINGS_DIR,
+						stdio: ["pipe", "pipe", "pipe"],
+					});
 			nativeMacCaptureProcess = proc;
-			attachNativeMacCaptureOutputDrain(proc);
+			// When the take ends without the user — the helper reported an error or
+			// exited — this drives the renderer's own stop, the same one the tray's Stop
+			// Recording sends: it clears the HUD and surfaces the result.
+			attachNativeMacCaptureOutputDrain(
+				proc,
+				() => {
+					const hudWindow = getMainWindow();
+					if (hudWindow && !hudWindow.isDestroyed()) {
+						hudWindow.webContents.send("stop-recording-from-tray");
+					}
+				},
+				() => {
+					const hudWindow = getMainWindow();
+					if (hudWindow && !hudWindow.isDestroyed()) {
+						hudWindow.webContents.send("native-mac-system-audio-unavailable");
+					}
+				},
+			);
 
 			await waitForNativeMacCaptureStart(proc);
 			const captureStartedAtMs = Date.now();
+			const microphoneDefaulted =
+				request.audio.microphone.enabled && readMicrophoneDefaulted(nativeMacCaptureOutput);
+			if (microphoneDefaulted) {
+				console.warn("[native-sck] recording the default input; microphone was not resolved", {
+					deviceId: request.audio.microphone.deviceId,
+					deviceName: request.audio.microphone.deviceName,
+				});
+			}
+			// Where this happens the app offers no microphone (#700). A take that asks for one
+			// anyway (`openscreen record --mic`) records without it, and this line is what the
+			// CLI prints about it.
+			const microphoneUnavailable =
+				request.audio.microphone.enabled && readMicrophoneUnavailable(nativeMacCaptureOutput);
+			if (microphoneUnavailable) {
+				console.warn(
+					"[native-sck] recording without the microphone; ScreenCaptureKit captures it from macOS 15",
+					{ macOS: process.getSystemVersion() },
+				);
+			}
 			nativeMacCursorOffsetMs =
 				cursorCaptureMode === "editable-overlay"
 					? Math.max(0, captureStartedAtMs - cursorStartTimeMs)
@@ -2011,6 +3221,8 @@ export function registerIpcHandlers(
 				recordingId,
 				path: outputPath,
 				helperPath,
+				microphoneDefaulted,
+				microphoneUnavailable,
 			};
 		} catch (error) {
 			console.error("Failed to start native macOS recording:", error);
@@ -2136,12 +3348,116 @@ export function registerIpcHandlers(
 			return { success: false, error: "Native Windows capture is not running." };
 		}
 
+		// Discarding does not need a finalized file, so it must not wait for one.
+		// Cancel and Restart both route here, and making them sit through the
+		// full stop handshake meant a wedged helper could not be escaped from at
+		// all -- the user waited out the timeout only to be told the recording
+		// failed, then waited it out again to cancel. Linux has always done this;
+		// Windows never did.
+		if (discard) {
+			try {
+				completeNativeWindowsCursorPauseRange();
+				await stopCursorRecording();
+				pendingCursorRecordingData = null;
+				const exited = await terminateNativeWindowsCapture(proc);
+				if (!exited) {
+					detachNativeWindowsCaptureOutputDrain();
+				}
+				await removeNativeWindowsCaptureOutputs(preferredPath, preferredWebcamPath);
+				return { success: true, discarded: true };
+			} finally {
+				// Unconditional. Killing a wedged helper can itself throw, and
+				// leaving the handle set would make every later recording fail
+				// with "already running" against a process nobody can stop.
+				resetNativeWindowsCaptureState();
+				if (onRecordingStateChange) {
+					onRecordingStateChange(false, (selectedSource || { name: "Screen" }).name);
+				}
+			}
+		}
+
+		// Set when the helper failed its stop handshake but left a playable
+		// fragmented file. Reported so a bug report can tell a clean stop from a
+		// recovered one; the user-facing path is deliberately identical.
+		let recovered = false;
+
 		try {
 			completeNativeWindowsCursorPauseRange();
-			const stoppedPathPromise = waitForNativeWindowsCaptureStop(proc);
-			proc.stdin.write("stop\n");
-			const stoppedPath = await stoppedPathPromise;
-			const screenVideoPath = stoppedPath || preferredPath;
+			const stopPromise = waitForNativeWindowsCaptureStop({
+				proc,
+				targetPath: preferredPath,
+				readOutput: () => nativeWindowsCaptureOutput,
+			});
+			if (!sendNativeWindowsStopCommand(proc)) {
+				console.warn("[native-wgc] stop command channel was already closed");
+			}
+			const stopResult = await stopPromise;
+			if (!stopResult.ok) {
+				console.error("[native-wgc] stop failed", {
+					reason: stopResult.reason,
+					exited: stopResult.exited,
+					pid: proc.pid,
+					output: stopResult.message,
+				});
+				if (!stopResult.exited) {
+					detachNativeWindowsCaptureOutputDrain();
+				}
+
+				// A failed stop stopped meaning a lost take when the helper started
+				// writing fragmented MP4. The file on disk is already playable, so
+				// the only thing standing between the user and their recording is
+				// this function deciding to throw it away and say so. Fall through
+				// into the normal save path instead: same manifest, same media
+				// links, same editor. From the user's side it simply worked, minus
+				// at most the last incomplete fragment.
+				//
+				// Only once the helper is actually dead. `exited: false` means it
+				// survived even the forced kill -- stuck somewhere `TerminateProcess`
+				// could not reach -- and on Windows such a process still holds the
+				// MP4 open and may still be appending to it. Handing that file to
+				// the editor trades an honest failure for a sharing violation on a
+				// file that is still moving, so a wedged helper keeps the old answer.
+				if (stopResult.exited && (await salvageNativeWindowsFragmentedCapture(preferredPath))) {
+					console.warn("[native-wgc] stop failed but the fragmented output is playable", {
+						reason: stopResult.reason,
+						path: preferredPath,
+					});
+					recovered = true;
+				} else {
+					await stopCursorRecording();
+					// Same as the discard path. `startCursorRecording` clears this on
+					// the next recording anyway, so this is not what keeps the samples
+					// from being written next to someone else's video -- it just stops
+					// a lost take's telemetry from sitting in memory until then.
+					pendingCursorRecordingData = null;
+					// Reaching here means the container was the plain one, whose only
+					// index is written by the `Finalize()` this stop never reached, so
+					// what is on disk really is an unindexed stub and leaving those
+					// behind just accumulates unplayable recordings the user cannot
+					// explain. Size-gate it anyway: throwing away a recording to tidy
+					// up after a failed stop is the worse mistake of the two, and the
+					// gate is the same one the salvage check above uses.
+					await removeNativeWindowsCaptureOutputs(preferredPath, preferredWebcamPath, {
+						onlyIfUnusable: true,
+					});
+					// The helper log goes to console/diagnostics above, not into this
+					// string: it ends up in a toast, and pasting an entire capture log
+					// into the HUD tells the user nothing they can act on.
+					return {
+						success: false,
+						reason: stopResult.reason,
+						error:
+							stopResult.reason === "stop-timeout"
+								? "Timed out waiting for native Windows capture to stop. The recording could not be saved."
+								: stopResult.message.split(/\r?\n/).filter(Boolean).at(-1) ||
+									"Native Windows capture failed.",
+					};
+				}
+			}
+
+			// Only a successful stop names the file; the salvage path above falls
+			// through with `ok: false` and nothing but the path we asked for.
+			const screenVideoPath = (stopResult.ok ? stopResult.screenVideoPath : null) || preferredPath;
 			if (!screenVideoPath) {
 				throw new Error("Native Windows capture did not return an output path.");
 			}
@@ -2150,15 +3466,6 @@ export function registerIpcHandlers(
 				await stopCursorRecording();
 			} else {
 				pendingCursorRecordingData = null;
-			}
-			if (discard) {
-				pendingCursorRecordingData = null;
-				await Promise.all([
-					fs.rm(screenVideoPath, { force: true }),
-					preferredWebcamPath ? fs.rm(preferredWebcamPath, { force: true }) : Promise.resolve(),
-					fs.rm(`${screenVideoPath}.cursor.json`, { force: true }),
-				]);
-				return { success: true, discarded: true };
 			}
 
 			if (cursorCaptureMode === "editable-overlay") {
@@ -2169,8 +3476,21 @@ export function registerIpcHandlers(
 			let webcamVideoPath: string | undefined;
 			if (preferredWebcamPath) {
 				try {
-					await fs.access(preferredWebcamPath, fsConstants.R_OK);
-					webcamVideoPath = preferredWebcamPath;
+					// Size, not just existence. A camera that opened but delivered no
+					// frame still gets a file created for it, and its `Finalize()` then
+					// fails, leaving nought bytes on disk. Admitting that file put a
+					// camera track in the document pointing at something no demuxer can
+					// read, and the preview compositor answers an unreadable camera by
+					// drawing the SCREEN recording inside the little camera rectangle —
+					// which is how a webcam that never recorded showed up as the desktop
+					// duplicated into its own corner (getopenscreen/openscreen#387).
+					const webcamStat = await fs.stat(preferredWebcamPath);
+					webcamVideoPath = webcamStat.size > 0 ? preferredWebcamPath : undefined;
+					if (!webcamVideoPath) {
+						console.warn("[native-wgc] the webcam file is empty; saving without a camera", {
+							path: preferredWebcamPath,
+						});
+					}
 				} catch {
 					webcamVideoPath = undefined;
 				}
@@ -2186,29 +3506,31 @@ export function registerIpcHandlers(
 				`${path.parse(screenVideoPath).name}${RECORDING_SESSION_SUFFIX}`,
 			);
 			await fs.writeFile(sessionManifestPath, JSON.stringify(session, null, 2), "utf-8");
+			await registerRecordingMediaLinks(screenVideoPath, { webcamVideoPath, cursorCaptureMode });
 
 			return {
 				success: true,
 				path: screenVideoPath,
 				session,
-				message: "Native Windows recording session stored successfully",
+				recovered,
+				// `preferredWebcamPath` is non-null only for a take that asked for a
+				// camera, so the pair means "a camera was requested and none survived".
+				// This is the second, quieter way to lose one: the helper opened the
+				// device happily and then never got a frame out of it, so it reports no
+				// `webcam-unavailable` and the start-time notice stays silent. Left
+				// unreported, the user would find out in the editor — which is exactly
+				// the silence this change exists to end.
+				webcamDropped: Boolean(preferredWebcamPath) && !webcamVideoPath,
+				message: recovered
+					? "Native Windows recording recovered from a failed stop"
+					: "Native Windows recording session stored successfully",
 			};
 		} catch (error) {
 			console.error("Failed to stop native Windows recording:", error);
 			await stopCursorRecording();
 			return { success: false, error: String(error) };
 		} finally {
-			nativeWindowsCaptureProcess = null;
-			nativeWindowsCaptureTargetPath = null;
-			nativeWindowsCaptureWebcamTargetPath = null;
-			nativeWindowsCaptureRecordingId = null;
-			nativeWindowsCursorOffsetMs = 0;
-			nativeWindowsCursorCaptureMode = "editable-overlay";
-			nativeWindowsCursorRecordingStartMs = 0;
-			nativeWindowsPauseStartedAtMs = null;
-			nativeWindowsPauseRanges = [];
-			nativeWindowsIsPaused = false;
-			showhowBridge.clearRecordingEpoch();
+			resetNativeWindowsCaptureState();
 			const source = selectedSource || { name: "Screen" };
 			if (onRecordingStateChange) {
 				onRecordingStateChange(false, source.name);
@@ -2218,7 +3540,12 @@ export function registerIpcHandlers(
 
 	ipcMain.handle(
 		"stop-native-mac-recording",
-		async (_, discard?: boolean, durationMs?: number, stepCaptureReason?: StepCaptureReason) => {
+		async (
+			_,
+			discard?: boolean,
+			durationMs?: number,
+			stepCaptureReason?: import("../../src/lib/showhow/recordingLibrary").StepCaptureReason,
+		) => {
 			if (process.platform !== "darwin") {
 				return { success: false, error: "Native macOS capture requires macOS." };
 			}
@@ -2232,15 +3559,18 @@ export function registerIpcHandlers(
 				return { success: false, error: "Native macOS capture is not running." };
 			}
 
+			nativeMacStopInFlight = true;
 			try {
 				completeNativeMacCursorPauseRange();
-				const stoppedPathPromise = waitForNativeMacCaptureStop(proc);
-				proc.stdin.write("stop\n");
-				const stoppedPath = await stoppedPathPromise;
-				const screenVideoPath = stoppedPath || preferredPath;
-				if (!screenVideoPath) {
-					throw new Error("Native macOS capture did not return an output path.");
-				}
+				// Listen before sending, so a helper that stops at once cannot slip past.
+				const stopResultPromise = waitForNativeMacCaptureStop({
+					proc,
+					targetPath: preferredPath,
+					readOutput: () => nativeMacCaptureOutputs.get(proc) ?? "",
+					readExit: () => nativeMacCaptureExits.get(proc) ?? null,
+				});
+				sendNativeMacStopCommand(proc);
+				const stopResult = await stopResultPromise;
 
 				if (cursorCaptureMode === "editable-overlay") {
 					await stopCursorRecording();
@@ -2249,56 +3579,106 @@ export function registerIpcHandlers(
 				}
 				if (discard) {
 					pendingCursorRecordingData = null;
-					await Promise.all([
-						fs.rm(screenVideoPath, { force: true }),
-						fs.rm(`${screenVideoPath}.cursor.json`, { force: true }),
-					]);
-					showhowBridge.clearRecordingEpoch();
+					await Promise.all(
+						nativeMacDiscardTargets(stopResult, preferredPath).map((target) =>
+							fs.rm(target, { force: true }),
+						),
+					);
+					if (!stopResult.ok) {
+						console.warn("[native-sck] discarded a take whose stop did not complete", {
+							reason: stopResult.reason,
+							message: stopResult.message,
+						});
+					}
 					return { success: true, discarded: true };
 				}
+				let screenVideoPath: string;
+				let warning: string | undefined;
+				let recovered = false;
+				if (stopResult.ok) {
+					screenVideoPath = stopResult.screenVideoPath;
+					warning = stopResult.warning;
+					if (warning) {
+						console.warn(
+							"[native-sck] the take ended before it was stopped; its recording was kept",
+							{
+								warning,
+								path: screenVideoPath,
+							},
+						);
+					}
+				} else {
+					// A helper that exited left a file nothing writes to any more, and what its
+					// writer finished before the failure is usually a playable fragmented take.
+					// One still running may be mid-write, so it is left alone.
+					const salvageTarget = nativeMacSalvageTarget(stopResult, preferredPath);
+					const salvage = salvageTarget ? await salvageNativeMacCapture(salvageTarget) : null;
+					if (!salvage || !salvage.ok) {
+						pendingCursorRecordingData = null;
+						console.error("Failed to stop native macOS recording:", {
+							reason: stopResult.reason,
+							message: stopResult.message,
+							helperExited: stopResult.exited,
+							salvage: salvage ? salvage.reason : "not attempted: the helper had not exited",
+							output: (nativeMacCaptureOutputs.get(proc) ?? "").trim(),
+						});
+						return { success: false, error: stopResult.message };
+					}
+					screenVideoPath = salvage.screenVideoPath;
+					warning = describeSalvagedTake(stopResult.message, salvage.durationSec);
+					recovered = true;
+					console.warn(
+						"[native-sck] recovered the part of the take written before its stop failed",
+						{
+							stopFailure: stopResult.message,
+							path: screenVideoPath,
+							videoSamples: salvage.videoSamples,
+							durationSec: salvage.durationSec,
+							truncatedBytes: salvage.truncatedBytes,
+						},
+					);
+				}
+				nativeMacRecordingWarning = warning ? { screenVideoPath, message: warning } : null;
+
+				// A recovered take most often follows a disk that filled up, and these writes
+				// go to the same volume. The video is already safe on disk, so for a recovered
+				// take a failed side write is logged, and its partial file removed, instead of
+				// turning the recovery back into a lost take.
+				const writeAlongside = async (
+					label: string,
+					target: string,
+					write: () => Promise<void>,
+				) => {
+					if (!recovered) {
+						await write();
+						return;
+					}
+					try {
+						await write();
+					} catch (error) {
+						console.warn(`[native-sck] could not write the recovered take's ${label}:`, error);
+						await fs.rm(target, { force: true }).catch(() => undefined);
+					}
+				};
 
 				if (cursorCaptureMode === "editable-overlay") {
 					compactPendingCursorTelemetryPauseRanges(nativeMacPauseRanges);
 					shiftPendingCursorTelemetry(nativeMacCursorOffsetMs);
-					await writePendingCursorTelemetry(screenVideoPath);
+					await writeAlongside("cursor telemetry", `${screenVideoPath}.cursor.json`, () =>
+						writePendingCursorTelemetry(screenVideoPath),
+					);
 				}
 
-				// Showhow: relocate this recording into its agent-ready bundle folder.
-				// Best-effort -- a bundling failure must never lose the recording.
-				let bundledScreenPath = screenVideoPath;
-				let bundleDir: string | undefined;
-				try {
-					const bundle = await createRecordingBundle({
-						screenVideoPath,
-						createdAt: recordingId,
-						durationMs: isValidDurationMs(durationMs) ? durationMs : undefined,
-						...(stepCaptureReason ? { stepCaptureReason } : {}),
-					});
-					bundledScreenPath = bundle.screenVideoPath;
-					bundleDir = bundle.bundleDir;
-				} catch (error) {
-					console.error("Showhow bundle creation failed; keeping flat recording files:", error);
-				}
-
-				// Persist ingested browser-tier steps (companion bridge). Companion
-				// failure never discards video; on disconnect the bundle is marked
-				// unavailable so the desktop tier remains usable.
-				if (bundleDir) {
-					await applyBrowserStepsToBundle(bundleDir);
-				}
-				showhowBridge.clearRecordingEpoch();
-
-				const session: RecordingSession = {
-					screenVideoPath: bundledScreenPath,
+				let session: RecordingSession = {
+					screenVideoPath,
 					createdAt: recordingId,
 					cursorCaptureMode,
-					...(bundleDir
-						? {
-								showhowBundleDir: bundleDir,
-								showhowVideoFileUrl: pathToFileURL(bundledScreenPath).toString(),
-							}
-						: {}),
 				};
+				session = await finishShowhowRecording(
+					session,
+					isValidDurationMs(durationMs) ? durationMs : undefined,
+					stepCaptureReason,
+				);
 				setCurrentRecordingSessionState(session);
 				currentProjectPath = null;
 
@@ -2306,21 +3686,27 @@ export function registerIpcHandlers(
 					RECORDINGS_DIR,
 					`${path.parse(screenVideoPath).name}${RECORDING_SESSION_SUFFIX}`,
 				);
-				await fs.writeFile(sessionManifestPath, JSON.stringify(session, null, 2), "utf-8");
+				await writeAlongside("session manifest", sessionManifestPath, () =>
+					fs.writeFile(sessionManifestPath, JSON.stringify(session, null, 2), "utf-8"),
+				);
+				await registerRecordingMediaLinks(session.screenVideoPath, { cursorCaptureMode });
 
 				return {
 					success: true,
-					path: bundledScreenPath,
+					path: session.screenVideoPath,
 					session,
-					bundleDir,
-					videoFileUrl: pathToFileURL(bundledScreenPath).toString(),
-					message: "Native macOS recording session stored successfully",
+					message: recovered
+						? "Native macOS recording recovered from a failed stop"
+						: "Native macOS recording session stored successfully",
+					...(warning ? { warning } : {}),
+					...(recovered ? { recovered: true } : {}),
 				};
 			} catch (error) {
 				console.error("Failed to stop native macOS recording:", error);
 				await stopCursorRecording();
 				return { success: false, error: error instanceof Error ? error.message : String(error) };
 			} finally {
+				nativeMacStopInFlight = false;
 				nativeMacCaptureProcess = null;
 				nativeMacCaptureTargetPath = null;
 				nativeMacCaptureRecordingId = null;
@@ -2339,74 +3725,96 @@ export function registerIpcHandlers(
 		},
 	);
 
-	ipcMain.handle(
-		"attach-native-mac-webcam-recording",
-		async (_, payload: AttachNativeMacWebcamRecordingInput) => {
-			try {
-				if (process.platform !== "darwin") {
-					return { success: false, error: "Native macOS webcam attachment requires macOS." };
-				}
+	// On-disk write streams for in-progress recordings, keyed by output file name.
+	// Chunks append as they arrive so the renderer never buffers the full video (#616).
+	// Declared here because both the webcam attach below and store-recorded-session
+	// finalize through the same registry.
+	const recordingStreams = new RecordingStreamRegistry();
+	registerRecordingStreamHandlers(ipcMain, recordingStreams, resolveRecordingOutputPath);
 
+	/**
+	 * Writes a browser-recorded webcam clip next to a natively-recorded screen
+	 * video and rewrites the session manifest to include both.
+	 *
+	 * Shared by macOS and Linux, whose native helpers both leave the camera to
+	 * the renderer's `MediaRecorder`: opening the device a second time from the
+	 * helper would fight the preview for an exclusive claim, and buys nothing
+	 * that the screen capture needs. (Windows is the exception — its helper takes
+	 * the webcam through DirectShow so both streams share one start clock.)
+	 *
+	 * Nothing in here is platform-specific; the two `ipcMain.handle` calls below
+	 * differ only in which platform they accept.
+	 */
+	const attachNativeWebcamRecording = async (
+		platformLabel: string,
+		payload: AttachNativeMacWebcamRecordingInput,
+	) => {
+		try {
+			{
 				const screenVideoPath = normalizeVideoSourcePath(payload.screenVideoPath);
-				if (!screenVideoPath || !isPathWithinDir(screenVideoPath, RECORDINGS_DIR)) {
+				if (
+					!screenVideoPath ||
+					!getAllowedReadDirs().some((dir) => isPathWithinDir(screenVideoPath, dir))
+				) {
 					return {
 						success: false,
-						error: "Native macOS webcam attachment requires a recording output path.",
+						error: `Native ${platformLabel} webcam attachment requires a recording output path.`,
 					};
 				}
 
 				await fs.access(screenVideoPath, fsConstants.R_OK);
 
-				if (!payload.webcam?.fileName || !payload.webcam.videoData) {
-					return { success: false, error: "Native macOS webcam attachment is missing video data." };
+				if (!payload.webcam?.fileName) {
+					return {
+						success: false,
+						error: `Native ${platformLabel} webcam attachment is missing video data.`,
+					};
 				}
 
 				const webcamVideoPath = resolveRecordingOutputPath(payload.webcam.fileName);
-				await fs.writeFile(webcamVideoPath, Buffer.from(payload.webcam.videoData));
+				// A streamed webcam arrives with an empty buffer: its bytes are already on
+				// disk, so close the stream and keep the file rather than writing it here.
+				// Nothing multi-gigabyte crosses IPC or gets flattened into one Buffer (#253).
+				const webcamStreamed = await finalizeRecordingFile(
+					recordingStreams,
+					payload.webcam.fileName,
+					webcamVideoPath,
+					payload.webcam.videoData,
+				);
+				// Mirrors finalizeRecordingFile's own condition, so this fires exactly when
+				// it wrote nothing and the session would point at a file that isn't there.
+				if (
+					!webcamStreamed &&
+					!(payload.webcam.videoData && payload.webcam.videoData.byteLength > 0)
+				) {
+					return {
+						success: false,
+						error: `Native ${platformLabel} webcam attachment is missing video data.`,
+					};
+				}
+				// Streamed files lack the WebM Duration header, which the editor needs to
+				// scale its timeline. Best-effort: a failed repair leaves the clip intact.
+				if (webcamStreamed && isValidDurationMs(payload.durationMs)) {
+					await repairRecordingContainer(webcamVideoPath, payload.durationMs);
+				}
 
 				const createdAt =
 					typeof payload.recordingId === "number" && Number.isFinite(payload.recordingId)
 						? payload.recordingId
 						: Date.now();
 				const cursorCaptureMode = normalizeCursorCaptureMode(payload.cursorCaptureMode);
-
-				// Showhow: relocate this recording into its agent-ready bundle folder.
-				// Best-effort -- a bundling failure must never lose the recording.
-				let bundledScreenPath = screenVideoPath;
-				let bundledWebcamPath: string | undefined = webcamVideoPath;
-				let bundleDir: string | undefined;
-				try {
-					const bundle = await createRecordingBundle({
-						screenVideoPath,
-						webcamVideoPath,
-						createdAt,
-						...(payload.stepCaptureReason ? { stepCaptureReason: payload.stepCaptureReason } : {}),
-					});
-					bundledScreenPath = bundle.screenVideoPath;
-					bundledWebcamPath = bundle.webcamVideoPath;
-					bundleDir = bundle.bundleDir;
-				} catch (error) {
-					console.error("Showhow bundle creation failed; keeping flat recording files:", error);
-				}
-
-				// Persist ingested browser-tier steps (companion bridge).
-				if (bundleDir) {
-					await applyBrowserStepsToBundle(bundleDir);
-				}
-				showhowBridge.clearRecordingEpoch();
-
-				const session: RecordingSession = {
-					screenVideoPath: bundledScreenPath,
-					webcamVideoPath: bundledWebcamPath,
+				const webcamOffsetMs = Number.isFinite(payload.webcamOffsetMs)
+					? payload.webcamOffsetMs
+					: undefined;
+				let session: RecordingSession = {
+					screenVideoPath,
+					webcamVideoPath,
 					createdAt,
+					...(webcamOffsetMs !== undefined ? { webcamOffsetMs } : {}),
 					...(cursorCaptureMode ? { cursorCaptureMode } : {}),
-					...(bundleDir
-						? {
-								showhowBundleDir: bundleDir,
-								showhowVideoFileUrl: pathToFileURL(bundledScreenPath).toString(),
-							}
-						: {}),
 				};
+				if (platformLabel === "macOS")
+					session = await finishShowhowRecording(session, payload.durationMs);
 				setCurrentRecordingSessionState(session);
 				currentProjectPath = null;
 
@@ -2415,42 +3823,77 @@ export function registerIpcHandlers(
 					`${path.parse(screenVideoPath).name}${RECORDING_SESSION_SUFFIX}`,
 				);
 				await fs.writeFile(sessionManifestPath, JSON.stringify(session, null, 2), "utf-8");
+				await registerRecordingMediaLinks(session.screenVideoPath, {
+					webcamVideoPath: session.webcamVideoPath,
+					webcamOffsetMs,
+					cursorCaptureMode,
+				});
 
 				return {
 					success: true,
-					path: bundledScreenPath,
+					path: session.screenVideoPath,
 					session,
-					bundleDir,
-					videoFileUrl: pathToFileURL(bundledScreenPath).toString(),
-					message: "Native macOS webcam recording attached successfully",
-				};
-			} catch (error) {
-				console.error("Failed to attach native macOS webcam recording:", error);
-				return {
-					success: false,
-					error: error instanceof Error ? error.message : String(error),
+					message: `Native ${platformLabel} webcam recording attached successfully`,
 				};
 			}
+		} catch (error) {
+			console.error(`Failed to attach native ${platformLabel} webcam recording:`, error);
+			return {
+				success: false,
+				error: error instanceof Error ? error.message : String(error),
+			};
+		}
+	};
+
+	ipcMain.handle(
+		"attach-native-mac-webcam-recording",
+		async (_, payload: AttachNativeMacWebcamRecordingInput) => {
+			if (process.platform !== "darwin") {
+				return { success: false, error: "Native macOS webcam attachment requires macOS." };
+			}
+			return attachNativeWebcamRecording("macOS", payload);
 		},
 	);
 
-	// On-disk write streams for in-progress recordings, keyed by output file name.
-	// Chunks append as they arrive so the renderer never buffers the full video (#616).
-	const recordingStreams = new RecordingStreamRegistry();
-	registerRecordingStreamHandlers(ipcMain, recordingStreams, resolveRecordingOutputPath);
+	ipcMain.handle(
+		"attach-native-linux-webcam-recording",
+		async (_, payload: AttachNativeMacWebcamRecordingInput) => {
+			if (process.platform !== "linux") {
+				return { success: false, error: "Native Linux webcam attachment requires Linux." };
+			}
+			return attachNativeWebcamRecording("Linux", payload);
+		},
+	);
+
+	ipcMain.handle("showhow:open-recording", async (_, bundleDir: unknown) => {
+		if (typeof bundleDir !== "string") return { success: false };
+		try {
+			const resolved = await fs.realpath(bundleDir);
+			const root = await fs.realpath(SHOWHOW_RECORDINGS_ROOT);
+			if (!resolved.startsWith(`${root}${path.sep}`)) return { success: false };
+			const entry = await readRecordingEntry(resolved);
+			if (!entry?.video) return { success: false };
+			const video = path.join(resolved, entry.video);
+			const realVideo = await fs.realpath(video);
+			if (!realVideo.startsWith(`${resolved}${path.sep}`)) return { success: false };
+			const session = await loadRecordedSessionForVideoPath(video);
+			setCurrentRecordingSessionState(
+				await restorePendingBundleTranscript(
+					session ?? { screenVideoPath: video, createdAt: entry.createdAt },
+					resolved,
+				),
+			);
+			currentProjectPath = null;
+			createEditorWindow();
+			return { success: true };
+		} catch (error) {
+			console.error("Showhow recording could not open:", error);
+			return { success: false };
+		}
+	});
 
 	ipcMain.handle("showhow:list-recordings", async () => {
 		return listRecordings();
-	});
-
-	ipcMain.handle("showhow:bridge-status", async () => {
-		return {
-			host: SHOWHOW_BRIDGE_HOST,
-			port: showhowBridge.port,
-			paired: showhowBridge.isCompanionConnected(),
-			recording: showhowBridge.hasRecordingEpoch(),
-			pairingToken: SHOWHOW_BRIDGE_TOKEN,
-		};
 	});
 
 	ipcMain.handle("showhow:copy-path", (_, bundleDir: unknown) => {
@@ -2552,8 +3995,6 @@ export function registerIpcHandlers(
 				? payload.createdAt
 				: Date.now();
 		const cursorCaptureMode = normalizeCursorCaptureMode(payload.cursorCaptureMode);
-		const stepCaptureReason = payload.stepCaptureReason;
-		const source = payload.source === "browser" ? "browser" : "desktop";
 		const screenVideoPath = resolveRecordingOutputPath(payload.screen.fileName);
 		const screenStreamed = await finalizeRecordingFile(
 			recordingStreams,
@@ -2574,74 +4015,76 @@ export function registerIpcHandlers(
 			);
 		}
 
+		// MediaRecorder occasionally produces a 0-byte file on Windows
+		// when the display stream is captured but no frames are produced (the
+		// streaming WriteStream was opened but never received any chunks). Detect
+		// the bad file here so the recording fails loudly instead of opening the
+		// editor on a file the <video> element can't decode. The WebM EBML header
+		// alone is ~33 bytes; 1KB rules out a header-only file with no frames.
+		const MIN_VALID_BYTES = 1024;
+		try {
+			const screenStat = await fs.stat(screenVideoPath);
+			if (screenStat.size < MIN_VALID_BYTES) {
+				await fs.unlink(screenVideoPath).catch(() => undefined);
+				if (webcamVideoPath) {
+					await fs.unlink(webcamVideoPath).catch(() => undefined);
+				}
+				return {
+					success: false,
+					message: `Screen recording is empty (${screenStat.size} bytes). The screen capture did not produce any frames — this can happen on Windows when the display source changes during recording. Try recording again.`,
+				};
+			}
+		} catch (statError) {
+			// file missing is fatal; any other stat error is non-fatal, the
+			// editor will surface the load error on its own.
+			if ((statError as NodeJS.ErrnoException).code === "ENOENT") {
+				return {
+					success: false,
+					message: "Screen recording file is missing on disk.",
+				};
+			}
+		}
+
 		// Streamed files lack the WebM Duration header (renderer no longer holds the
-		// blob), so patch on disk for the editor's seek bar and timeline. Best-effort,
-		// independent per file, so they run together.
+		// blob), so repair the container on disk for the editor's seek bar and timeline.
+		// Best-effort, independent per file, so they run together.
 		if (isValidDurationMs(payload.durationMs)) {
 			const patches: Promise<unknown>[] = [];
 			if (screenStreamed) {
-				patches.push(patchWebmDurationOnDisk(screenVideoPath, payload.durationMs));
+				patches.push(repairRecordingContainer(screenVideoPath, payload.durationMs));
 			}
 			if (webcamStreamed && webcamVideoPath) {
-				patches.push(patchWebmDurationOnDisk(webcamVideoPath, payload.durationMs));
+				patches.push(repairRecordingContainer(webcamVideoPath, payload.durationMs));
 			}
 			await Promise.all(patches);
 		}
 
-		await writePendingCursorTelemetry(screenVideoPath);
-
-		// Showhow: relocate this recording into its agent-ready bundle folder.
-		// Best-effort -- a bundling failure must never lose the recording.
-		let bundledScreenPath = screenVideoPath;
-		let bundledWebcamPath = webcamVideoPath;
-		let bundleDir: string | undefined;
-		try {
-			const bundle = await createRecordingBundle({
-				screenVideoPath,
-				webcamVideoPath,
-				createdAt,
-				durationMs: isValidDurationMs(payload.durationMs) ? payload.durationMs : undefined,
-				...(stepCaptureReason ? { stepCaptureReason } : {}),
-				...(source !== "desktop" ? { source } : {}),
-			});
-			bundledScreenPath = bundle.screenVideoPath;
-			bundledWebcamPath = bundle.webcamVideoPath;
-			bundleDir = bundle.bundleDir;
-		} catch (error) {
-			console.error("Showhow bundle creation failed; keeping flat recording files:", error);
-		}
-
-		// Persist ingested browser-tier steps (companion bridge). Browser
-		// MediaRecorder fallback save path.
-		if (bundleDir) {
-			await applyBrowserStepsToBundle(bundleDir);
-		}
-		showhowBridge.clearRecordingEpoch();
-
-		const session: RecordingSession = bundledWebcamPath
+		const webcamOffsetMs =
+			webcamVideoPath && Number.isFinite(payload.webcamOffsetMs)
+				? payload.webcamOffsetMs
+				: undefined;
+		let session: RecordingSession = webcamVideoPath
 			? {
-					screenVideoPath: bundledScreenPath,
-					webcamVideoPath: bundledWebcamPath,
+					screenVideoPath,
+					webcamVideoPath,
 					createdAt,
+					...(webcamOffsetMs !== undefined ? { webcamOffsetMs } : {}),
 					...(cursorCaptureMode ? { cursorCaptureMode } : {}),
-					...(bundleDir
-						? {
-								showhowBundleDir: bundleDir,
-								showhowVideoFileUrl: pathToFileURL(bundledScreenPath).toString(),
-							}
-						: {}),
 				}
-			: {
-					screenVideoPath: bundledScreenPath,
-					createdAt,
-					...(cursorCaptureMode ? { cursorCaptureMode } : {}),
-					...(bundleDir
-						? {
-								showhowBundleDir: bundleDir,
-								showhowVideoFileUrl: pathToFileURL(bundledScreenPath).toString(),
-							}
-						: {}),
-				};
+			: { screenVideoPath, createdAt, ...(cursorCaptureMode ? { cursorCaptureMode } : {}) };
+		// Sidecar BEFORE the session is published, as the three native stop paths already
+		// do it. Publishing first opens a window where `getCurrentRecordingSession` hands
+		// the editor a take whose `.cursor.json` is not on disk yet, and the editor's
+		// fresh-take auto-zoom reads that file the moment it imports -- an empty read there
+		// is indistinguishable from a take with no click, so the zooms are silently
+		// skipped.
+		await writePendingCursorTelemetry(screenVideoPath);
+		if (process.platform === "darwin")
+			session = await finishShowhowRecording(
+				session,
+				payload.durationMs,
+				payload.stepCaptureReason,
+			);
 		setCurrentRecordingSessionState(session);
 		currentProjectPath = null;
 
@@ -2650,13 +4093,16 @@ export function registerIpcHandlers(
 			`${path.parse(payload.screen.fileName).name}${RECORDING_SESSION_SUFFIX}`,
 		);
 		await fs.writeFile(sessionManifestPath, JSON.stringify(session, null, 2), "utf-8");
+		await registerRecordingMediaLinks(session.screenVideoPath, {
+			webcamVideoPath: session.webcamVideoPath,
+			webcamOffsetMs,
+			cursorCaptureMode,
+		});
 
 		return {
 			success: true,
-			path: bundledScreenPath,
+			path: session.screenVideoPath,
 			session,
-			bundleDir,
-			videoFileUrl: pathToFileURL(bundledScreenPath).toString(),
 			message: "Recording session stored successfully",
 		};
 	}
@@ -2709,18 +4155,8 @@ export function registerIpcHandlers(
 				normalizeCursorCaptureMode(cursorCaptureMode) ?? "editable-overlay";
 			if (recording && normalizedCursorCaptureMode === "editable-overlay") {
 				await startCursorRecording(recordingId);
-				// Browser MediaRecorder fallback start: trigger the companion
-				// bridge epoch handshake so browser steps are time-normalized.
-				showhowBridge.setRecordingEpoch(
-					typeof recordingId === "number" && Number.isFinite(recordingId)
-						? recordingId
-						: Date.now(),
-				);
 			} else {
 				await stopCursorRecording();
-				if (!recording) {
-					showhowBridge.clearRecordingEpoch();
-				}
 			}
 
 			const source = selectedSource || { name: "Screen" };
@@ -2741,9 +4177,21 @@ export function registerIpcHandlers(
 		return readCursorTelemetryFile(targetVideoPath);
 	});
 
+	// Protocol allowlist. `shell.openExternal` hands the string to the OS handler,
+	// so `file:`, `ms-msdt:`, a UNC path, or any registered custom scheme is a
+	// launch primitive — the renderer runs with webSecurity:false and now renders
+	// model-generated content, so "the renderer is trusted" is not a strong enough
+	// premise to skip this. http/https/mailto is everything the app actually opens.
+	const EXTERNAL_URL_PROTOCOLS = new Set(["http:", "https:", "mailto:"]);
+
 	ipcMain.handle("open-external-url", async (_, url: string) => {
 		try {
-			await shell.openExternal(url);
+			const parsed = new URL(url);
+			if (!EXTERNAL_URL_PROTOCOLS.has(parsed.protocol)) {
+				console.warn(`Refused to open external URL with protocol ${parsed.protocol}`);
+				return { success: false, error: `Unsupported URL protocol: ${parsed.protocol}` };
+			}
+			await shell.openExternal(parsed.toString());
 			return { success: true };
 		} catch (error) {
 			console.error("Failed to open URL:", error);
@@ -2756,56 +4204,59 @@ export function registerIpcHandlers(
 		return resolveAssetBasePath();
 	});
 
-	ipcMain.handle("pick-export-save-path", async (_, fileName: string, exportFolder?: string) => {
-		try {
-			const isGif = fileName.toLowerCase().endsWith(".gif");
-			const filters = isGif
-				? [{ name: mainT("dialogs", "fileDialogs.gifImage"), extensions: ["gif"] }]
-				: [{ name: mainT("dialogs", "fileDialogs.mp4Video"), extensions: ["mp4"] }];
+	ipcMain.handle(
+		"pick-export-save-path",
+		async (event, fileName: string, exportFolder?: string) => {
+			try {
+				const isGif = fileName.toLowerCase().endsWith(".gif");
+				const filters = isGif
+					? [{ name: mainT("dialogs", "fileDialogs.gifImage"), extensions: ["gif"] }]
+					: [{ name: mainT("dialogs", "fileDialogs.mp4Video"), extensions: ["mp4"] }];
 
-			// Prefer the user's last export folder if it still exists, else ~/Downloads.
-			// Validate here because the renderer can't stat the filesystem.
-			let defaultDir = app.getPath("downloads");
-			if (exportFolder) {
-				try {
-					const stats = await fs.stat(exportFolder);
-					if (stats.isDirectory()) {
-						defaultDir = exportFolder;
+				// Prefer the user's last export folder if it still exists, else ~/Downloads.
+				// Validate here because the renderer can't stat the filesystem.
+				let defaultDir = app.getPath("downloads");
+				if (exportFolder) {
+					try {
+						const stats = await fs.stat(exportFolder);
+						if (stats.isDirectory()) {
+							defaultDir = exportFolder;
+						}
+					} catch (err) {
+						console.warn(
+							`Could not access remembered export folder "${exportFolder}", falling back to Downloads:`,
+							err,
+						);
 					}
-				} catch (err) {
-					console.warn(
-						`Could not access remembered export folder "${exportFolder}", falling back to Downloads:`,
-						err,
-					);
 				}
-			}
-			const dialogOptions = buildDialogOptions(
-				{
+				const dialogOptions: Electron.SaveDialogOptions = {
 					title: isGif
 						? mainT("dialogs", "fileDialogs.saveGif")
 						: mainT("dialogs", "fileDialogs.saveVideo"),
 					defaultPath: path.join(defaultDir, fileName),
 					filters,
 					properties: ["createDirectory", "showOverwriteConfirmation"],
-				},
-				getMainWindow(),
-			);
-			const result = await dialog.showSaveDialog(dialogOptions);
+				};
+				const result = await showSaveDialogOver(
+					BrowserWindow.fromWebContents(event.sender),
+					dialogOptions,
+				);
 
-			if (result.canceled || !result.filePath) {
-				return { success: false, canceled: true, message: "Export canceled" };
+				if (result.canceled || !result.filePath) {
+					return { success: false, canceled: true, message: "Export canceled" };
+				}
+
+				return { success: true, path: path.normalize(result.filePath) };
+			} catch (error) {
+				console.error("Failed to show save dialog:", error);
+				return {
+					success: false,
+					message: "Failed to show save dialog",
+					error: String(error),
+				};
 			}
-
-			return { success: true, path: path.normalize(result.filePath) };
-		} catch (error) {
-			console.error("Failed to show save dialog:", error);
-			return {
-				success: false,
-				message: "Failed to show save dialog",
-				error: String(error),
-			};
-		}
-	});
+		},
+	);
 
 	ipcMain.handle("write-export-to-path", async (_, videoData: ArrayBuffer, filePath: string) => {
 		try {
@@ -2838,24 +4289,26 @@ export function registerIpcHandlers(
 		}
 	});
 
-	ipcMain.handle("open-video-file-picker", async () => {
+	// The media tab imports VIDEO (it arranges clips). Audio is imported from the
+	// timeline toolbar instead (issue #350) — see `open-audio-file-picker` below.
+	ipcMain.handle("open-video-file-picker", async (event) => {
 		try {
-			const dialogOptions = buildDialogOptions(
-				{
-					title: mainT("dialogs", "fileDialogs.selectVideo"),
-					defaultPath: RECORDINGS_DIR,
-					filters: [
-						{
-							name: mainT("dialogs", "fileDialogs.videoFiles"),
-							extensions: ["webm", "mp4", "mov", "avi", "mkv", "m4v", "wmv", "flv", "ts"],
-						},
-						{ name: mainT("dialogs", "fileDialogs.allFiles"), extensions: ["*"] },
-					],
-					properties: ["openFile"],
-				},
-				getMainWindow(),
+			const dialogOptions: Electron.OpenDialogOptions = {
+				title: mainT("dialogs", "fileDialogs.selectVideo"),
+				defaultPath: RECORDINGS_DIR,
+				filters: [
+					{
+						name: mainT("dialogs", "fileDialogs.videoFiles"),
+						extensions: ["webm", "mp4", "mov", "avi", "mkv", "m4v", "wmv", "flv", "ts"],
+					},
+					{ name: mainT("dialogs", "fileDialogs.allFiles"), extensions: ["*"] },
+				],
+				properties: ["openFile"],
+			};
+			const result = await showOpenDialogOver(
+				BrowserWindow.fromWebContents(event.sender),
+				dialogOptions,
 			);
-			const result = await dialog.showOpenDialog(dialogOptions);
 
 			if (result.canceled || result.filePaths.length === 0) {
 				return { success: false, canceled: true };
@@ -2879,6 +4332,84 @@ export function registerIpcHandlers(
 			return {
 				success: false,
 				message: "Failed to open file picker",
+				error: String(error),
+			};
+		}
+	});
+
+	// Import an external audio file (voiceover / BGM / SFX) — issue #350. Driven by
+	// the timeline's "Add audio" tool: audio is a timeline overlay (like an
+	// annotation), not a media-tab clip, so it has its own audio-only picker and the
+	// renderer adds it as a kind:"audio" asset + track at the playhead.
+	ipcMain.handle("open-audio-file-picker", async (event) => {
+		try {
+			const dialogOptions: Electron.OpenDialogOptions = {
+				title: mainT("dialogs", "fileDialogs.selectAudio"),
+				defaultPath: RECORDINGS_DIR,
+				filters: [
+					{
+						name: mainT("dialogs", "fileDialogs.audioFiles"),
+						extensions: ["mp3", "wav", "m4a", "aac", "flac", "ogg", "opus"],
+					},
+					{ name: mainT("dialogs", "fileDialogs.allFiles"), extensions: ["*"] },
+				],
+				properties: ["openFile"],
+			};
+			const result = await showOpenDialogOver(
+				BrowserWindow.fromWebContents(event.sender),
+				dialogOptions,
+			);
+
+			if (result.canceled || result.filePaths.length === 0) {
+				return { success: false, canceled: true };
+			}
+
+			const normalizedPath = await approveReadableAudioPath(result.filePaths[0]);
+			if (!normalizedPath) {
+				return {
+					success: false,
+					message: "Selected file is not a supported readable audio file",
+				};
+			}
+
+			return {
+				success: true,
+				path: normalizedPath,
+			};
+		} catch (error) {
+			console.error("Failed to open audio file picker:", error);
+			return {
+				success: false,
+				message: "Failed to open audio file picker",
+				error: String(error),
+			};
+		}
+	});
+
+	// In-editor voiceover recording: the renderer hands over the raw MediaRecorder
+	// blob (webm/opus) and gets back the path it landed at, under the recordings
+	// dir so it lives with the project's other media and survives relaunches.
+	ipcMain.handle("save-recorded-voiceover", async (_event, data: ArrayBuffer) => {
+		try {
+			if (!(data instanceof ArrayBuffer) || data.byteLength === 0) {
+				return { success: false, message: "Empty recording" };
+			}
+			// A cap, because this writes renderer-supplied bytes straight to disk. An
+			// hour of Opus is a few tens of MB, so 512 MB is far past any real take
+			// and still refuses a runaway or malformed payload before it is buffered.
+			if (data.byteLength > MAX_RECORDED_VOICEOVER_BYTES) {
+				return { success: false, message: "Recording too large" };
+			}
+			await fs.mkdir(RECORDINGS_DIR, { recursive: true });
+			const fileName = `voiceover-${new Date().toISOString().replace(/[:.]/g, "-")}.webm`;
+			const target = path.join(RECORDINGS_DIR, fileName);
+			await fs.writeFile(target, Buffer.from(data));
+			return { success: true, path: target };
+		} catch (error) {
+			console.error("Failed to save recorded voiceover:", error);
+			return {
+				success: false,
+				message: "Failed to save recorded voiceover",
 				error: String(error),
 			};
 		}
@@ -2909,7 +4440,7 @@ export function registerIpcHandlers(
 
 	ipcMain.handle("read-binary-file", async (_, filePath: string) => {
 		try {
-			const normalizedPath = await approveReadableVideoPath(filePath);
+			const normalizedPath = readableApprovedPath(filePath);
 			if (!normalizedPath) {
 				return {
 					success: false,
@@ -2939,7 +4470,7 @@ export function registerIpcHandlers(
 	// recording above that can never be loaded whole — see read-file-chunk).
 	ipcMain.handle("get-readable-file-info", async (_, filePath: string) => {
 		try {
-			const normalizedPath = await approveReadableVideoPath(filePath);
+			const normalizedPath = readableApprovedPath(filePath);
 			if (!normalizedPath) {
 				return {
 					success: false,
@@ -2964,6 +4495,58 @@ export function registerIpcHandlers(
 		}
 	});
 
+	// Waveform peaks for a timeline clip, decoded natively (see media/audioPeaks).
+	// The renderer's own pipelines take ~12s on a 32-minute recording because they
+	// decode the whole track in Chromium; ffmpeg does the same work in ~2s off the
+	// UI process, and the result is cached on disk so it is paid once per file.
+	// `peaks: null` means "no native path available" — the caller falls back to
+	// its own decoding rather than losing the waveform.
+	ipcMain.handle(
+		"get-audio-peaks",
+		async (_, filePath: string, durationSec: number): Promise<AudioPeaksResult> => {
+			try {
+				// Same approval gate as every other read of a renderer-supplied path.
+				const normalizedPath = readableApprovedPath(filePath);
+				if (!normalizedPath) {
+					return { success: false, message: "File path is not approved" };
+				}
+				const peaks = await getAudioPeaks(normalizedPath, durationSec);
+				return { success: true, peaks };
+			} catch (error) {
+				// A clip with no audio track lands here. Degrade quietly: the renderer
+				// draws no waveform, which is correct, and logs its own warning.
+				return { success: false, message: String(error) };
+			}
+		},
+	);
+
+	// The loudness-normalisation gain the export applies to a voice file, measured by the
+	// compositor over the whole file and cached there, so the preview plays the voice at the
+	// level the export writes it. `gainDb: 0` whenever there is nothing to apply — no addon, a
+	// file with no audio, a failed read — which is the preview as it played before.
+	const loudnessService = new CompositorViewService();
+	ipcMain.handle(
+		"get-loudness-gain",
+		async (
+			_,
+			filePath: string,
+		): Promise<{ success: boolean; gainDb: number; message?: string }> => {
+			try {
+				// Same approval gate as every other read of a renderer-supplied path.
+				const normalizedPath = readableApprovedPath(filePath);
+				if (!normalizedPath) {
+					return { success: false, gainDb: 0, message: "File path is not approved" };
+				}
+				return {
+					success: true,
+					gainDb: (await loudnessService.loudnessGainDb(normalizedPath)) ?? 0,
+				};
+			} catch (error) {
+				return { success: false, gainDb: 0, message: String(error) };
+			}
+		},
+	);
+
 	// Cap renderer-requested chunk sizes so a buggy or compromised renderer
 	// cannot make the main process allocate an arbitrarily large buffer.
 	const MAX_IPC_CHUNK_BYTES = 64 * 1024 * 1024;
@@ -2974,7 +4557,7 @@ export function registerIpcHandlers(
 	// do (2 GiB cap) and a 16 GB machine cannot hold for multi-GB recordings.
 	ipcMain.handle("read-file-chunk", async (_, filePath: string, offset: number, length: number) => {
 		try {
-			const normalizedPath = await approveReadableVideoPath(filePath);
+			const normalizedPath = readableApprovedPath(filePath);
 			if (!normalizedPath) {
 				return {
 					success: false,
@@ -3025,8 +4608,13 @@ export function registerIpcHandlers(
 
 	ipcMain.handle(
 		"save-project-file",
-		async (_, projectData: unknown, suggestedName?: string, existingProjectPath?: string) => {
-			return saveProjectFile(projectData, suggestedName, existingProjectPath);
+		async (event, projectData: unknown, suggestedName?: string, existingProjectPath?: string) => {
+			return saveProjectFile(
+				projectData,
+				suggestedName,
+				existingProjectPath,
+				BrowserWindow.fromWebContents(event.sender),
+			);
 		},
 	);
 
@@ -3034,6 +4622,7 @@ export function registerIpcHandlers(
 		projectData: unknown,
 		suggestedName?: string,
 		existingProjectPath?: string,
+		parent?: BrowserWindow | null,
 	): Promise<ProjectFileResult> {
 		try {
 			const writableExistingProjectPath = getWritableExistingProjectPath(existingProjectPath);
@@ -3057,22 +4646,19 @@ export function registerIpcHandlers(
 
 			const defaultName = getDefaultProjectFileName(suggestedName, `project-${Date.now()}`);
 
-			const dialogOptions = buildDialogOptions(
-				{
-					title: mainT("dialogs", "fileDialogs.saveProject"),
-					defaultPath: path.join(RECORDINGS_DIR, defaultName),
-					filters: [
-						{
-							name: mainT("dialogs", "fileDialogs.showhowProject"),
-							extensions: PROJECT_SAVE_FILTER_EXTENSIONS[0],
-						},
-						{ name: "JSON", extensions: PROJECT_SAVE_FILTER_EXTENSIONS[1] },
-					],
-					properties: ["createDirectory", "showOverwriteConfirmation"],
-				},
-				getMainWindow(),
-			);
-			const result = await dialog.showSaveDialog(dialogOptions);
+			const dialogOptions: Electron.SaveDialogOptions = {
+				title: mainT("dialogs", "fileDialogs.saveProject"),
+				defaultPath: path.join(RECORDINGS_DIR, defaultName),
+				filters: [
+					{
+						name: mainT("dialogs", "fileDialogs.showhowProject"),
+						extensions: [PROJECT_FILE_EXTENSION],
+					},
+					{ name: "JSON", extensions: ["json"] },
+				],
+				properties: ["createDirectory", "showOverwriteConfirmation"],
+			};
+			const result = await showSaveDialogOver(parent, dialogOptions);
 
 			if (result.canceled || !result.filePath) {
 				return {
@@ -3100,15 +4686,28 @@ export function registerIpcHandlers(
 		}
 	}
 
-	ipcMain.handle("load-project-file", async (_, projectFolder?: string) => {
-		return loadProjectFile(projectFolder);
+	ipcMain.handle("load-project-file", async (event, projectFolder?: string) => {
+		return loadProjectFile(projectFolder, BrowserWindow.fromWebContents(event.sender));
 	});
 
-	async function loadProjectFile(projectFolder?: string): Promise<ProjectFileResult> {
+	async function loadProjectFile(
+		projectFolder?: string,
+		parent?: BrowserWindow | null,
+	): Promise<ProjectFileResult> {
 		try {
-			// Prefer the user's last opened-project folder if it still exists, else
-			// RECORDINGS_DIR. Validate here because the renderer can't stat the filesystem.
+			// Default to the projects directory, where the editor actually stores
+			// openable project files (one `.openscreen` per project). Prefer the user's
+			// last opened-project folder if given and still valid; only fall back to
+			// RECORDINGS_DIR if the projects dir doesn't exist yet (fresh install).
+			// Validate here because the renderer can't stat the filesystem.
+			const projectsDir = path.join(app.getPath("userData"), "projects");
 			let defaultDir = RECORDINGS_DIR;
+			try {
+				const stats = await fs.stat(projectsDir);
+				if (stats.isDirectory()) defaultDir = projectsDir;
+			} catch {
+				// projects dir not created yet — keep RECORDINGS_DIR fallback.
+			}
 			if (projectFolder) {
 				try {
 					const stats = await fs.stat(projectFolder);
@@ -3119,31 +4718,27 @@ export function registerIpcHandlers(
 					// Stat can fail if the folder was moved/deleted (expected) or on a
 					// permission error (worth surfacing). We fall back either way, but log it.
 					console.warn(
-						`Could not access remembered project folder "${projectFolder}", falling back to RECORDINGS_DIR:`,
+						`Could not access remembered project folder "${projectFolder}", falling back to default:`,
 						err,
 					);
 				}
 			}
-			const dialogOptions = buildDialogOptions(
-				{
-					title: mainT("dialogs", "fileDialogs.openProject"),
-					defaultPath: defaultDir,
-					filters: [
-						{
-							name: mainT("dialogs", "fileDialogs.showhowProject"),
-							extensions: PROJECT_OPEN_FILTER_EXTENSIONS[0],
-						},
-						{ name: "JSON", extensions: PROJECT_OPEN_FILTER_EXTENSIONS[1] },
-						{
-							name: mainT("dialogs", "fileDialogs.allFiles"),
-							extensions: PROJECT_OPEN_FILTER_EXTENSIONS[2],
-						},
-					],
-					properties: ["openFile"],
-				},
-				getMainWindow(),
-			);
-			const result = await dialog.showOpenDialog(dialogOptions);
+			const dialogOptions: Electron.OpenDialogOptions = {
+				title: mainT("dialogs", "fileDialogs.openProject"),
+				defaultPath: defaultDir,
+				filters: [
+					{
+						name: mainT("dialogs", "fileDialogs.showhowProject"),
+						// All projects are `.openscreen`; `.axcut` is kept only so files
+						// written by older builds (pre-migration) still show up.
+						extensions: [PROJECT_FILE_EXTENSION, "openscreen", "axcut"],
+					},
+					{ name: "JSON", extensions: ["json"] },
+					{ name: mainT("dialogs", "fileDialogs.allFiles"), extensions: ["*"] },
+				],
+				properties: ["openFile"],
+			};
+			const result = await showOpenDialogOver(parent, dialogOptions);
 
 			if (result.canceled || result.filePaths.length === 0) {
 				return { success: false, canceled: true, message: "Open project canceled" };
@@ -3151,9 +4746,18 @@ export function registerIpcHandlers(
 
 			const filePath = result.filePaths[0];
 			const content = await fs.readFile(filePath, "utf-8");
-			const project = JSON.parse(content);
+			const project = await relinkProjectMedia(JSON.parse(content), RECORDINGS_DIR);
 			currentProjectPath = filePath;
-			setCurrentRecordingSessionState(await getApprovedProjectSession(project, filePath));
+			let session: RecordingSession | null = null;
+			try {
+				session = await getApprovedProjectSession(project, filePath);
+			} catch (sessionError) {
+				console.warn(
+					"[loadProjectFile] Could not approve session paths, proceeding without session:",
+					sessionError,
+				);
+			}
+			setCurrentRecordingSessionState(session);
 
 			return {
 				success: true,
@@ -3188,8 +4792,21 @@ export function registerIpcHandlers(
 				return { success: false, message: "File not found" };
 			}
 			const content = await fs.readFile(filePath, "utf-8");
-			const project = JSON.parse(content);
+			const project = await relinkProjectMedia(JSON.parse(content), RECORDINGS_DIR);
 			currentProjectPath = filePath;
+			// A document the editor saved grants the media it declares, within the same trusted
+			// dirs as a legacy v2 project below: the recordings dir and the project's own dir.
+			// This file came from an arbitrary path, not from the editor's projects dir.
+			if (isAxcutDocumentFile(project)) {
+				try {
+					approveDocumentMedia(parseDocumentFile(project), [
+						RECORDINGS_DIR,
+						path.dirname(path.resolve(filePath)),
+					]);
+				} catch {
+					// Not a valid document: nothing is granted, and the caller reports the parse error.
+				}
+			}
 
 			// Approve session paths but tolerate failures (e.g. video moved outside trusted
 			// dirs) so the project still loads and the renderer can show "video not found".
@@ -3255,10 +4872,52 @@ export function registerIpcHandlers(
 	});
 
 	ipcMain.handle("get-current-recording-session", () => {
-		return currentRecordingSession
-			? { success: true, session: currentRecordingSession }
-			: { success: false };
+		if (!currentRecordingSession) {
+			return { success: false };
+		}
+		const warning =
+			nativeMacRecordingWarning?.screenVideoPath === currentRecordingSession.screenVideoPath
+				? nativeMacRecordingWarning.message
+				: undefined;
+		return { success: true, session: currentRecordingSession, ...(warning ? { warning } : {}) };
 	});
+
+	// returns the webcam path (if any) for a given screen video by
+	// reading its sibling session.json — drives the cameraTrack auto-link on
+	// `addAsset` in the new editor's project store.
+	ipcMain.handle(
+		"find-recording-camera",
+		async (
+			_event,
+			videoPath: string,
+		): Promise<{
+			success: boolean;
+			webcamVideoPath?: string;
+			offsetMs?: number;
+			error?: string;
+		}> => {
+			try {
+				const normalized = normalizeVideoSourcePath(videoPath);
+				if (!normalized || !isPathAllowed(normalized)) {
+					return { success: false, error: "Video path has not been approved" };
+				}
+				const resolution = await resolveMediaLinksForVideo(normalized);
+				if (!resolution.webcamVideoPath) {
+					return { success: false, error: "No camera attached to this recording" };
+				}
+				return {
+					success: true,
+					webcamVideoPath: resolution.webcamVideoPath,
+					offsetMs: resolution.webcamOffsetMs ?? 0,
+				};
+			} catch (err) {
+				return {
+					success: false,
+					error: err instanceof Error ? err.message : String(err),
+				};
+			}
+		},
+	);
 
 	async function setCurrentVideoPath(path: string): Promise<ProjectPathResult> {
 		const normalizedPath = normalizeVideoSourcePath(path);
@@ -3301,8 +4960,16 @@ export function registerIpcHandlers(
 		return { success: true };
 	}
 
-	ipcMain.handle("get-platform", () => {
-		return process.platform;
+	// Keep the native Windows/Linux window-control overlay in the app's theme
+	// colours. The renderer sends the resolved CSS values so the palette stays in
+	// one place. No-op on macOS (traffic lights aren't tintable) and on any window
+	// that wasn't created with an overlay, which is what setTitleBarOverlay throws on.
+	ipcMain.on("set-titlebar-overlay", (event, color: string, symbolColor: string) => {
+		try {
+			BrowserWindow.fromWebContents(event.sender)?.setTitleBarOverlay({ color, symbolColor });
+		} catch {
+			// Best-effort cosmetic.
+		}
 	});
 
 	ipcMain.handle("get-shortcuts", async () => {
@@ -3326,52 +4993,59 @@ export function registerIpcHandlers(
 
 	ipcMain.handle(
 		"save-diagnostic",
-		async (
-			_,
-			payload: { error: string; stack?: string; projectState: unknown; logs: string[] },
-		) => {
-			const { filePath, canceled } = await dialog.showSaveDialog({
-				title: "Save Diagnostic File",
-				defaultPath: `showhow-diagnostic-${Date.now()}.json`,
-				filters: [{ name: "JSON", extensions: ["json"] }],
-			});
-
-			if (canceled || !filePath) return { success: false, canceled: true };
-
-			const HELPER_OUTPUT_MAX_BYTES = 64 * 1024;
-			const tail = (s: string, max: number) => (s.length <= max ? s : s.slice(s.length - max));
-
-			const diagnostic = {
-				timestamp: new Date().toISOString(),
-				appVersion: app.getVersion(),
-				platform: process.platform,
-				arch: process.arch,
-				osRelease: os.release(),
-				osVersion: os.version(),
-				totalMemoryMB: Math.round(os.totalmem() / 1024 / 1024),
-				nodeVersion: process.versions.node,
-				electronVersion: process.versions.electron,
-				chromeVersion: process.versions.chrome,
-				error: payload.error,
-				stack: payload.stack,
-				projectState: payload.projectState,
-				recentLogs: payload.logs,
-				helperOutput: {
-					windows: tail(nativeWindowsCaptureOutput, HELPER_OUTPUT_MAX_BYTES),
-					mac: tail(nativeMacCaptureOutput, HELPER_OUTPUT_MAX_BYTES),
-				},
-				mainProcessLogs: mainLogBuffer.snapshot(),
-			};
-
-			try {
-				await fs.writeFile(filePath, JSON.stringify(diagnostic, null, 2), "utf-8");
-				return { success: true, path: filePath };
-			} catch (error) {
-				console.error("Failed to write diagnostic file:", error);
-				return { success: false, error: String(error) };
-			}
-		},
+		async (_, payload: { error: string; stack?: string; projectState: unknown; logs: string[] }) =>
+			exportDiagnosticFile(payload),
 	);
+
+	// Same one-instance rule: the service serialises its writes per instance. The folder is
+	// in Documents, not userData, because presets are files users are meant to find and share.
+	const stylePresets = new StylePresetService(
+		path.join(app.getPath("documents"), `${PRODUCT_NAME} Presets`),
+	);
+
+	// One instance each, not one per call. DocumentService serialises saves of a
+	// project through a per-INSTANCE queue (see its writeProject comment — this
+	// race destroyed two real project files), so a second instance means a second
+	// queue racing for the same path: temp+rename still keeps the file valid, but
+	// a save can land under a concurrent one and be silently lost.
+	const aiEditionDocuments = new DocumentService(
+		path.join(app.getPath("userData"), "projects"),
+		RECORDINGS_DIR,
+		approveDocumentMedia,
+		() => stylePresets.newProjectAppearance(),
+	);
+
+	// LlmConfigStore is single-instance for a duller reason — its constructor does
+	// two sync readFileSync plus a safeStorage decrypt, and it was running on every
+	// chat message. But it must also stay UNBUILT until something actually needs it:
+	// on macOS that decrypt is backed by a Keychain item, so constructing it at
+	// startup made every launch prompt for Keychain access, including for users who
+	// never open the AI layer at all. (The prompt repeats because an unsigned or
+	// ad-hoc-signed build has no stable code identity for the item's ACL to trust —
+	// signing is the other half of that fix, and is not this function's business.)
+	// Memoised, so the "one instance" guarantee above still holds.
+	let aiEditionLlmConfigInstance: LlmConfigStore | null = null;
+	const getAiEditionLlmConfig = (): LlmConfigStore => {
+		if (!aiEditionLlmConfigInstance) {
+			aiEditionLlmConfigInstance = new LlmConfigStore(app.getPath("userData"));
+		}
+		return aiEditionLlmConfigInstance;
+	};
+
+	// The local MCP server offers the agent's tools to MCP clients the user runs
+	// (Claude Code, Codex…). Built here because this is where the agent's own
+	// dependencies live, but NOT started here: the headless CLI shares this
+	// function and must never bind the port a running app is listening on.
+	// `main.ts` starts it. Its writes have their own switch, off by default and
+	// read on every call — separate from the in-app agent's "Project edits", so
+	// turning the server on grants a client read access and nothing more.
+	const mcpSettings = new McpSettingsStore(app.getPath("userData"), safeStorage);
+	const mcpController = new McpController(mcpSettings, {
+		host: new EditorDocumentHost(ipcMain),
+		editsAllowed: () => mcpSettings.getSettings().allowEdits,
+		cursor: agentCursorTelemetryReader,
+		version: app.getVersion(),
+	});
 
 	registerNativeBridgeHandlers({
 		getPlatform: () => process.platform,
@@ -3389,5 +5063,47 @@ export function registerIpcHandlers(
 			normalizeVideoSourcePath(videoPath ?? currentVideoPath),
 		loadCursorRecordingData: readCursorRecordingFile,
 		loadCursorTelemetry: readCursorTelemetryFile,
+		// compositor view's createView needs the renderer-owning
+		// BrowserWindow's native handle (HWND on Windows, NSView* on macOS).
+		// Same ownership rules as desktopCapturer: `BrowserWindow.fromWebContents`
+		// gives us the window that hosts this sender; `getNativeWindowHandle`
+		// is the platform-native parent handle the D3D11 addon parents its
+		// child window to.
+		getNativeWindowHandle: (sender) => {
+			const window = BrowserWindow.fromWebContents(sender);
+			if (!window || window.isDestroyed()) {
+				return null;
+			}
+			try {
+				return window.getNativeWindowHandle();
+			} catch {
+				return null;
+			}
+		},
+		getAiEditionDocuments: () => aiEditionDocuments,
+		getStylePresets: () => stylePresets,
+		getAiEditionLlmConfig,
+		runAiEditionChat: (projectId, sessionId, message, document, sink) =>
+			runChat(projectId, sessionId, message, getAiEditionLlmConfig(), document, sink, {
+				cursor: agentCursorTelemetryReader,
+			}),
+		undoAiEditionToolBatch: (_projectId, _sessionId) => ({
+			success: false,
+			error: "Per-tool-batch undo retired in favor of per-message rewind.",
+		}),
+		rewindToMessage: (projectId, sessionId, messageId) =>
+			rewindToMessage(projectId, sessionId, messageId),
+		compactNow: (projectId, sessionId) =>
+			compactSessionNow(projectId, sessionId, getAiEditionLlmConfig()),
+		getContextUsage: getSessionContextUsage,
+		listAiEditionChatSessions: (projectId) => listSessions(projectId),
+		createAiEditionChatSession: (projectId, title) => createSession(projectId, title),
+		selectAiEditionChatSession: (projectId, sessionId) => selectSession(projectId, sessionId),
+		renameAiEditionChatSession: (projectId, sessionId, title) =>
+			renameSession(projectId, sessionId, title),
+		deleteAiEditionChatSession: (projectId, sessionId) => deleteSession(projectId, sessionId),
+		getMcpController: () => mcpController,
 	});
+
+	return { mcpController };
 }

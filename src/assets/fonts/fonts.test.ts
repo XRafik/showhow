@@ -27,14 +27,8 @@ const globalStylesheet = readFileSync(resolve(process.cwd(), "src/index.css"), "
 // The built-in annotation picker families the app promises to style offline
 // (AnnotationSettingsPanel.tsx). Inter is bundled by the ds design tokens and
 // system stacks need no font files.
-const BUILT_IN_ANNOTATION_FAMILIES = [
-	...[
-		...readFileSync(
-			resolve(process.cwd(), "src/components/video-editor/AnnotationSettingsPanel.tsx"),
-			"utf8",
-		).matchAll(/name: "([^"]+)"/g),
-	].map((match) => match[1]),
-].filter((family) => family !== "Inter");
+// Stable native editor uses the shared five-family text catalogue.
+const BUILT_IN_ANNOTATION_FAMILIES = ["Lora", "Oswald", "Caveat", "IBM Plex Mono"];
 
 describe("local font assets", () => {
 	it("makes no runtime Google Fonts request from the global stylesheet", () => {

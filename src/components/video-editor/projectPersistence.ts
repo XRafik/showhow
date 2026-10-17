@@ -1,11 +1,26 @@
 import { normalizeTextAnimation } from "@/lib/annotationTextAnimation";
 import { normalizeBlurColor, normalizeBlurType } from "@/lib/blurEffects";
-import { normalizeCursorThemeId } from "@/lib/cursor/cursorThemes";
+import {
+	type CursorKind,
+	normalizeCursorThemeId,
+	readCursorAsArrow,
+} from "@/lib/cursor/cursorThemes";
 import type { ExportFormat, ExportQuality, GifFrameRate, GifSizePreset } from "@/lib/exporter";
+import {
+	DEFAULT_PROJECT_APPEARANCE,
+	type FrameTheme,
+	isFrameTheme,
+	type RecordingFrame,
+	readBackgroundBlur,
+	readRecordingFrame,
+	WEBCAM_SIZE_MAX,
+	WEBCAM_SIZE_MIN,
+} from "@/lib/projectDefaults";
 import type { ProjectMedia } from "@/lib/recordingSession";
 import { normalizeProjectMedia } from "@/lib/recordingSession";
 import { DEFAULT_WALLPAPER, WALLPAPER_PATHS } from "@/lib/wallpaper";
-import { ASPECT_RATIOS, type AspectRatio, isPortraitAspectRatio } from "@/utils/aspectRatioUtils";
+import { type AspectRatio, isAspectRatio, isPortraitAspectRatio } from "@/utils/aspectRatioUtils";
+import { clamp } from "@/utils/math";
 import {
 	DEFAULT_EDITOR_APPEARANCE_SETTINGS,
 	DEFAULT_EDITOR_LAYOUT_SETTINGS,
@@ -15,6 +30,7 @@ import {
 } from "./editorDefaults";
 import {
 	type AnnotationRegion,
+	type CameraFullscreenRegion,
 	type CropRegion,
 	clampPlaybackSpeed,
 	DEFAULT_ANNOTATION_POSITION,
@@ -30,14 +46,15 @@ import {
 	DEFAULT_WEBCAM_REACTIVE_ZOOM,
 	DEFAULT_ZOOM_DEPTH,
 	DEFAULT_ZOOM_MOTION_BLUR,
+	isWallpaperMotion,
 	MAX_BLUR_BLOCK_SIZE,
 	MAX_BLUR_INTENSITY,
-	MAX_PLAYBACK_SPEED,
 	MIN_BLUR_BLOCK_SIZE,
 	MIN_BLUR_INTENSITY,
-	MIN_PLAYBACK_SPEED,
+	readRotation3DPreset,
 	type SpeedRegion,
 	type TrimRegion,
+	type WallpaperMotion,
 	type WebcamLayoutPreset,
 	type WebcamMaskShape,
 	type WebcamPosition,
@@ -66,14 +83,16 @@ export const PROJECT_VERSION = 2;
 
 export interface ProjectEditorState {
 	wallpaper: string;
+	wallpaperMotion: WallpaperMotion;
 	shadowIntensity: number;
-	showBlur: boolean;
-	showTrimWaveform: boolean;
+	backgroundBlur: number;
 	motionBlurAmount: number;
+	depthOfField: boolean;
 	borderRadius: number;
 	padding: number;
 	cropRegion: CropRegion;
 	zoomRegions: ZoomRegion[];
+	cameraFullscreenRegions: CameraFullscreenRegion[];
 	autoZoomEnabled: boolean;
 	autoFocusAll: boolean;
 	trimRegions: TrimRegion[];
@@ -92,6 +111,22 @@ export interface ProjectEditorState {
 	gifLoop: boolean;
 	gifSizePreset: GifSizePreset;
 	cursorTheme: string;
+	// Optional: the headless CLI export reads a v2 project through
+	// normalizeProjectEditor and then copies the editor into legacyEditor, where
+	// getEditorSettings reads these keys. A key missing here is a key the export
+	// silently drops back to its default.
+	cursorSize?: number;
+	cursorSmoothing?: number;
+	cursorMotionBlur?: number;
+	cursorClickBounce?: number;
+	cursorAsArrow?: CursorKind[];
+	/** The one switch before `cursorAsArrow`; `getEditorSettings` reads it as every kind. */
+	cursorAlwaysArrow?: boolean;
+	// Same reason as the cursor keys above. `window-light` / `window-dark` are kept as stored:
+	// `getEditorSettings` splits them into a frame and a theme (`readRecordingFrame`).
+	frame?: RecordingFrame | "window-light" | "window-dark";
+	frameTheme?: FrameTheme;
+	formatFollowCursor?: boolean;
 }
 
 export interface EditorProjectData {
@@ -109,25 +144,23 @@ function computeNormalizedWebcamLayoutPreset(
 	webcamLayoutPreset: Partial<ProjectEditorState>["webcamLayoutPreset"],
 	normalizedAspectRatio: AspectRatio,
 ): WebcamLayoutPreset {
+	// Auto takes its shape FROM the layout, so there is no orientation to gate the blocks on.
+	const auto = normalizedAspectRatio === "auto";
 	switch (webcamLayoutPreset) {
 		case "picture-in-picture":
 		case "no-webcam":
 			return webcamLayoutPreset;
 		case "vertical-stack":
-			return isPortraitAspectRatio(normalizedAspectRatio)
+			return auto || isPortraitAspectRatio(normalizedAspectRatio)
 				? webcamLayoutPreset
 				: DEFAULT_WEBCAM_SETTINGS.layoutPreset;
 		case "dual-frame":
-			return isPortraitAspectRatio(normalizedAspectRatio)
+			return !auto && isPortraitAspectRatio(normalizedAspectRatio)
 				? DEFAULT_WEBCAM_SETTINGS.layoutPreset
 				: webcamLayoutPreset;
 		default:
 			return DEFAULT_WEBCAM_SETTINGS.layoutPreset;
 	}
-}
-
-function clamp(value: number, min: number, max: number) {
-	return Math.min(max, Math.max(min, value));
 }
 
 function encodePathSegments(pathname: string, keepWindowsDrive = false): string {
@@ -146,6 +179,12 @@ function encodePathSegments(pathname: string, keepWindowsDrive = false): string 
 }
 
 export function toFileUrl(filePath: string): string {
+	// Browser-mode assets (blob:/http(s):/data: URLs from an <input type=file>
+	// or Vite-served asset) are already valid URLs — passing them through the
+	// file:// encoder below would mangle them (e.g. "file:///blob:...").
+	if (/^(https?|blob|data):/.test(filePath)) {
+		return filePath;
+	}
 	const normalized = filePath.replace(/\\/g, "/");
 	if (normalized.match(/^[a-zA-Z]:/)) {
 		return `file:///${encodePathSegments(normalized, true)}`;
@@ -218,11 +257,11 @@ export function resolveProjectMedia(
 }
 
 export function normalizeProjectEditor(editor: Partial<ProjectEditorState>): ProjectEditorState {
-	const validAspectRatios = new Set<AspectRatio>(ASPECT_RATIOS);
-	const normalizedAspectRatio: AspectRatio = validAspectRatios.has(
-		editor.aspectRatio as AspectRatio,
-	)
-		? (editor.aspectRatio as AspectRatio)
+	// Any well-formed "W:H" is valid, not just the presets — the ratio picker also stores the
+	// clips' own native shapes ("Original"), which can be e.g. "64:27". A membership test against
+	// the preset list would silently reset those projects to 16:9 on load.
+	const normalizedAspectRatio: AspectRatio = isAspectRatio(editor.aspectRatio)
+		? editor.aspectRatio
 		: DEFAULT_EDITOR_LAYOUT_SETTINGS.aspectRatio;
 	const normalizedWebcamLayoutPreset = computeNormalizedWebcamLayoutPreset(
 		editor.webcamLayoutPreset,
@@ -249,12 +288,8 @@ export function normalizeProjectEditor(editor: Partial<ProjectEditorState>): Pro
 					const startMs = Math.max(0, Math.min(rawStart, rawEnd));
 					const endMs = Math.max(startMs + 1, rawEnd);
 
-					const validPreset =
-						region.rotationPreset === "iso" ||
-						region.rotationPreset === "left" ||
-						region.rotationPreset === "right"
-							? region.rotationPreset
-							: undefined;
+					// A retired angle reads as the one that kept its look (`iso` → Left).
+					const validPreset = readRotation3DPreset(region.rotationPreset);
 					return {
 						id: region.id,
 						startMs,
@@ -268,6 +303,26 @@ export function normalizeProjectEditor(editor: Partial<ProjectEditorState>): Pro
 						source: region.source === "auto" ? "auto" : "manual",
 						...(region.startsSettled === true ? { startsSettled: true } : {}),
 						...(validPreset ? { rotationPreset: validPreset } : {}),
+					};
+				})
+		: [];
+
+	const normalizedCameraFullscreenRegions: CameraFullscreenRegion[] = Array.isArray(
+		editor.cameraFullscreenRegions,
+	)
+		? editor.cameraFullscreenRegions
+				.filter((region): region is CameraFullscreenRegion =>
+					Boolean(region && typeof region.id === "string"),
+				)
+				.map((region) => {
+					const rawStart = isFiniteNumber(region.startMs) ? Math.round(region.startMs) : 0;
+					const rawEnd = isFiniteNumber(region.endMs) ? Math.round(region.endMs) : rawStart + 1000;
+					const startMs = Math.max(0, Math.min(rawStart, rawEnd));
+					const endMs = Math.max(startMs + 1, rawEnd);
+					return {
+						id: region.id,
+						startMs,
+						endMs,
 					};
 				})
 		: [];
@@ -297,10 +352,9 @@ export function normalizeProjectEditor(editor: Partial<ProjectEditorState>): Pro
 					const startMs = Math.max(0, Math.min(rawStart, rawEnd));
 					const endMs = Math.max(startMs + 1, rawEnd);
 
+					// Clamped, not reset: a 20x region written before the bound read as 16x, not 1.5x.
 					const speed =
-						isFiniteNumber(region.speed) &&
-						region.speed >= MIN_PLAYBACK_SPEED &&
-						region.speed <= MAX_PLAYBACK_SPEED
+						isFiniteNumber(region.speed) && region.speed > 0
 							? clampPlaybackSpeed(region.speed)
 							: DEFAULT_PLAYBACK_SPEED;
 
@@ -448,22 +502,40 @@ export function normalizeProjectEditor(editor: Partial<ProjectEditorState>): Pro
 
 	return {
 		cursorTheme: normalizeCursorThemeId(editor.cursorTheme),
+		// Pass the cursor tuning keys through when present; the CLI export has no
+		// other path to them (the GUI edits the v7 document directly and never
+		// comes back through here).
+		...(isFiniteNumber(editor.cursorSize) ? { cursorSize: editor.cursorSize } : {}),
+		...(isFiniteNumber(editor.cursorSmoothing) ? { cursorSmoothing: editor.cursorSmoothing } : {}),
+		...(isFiniteNumber(editor.cursorMotionBlur)
+			? { cursorMotionBlur: editor.cursorMotionBlur }
+			: {}),
+		...(isFiniteNumber(editor.cursorClickBounce)
+			? { cursorClickBounce: editor.cursorClickBounce }
+			: {}),
+		...(Array.isArray(editor.cursorAsArrow)
+			? { cursorAsArrow: readCursorAsArrow(editor.cursorAsArrow, undefined, []) }
+			: {}),
+		...(typeof editor.cursorAlwaysArrow === "boolean"
+			? { cursorAlwaysArrow: editor.cursorAlwaysArrow }
+			: {}),
+		...(readRecordingFrame(editor.frame) ? { frame: editor.frame } : {}),
+		...(isFrameTheme(editor.frameTheme) ? { frameTheme: editor.frameTheme } : {}),
+		...(typeof editor.formatFollowCursor === "boolean"
+			? { formatFollowCursor: editor.formatFollowCursor }
+			: {}),
 		wallpaper:
 			typeof editor.wallpaper === "string"
 				? normalizeWallpaperValue(editor.wallpaper)
 				: DEFAULT_EDITOR_LAYOUT_SETTINGS.wallpaper,
+		// Carried here too: the CLI export reads the project through this function, and a
+		// key it drops is a motion the preview shows and the export does not.
+		wallpaperMotion: isWallpaperMotion(editor.wallpaperMotion) ? editor.wallpaperMotion : "none",
 		shadowIntensity:
 			typeof editor.shadowIntensity === "number"
 				? editor.shadowIntensity
 				: DEFAULT_EDITOR_APPEARANCE_SETTINGS.shadowIntensity,
-		showBlur:
-			typeof editor.showBlur === "boolean"
-				? editor.showBlur
-				: DEFAULT_EDITOR_APPEARANCE_SETTINGS.showBlur,
-		showTrimWaveform:
-			typeof editor.showTrimWaveform === "boolean"
-				? editor.showTrimWaveform
-				: DEFAULT_EDITOR_APPEARANCE_SETTINGS.showTrimWaveform,
+		backgroundBlur: readBackgroundBlur(editor, DEFAULT_EDITOR_APPEARANCE_SETTINGS.backgroundBlur),
 		motionBlurAmount: isFiniteNumber(editor.motionBlurAmount)
 			? clamp(editor.motionBlurAmount, 0, 1)
 			: typeof (editor as { motionBlurEnabled?: unknown }).motionBlurEnabled === "boolean"
@@ -471,6 +543,10 @@ export function normalizeProjectEditor(editor: Partial<ProjectEditorState>): Pro
 					? DEFAULT_ZOOM_MOTION_BLUR
 					: DEFAULT_EDITOR_APPEARANCE_SETTINGS.motionBlurAmount
 				: DEFAULT_EDITOR_APPEARANCE_SETTINGS.motionBlurAmount,
+		depthOfField:
+			typeof editor.depthOfField === "boolean"
+				? editor.depthOfField
+				: DEFAULT_PROJECT_APPEARANCE.depthOfField,
 		borderRadius:
 			typeof editor.borderRadius === "number"
 				? editor.borderRadius
@@ -485,6 +561,7 @@ export function normalizeProjectEditor(editor: Partial<ProjectEditorState>): Pro
 			height: cropHeight,
 		},
 		zoomRegions: normalizedZoomRegions,
+		cameraFullscreenRegions: normalizedCameraFullscreenRegions,
 		// Default on for legacy projects so re-opens match the new default. The
 		// on-load auto-suggest pass is gated separately, so this won't add zooms.
 		autoZoomEnabled: typeof editor.autoZoomEnabled === "boolean" ? editor.autoZoomEnabled : true,
@@ -509,7 +586,7 @@ export function normalizeProjectEditor(editor: Partial<ProjectEditorState>): Pro
 				: DEFAULT_WEBCAM_REACTIVE_ZOOM,
 		webcamSizePreset:
 			typeof editor.webcamSizePreset === "number" && isFiniteNumber(editor.webcamSizePreset)
-				? Math.max(10, Math.min(50, editor.webcamSizePreset))
+				? Math.max(WEBCAM_SIZE_MIN, Math.min(WEBCAM_SIZE_MAX, editor.webcamSizePreset))
 				: DEFAULT_WEBCAM_SETTINGS.sizePreset,
 		webcamPosition: normalizedWebcamPosition,
 		exportQuality:

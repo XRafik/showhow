@@ -37,6 +37,8 @@ export function resolveTheme(pref: ThemePreference, systemIsDark: boolean): Reso
 
 export function applyResolvedTheme(resolved: ResolvedTheme): ResolvedTheme {
 	document.documentElement.dataset.shTheme = resolved;
+	document.documentElement.dataset.theme = resolved;
+	document.documentElement.classList.toggle("dark", resolved === "dark");
 	return resolved;
 }
 

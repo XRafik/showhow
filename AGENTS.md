@@ -12,7 +12,7 @@ canonical guide for coding agents in `bedarstudios/showhow`.
   services.
 - OpenScreen is an attributed release parent. Before an upstream intake, follow `UPSTREAM.md`
   for the permanent tags-only remote, one reviewed merge PR per release tag, compatibility
-  checklist and exclusions. The v2 migration cannot merge before final `v2.1.0`; no Showhow
+  checklist and exclusions. The v2 migration uses stable `v2.0.0` at `eff86dcba48fac490a0e153141bf8537df7ffc54` as a real release parent; no Showhow
   `v*` release tag is pushed until the milestone is complete.
 - Do not claim planned doc-engine, library, bridge, or polish features are complete unless current
   code and acceptance evidence prove it.
@@ -30,7 +30,7 @@ canonical guide for coding agents in `bedarstudios/showhow`.
 - Lint: `npm run lint` (Biome 2.4)
 - Lint fixes: `npm run lint:fix`
 - Format: `npm run format` (Biome, tabs, double quotes, 100 columns)
-- i18n check: `npm run i18n:check` (validates all 13 locale files)
+- i18n check: `npm run i18n:check` (validates all 15 locale directories)
 - Branding audit: `npm run branding:check`
 
 ## Project layout
@@ -122,7 +122,7 @@ build still publishes, but the DMG is unsigned.
 
 - **Native capture is platform-fragile**: macOS uses ScreenCaptureKit (Swift), Windows uses WGC (C++/Win32). CI runs on Linux only — manual smoke test on real macOS/Windows is required for native changes.
 - **Pixi.js v8** is the rendering engine. Filters come from `pixi-filters` and `@pixi/filter-drop-shadow`. GSAP + `motion` for animation.
-- **i18n**: 13 locales in `src/i18n/locales/<locale>/` (e.g. `src/i18n/locales/en/settings.json`). The `i18n:check` script validates them — run it after touching translation files.
+- **i18n**: 15 locales in `src/i18n/locales/<locale>/` (e.g. `src/i18n/locales/en/settings.json`). The `i18n:check` script validates them — run it after touching translation files.
 - **Build pipeline**: `npm run build` is full electron-builder. For iterating on renderer only, use `npm run build-vite` (Vite + tsc, no packaging).
 - **README tone**: the project is explicitly "not production-grade" and free forever — don't add paywalls, premium tiers, or upsell language to UI/copy.
 

@@ -1,4 +1,3 @@
-import { realpathSync } from "node:fs";
 import path from "node:path";
 import { playwright } from "@vitest/browser-playwright";
 import autoprefixer from "autoprefixer";
@@ -13,7 +12,6 @@ export default defineConfig({
 		// These imports were discovered after cold startup and reloaded a running
 		// browser test. Prebundle the exact observed list before tests begin.
 		include: [
-			"gif.js",
 			"react-dom/client",
 			"@tiptap/react",
 			"@tiptap/starter-kit",
@@ -33,7 +31,7 @@ export default defineConfig({
 	},
 	server: {
 		fs: {
-			allow: [__dirname, realpathSync(path.resolve(__dirname, "node_modules/gif.js/dist"))],
+			allow: [__dirname],
 		},
 	},
 	css: {
@@ -48,6 +46,9 @@ export default defineConfig({
 		css: {
 			include: [
 				/src\/index\.css$/,
+				/src\/lib\/showhow\/upstreamTheme\.css$/,
+				/src\/components\/ai-edition\/v4\/EditorShellV4\.module\.css$/,
+				/src\/components\/launch\/LaunchWindow\.module\.css$/,
 				/src\/assets\/fonts\/fonts\.css$/,
 				/src\/assets\/fonts\/annotation-fonts\.css$/,
 			],

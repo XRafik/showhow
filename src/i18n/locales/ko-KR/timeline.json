@@ -1,26 +1,27 @@
 {
 	"buttons": {
-		"addZoom": "줌 추가 (Z)",
-		"suggestZooms": "커서 기반 줌 제안",
-		"addTrim": "트림 추가 (T)",
-		"addAnnotation": "주석 추가 (A)",
-		"addSpeed": "속도 추가 (S)",
-		"addBlur": "블러 추가 (B)",
-		"autoZoomOn": "자동 확대 제안 켜짐 — 클릭하여 제안된 확대 제거",
-		"autoZoomOff": "자동 확대 제안 꺼짐 — 클릭하여 커서에서 확대 제안",
-		"autoFocusAllOn": "모든 확대에 자동 초점 켜짐 — 클릭하여 모두 수동으로 전환",
-		"autoFocusAllOff": "모든 확대 자동 초점(카메라가 커서를 따라감)"
+		"addZoom": "현재 시점에 줌 추가",
+		"autoFocusAll": "모든 줌에 자동 초점",
+		"autoFocusAllTip": "모든 줌이 커서를 따라갑니다. 꺼짐: 줌마다 초점을 직접 고릅니다.",
+		"clearTimeline": "모든 줌, 트림, 속도, 주석, 전체 화면 카메라를 제거합니다. 클립, 오디오, 자막은 그대로 남습니다.",
+		"addTrim": "트림 추가: 현재 시점에서 영상의 한 구간을 제거합니다",
+		"addAnnotation": "현재 시점에 텍스트, 화살표, 이미지 또는 블러 추가",
+		"addSpeed": "현재 시점에 속도 변경 추가",
+		"addCameraFullscreen": "전체 화면 카메라 추가: 현재 시점에 카메라를 전체 화면으로 표시합니다"
 	},
 	"hints": {
-		"pressZoom": "Z를 눌러 줌 추가",
-		"pressTrim": "T를 눌러 트림 추가",
-		"pressAnnotation": "A를 눌러 주석 추가",
-		"pressSpeed": "S를 눌러 속도 추가",
-		"pressBlur": "B 키를 눌러 블러 영역을 추가하세요"
+		"pressZoom": "{{key}}를 눌러 줌 추가",
+		"pressTrim": "{{key}}를 눌러 트림 추가",
+		"pressAnnotation": "{{key}}를 눌러 주석 추가",
+		"pressAudio": "{{audioKey}} 키로 오디오 추가, {{voiceoverKey}} 키로 보이스오버 녹음",
+		"pressSpeed": "{{key}}를 눌러 속도 추가",
+		"pressCameraFullscreen": "{{key}}를 눌러 전체 화면 카메라 구간을 추가하세요"
 	},
 	"labels": {
 		"pan": "이동",
+		"panTip": "타임라인 스크롤",
 		"zoom": "줌",
+		"zoomTip": "타임라인 확대/축소",
 		"trim": "트림",
 		"speed": "속도",
 		"zoomItem": "줌 {{index}}",
@@ -29,7 +30,8 @@
 		"annotationItem": "주석",
 		"imageItem": "이미지",
 		"emptyText": "빈 텍스트",
-		"blurItem": "블러 {{index}}"
+		"cameraFullscreen": "전체 화면 카메라",
+		"cameraFullscreenItem": "전체 화면 카메라 {{index}}"
 	},
 	"emptyState": {
 		"noVideo": "불러온 비디오 없음",
@@ -50,10 +52,56 @@
 		"cannotPlaceTrim": "이 위치에 트림을 추가할 수 없습니다",
 		"trimExistsAtLocation": "이 위치에 이미 트림이 있거나 공간이 부족합니다.",
 		"cannotPlaceSpeed": "이 위치에 속도를 추가할 수 없습니다",
-		"speedExistsAtLocation": "이 위치에 이미 속도 구간이 있거나 공간이 부족합니다."
+		"speedExistsAtLocation": "이 위치에 이미 속도 구간이 있거나 공간이 부족합니다.",
+		"cannotPlaceCameraFullscreen": "이 위치에 전체 화면 카메라를 추가할 수 없습니다",
+		"cameraFullscreenExistsAtLocation": "이 위치에 이미 전체 화면 카메라 구간이 있거나 공간이 부족합니다."
 	},
 	"success": {
 		"addedZoomSuggestions": "커서 기반 줌 제안 {{count}}개가 추가되었습니다",
 		"addedZoomSuggestionsPlural": "커서 기반 줌 제안 {{count}}개가 추가되었습니다"
+	},
+	"toolbar": {
+		"autoEnhance": "자동 향상",
+		"automaticZooms": "자동 줌",
+		"automaticZoomsHint": "녹화된 클릭 기반",
+		"smartZoomsAndCuts": "스마트 컷",
+		"smartZoomsAndCutsHint": "AI 사용",
+		"timelineTools": "타임라인 도구",
+		"arrangeClips": "클립 정리",
+		"arrangeClipsHint": "아래 클립을 드래그하여 순서를 바꾸거나 새 클립을 놓으세요",
+		"newAnnotation": "주석",
+		"dragToReorderHint": "드래그하여 순서를 바꿉니다. 더블클릭하여 시작과 종료를 바꿉니다.",
+		"editInOutPoints": "시작/종료 지점 편집",
+		"deleteClip": "클립 삭제",
+		"dropToAdd": "타임라인에 추가하려면 놓으세요",
+		"importRecordingFirst": "먼저 녹화 파일을 가져오세요",
+		"noAutoZoomMoments": "자동 줌 순간을 찾을 수 없음",
+		"noAutoZoomMomentsDescription": "이 녹화에는 기록된 클릭이 없거나, 줌을 넣을 여유가 있는 클릭이 없습니다.",
+		"addedAutoZoom": "자동 줌 {{count}}개가 추가되었습니다",
+		"addedAutoZoomPlural": "자동 줌 {{count}}개가 추가되었습니다",
+		"autoZoomFailed": "자동 줌 실패",
+		"aiEnhanceRequested": "AI 에이전트에 빈 구간 컷을 요청했습니다",
+		"smartCutsWaiting": "받아쓰는 중… 곧 사용할 수 있습니다",
+		"smartCutsNeedsTranscript": "받아쓰기가 필요합니다",
+		"smartCutsNoAudio": "이 미디어에는 오디오가 없습니다",
+		"smartCutsNoSpeech": "음성이 감지되지 않음",
+		"smartCutsFailed": "받아쓰기에 실패했습니다 — 미디어에서 다시 시도하세요",
+		"addAudioTooltip": "오디오 추가",
+		"addedWord": "추가한 단어: \"{{word}}\" — 뒤에 오디오가 없습니다"
+	},
+	"audio": {
+		"addVoiceover": "내레이션 추가",
+		"addVoiceoverHint": "영상 위에 내레이션을 녹음",
+		"subtitle": "타임라인에 내레이션 또는 배경 음악 레이어를 배치합니다",
+		"record": "내레이션 녹음",
+		"importFile": "오디오 파일 가져오기",
+		"importFileHint": "음악이나 오디오 파일 가져오기",
+		"recording": "녹음 중",
+		"recordingHint": "영상에 맞춰 말하세요 — 녹음하는 동안 재생됩니다",
+		"stop": "중지",
+		"micDenied": "마이크 접근이 거부되었습니다",
+		"recordingUnavailable": "여기에서는 녹음할 수 없습니다",
+		"saveFailed": "녹음을 저장하지 못했습니다",
+		"importFailed": "오디오 파일을 가져오지 못했습니다"
 	}
 }

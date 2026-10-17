@@ -1,19 +1,42 @@
 import { lazy, Suspense, useEffect, useState } from "react";
+import { RecordingLibrary } from "./components/library/RecordingLibrary";
+import { BundleTranscript } from "./components/showhow/BundleTranscript";
+import "./styles/fonts.css";
+import "./styles/design-tokens.css";
+import { installBrowserShims } from "./native/browserShim";
+
+installBrowserShims();
+
 import { CountdownOverlay } from "./components/launch/CountdownOverlay.tsx";
 import { LaunchWindow } from "./components/launch/LaunchWindow";
 import { NotesWindow } from "./components/launch/NotesWindow.tsx";
 import { SourceSelector } from "./components/launch/SourceSelector";
-import { RecordingLibrary } from "./components/library/RecordingLibrary";
+import { PermissionsWindow } from "./components/permissions/PermissionsWindow";
 import { Toaster } from "./components/ui/sonner";
 import { TooltipProvider } from "./components/ui/tooltip";
+import { EditorDialogsProvider } from "./contexts/EditorDialogsContext";
 import { useScopedT } from "./contexts/I18nContext";
 import { ShortcutsProvider } from "./contexts/ShortcutsContext";
 import { loadAllCustomFonts } from "./lib/customFonts";
+import { registerTextFontFaces } from "./lib/textFonts";
 
-const VideoEditor = lazy(() => import("./components/video-editor/VideoEditor"));
+const VideoEditorEntry = lazy(() =>
+	import("./components/ai-edition/AiEditionShell").then((module) => ({
+		default: module.default,
+	})),
+);
+const CliExportRunner = lazy(() => import("./cli/CliExportRunner"));
+const CliRecordRunner = lazy(() => import("./cli/CliRecordRunner"));
+const CliSourcesRunner = lazy(() => import("./cli/CliSourcesRunner"));
+const CliCaptionsRunner = lazy(() => import("./cli/CliCaptionsRunner"));
 const ShortcutsConfigDialog = lazy(() =>
 	import("./components/video-editor/ShortcutsConfigDialog").then((module) => ({
 		default: module.ShortcutsConfigDialog,
+	})),
+);
+const ProviderSettingsDialog = lazy(() =>
+	import("./components/ai-edition/ProviderSettings").then((module) => ({
+		default: module.ProviderSettingsDialog,
 	})),
 );
 
@@ -57,6 +80,7 @@ export default function App() {
 		loadAllCustomFonts().catch((error) => {
 			console.error("Failed to load custom fonts:", error);
 		});
+		registerTextFontFaces();
 	}, []);
 
 	const content = (() => {
@@ -67,45 +91,75 @@ export default function App() {
 				return <SourceSelector />;
 			case "countdown-overlay":
 				return <CountdownOverlay />;
-			case "editor":
+			case "permissions":
+				return <PermissionsWindow />;
+			case "cli-export":
 				return (
-					<ShortcutsProvider>
-						<Suspense
-							fallback={
-								<div className="flex flex-col items-center justify-center gap-3 h-screen bg-[#09090b]">
-									<svg
-										className="animate-spin text-[#34B27B]"
-										xmlns="http://www.w3.org/2000/svg"
-										fill="none"
-										viewBox="0 0 24 24"
-										width={28}
-										height={28}
-									>
-										<circle
-											className="opacity-25"
-											cx="12"
-											cy="12"
-											r="10"
-											stroke="currentColor"
-											strokeWidth="4"
-										/>
-										<path
-											className="opacity-75"
-											fill="currentColor"
-											d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-										/>
-									</svg>
-									<span className="text-white/50 text-sm">{tEditor("loadingEditor")}</span>
-								</div>
-							}
-						>
-							<VideoEditor />
-							<ShortcutsConfigDialog />
-						</Suspense>
-					</ShortcutsProvider>
+					<Suspense fallback={null}>
+						<CliExportRunner />
+					</Suspense>
+				);
+			case "cli-record":
+				return (
+					<Suspense fallback={null}>
+						<CliRecordRunner />
+					</Suspense>
+				);
+			case "cli-sources":
+				return (
+					<Suspense fallback={null}>
+						<CliSourcesRunner />
+					</Suspense>
+				);
+			case "cli-captions":
+				return (
+					<Suspense fallback={null}>
+						<CliCaptionsRunner />
+					</Suspense>
 				);
 			case "library":
 				return <RecordingLibrary />;
+			case "editor":
+				return (
+					<ShortcutsProvider>
+						<EditorDialogsProvider>
+							<Suspense
+								fallback={
+									<div className="flex flex-col items-center justify-center gap-3 h-screen bg-[var(--bg)]">
+										<svg
+											className="animate-spin text-[var(--brand)]"
+											xmlns="http://www.w3.org/2000/svg"
+											fill="none"
+											viewBox="0 0 24 24"
+											width={28}
+											height={28}
+										>
+											<circle
+												className="opacity-25"
+												cx="12"
+												cy="12"
+												r="10"
+												stroke="currentColor"
+												strokeWidth="4"
+											/>
+											<path
+												className="opacity-75"
+												fill="currentColor"
+												d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+											/>
+										</svg>
+										<span className="text-[var(--muted)] text-sm">{tEditor("loadingEditor")}</span>
+									</div>
+								}
+							>
+								<BundleTranscript />
+								<VideoEditorEntry />
+								<ShortcutsConfigDialog />
+								<ProviderSettingsDialog />
+							</Suspense>
+						</EditorDialogsProvider>
+					</ShortcutsProvider>
+				);
 			default:
 				return (
 					<div>
@@ -120,7 +174,7 @@ export default function App() {
 	return (
 		<TooltipProvider>
 			{showNotes ? <NotesWindow /> : content}
-			<Toaster theme="dark" />
+			<Toaster />
 		</TooltipProvider>
 	);
 }

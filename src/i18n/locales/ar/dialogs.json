@@ -57,21 +57,35 @@
 		"detailLoadProject": "هل تريد حفظ مشروعك قبل تحميل مشروع آخر؟",
 		"saveAndLoadProject": "حفظ وتحميل مشروع",
 		"discardAndLoadProject": "تجاهل وتحميل مشروع",
+		"newProject": "مشروع جديد",
+		"importVideo": "استيراد ملف فيديو…",
 		"loadProject": "تحميل مشروع...",
 		"saveProject": "حفظ المشروع...",
 		"saveProjectAs": "حفظ المشروع باسم...",
-		"newProject": "مشروع جديد",
-		"importVideo": "استيراد ملف فيديو…"
+		"modal": {
+			"closeTitle": "حفظ التغييرات قبل الإغلاق؟",
+			"closeBody": "يحتوي مشروعك على تغييرات غير محفوظة. احفظها الآن أو تجاهلها أو ابقَ في المحرر.",
+			"newTitle": "حفظ التغييرات قبل إنشاء مشروع جديد؟",
+			"openTitle": "حفظ التغييرات قبل فتح مشروع آخر؟",
+			"recordTitle": "حفظ التغييرات قبل بدء تسجيل جديد؟",
+			"sharedBody": "يحتوي المشروع الحالي على تغييرات غير محفوظة. احفظها أولاً أو تجاهلها أو ألغِ.",
+			"notSavedYet": "لم يتم حفظ المشروع الحالي على القرص بعد.",
+			"discard": "تجاهل",
+			"saveAndContinue": "حفظ ومتابعة",
+			"saving": "جارٍ الحفظ…"
+		}
 	},
 	"fileDialogs": {
 		"saveGif": "حفظ GIF المصدر",
 		"saveVideo": "حفظ الفيديو المصدر",
 		"selectVideo": "حدد ملف فيديو",
+		"selectAudio": "اختر ملف صوت",
 		"saveProject": "حفظ مشروع Showhow",
 		"openProject": "فتح مشروع Showhow",
 		"gifImage": "صورة GIF",
 		"mp4Video": "فيديو MP4",
 		"videoFiles": "ملفات فيديو",
+		"audioFiles": "ملفات الصوت",
 		"allFiles": "جميع الملفات",
 		"showhowProject": "مشروع Showhow"
 	}

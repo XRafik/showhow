@@ -4,9 +4,18 @@
 		"save": "Save",
 		"delete": "Delete",
 		"close": "Close",
-		"share": "Share",
+		"resetToDefault": "Reset to default",
+		"share": "Select",
 		"done": "Done",
 		"open": "Open",
+		"checkForUpdates": "Check for Updates",
+		"updateSettings": "Update Settings",
+		"updateModeNotify": "Notify when an update is available",
+		"updateModeDownload": "Download updates automatically",
+		"updateModeDownloadAndInstall": "Download and install updates automatically",
+		"viewRelease": "View Release",
+		"downloadUpdate": "Download Update",
+		"restartNow": "Restart Now",
 		"upload": "Upload",
 		"export": "Export",
 		"showInFolder": "Show in Folder",
@@ -14,6 +23,7 @@
 		"edit": "Edit",
 		"view": "View",
 		"window": "Window",
+		"help": "Help",
 		"quit": "Quit",
 		"stopRecording": "Stop Recording",
 		"undo": "Undo",
@@ -35,16 +45,34 @@
 		"services": "Services",
 		"hide": "Hide Showhow",
 		"hideOthers": "Hide Others",
-		"unhide": "Show All"
+		"unhide": "Show All",
+		"saveDiagnostics": "Save Diagnostics",
+		"starOnGithub": "Star on GitHub",
+		"permissions": "Permissions…",
+		"closeNotification": "Close notification"
 	},
-	"playback": {
-		"play": "Play",
-		"pause": "Pause",
-		"fullscreen": "Fullscreen",
-		"exitFullscreen": "Exit Fullscreen"
+	"updates": {
+		"available": "Showhow {{latestVersion}} is available. You are using {{currentVersion}}.",
+		"current": "Showhow is up to date ({{currentVersion}}).",
+		"readyToInstall": "Showhow {{latestVersion}} has been downloaded. Restart to finish installing.",
+		"downloaded": "Showhow {{latestVersion}} has been downloaded.",
+		"blockedRecording": "Finish your recording before installing the update.",
+		"blockedLocation": "Move Showhow to your Applications folder before updating.",
+		"failed": "Could not check for updates.",
+		"downloadFailed": "Could not download the update."
+	},
+	"units": {
+		"pixelsPerSecond": "{{value}} px/s",
+		"pixels": "{{value}} px"
 	},
 	"locale": {
 		"name": "English",
 		"short": "EN"
+	},
+	"recordingSource": {
+		"window": "Window",
+		"screen": "Screen",
+		"virtual": "Virtual display",
+		"unknown": "Screen recording"
 	}
 }

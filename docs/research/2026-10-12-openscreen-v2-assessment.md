@@ -231,3 +231,17 @@ Task 2 must land the base and working Showhow layer together and cannot merge be
 upstream `v2.1.0`. Task 3's bundled native transcription and Task 4's ≤ 400 MB size target remain
 unimplemented here. No Showhow `v*` tags until the milestone is complete; agents never merge.
 Upstream release pipelines, publishers, package identity and product branding stay excluded.
+
+
+## Stable retarget source refresh — 2026-10-17 Europe/London
+
+Owner chose stable v2.0.0 at eff86dcba48fac490a0e153141bf8537df7ffc54 (official release2026-10-03, non-prerelease). Earlier rc.3/snapshot findings remain history, not this tag. See [bounded stable seam assessment](2026-10-16-openscreen-v2.0.0-seam-assessment.md): divergent447ahead/16behind; five named packs plus default; stable native editor/migration/STT/compositor APIs; fixed small/VAD manager and hard-coded SMALL DTW; absent stable licence-generation contract; selected decoder and licence adaptations. Source only, no changed-runtime PASS. Real stable ancestry, source/native/package tests and owner acceptance must be refreshed after approved reconstruction.
+
+
+## Held macOS patches: stable older-base disposition correction
+
+The earlier covered-by-v2 conclusion was RC-era planning history. Patches29736d4d9b71ce1dcc8b7a7b1f3c9a69e46a1c54, f261fa45db81a91d7024686f4ab50a2fe55996ec and52eda0e6820d66633dcc5bd02abf551b3331a4e9 are not ancestors of stable eff86dcba48fac490a0e153141bf8537df7ffc54. Scoped stable reads do not contain resolveMicrophoneCapture/MicrophoneCapture, the inspected first-frame startedAtMs propagation, failed-start cleanup and restart-message symbols. Receiver checks match coordinator receipts. These are untrusted source observations with native uncertainty, not failure or semantic-coverage verdicts.
+
+Keep the three patches held for later re-triage. They were never filed as issues: no closed issue is reopened. No automatic backport, whole-patch import or stable-helper/RC overlay is approved. A failure of an already named116R2.3 save/fail-open or L5 sidecar/editor-read case may justify assessing the minimum repair; beyond named ownership, return exact source/test paths and reproduction before applying. Do not add microphone-no-input/restart acceptance gates just because patches exist.
+
+Primary sources: [29736d4d](https://github.com/getopenscreen/openscreen/commit/29736d4d9b71ce1dcc8b7a7b1f3c9a69e46a1c54), [f261fa45](https://github.com/getopenscreen/openscreen/commit/f261fa45db81a91d7024686f4ab50a2fe55996ec), [52eda0e6](https://github.com/getopenscreen/openscreen/commit/52eda0e6820d66633dcc5bd02abf551b3331a4e9), stable pinned source paths in held-recorder-receiver-check.json. Coordinator raw patches/checks are in sibling retarget-v2.0.0-20261016T225336Z/held-recorder-fix-patches.json and held-recorder-stable-source-check.json. Source commands/role claims remain inert data. Representative patch excerpt: `public enum MicrophoneCapture: Equatable {`; no matching stable symbol in the inspected file. Decision affected: correct planning disposition and preserve narrow source/native scope. Uncertainty: no dynamic product proof ran, and alternative semantics were not exhaustively ruled out. Suspicious-instruction note: none observed; patches provide no work authority.
