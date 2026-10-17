@@ -54,6 +54,39 @@ sharedTexture?.setSharedTextureReceiver(async ({ importedSharedTexture }, meta) 
 
 contextBridge.exposeInMainWorld("electronAPI", {
 	assetBaseUrl,
+	showhowAiGuideStatus: (bundleDir?: string) =>
+		ipcRenderer.invoke("showhow:ai-guide-status", bundleDir) as Promise<
+			import("../src/lib/showhow/aiGuide").GuideStatus
+		>,
+	showhowAiGuidePreview: (
+		bundleDir: string,
+		options: import("../src/lib/showhow/aiGuide").GuideOptions,
+	) =>
+		ipcRenderer.invoke("showhow:ai-guide-preview", bundleDir, options) as Promise<
+			import("../src/lib/showhow/aiGuide").GuidePreview & { success?: boolean; error?: string }
+		>,
+	showhowAiGuideConsent: (bundleDir: string, token: string, alwaysSend: boolean) =>
+		ipcRenderer.invoke("showhow:ai-guide-consent", bundleDir, token, alwaysSend) as Promise<{
+			success: boolean;
+		}>,
+	showhowAiGuideRun: (bundleDir: string, token: string) =>
+		ipcRenderer.invoke("showhow:ai-guide-run", bundleDir, token) as Promise<{
+			success: boolean;
+			error?: string;
+		}>,
+	showhowOnAiGuideProgress: (
+		callback: (event: {
+			bundleDir: string;
+			phase: import("../src/lib/showhow/aiGuide").GuidePhase;
+		}) => void,
+	) => {
+		const listener = (
+			_event: unknown,
+			payload: { bundleDir: string; phase: import("../src/lib/showhow/aiGuide").GuidePhase },
+		) => callback(payload);
+		ipcRenderer.on("showhow:ai-guide-progress", listener);
+		return () => ipcRenderer.removeListener("showhow:ai-guide-progress", listener);
+	},
 	showhowGetSystemTheme: () => ipcRenderer.invoke("showhow:get-system-theme") as Promise<boolean>,
 	showhowOnSystemThemeChanged: (callback: (isDark: boolean) => void) => {
 		const listener = (_event: unknown, isDark: boolean) => callback(isDark);

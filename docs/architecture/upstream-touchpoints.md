@@ -771,3 +771,23 @@ not reset by source checks. No executor staging/commit/push/reviewer/GUI or nati
 | `ci-attempt-01/result.json` and `ci-attempt-02/result.json` nested `log` strings | Four original receipt path strings remain in the two unchanged result manifests. They map to the four portable current-tree names listed in the implementation-notes clarification; the old Git-tree paths and blobs remain available at pre-rename commit `dbc257c99cd02a07ba4682ebea662d8fc64d10c2`. The result manifests were not edited. |
 
 The expanded scan and consumer classification are preserved in `windows-checkout-diagnosis-2/references-excluding-only-four-receipt-bodies.json` and `historical-result-consumer-scan.json`; current-tree path and hash receipts are in `portable-applied-executor/historical-reference-preservation.json`.
+
+### #122 optional Showhow AI guide
+
+Showhow-owned `electron/showhow/aiGuideConsent.ts` is registered in the existing Showhow block of
+`electron/ipc/handlers.ts`. Its model adapter calls upstream `createOpenScreenChatModel` for
+OpenRouter with structured JSON output, and reuses the existing lazy `LlmConfigStore` instance.
+The Showhow connection settings call the existing `nativeBridgeClient.aiEdition` config/key
+operations for `openrouter` only; upstream's editor provider dialog remains as shipped.
+Local frame preparation calls the existing `electron/media/audioPeaks.ts` FFmpeg resolver.
+
+`electron/preload.ts` adds only five Showhow AI guide methods/event subscriptions. The corresponding
+five declarations in `electron/electron-env.d.ts` are the sole added ambient type surface; the lead
+explicitly approved this necessary addition on 2026-10-17. No native bridge schema, editor assistant,
+upstream provider registry, key-store implementation or model factory implementation is changed.
+
+### #122 Ubuntu test media dependency
+
+The existing Ubuntu `test` job in `.github/workflows/ci.yml` installs `ffmpeg` (including `ffprobe`)
+before `npm run test`. This supplies the host tools for the unchanged real JPEG/narration-frame tests;
+no model calls, runtime dependency, workflow trigger/permission/job or native job changes are added.

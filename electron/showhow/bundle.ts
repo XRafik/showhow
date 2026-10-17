@@ -12,6 +12,7 @@ const execFile = promisify(execFileCallback);
 export const SHOWHOW_RECORDINGS_ROOT = path.join(os.homedir(), "Showhow", "Recordings");
 
 export interface ShowhowMeta {
+	guide?: import("../../src/lib/showhow/aiGuide").GuideState;
 	schemaVersion: 1;
 	title: string;
 	/**
@@ -131,6 +132,7 @@ export interface ClickInput {
 
 /** The source-of-truth Step record written to steps.json. */
 export interface Step {
+	kind?: "click" | "narration";
 	label: string;
 	/** Click time in milliseconds (integer, source of truth). */
 	ts: number;
@@ -274,6 +276,7 @@ export async function updateWorkflowDocument(
 		if (update.type === "title") {
 			if (update.title.trim() === "") throw new Error("workflow document title cannot be empty");
 			const meta = parseEditableMeta(await fs.readFile(metaPath, "utf-8"));
+			if (meta.title !== update.title.trim()) markGuideEdited(meta);
 			meta.title = update.title.trim();
 			const metaTmp = path.join(bundleDir, "meta.json.tmp");
 			try {
@@ -294,6 +297,7 @@ export async function updateWorkflowDocument(
 		]);
 		const meta = parseEditableMeta(rawMeta);
 		const steps = parseEditableSteps(rawSteps);
+		const priorSteps = serializeStepsJson(steps);
 
 		if (!Number.isInteger(update.index) || update.index < 0 || update.index >= steps.length) {
 			throw new Error("workflow document step index is out of range");
@@ -314,6 +318,8 @@ export async function updateWorkflowDocument(
 			}
 		}
 
+		if (serializeStepsJson(steps) !== priorSteps) markGuideEdited(meta);
+
 		const metaTmp = path.join(bundleDir, "meta.json.tmp");
 		const stepsTmp = path.join(bundleDir, "steps.json.tmp");
 		const markdownTmp = path.join(bundleDir, "steps.md.tmp");
@@ -333,6 +339,12 @@ export async function updateWorkflowDocument(
 		}
 		await promoteWorkflowEdit(metaPath, metaTmp, stepsPath, stepsTmp, markdownPath, markdownTmp);
 	});
+}
+
+function markGuideEdited(meta: Record<string, unknown>) {
+	const guide = meta.guide;
+	if (typeof guide === "object" && guide !== null && "status" in guide && guide.status === "ready")
+		meta.guide = { ...guide, editedSinceAi: true };
 }
 
 function parseEditableMeta(raw: string): Record<string, unknown> & { title: string } {
@@ -946,7 +958,7 @@ async function writeDocArtifacts(
  */
 const bundleWriteQueue = new Map<string, Promise<unknown>>();
 
-function serializePerBundle<T>(bundleDir: string, task: () => Promise<T>): Promise<T> {
+export function serializePerBundle<T>(bundleDir: string, task: () => Promise<T>): Promise<T> {
 	const prior = bundleWriteQueue.get(bundleDir) ?? Promise.resolve();
 	// Run task after prior settles either way, so one failure never stalls the queue.
 	const result = prior.then(task, task);

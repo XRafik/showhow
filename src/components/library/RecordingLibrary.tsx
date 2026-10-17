@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from "react";
+import { AiGuidePanel } from "@/components/showhow/AiGuidePanel";
+import { AiGuideSettings } from "@/components/showhow/AiGuideSettings";
 import type { RecordingLibraryEntry } from "@/lib/showhow/recordingLibrary";
 import type { WorkflowDocumentUpdate } from "@/lib/showhow/workflowDocument";
 
@@ -578,6 +580,8 @@ function RecordingDetail({
 					<track kind="captions" />
 				</video>
 			)}
+
+			<AiGuidePanel entry={entry} onEntryChange={onEntryChange} />
 
 			{entry.steps && entry.steps.length > 0 && <StepCaptureDegradationNotice entry={entry} />}
 
@@ -1169,6 +1173,8 @@ export function RecordingLibrary() {
 						</div>
 					)}
 				</div>
+
+				<AiGuideSettings />
 
 				<button
 					type="button"

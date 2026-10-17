@@ -117,3 +117,54 @@ isolated sessionData/Local Storage files as well as appData; profile-only copyin
 is insufficient. Neither synthetic fixture set claims native capture or cursor
 telemetry acceptance. A new stable candidate recording and `<video path>.cursor.json`
 read are separately required at native Prove.
+
+## Optional AI guide (#122)
+
+Make guide is an optional OpenRouter pass over deterministic steps and locally extracted frames.
+Recording, editing, transcripts and deterministic documents stay usable without a key. The default
+model is `anthropic/claude-haiku-5.5` on OpenRouter (owner decision dated 2026-10-17); AI CONNECTIONS
+can change the model slug. Credentials use upstream's encrypted `LlmConfigStore`, with no second
+key store or environment-key fallback in the guide path.
+
+`electron/showhow/aiGuide.ts` owns source preparation, the injected model seam, validation and
+bundle writes. `aiGuideConsent.ts` registers the actual main-process handlers. Both the review and
+send use `buildGuideRequest`; the main process retains a sender-bound token for the exact reviewed
+payload. Run checks a saved OpenRouter key, provider consent, canonical recording-root containment,
+source-file symlinks and a source signature before constructing the model. Changing review toggles
+replaces the token. A token cannot authorize another bundle, renderer or repeated run. Preview
+performs local processing only; no model is called before key and consent checks.
+
+The payload consists of source labels and millisecond timestamps, optional timestamped transcript,
+and optional JPEG frames capped at 20, spread evenly. JPEGs are downscaled locally to a maximum
+1024px long edge. The review shows the exact labels/transcript and selected image bytes. Redacted
+labels stay hidden unless already explicitly revealed. Narration-only sources use real transcript
+segment starts and local frames at those timestamps, with `kind: "narration"` and zero coordinates;
+they have no click marker. When transcript sending is off, narration source labels are generic.
+The existing bundled FFmpeg resolver is used, with the existing CLI fallback for development.
+
+On first run, `steps.deterministic.json` preserves the original `steps.json` bytes. Remake always
+reads that backup, retaining the previous guide until a complete response validates. The validator
+rejects unknown/repeated source IDs and empty output, sorts by earliest source timestamp, inherits
+earliest-source coordinates/frame and ORs redaction/revealed-text flags. Titles are trimmed to 80
+characters and instructions to 120. A successful pass stages and promotes `steps.json`, `steps.md`
+and `meta.json`; file-promotion failure rolls back promoted artifacts. Provider/validation failure
+restores the deterministic pair and records `guide.status: "failed"`. If the filesystem cannot
+write even the fallback, IPC returns failure; source video and transcript are never written here.
+These staged writes protect against ordinary I/O errors, not power loss across a multi-file commit.
+
+`meta.json.guide` holds status (`none`, `making`, `ready`, `failed`), provider (`openrouter`), model,
+optional `madeAt`/sanitized error and `editedSinceAi`. Absence means no AI guide. Existing title,
+instruction and delete-step edits mark a ready guide edited; only edited Remake asks for confirmation.
+Consent lives in `showhow-ai-guide-consent.json` under Showhow preferences, keyed by provider with
+`reviewedAt`, `alwaysSend` and the last accepted transcript/frame options. No credential is in it.
+Retry prepares a new local payload using those accepted options and does not show the review again.
+Progress events report actual transcript-read, sorting/model and validated-writing phases; no
+partial model output is persisted or presented as completed steps.
+
+Offline tests cover the registered IPC callbacks and real local image processing. Native/live
+provider acceptance requires the separate macOS arm64 smoke test with an owner-supplied key.
+
+OpenRouter review is once per provider, including when the stored `alwaysSend` checkbox is false.
+The checkbox is retained as the approved send-preference record, not a second consent gate.
+The transcript/frame toggles determine the actual payload and their last accepted choices are
+reused on later runs and Retry. “Check what gets sent” remains available to inspect/change them.

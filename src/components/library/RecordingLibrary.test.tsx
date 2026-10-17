@@ -1,8 +1,21 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom";
-import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import {
+	act,
+	fireEvent,
+	type RenderOptions,
+	render as rtlRender,
+	screen,
+	waitFor,
+	within,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { StrictMode } from "react";
+import { I18nProvider } from "@/contexts/I18nContext";
+
+const render = (node: ReactNode, options?: RenderOptions) =>
+	rtlRender(node, { wrapper: I18nProvider, ...options });
+
+import { type ReactNode, StrictMode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { RecordingLibraryEntry } from "@/lib/showhow/recordingLibrary";
 import { RecordingLibrary } from "./RecordingLibrary";
@@ -1061,4 +1074,144 @@ it("opens the selected bundle in the v2 editor", async () => {
 	render(<RecordingLibrary />);
 	fireEvent.click(await screen.findByRole("button", { name: "Open in editor" }));
 	await waitFor(() => expect(mockOpenRecording).toHaveBeenCalledWith(desktopEntry.bundleDir));
+});
+
+it("integrates Make guide and Showhow AI connections without requiring a key to view recordings", async () => {
+	mockShowhowListRecordings.mockResolvedValue([desktopDocEntry]);
+	render(<RecordingLibrary />);
+	expect(await screen.findByRole("button", { name: "Make guide" })).toBeVisible();
+	expect(screen.getByRole("button", { name: "Settings" })).toBeVisible();
+});
+
+describe("round1 finding3: background guide completion", () => {
+	it.each([
+		{ returnBefore: false, delayStatus: false },
+		{ returnBefore: true, delayStatus: false },
+		{ returnBefore: true, delayStatus: true },
+	])("converges title, steps and status (returnBefore=$returnBefore, delayed old status=$delayStatus)", async ({
+		returnBefore,
+		delayStatus,
+	}) => {
+		const user = userEvent.setup();
+		const first: RecordingLibraryEntry = {
+			bundleDir: "/scratch/one",
+			title: "Original title",
+			source: "desktop",
+			createdAt: 1,
+			steps: [{ label: "Original instruction", ts: 1000, screenshot: "" }],
+		};
+		const second: RecordingLibraryEntry = {
+			bundleDir: "/scratch/two",
+			title: "Other recording",
+			source: "desktop",
+			createdAt: 2,
+			steps: [{ label: "Second instruction", ts: 2000, screenshot: "" }],
+		};
+		let entries = [first, second];
+		let started = false;
+		let finished = false;
+		let delayed = false;
+		const completion = deferred<{ success: boolean }>();
+		const oldStatus = deferred<unknown>();
+		const options = { transcript: true, frames: true };
+		const ready = {
+			status: "ready",
+			provider: "openrouter",
+			model: "offline",
+			editedSinceAi: false,
+		};
+		const status = vi.fn(async (bundleDir: string) => {
+			const guide =
+				bundleDir === first.bundleDir
+					? finished
+						? ready
+						: started
+							? { ...ready, status: "making" }
+							: undefined
+					: undefined;
+			if (delayStatus && started && !finished && !delayed && bundleDir === first.bundleDir) {
+				delayed = true;
+				return oldStatus.promise;
+			}
+			return { connected: true, reviewed: true, model: "offline", options, guide };
+		});
+		const run = vi.fn(() => {
+			started = true;
+			return completion.promise;
+		});
+		mockShowhowListRecordings.mockImplementation(async () => entries);
+		Object.assign(window.electronAPI, {
+			showhowAiGuideStatus: status,
+			showhowAiGuidePreview: async () => ({
+				token: "first-token",
+				provider: "openrouter",
+				model: "offline",
+				options,
+				steps: [],
+				frames: [],
+				transcript: [],
+				wordCount: 0,
+			}),
+			showhowAiGuideRun: run,
+			showhowOnAiGuideProgress: () => () => undefined,
+		});
+		render(<RecordingLibrary />);
+		await screen.findByRole("heading", { name: "Original title" });
+		const firstRow = screen.getByRole("button", { name: "Original title Desktop" });
+		const secondRow = screen.getByRole("button", { name: "Other recording Desktop" });
+		await user.click(screen.getByRole("button", { name: "Make guide" }));
+		await waitFor(() => expect(run).toHaveBeenCalledTimes(1));
+		await user.click(secondRow);
+		await screen.findByRole("heading", { name: "Other recording" });
+		expect(screen.getByText("Second instruction")).toBeVisible();
+		expect(secondRow).toHaveAttribute("aria-pressed", "true");
+		if (returnBefore) {
+			await user.click(firstRow);
+			await screen.findByRole("heading", { name: "Original title" });
+			if (!delayStatus) {
+				await screen.findByRole("heading", { name: "Making your guide" });
+				expect(screen.getByRole("button", { name: "Make guide" })).toBeDisabled();
+			}
+		}
+		entries = [
+			{
+				...first,
+				title: "AI title",
+				steps: [{ label: "AI instruction", ts: 1000, screenshot: "" }],
+			},
+			second,
+		];
+		finished = true;
+		await act(async () => completion.resolve({ success: true }));
+		await waitFor(() =>
+			expect(mockShowhowListRecordings.mock.calls.length).toBeGreaterThanOrEqual(2),
+		);
+		if (!returnBefore) {
+			expect(secondRow).toHaveAttribute("aria-pressed", "true");
+			expect(screen.getByRole("heading", { name: "Other recording" })).toBeVisible();
+			expect(screen.getByText("Second instruction")).toBeVisible();
+			expect(screen.queryByText("AI instruction")).not.toBeInTheDocument();
+			await user.click(firstRow);
+		}
+		await screen.findByRole("heading", { name: "AI title" });
+		expect(screen.getByText("AI instruction")).toBeVisible();
+		expect(screen.queryByText("Original instruction")).not.toBeInTheDocument();
+		expect(await screen.findByRole("button", { name: "Remake" })).toBeEnabled();
+		expect(screen.queryByRole("heading", { name: "Making your guide" })).not.toBeInTheDocument();
+		if (delayStatus) {
+			expect(delayed).toBe(true);
+			await act(async () =>
+				oldStatus.resolve({
+					connected: true,
+					reviewed: true,
+					model: "offline",
+					options,
+					guide: { ...ready, status: "making" },
+				}),
+			);
+			expect(screen.getByRole("button", { name: "Remake" })).toBeEnabled();
+			expect(screen.queryByRole("heading", { name: "Making your guide" })).not.toBeInTheDocument();
+		}
+		expect(run).toHaveBeenCalledTimes(1);
+	});
 });
