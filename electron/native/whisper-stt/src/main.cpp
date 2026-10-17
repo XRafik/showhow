@@ -280,6 +280,7 @@ std::string base64(const void* data, size_t n) {
 int main(int argc, char** argv) {
 	std::string model_path;
 	std::string vad_model_path;
+	std::string dtw_model = "small";
 	std::string host = "127.0.0.1";
 	bool host_from_flag = false;
 	bool force_cpu = false;
@@ -290,6 +291,7 @@ int main(int argc, char** argv) {
 		const std::string a = argv[i];
 		if (a == "--model"   && i + 1 < argc) model_path = argv[++i];
 		else if (a == "--vad-model" && i + 1 < argc) vad_model_path = argv[++i];
+		else if (a == "--dtw-model" && i + 1 < argc) dtw_model = argv[++i];
 		else if (a == "--host" && i + 1 < argc) { host = argv[++i]; host_from_flag = true; }
 		else if (a == "--port" && i + 1 < argc) port = std::atoi(argv[++i]);
 		else if (a == "--threads" && i + 1 < argc) threads = std::atoi(argv[++i]);
@@ -333,7 +335,11 @@ int main(int argc, char** argv) {
 	    " port=" + (port > 0 ? std::to_string(port) : "(any)") +
 	    " threads=" + std::to_string(threads));
 
-	// ---- Init whisper context with DTW alignment (POC §4.1) ----
+	if (dtw_model != "base" && dtw_model != "small") {
+		std::cerr << "FATAL: --dtw-model must be base or small" << std::endl;
+		return 2;
+	}
+	// ---- Init whisper context with model-matched DTW alignment (POC §4.1) ----
 	whisper_context_params cparams = whisper_context_default_params();
 	cparams.use_gpu    = !force_cpu; // Parent retries with --cpu if a GPU backend aborts.
 	cparams.flash_attn = false;  // CRITICAL: DTW is silently disabled by v1.9.1
@@ -341,7 +347,7 @@ int main(int argc, char** argv) {
 	                             // /inference handler still runs, but skipping
 	                             // the request is wasted work.
 	cparams.dtw_token_timestamps = true;
-	cparams.dtw_aheads_preset    = WHISPER_AHEADS_SMALL;
+	cparams.dtw_aheads_preset    = dtw_model == "base" ? WHISPER_AHEADS_BASE : WHISPER_AHEADS_SMALL;
 	whisper_context* ctx = whisper_init_from_file_with_params(model_path.c_str(), cparams);
 	if (!ctx && cparams.use_gpu) {
 		// Metal/Vulkan allocation can fail transiently when the editor or another

@@ -122,7 +122,7 @@
   "extraResources": [
     { "from": "build-licenses/THIRD-PARTY-LICENSES.txt", "to": "THIRD-PARTY-LICENSES.txt" },
     { "from": "src/assets/fonts", "to": "font-licenses", "filter": ["LICENSE.md"] },
-    { "from": "caption-assets", "to": "caption-assets" },
+    { "from": "caption-assets", "to": "caption-assets", "filter": ["ggml-base-q5_1.bin", "ggml-silero-v6.2.0.bin"] },
     { "from": "NOTICE.md", "to": "NOTICE.md" },
     // Attribution + LGPL source offer for the bundled ffmpeg DLLs and
     // whisper.cpp binaries. Redistributing LGPL libraries obliges us to ship

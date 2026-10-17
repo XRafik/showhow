@@ -791,3 +791,30 @@ upstream provider registry, key-store implementation or model factory implementa
 The existing Ubuntu `test` job in `.github/workflows/ci.yml` installs `ffmpeg` (including `ffprobe`)
 before `npm run test`. This supplies the host tools for the unchanged real JPEG/narration-frame tests;
 no model calls, runtime dependency, workflow trigger/permission/job or native job changes are added.
+
+## #117 native bundle transcript job (2026-10-17)
+
+`electron/showhow/finishRecording.ts` queues the transcript after durable bundle creation;
+`resumeTranscript.ts` queues only a validated pending library bundle. The Showhow job calls
+v2 SttManager with bundledModelsDir and writes/regenerates artifacts in the main process.
+Renderer BundleTranscript is an inert compatibility slot and generateTranscriptForBundle
+is retained only for obsolete session callers; no renderer extraction/worker stack remains.
+
+Conditional seam reproduction: stable prepare ensures/downloads fixed small/VAD before
+path resolution, and optional CTC preparation belongs to SttManager rather than the model
+manager. A bounded offline mode now verifies bundled base/local VAD before helper start
+and omits optional alignment acquisition. Existing fixed small/VAD/CTC consumers retain
+their existing mode. Model/DTW selection is passed only through the existing helper CLI;
+no HTTP protocol or model catalogue is added.
+
+Pinned whisper.cpp v1.9.1 source has BASE heads at line387 (layers3–5), SMALL heads at
+line389 (layers5–10), and rejects alignment heads beyond model decoder depth at lines1191–1194.
+The helper previously initialized every context with SMALL, so base now selects BASE while
+small remains the default. Exact pinned source and pre-edit reproduction are retained in
+external #117 evidence. Native CLI, package and physical offline recording acceptance are
+lead/owner gates and are not inferred from unit results.
+
+The #117 manager lifecycle also registers independent initialized bundle-job managers
+with the existing shutdownStt boundary. App quit awaits every active helper, and queued
+manager initialization is refused after shutdown starts. This required no main.ts or
+native change; both omissions were reproduced as same-package RED before repair.

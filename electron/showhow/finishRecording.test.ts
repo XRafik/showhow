@@ -8,6 +8,21 @@ const fixture = vi.hoisted(() => {
 	const path = require("node:path") as typeof import("node:path");
 	return { root: fs.mkdtempSync(path.join(os.tmpdir(), "showhow-finish-")) };
 });
+const engine = vi.hoisted(() => ({
+	init: vi.fn(async () => undefined),
+	transcribe: vi.fn(async () => ({
+		segments: [{ text: "Open settings", startSec: 2, endSec: 3 }],
+	})),
+	shutdown: vi.fn(async () => undefined),
+}));
+vi.mock("../stt", () => ({
+	SttManager: class {
+		init = engine.init;
+		transcribe = engine.transcribe;
+		shutdown = engine.shutdown;
+	},
+}));
+vi.mock("electron", () => ({ app: { isPackaged: false, getAppPath: () => fixture.root } }));
 vi.mock("node:os", async (original) => {
 	const actual = await original<typeof import("node:os")>();
 	return { ...actual, default: { ...actual, homedir: () => fixture.root } };
@@ -17,6 +32,21 @@ import { finishShowhowRecording } from "./finishRecording";
 
 afterEach(() => vi.restoreAllMocks());
 afterAll(async () => fs.rm(fixture.root, { recursive: true, force: true }));
+it("a saved bundle receives timestamped native bundled-base transcription", async () => {
+	const video = path.join(fixture.root, "native.mp4");
+	await fs.writeFile(video, "valid native take");
+	const result = await finishShowhowRecording({ screenVideoPath: video, createdAt: 1792180900000 });
+	await vi.waitFor(async () => {
+		expect(
+			await fs.readFile(path.join(path.dirname(result.screenVideoPath), "transcript.txt"), "utf8"),
+		).toBe("[0:02] Open settings\n");
+	});
+	expect(engine.init).toHaveBeenCalledWith({
+		bundledModelsDir: path.join(fixture.root, "caption-assets"),
+	});
+	expect(engine.transcribe).toHaveBeenCalledWith({ sourcePath: result.screenVideoPath });
+	expect(await fs.readFile(result.screenVideoPath, "utf8")).toBe("valid native take");
+});
 it("a metadata disk error after relocation returns the still-readable video and webcam", async () => {
 	const video = path.join(fixture.root, "take.mp4");
 	const webcam = path.join(fixture.root, "camera.webm");
