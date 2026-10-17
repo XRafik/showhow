@@ -513,7 +513,7 @@ The owner makes guides with their ChatGPT subscription (GPT-6 Luna by default) t
 - Upstream touchpoints: none. Upstream's provider registry and chat model are not changed.
 
 ## Milestones
-None. One ticket, after #122.
+None. One ticket, after #122. Published 2026-10-17: Task 1 = #128.
 
 ### Task 1: Connect ChatGPT through the owner's Codex login for Make guide
 
