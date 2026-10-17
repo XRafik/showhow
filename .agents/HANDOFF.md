@@ -1,9 +1,15 @@
 # Project handoff
 
-Updated: 2026-10-16
+Updated: 2026-10-17
 
 ## In flight
 
+- **#122 AI guide shipped** (PR #126, merged 2026-10-17 as `500cea16`). Make guide runs an AI pass over the deterministic steps through OpenRouter, with `anthropic/claude-haiku-5.5` as the default model (owner decision 2026-10-17, no bake-off). Plan: "Showhow AI guide Plan" in `PLAN.md`. Evidence: `~/dev/loop-evidence/showhow-122/` (READY.md, PROVE.md, PROVE-CI.md, `live-smoke/run-OKsXUE/`). Lane removed; card Done.
+- **Connect ChatGPT** is shaped and approved: "Showhow Connect ChatGPT Plan" in `PLAN.md`, mock in `design/mocks/2026-10-17-chatgpt-connect/`. It uses the owner's own Codex login (`codex app-server`) for Make guide only. Its issue is pending the owner's yes on the publication preview; it builds after #122 (now merged).
+- **Move onto upstream v2:** #115 and #116 are done (#116 merged on stable upstream `v2.0.0` via PR #121). #117 (bundled transcription model) and #118 (size trim) are open and not dispatched.
+- **Bugs in Todo:** #124 (pressing Stop on the recorder bar becomes a guide step), #125 (a fresh dev-build take would not play in the editor; seen once), #127 (ready-guide view polish: stray "Check what gets sent" link, plain-text Edit/Delete).
+
+### Earlier context (2026-10-16)
 The move onto upstream v2 is shaped and published: milestone "Move onto upstream v2" with #115 → #116 → #117 → #118, all in Ready to implement, none priority. The plan is the "Showhow move onto upstream v2 Plan" section of `PLAN.md`; decisions are in `.agents/decisions.md` (2026-10-16). The design phase is merged (#109). The app size ticket (#110, PR #113) and the Copilot controller retirement (#108, PR #112) shipped on 2026-10-16.
 
 - App size: installed 867 MB → 321 MB, DMG 337 MB → 167 MB (macOS arm64). `npm run check:package` audits a packaged app (only `ws` in `node_modules`, 14 Chromium locales, each wallpaper once, ≤ 330 MB). The owner installed the new build and confirmed that recording, transcription and export work. Windows and Linux are untested. #118 re-applies the trim to the v2 build with a ≤ 400 MB target.
@@ -16,14 +22,18 @@ The move onto upstream v2 is shaped and published: milestone "Move onto upstream
 
 ## Next action
 
-Coordinator dispatches #115 (upstream policy and v2 evidence refresh). #116 must not merge before upstream tags the final `v2.1.0`; upstream was at `v2.1.0-rc.3` on 2026-10-16. The runtime question is settled: Showhow stays on Electron.
+Owner approves the Connect ChatGPT issue preview; then publish it (Ready to implement) and the coordinator dispatches it. Otherwise dispatch #117.
 
 ## Open decisions
 
-- Cursor packs: #116 removes the 17 Sweezy packs and takes upstream's seven original packs. Still blocks release until #116 merges.
+- Cursor packs: #116 removes the 17 Sweezy packs and takes upstream's seven original packs. #116 has merged; confirm the packs shipped as planned before a release tag.
 - Per-feature goals and milestone metrics (audit questions B1 and J2). Weekly use is the only metric for now.
 
 ## Loop operations notes
+
+- Keep the main checkout on `main` while a ticket lane is open: lane verification fails ("Git branch differs") if the coordinator switches it. Write plans in a separate worktree.
+- Owner's Mac runs Vorssaint with Auto Quit; it sends Quit Apple Events to Showhow/Electron when only the HUD is left. The owner turned Auto Quit off on 2026-10-17. Not a product bug.
+- Dev builds (`npm run dev`) lack the whisper STT helper (`scripts/build-whisper-stt.sh`), so dev recordings stay "(transcription pending)".
 
 - In role panes, answer Codex hooks prompts with "Continue without trusting". "Trust all" writes hook trust into the role profile and breaks later launches (profile backup from 2026-10-16: `~/.local/share/bedar-loop/profile-fix-20261016/`).
 - A ticket lead cannot prompt the coordinator across Herdr workspaces. It writes `STOP.md` in `~/dev/loop-evidence/<repo>-<n>/`, so the coordinator or a supervisor must poll it.
@@ -35,13 +45,16 @@ Coordinator dispatches #115 (upstream policy and v2 evidence refresh). #116 must
 
 ## Test state
 
-main at `fc50566a`: CI (lint, type check, unit and browser tests, build) passed on #112 and #113. The #110 packaged macOS smoke test passed (native recording, transcription, editor, export). Evidence: `~/dev/loop-evidence/showhow-110/` and `showhow-108/`.
+main at `500cea16` (PR #126): all 10 CI checks passed (lint, type check, test typecheck, unit 4616 pass / 2 skip, browser 10, build, Rust and Swift jobs). The #122 real-key macOS 26.6.2 arm64 smoke passed C1–C7 on the owner's narrated recordings. Windows and Linux untested; new non-English strings fall back to English. Earlier: #110 packaged macOS smoke passed at `fc50566a`.
 
 ## Cloud blockers
 
 None. Native macOS acceptance stays manual.
 
 
-## Owner stable retarget correction — 2026-10-17 Europe/London
+## History: owner stable retarget correction — 2026-10-17 Europe/London
+
+Superseded: #116 merged on stable `v2.0.0` (PR #121). Kept for context only.
+
 
 The previous Next action/final2.1wait is historical and superseded. #115 is closed/Done via #120. Owner chose stable2.0 (Yeah lets do it). #116 is at Creating plan/spec for the exact revised plan/publication gate; no implementation or publication yet. Use refs/tags/upstream/v2.0.0 at eff86dcba48fac490a0e153141bf8537df7ffc54 as proposed actual parent, preserving READY5/current2074dirty source/index/merge metadata/owner media before same-lane reconstruction. #117 native bundled base/offline/fail-open and #118≤400MB remain sequential and not dispatched. No priority;116ui. Refresh source/native/package/owner proof after retarget, then fresh review, one PR and separate ancestry-preserving exact-head owner merge gate. No Showhow release tag until milestone complete. This note describes the proposal, not a delivered stable migration.
