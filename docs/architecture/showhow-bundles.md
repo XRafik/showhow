@@ -64,20 +64,29 @@ recording; static inspection of the browser fallback alone is insufficient.
 
 ## Transcript generation
 
-The renderer-side implementation lives in `src/lib/showhow/`:
+The main-process save path calls `electron/showhow/transcriptJob.ts` after the bundle is
+saved. It serializes jobs and retains a pending marker until completion, independently
+of renderer mounts. Opening a validated pending library bundle resumes the same job.
+The retired `BundleTranscript` slot no longer claims renderer work.
 
-- `transcriptFormat.ts` formats Whisper segments into timestamped text.
-- `generateTranscript.ts` exposes `generateTranscriptForBundle(bundleDir, videoFileUrl)`.
+Each job creates v2’s `SttManager` in bundled offline mode: verify SHA-256 of the
+multilingual `ggml-base-q5_1.bin` and local `ggml-silero-v6.2.0.bin` before resolving
+paths or starting the helper. Extraction uses native FFmpeg at mono 16 kHz. The helper
+uses BASE DTW heads for bundle jobs; existing editor small-q8 consumers keep SMALL.
+Optional CTC acquisition is disabled for these jobs; existing editor behavior remains.
+`src/lib/showhow/transcriptFormat.ts` still formats the timestamped lines unchanged.
 
-The save path persists a pending transcript job on the recording session. The editor claims it
-after the recorder window closes, allowing local Whisper work to survive that transition. The job
-extracts mono 16 kHz audio from the saved video, uses the existing on-device captioning pipeline,
-formats the result, and writes it through the `showhow:write-transcript` IPC handler.
+The job writes `transcript.txt` directly inside its already-owned bundle and regenerates
+document artifacts through the existing main-process equivalent of `showhow:write-transcript`.
+Model absence/digest mismatch, engine errors and zero-length audio produce
+`(transcription failed)`. These failures preserve the recording and bundle inputs.
+A transcript write error is logged and leaves the pending marker for a later resume.
+The existing renderer IPC retains its root validation for other callers.
 
-The main-process handler accepts a renderer-provided bundle directory only when its resolved path
-is inside `SHOWHOW_RECORDINGS_ROOT`. It then writes `transcript.txt`. Extraction, transcription,
-or IPC-write failure must still leave a `transcript.txt` containing a `(transcription failed)`
-marker so the Phase 1 folder shape remains dependable.
+`fetch-caption-model.mjs` fetches both pinned, digest-checked models at build time.
+Builder copies only these two model files from `caption-assets`; obsolete renderer
+Whisper-tiny/ORT assets and Xenova dependencies are removed. Model revisions, hashes
+and MIT attribution are recorded in `THIRD-PARTY-NOTICES.md`.
 
 ## Verification
 
@@ -168,3 +177,11 @@ OpenRouter review is once per provider, including when the stored `alwaysSend` c
 The checkbox is retained as the approved send-preference record, not a second consent gate.
 The transcript/frame toggles determine the actual payload and their last accepted choices are
 reused on later runs and Retry. “Check what gets sent” remains available to inspect/change them.
+
+### #117 verification boundary
+
+The #116 renderer-tiny statements above describe historical proof only. #117 source
+tests cover native job dispatch, unchanged timestamp formatting, offline model validation,
+base/small helper mode arguments and the three fail-open cases with input hashes.
+Fresh native helper base/small tests, packaged offline transcripts and physical Wi-Fi-off
+recording acceptance are separate gates; source checks alone do not establish them.

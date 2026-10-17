@@ -7,9 +7,11 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
 	alignerPath,
 	areModelsPresent,
+	BUNDLED_STT_FILES,
 	CTC_ALIGNERS,
 	cachedAligner,
 	ensureAligner,
+	ensureBundledModels,
 	ensureModels,
 	modelPaths,
 	STT_MODELS,
@@ -22,6 +24,28 @@ describe("modelManager", () => {
 	});
 	afterEach(async () => {
 		await rm(dir, { recursive: true, force: true });
+	});
+	it("bundled base and local VAD are pinned and resolved only after both digests pass offline", async () => {
+		const original = structuredClone(BUNDLED_STT_FILES);
+		try {
+			expect(BUNDLED_STT_FILES.whisper.name).toBe("ggml-base-q5_1.bin");
+			for (const [id, file] of Object.entries(BUNDLED_STT_FILES)) {
+				expect(file.url).toMatch(/\/resolve\/[0-9a-f]{40}\//);
+				const bytes = Buffer.from(`fixture-${id}`);
+				await writeFile(path.join(dir, file.name), bytes);
+				file.expectedSha256 = createHash("sha256").update(bytes).digest("hex");
+			}
+			expect(await ensureBundledModels(dir)).toEqual({
+				whisper: path.join(dir, "ggml-base-q5_1.bin"),
+				"silero-vad": path.join(dir, "ggml-silero-v6.2.0.bin"),
+			});
+			await writeFile(path.join(dir, BUNDLED_STT_FILES["silero-vad"].name), "corrupt");
+			await expect(ensureBundledModels(dir)).rejects.toThrow(/SHA-256 mismatch/);
+			await rm(path.join(dir, BUNDLED_STT_FILES.whisper.name));
+			await expect(ensureBundledModels(dir)).rejects.toThrow(/ENOENT/);
+		} finally {
+			Object.assign(BUNDLED_STT_FILES, original);
+		}
 	});
 
 	it("exposes the whisper model descriptor with a single GGML file", () => {

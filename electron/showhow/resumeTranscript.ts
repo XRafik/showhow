@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import type { RecordingSession } from "../../src/lib/recordingSession";
+import { requestBundleTranscript } from "./transcriptJob";
 
 /** Called only after library wiring validates the bundle and its video against the owned root. */
 export async function restorePendingBundleTranscript(
@@ -16,6 +17,7 @@ export async function restorePendingBundleTranscript(
 	try {
 		const transcript = await fs.readFile(path.join(bundleDir, "transcript.txt"), "utf8");
 		if (transcript.trim() === "(transcription pending)") {
+			void requestBundleTranscript(bundleDir, restored.screenVideoPath);
 			restored.showhowBundleDir = bundleDir;
 			restored.showhowVideoFileUrl = pathToFileURL(restored.screenVideoPath).toString();
 		}

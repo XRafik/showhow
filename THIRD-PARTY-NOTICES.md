@@ -46,8 +46,8 @@ distributed by their own registries, not redistributed inside our binaries.
   <https://github.com/ggml-org/ggml>.
 - Built from source by `scripts/build-whisper-stt.sh`; the pinned upstream
   revision is in `electron/native/whisper-stt/CMakeLists.txt`.
-- The speech model (`ggml-*.bin`) is **not** bundled — it is downloaded into the
-  user's data directory on first use by `electron/stt/modelManager.ts`.
+- Showhow bundle jobs ship multilingual base q5_1 and Silero VAD locally (see below).
+  Existing editor consumers retain the fixed small-q8 download/cache and optional CTC support.
 
 ## ONNX Runtime (Windows and Apple Silicon macOS)
 
@@ -181,3 +181,23 @@ it does not switch bundle transcription to the native model manager. Bundled
 renderer font licence and copyright texts, including Inter Tight and annotation
 fonts, remain in `src/assets/fonts/LICENSE.md`. Native editor font notices above
 remain applicable to `public/fonts`.
+
+## Bundled Whisper base and Silero VAD models
+
+Both models are MIT licensed. Build-time fetching and runtime offline verification use
+`electron/stt/modelManager.ts` and `scripts/fetch-caption-model.mjs`.
+
+- `ggml-base-q5_1.bin`, multilingual Whisper base (OpenAI), converted by whisper.cpp.
+  Repository: https://huggingface.co/ggerganov/whisper.cpp
+  Revision: `5359861c739e955e79d9a303bcbc70fb988958b1`.
+  SHA-256: `422f1ae452ade6f30a004d7e5c6a43195e4433bc370bf23fac9cc591f01a8898`.
+  Original model licence: https://github.com/openai/whisper/blob/main/LICENSE
+- `ggml-silero-v6.2.0.bin`, Silero VAD, converted for whisper.cpp.
+  Repository: https://huggingface.co/ggml-org/whisper-vad
+  Revision: `9ffd54a1e1ee413ddf265af9913beaf518d1639b`.
+  SHA-256: `2aa269b785eeb53a82983a20501ddf7c1d9c48e33ab63a41391ac6c9f7fb6987`.
+  Original model licence: https://github.com/snakers4/silero-vad/blob/master/LICENSE
+
+The models are included under `resources/caption-assets/`. No first-use network download
+is required for Showhow bundle jobs. Native compositor ONNX libraries remain separate
+from the removed renderer ONNX/Whisper-tiny stack.

@@ -4,6 +4,7 @@ import { pathToFileURL } from "node:url";
 import type { RecordingSession } from "../../src/lib/recordingSession";
 import type { StepCaptureReason } from "../../src/lib/showhow/recordingLibrary";
 import { bundleDirName, createRecordingBundle, SHOWHOW_RECORDINGS_ROOT } from "./bundle";
+import { requestBundleTranscript } from "./transcriptJob";
 
 /** The three macOS completion paths share this fail-open documentation boundary. */
 export async function finishShowhowRecording(
@@ -21,6 +22,7 @@ export async function finishShowhowRecording(
 			.catch((error: NodeJS.ErrnoException) => {
 				if (error.code !== "EEXIST") throw error;
 			});
+		void requestBundleTranscript(bundle.bundleDir, bundle.screenVideoPath);
 		return {
 			...session,
 			...bundle,

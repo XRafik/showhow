@@ -63,6 +63,8 @@ const REQUEST_TIMEOUT_MS = 280_000;
  */
 
 export interface WhisperServerStartOptions {
+	/** DTW heads must match the bounded base/small model architecture. Defaults to stable small. */
+	dtwModel?: "base" | "small";
 	/** Absolute path to the GGML model file (e.g. ggml-small-q8_0.bin). */
 	modelPath: string;
 	/** Absolute path to the Silero VAD GGML model file (e.g. ggml-silero-v6.2.0.bin). */
@@ -297,6 +299,7 @@ export class WhisperServerManager {
 				args.push("--vad-model", options.vadModelPath);
 			}
 			if (forceCpu) args.push("--cpu");
+			args.push("--dtw-model", options.dtwModel ?? "small");
 			const child = spawn(binaryPath, args, { stdio: ["ignore", "pipe", "pipe"] });
 			const activeBackend: SttBackend = forceCpu ? "whispercpp-cpu" : resolved.backend;
 

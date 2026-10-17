@@ -33,6 +33,10 @@ vi.mock("./whisperServer", () => {
 });
 
 vi.mock("./modelManager", () => ({
+	ensureBundledModels: vi.fn(async () => ({
+		whisper: "/offline/caption-assets/ggml-base-q5_1.bin",
+		"silero-vad": "/offline/caption-assets/ggml-silero-v6.2.0.bin",
+	})),
 	ensureModels: vi.fn(async () => undefined),
 	ensureAligner: vi.fn(async ({ language }: { language: string }) => `/fake/${language}.gguf`),
 	cachedAligner: vi.fn(async () => null),
@@ -90,6 +94,35 @@ describe("SttManager", () => {
 		expect(phases[0]).toBe("model");
 		expect(phases).toContain("transcribe");
 	});
+	it("bundled jobs ensure local base and VAD before starting and never acquire optional alignment", async () => {
+		const models = await import("./modelManager");
+		vi.mocked(models.ensureAligner).mockClear();
+		vi.mocked(models.ensureModels).mockClear();
+		const mgr = new SttManager();
+		await mgr.init({
+			modelsBaseDir: "/offline/cache",
+			bundledModelsDir: "/offline/caption-assets",
+		});
+		expect(models.ensureBundledModels).toHaveBeenCalledWith("/offline/caption-assets");
+		expect(fakeWhisperServer.start).toHaveBeenCalledWith({
+			modelPath: "/offline/caption-assets/ggml-base-q5_1.bin",
+			vadModelPath: "/offline/caption-assets/ggml-silero-v6.2.0.bin",
+			dtwModel: "base",
+		});
+		await mgr.transcribe({ samples: new Float32Array(16000) });
+		expect(fakeWhisperServer.transcribe.mock.calls[0][0].alignerFor).toBeUndefined();
+		expect(models.ensureAligner).not.toHaveBeenCalled();
+		expect(models.ensureModels).not.toHaveBeenCalled();
+	});
+	it("a missing bundled model fails before starting the helper or falling back to a download", async () => {
+		const models = await import("./modelManager");
+		vi.mocked(models.ensureModels).mockClear();
+		vi.mocked(models.ensureBundledModels).mockRejectedValueOnce(new Error("ENOENT: bundled base"));
+		const mgr = new SttManager();
+		await expect(mgr.init({ bundledModelsDir: "/offline/missing" })).rejects.toThrow(/ENOENT/);
+		expect(fakeWhisperServer.start).not.toHaveBeenCalled();
+		expect(models.ensureModels).not.toHaveBeenCalled();
+	});
 
 	it("transcribe() returns the server's phrase + word segments", async () => {
 		const mgr = new SttManager();
@@ -102,6 +135,13 @@ describe("SttManager", () => {
 		expect(result.backend).toBe("whispercpp-cpu");
 		expect(result.wordSegments).toHaveLength(1);
 		expect(fakeWhisperServer.transcribe).toHaveBeenCalledOnce();
+	});
+	it("rejects zero-length audio instead of reporting a successful empty transcript", async () => {
+		const mgr = new SttManager();
+		await mgr.init({ modelsBaseDir: "/tmp/fake-stt-models" });
+		await expect(mgr.transcribe({ samples: new Float32Array(0) })).rejects.toThrow(
+			/zero-length audio/,
+		);
 	});
 
 	it("splits a long recording and shifts each chunk's timestamps to absolute time", async () => {
@@ -387,6 +427,37 @@ describe("SttManager", () => {
 		await mgr.init({ modelsBaseDir: "/tmp/fake-stt-models" });
 		await mgr.shutdown();
 		expect(fakeWhisperServer.shutdown).toHaveBeenCalledOnce();
+	});
+	it("app shutdown awaits a live independent bundled-job manager", async () => {
+		const mgr = new SttManager();
+		await mgr.init({ bundledModelsDir: "/offline/caption-assets" });
+		let release: () => void = () => undefined;
+		fakeWhisperServer.shutdown.mockImplementationOnce(
+			() =>
+				new Promise<void>((resolve) => {
+					release = resolve;
+				}),
+		);
+		let finished = false;
+		const quitting = shutdownStt().then(() => {
+			finished = true;
+		});
+		await vi.waitFor(() => expect(fakeWhisperServer.shutdown).toHaveBeenCalledOnce());
+		expect(finished).toBe(false);
+		release();
+		await quitting;
+		expect(fakeWhisperServer.shutdown).toHaveBeenCalledOnce();
+		await expect(mgr.transcribe({ samples: new Float32Array(16000) })).rejects.toMatchObject({
+			name: "AbortError",
+		});
+	});
+	it("a queued bundled-job manager cannot initialize or spawn after app shutdown", async () => {
+		const queued = new SttManager();
+		await shutdownStt();
+		await expect(
+			queued.init({ bundledModelsDir: "/offline/caption-assets" }),
+		).rejects.toMatchObject({ name: "AbortError" });
+		expect(fakeWhisperServer.start).not.toHaveBeenCalled();
 	});
 
 	it("shutdownStt() stops and releases the singleton exactly once", async () => {

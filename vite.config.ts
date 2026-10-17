@@ -64,13 +64,6 @@ export default defineConfig({
 	resolve: {
 		alias: {
 			"@": path.resolve(__dirname, "src"),
-			fs: path.resolve(__dirname, "src/lib/showhow/whisperTiny/vite-stubs/empty-node-module.ts"),
-			path: path.resolve(__dirname, "src/lib/showhow/whisperTiny/vite-stubs/empty-node-module.ts"),
-			url: path.resolve(__dirname, "src/lib/showhow/whisperTiny/vite-stubs/empty-node-module.ts"),
-			"onnxruntime-node": path.resolve(
-				__dirname,
-				"src/lib/showhow/whisperTiny/vite-stubs/onnxruntime-node-stub.ts",
-			),
 		},
 		// This checkout is a git worktree nested under the main repo, and its
 		// node_modules is incomplete (e.g. zustand is absent), so bare deps that

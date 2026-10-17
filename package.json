@@ -149,8 +149,7 @@
 		"tailwindcss-animate": "^1.0.7",
 		"web-demuxer": "^4.0.0",
 		"zod": "^4.1.12",
-		"zustand": "^5.0.8",
-		"@xenova/transformers": "^2.17.2"
+		"zustand": "^5.0.8"
 	},
 	"devDependencies": {
 		"@actions/core": "^3.0.1",

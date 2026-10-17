@@ -56,10 +56,12 @@ const BIN =
 		process.platform === "win32" ? "whisper-stt-server.exe" : "whisper-stt-server",
 	);
 
-const MODEL = process.env.OPENSCREEN_WHISPER_MODEL ?? defaultModelPath();
+const MODEL = argOf("--model") ?? process.env.OPENSCREEN_WHISPER_MODEL ?? defaultModelPath();
 const VAD_MODEL =
 	process.env.OPENSCREEN_VAD_MODEL ?? path.join(path.dirname(MODEL), "ggml-silero-v6.2.0.bin");
 const WITH_VAD = fs.existsSync(VAD_MODEL);
+const DTW_MODEL = argOf("--dtw-model") ?? "small";
+if (!["base", "small"].includes(DTW_MODEL)) throw new Error("--dtw-model must be base or small");
 const LANGUAGE = argOf("--language") ?? "auto";
 const WAV_ARG = argOf("--wav");
 const REF_ARG = argOf("--ref");
@@ -230,6 +232,8 @@ async function main() {
 		[
 			"--model",
 			MODEL,
+			"--dtw-model",
+			DTW_MODEL,
 			"--port",
 			String(port),
 			"--host",

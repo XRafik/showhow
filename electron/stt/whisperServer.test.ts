@@ -491,7 +491,10 @@ describe("WhisperServerManager", () => {
 		});
 	});
 
-	it("spawns whisper-stt-server with --model", async () => {
+	it.each([
+		"base",
+		"small",
+	] as const)("spawns whisper-stt-server with --model and %s DTW", async (dtwModel) => {
 		const fs = await import("node:fs/promises");
 		const { spawn } = await import("node:child_process");
 		const dir = await mkdtemp(path.join(tmpdir(), "whisper-spawn-"));
@@ -524,10 +527,13 @@ describe("WhisperServerManager", () => {
 				const mgr = new WhisperServerManager();
 				await mgr.start({
 					modelPath,
+					dtwModel,
 					binaryPath: fakeBinaryPath,
 					backend: "whispercpp-cpu",
 				});
 				const args = vi.mocked(spawn).mock.calls[0]?.[1] as string[];
+				expect(args).toContain("--dtw-model");
+				expect(args[args.indexOf("--dtw-model") + 1]).toBe(dtwModel);
 				const modelIdx = args.indexOf("--model");
 				expect(modelIdx).toBeGreaterThan(-1);
 				expect(args[modelIdx + 1]).toBe(modelPath);

@@ -6,6 +6,7 @@ import {
 	alignerPath,
 	cachedAligner,
 	ensureAligner,
+	ensureBundledModels,
 	ensureModels,
 	modelPaths,
 } from "./modelManager";
@@ -93,16 +94,23 @@ export interface SttManagerInitOptions {
 	statusSink?: (event: SttStatusEvent) => void;
 	/** Override the models cache directory; defaults to `app.getPath("userData") + "/stt-models"`. */
 	modelsBaseDir?: string;
+	/** Offline Showhow jobs use only verified bundled base and VAD. */
+	bundledModelsDir?: string;
 }
+
+// Includes independent Showhow jobs, not just the editor IPC singleton.
+const activeManagers = new Set<SttManager>();
 
 export class SttManager {
 	private readonly server = new WhisperServerManager();
 	private shuttingDown = false;
+	private shutdownPromise: Promise<void> | null = null;
 	private modelsBaseDir: string | null = null;
 	private readonly statusSinks = new Set<(event: SttStatusEvent) => void>();
 	private initPromise: Promise<void> | null = null;
 	/** Kept from `prepare()` so a chunk retry can respawn a helper that died mid-run. */
 	private modelPath: string | null = null;
+	private bundledModelsDir: string | null = null;
 	private vadModelPath: string | null = null;
 	/**
 	 * Bumped by `cancel()`. The chunk loop compares it against the value it
@@ -212,9 +220,11 @@ export class SttManager {
 	 * means the second caller just awaits the same completion.
 	 */
 	init(options: SttManagerInitOptions = {}): Promise<void> {
-		if (this.shuttingDown) return Promise.reject(cancelledError());
+		if (this.shuttingDown || sttShuttingDown) return Promise.reject(cancelledError());
+		activeManagers.add(this);
 		if (options.statusSink) this.addStatusSink(options.statusSink);
 		if (options.modelsBaseDir) this.modelsBaseDir = options.modelsBaseDir;
+		if (options.bundledModelsDir) this.bundledModelsDir = options.bundledModelsDir;
 		if (!this.initPromise) {
 			// A REJECTED init must not be cached. `prepare()` downloads a 264 MB
 			// model on first run, and caching its rejection meant one dropped
@@ -239,28 +249,33 @@ export class SttManager {
 	}
 
 	private async prepare(): Promise<void> {
-		const modelsDir = this.getModelsDir();
+		const modelsDir = this.bundledModelsDir ?? this.getModelsDir();
 		this.emit({ phase: "model", model: "whisper", downloadedBytes: 0, totalBytes: 0 });
-		await ensureModels({
-			baseDir: modelsDir,
-			onProgress: (event) => {
-				this.emit({
-					phase: "model",
-					model: event.id,
-					downloadedBytes: event.downloadedBytes,
-					totalBytes: event.totalBytes,
-				});
-			},
-		});
+		const bundledPaths = this.bundledModelsDir
+			? await ensureBundledModels(this.bundledModelsDir)
+			: null;
+		if (!bundledPaths)
+			await ensureModels({
+				baseDir: modelsDir,
+				onProgress: (event) => {
+					this.emit({
+						phase: "model",
+						model: event.id,
+						downloadedBytes: event.downloadedBytes,
+						totalBytes: event.totalBytes,
+					});
+				},
+			});
 		if (this.shuttingDown) throw cancelledError();
 
-		const paths = modelPaths(modelsDir);
+		const paths = bundledPaths ?? modelPaths(modelsDir);
 		this.modelPath = paths.whisper;
 		this.vadModelPath = paths["silero-vad"];
 		try {
 			await this.server.start({
 				modelPath: paths.whisper,
 				vadModelPath: paths["silero-vad"],
+				...(this.bundledModelsDir ? { dtwModel: "base" as const } : {}),
 			});
 		} catch (error) {
 			if (this.shuttingDown) throw cancelledError();
@@ -296,14 +311,22 @@ export class SttManager {
 		for (let attempt = 1; attempt <= CHUNK_ATTEMPTS; attempt++) {
 			if (this.shuttingDown) throw cancelledError();
 			try {
-				return await this.server.transcribe({ samples, language, alignerFor: this.alignerFor });
+				return await this.server.transcribe({
+					samples,
+					language,
+					alignerFor: this.bundledModelsDir ? undefined : this.alignerFor,
+				});
 			} catch (error) {
 				lastError = error;
 				if (this.shuttingDown) throw cancelledError();
 				if (attempt === CHUNK_ATTEMPTS) break;
 				if (this.modelPath) {
 					await this.server
-						.start({ modelPath: this.modelPath, vadModelPath: this.vadModelPath })
+						.start({
+							modelPath: this.modelPath,
+							vadModelPath: this.vadModelPath,
+							...(this.bundledModelsDir ? { dtwModel: "base" as const } : {}),
+						})
 						.catch(() => undefined);
 				}
 				if (this.shuttingDown) throw cancelledError();
@@ -341,6 +364,7 @@ export class SttManager {
 		// the caller already reports "extracting-audio" around this call, and the work
 		// simply moved to the other side of the IPC.
 		const samples = req.samples ?? (await this.extract(req));
+		if (samples.length === 0) throw new Error("Cannot transcribe zero-length audio");
 		const totalSec = samples.length / SAMPLE_RATE;
 		const chunks = planChunks(samples, SAMPLE_RATE);
 		this.emit({ phase: "transcribe", completedSec: 0, totalSec });
@@ -496,11 +520,14 @@ export class SttManager {
 	}
 
 	/** Best-effort shutdown; safe to call from `before-quit` hooks. */
-	async shutdown(): Promise<void> {
-		if (this.shuttingDown) return;
+	shutdown(): Promise<void> {
+		if (this.shutdownPromise) return this.shutdownPromise;
 		this.shuttingDown = true;
 		this.cancel();
-		await this.server.shutdown();
+		this.shutdownPromise = Promise.resolve()
+			.then(() => this.server.shutdown())
+			.finally(() => activeManagers.delete(this));
+		return this.shutdownPromise;
 	}
 }
 
@@ -515,15 +542,14 @@ export function getSttManager(): SttManager {
 }
 
 /**
- * Stop and release the lazy singleton without creating one just to quit.
+ * Stop all active managers, including bundled jobs, without creating one to quit.
  *
  * Electron's GUI lifecycle awaits this from a guarded `before-quit` handler;
  * clearing the slot first also makes repeated quit events idempotent.
  */
 export async function shutdownStt(): Promise<void> {
 	sttShuttingDown = true;
-	const manager = singleton;
-	await manager?.shutdown();
+	await Promise.all([...activeManagers].map((manager) => manager.shutdown()));
 	singleton = null;
 }
 
@@ -531,6 +557,7 @@ export async function shutdownStt(): Promise<void> {
 export function _resetSttManagerForTests(): void {
 	singleton = null;
 	sttShuttingDown = false;
+	activeManagers.clear();
 }
 
 /**

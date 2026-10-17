@@ -69,6 +69,37 @@ const VAD_REPO = "ggml-org/whisper-vad";
 const VAD_FILE = "ggml-silero-v6.2.0.bin";
 const VAD_REVISION = "9ffd54a1e1ee413ddf265af9913beaf518d1639b";
 
+/** Build-time inputs; bundle jobs verify these locally and never download replacements. */
+export const BUNDLED_STT_FILES: Record<SttModelId, SttModelFile> = {
+	whisper: {
+		name: "ggml-base-q5_1.bin",
+		url: `${MODEL_BASE}/${MODEL_REPO}/resolve/${MODEL_REVISION}/ggml-base-q5_1.bin`,
+		expectedSha256: "422f1ae452ade6f30a004d7e5c6a43195e4433bc370bf23fac9cc591f01a8898",
+		approximateBytes: 59_707_625,
+	},
+	"silero-vad": {
+		name: VAD_FILE,
+		url: `${MODEL_BASE}/${VAD_REPO}/resolve/${VAD_REVISION}/${VAD_FILE}`,
+		expectedSha256: "2aa269b785eeb53a82983a20501ddf7c1d9c48e33ab63a41391ac6c9f7fb6987",
+		approximateBytes: 885_098,
+	},
+};
+
+/** Resolve only after every bundled artifact passes its pinned digest. Missing/corrupt fails offline. */
+export async function ensureBundledModels(directory: string): Promise<Record<SttModelId, string>> {
+	const paths = { whisper: "", "silero-vad": "" };
+	for (const id of ["whisper", "silero-vad"] as const) {
+		const file = BUNDLED_STT_FILES[id];
+		const target = path.join(directory, file.name);
+		const digest = await sha256OfFile(target);
+		if (digest !== file.expectedSha256) {
+			throw new Error(`Bundled ${id} SHA-256 mismatch: ${target}`);
+		}
+		paths[id] = target;
+	}
+	return paths;
+}
+
 export const STT_MODELS: Record<SttModelId, SttModelDescriptor> = {
 	whisper: {
 		cacheDir: "whisper-ggml",
