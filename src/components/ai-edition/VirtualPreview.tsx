@@ -442,7 +442,7 @@ interface VirtualPreviewProps {
 	zoomRegions?: AxcutZoomRegion[];
 	speedRegions?: SpeedRegion[];
 	trimRanges?: AxcutTrimRange[];
-	seekTarget?: { timeSec: number; isSource?: boolean; requestId: number } | null;
+	seekTarget?: { timeSec: number; isSource?: boolean; requestId: number; play?: boolean } | null;
 	onTimeChange?: (timeSec: number) => void;
 	onLoadedMetadata?: (
 		durationSec: number,
@@ -1428,8 +1428,8 @@ export function VirtualPreview({
 			// and the cross-asset resume never fired at all. The rAF now calls through
 			// `seekToVirtualTimeRef`, so the closure itself is fresh — see its declaration.)
 			//
-			// `forceResume` bypasses that live check for the ONE caller where it's
-			// actively wrong: the `<video>` `ended` handler. The browser sets
+			// `forceResume` also carries explicit terminal-replay intent from the shell.
+			// It bypasses the live check for the `<video>` `ended` handler: The browser sets
 			// `.paused = true` synchronously before firing `ended`, so by the time
 			// that handler runs and calls us, `!videoRef.current?.paused` is always
 			// false — even though playback was genuinely still going and should
@@ -1619,7 +1619,7 @@ export function VirtualPreview({
 		if (seekTarget.isSource) {
 			seekToSourceTimeRef.current(seekTarget.timeSec);
 		} else {
-			seekToVirtualTimeRef.current?.(seekTarget.timeSec);
+			seekToVirtualTimeRef.current?.(seekTarget.timeSec, seekTarget.play, seekTarget.play);
 		}
 	}, [seekTarget]);
 

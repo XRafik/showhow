@@ -52,6 +52,7 @@ import {
 	trimAppliesToClip,
 	ventilateTimelineSpanToTrims,
 } from "@/lib/ai-edition/timeline/trim-mapping";
+import { getRawVirtualStartTime } from "@/lib/ai-edition/timeline/virtual-preview";
 import { firstTimelineBusyView } from "@/lib/ai-edition/transcription/status";
 import { matchesShortcut } from "@/lib/shortcuts";
 import { nativeBridgeClient } from "@/native";
@@ -83,6 +84,7 @@ interface SeekTarget {
 	timeSec: number;
 	isSource?: boolean;
 	requestId: number;
+	play?: boolean;
 }
 
 /**
@@ -522,9 +524,9 @@ export function NewEditorShell() {
 	);
 
 	const handleSeek = useCallback(
-		(timeSec: number) => {
+		(timeSec: number, play = false) => {
 			setCurrentTime(timeSec);
-			setSeekTarget({ timeSec, isSource: false, requestId: ++seekSeqRef.current });
+			setSeekTarget({ timeSec, isSource: false, requestId: ++seekSeqRef.current, play });
 		},
 		[setCurrentTime],
 	);
@@ -620,6 +622,15 @@ export function NewEditorShell() {
 	const togglePlay = useCallback(() => {
 		if (!videoElement) return;
 		if (videoElement.paused) {
+			if (clips.length > 0) {
+				const first = visibleClips[0];
+				if (!first) return;
+				const end = clips.reduce((max, clip) => Math.max(max, clip.timelineEndSec), 0);
+				if (useProjectStore.getState().currentTimeSec >= end) {
+					handleSeek(getRawVirtualStartTime(first, clips), true);
+					return;
+				}
+			}
 			// Same catch as VirtualPreview's: `play()` rejects on the autoplay policy
 			// or when a new load interrupts it, and the store's `playing` flag is
 			// driven by the element's own play/pause listeners above — so a rejection
@@ -630,7 +641,7 @@ export function NewEditorShell() {
 		} else {
 			videoElement.pause();
 		}
-	}, [videoElement]);
+	}, [videoElement, clips, visibleClips, handleSeek]);
 
 	// "Transcribe now" from the transcript pane. The run itself belongs to the
 	// transcription store (it owns the queue, the toasts and the failure

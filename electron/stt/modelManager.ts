@@ -381,14 +381,26 @@ async function ensureFile(
 			arm(!waiting),
 		);
 		let downloaded = 0;
+		let lastProgressAt = Number.NEGATIVE_INFINITY;
+		let lastProgressBytes = 0;
+		const reportProgress = (finished = false) => {
+			if (!options.onProgress || downloaded === lastProgressBytes) return;
+			const now = performance.now();
+			// Each notification becomes an IPC event and a renderer store update.
+			if (!finished && now - lastProgressAt < 100) return;
+			lastProgressAt = now;
+			lastProgressBytes = downloaded;
+			options.onProgress(downloaded);
+		};
 		const source = Readable.fromWeb(res.body as never);
 		source.on("data", (chunk: Buffer | Uint8Array) => {
 			arm();
 			downloaded += chunk.length;
-			options.onProgress?.(downloaded);
+			reportProgress();
 		});
 		const { createWriteStream } = await import("node:fs");
 		await pipeline(source, createWriteStream(tmp), { signal: controller.signal });
+		reportProgress(true);
 	} catch (error) {
 		await rm(tmp, { force: true }).catch(() => undefined);
 		throw controller.signal.aborted ? (controller.signal.reason ?? error) : error;
