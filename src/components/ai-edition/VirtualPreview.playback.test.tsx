@@ -717,3 +717,29 @@ describe("VirtualPreview primary audio keeps to the picture", () => {
 		expect(world.audioEl.playbackRate).toBe(1);
 	});
 });
+
+it("lets a newer manual seek cancel restart intent while the target asset loads", () => {
+	const sources: VideoSource[] = [
+		{ id: "a1", src: "file:///tmp/a1.mp4", label: "a1" },
+		{ id: "b1", src: "file:///tmp/b1.mp4", label: "b1" },
+	];
+	const clips = [clip("first", "a1", 0, 10, 0), clip("last", "b1", 0, 10, 10)];
+	const tree = (seekTarget: { timeSec: number; requestId: number; play?: boolean } | null) => (
+		<VirtualPreview videoSources={sources} clips={clips} seekTarget={seekTarget} />
+	);
+	const view = render(tree(null));
+	const first = view.container.querySelector("video");
+	if (!first) throw new Error("no first video");
+	driveVideo(first);
+	act(() => fireEvent.loadedMetadata(first));
+	view.rerender(tree({ timeSec: 10, requestId: 1, play: true }));
+	const target = view.container.querySelector("video");
+	if (!target) throw new Error("no target video");
+	expect(target).not.toBe(first);
+	driveVideo(target);
+	view.rerender(tree({ timeSec: 17, requestId: 2 }));
+	act(() => fireEvent.loadedMetadata(target));
+	expect(target.currentTime).toBe(7);
+	expect(target.play).not.toHaveBeenCalled();
+	expect(target.paused).toBe(true);
+});

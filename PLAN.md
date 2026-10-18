@@ -678,3 +678,138 @@ Scan of requirements and DONE WHEN for `every`, `all`, `any` and `valid`: no occ
 
 ## Implementation notes
 Append each deviation from this plan to `implementation-notes.md` under "Deviations": what changed, why and what was done instead. Commit it with the ticket. Path-scope checks treat it as an owned path.
+
+
+# Showhow fresh-recording playback Plan
+
+## Goal
+Determine whether #125 still occurs on current Showhow, and repair only a reproduced fresh-recording playback failure.
+
+## Context and decisions
+Owner approved bounded non-priority diagnosis and conditional repair on 2026-10-18 in this session. #125 reports one dev-only observation, not established causation. #117 removed @xenova/transformers and its renderer transcription worker. Historical #118 packaged editor/export proof is supporting context, not fresh-recording playback acceptance. #128 remains parked.
+
+## Bounded requirements
+R1: Observe six short synthetic own-window takes on macOS arm64: two clean-cache dev runs in separate fresh checkout-local Vite caches, two warm-cache dev takes, and two explicit packaged-app takes. Use isolated runtime profiles and recording roots; do not change the shared dependency cache or personal profile.
+R2: For each take, record source/build binding, media metadata and independent full decode, renderer reload events, Play action, timeline advancement of at least one second and visibly changing synthetic frames. Distinguish setup errors, non-reproduction and symptom RED. Report attempted/completed counts and reproduction frequency. Capture cache/build/tool conditions and cleanup receipts.
+R3: If reproduced, minimise the observed failure and capture meaningful RED before the smallest source fix. Add a same-package regression test at the seam that exercises the actual failing call pattern; if no correct seam exists, report that limitation before proposing a substitute. Re-run the original failing scenario and affected suites after repair.
+R4: If the six takes do not reproduce, preserve evidence and report non-reproduction without claiming historical causation or a fix. Do not close the issue automatically. Native identity refusal or unavailable prerequisites stops that path with retained receipts.
+R5: Preserve recording saves during transcript failures, personal media, landing design files, parked128, failed evidence and credentials. No native permission changes, auth changes, release, tag or merge.
+
+## Architecture
+Keep the recorder/editor architecture. Use existing isolated-launch and verification-recipe helpers for their supported boundaries. An export success alone is not playback proof. External evidence belongs in ~/dev/loop-evidence/showhow-125/. Put scratch-only reproduction drivers and synthetic media under that root; capture their hashes. No new persistent runtime or controller.
+
+### Task 1: Diagnose and conditionally repair fresh-recording playback — #125
+**Priority:** no, owner approved 2026-10-18.
+**Labels:** bug.
+**Milestone:** none.
+**Depends on:** none; base is current origin/main containing merged117/118/133.
+**Files:** PLAN.md (append this section), implementation-notes.md; conditional source/test ownership limited to vite.config.ts, src/components/ai-edition/Preview.tsx, src/components/ai-edition/Preview.test.tsx, src/components/ai-edition/VirtualPreview.tsx, src/components/ai-edition/VirtualPreview.playback.test.tsx, src/native/useNativePlaybackSync.ts, src/native/useNativePlaybackSync.test.ts, electron/native-bridge/services/compositorViewService.ts, electron/native-bridge/services/compositorViewService.test.ts. A demonstrated cause outside these paths returns a proposed scope amendment before edits. Do not edit unrelated owned paths merely because they are listed.
+**Requirements:** R1–R5 above.
+**Interfaces:** fresh recording save/open, renderer playback controls and native compositor transport; no persistence or IPC contract change without a scope amendment.
+**Constraints and reasons:** preserve the inherited recorder/editor and valid saved media; no obsolete transformers pre-bundling fix. One ticket lane and one review-ready PR, fresh independent native review. No Greptile.
+
+- [ ] Capture actual symptom RED or complete the bounded non-reproduction matrix.
+- [ ] If RED exists, write the regression check first and implement the smallest justified repair.
+- [ ] Prove current candidate, retain failures, obtain fresh Standards and Requirements review.
+- [ ] Open one review-ready PR; report its exact head and proof limits. No merge.
+
+**Verification:** Follow docs/testing/verification-recipe.md for isolation and native export checks when a repair affects editor/export. For relevant changed source, run focused same-package Vitest cases, affected full suites, npm run test, npm run test:browser when rendering changes, npx tsc --noEmit, npx tsc --noEmit -p tsconfig.test.json, npm run lint and npm run branding:check. Run npm run i18n:check only if translation surface changes under an approved amendment. Use existing heavy-resource scheduling. No broad test reruns for evidence-only documentation. Native matrix explicitly requires actual playback advancement; no substitute based on ffprobe or export alone.
+**DONE WHEN:** Six playback attempts have individual outcomes and evidence, with actual completed counts stated; a reproduced failure is repaired and rechecked or a precise reproduction/prerequisite limitation is reported. A claimed repair requires meaningful RED/GREEN and original-scenario recheck. Non-reproduction produces a diagnosis report, not automatic closure. Source changes require fresh separate Standards/Requirements PASS and relevant checks before one PR.
+**Outside cases / follow-ups:** Windows/Linux/macOS13 hardware acceptance, #124/#127 fixes, #128 auth/provider changes, STT setup improvements unrelated to playback, release readiness and historical cause reconstruction.
+
+## Superseded issues
+None. #125 remains the existing ticket.
+
+## Self-review
+Acceptance is bounded to six synthetic macOS arm64 takes. No unlimited every/all/any/valid promises in DONE WHEN; media preservation is bounded to this task and existing recordings. Review and CI do not replace native playback evidence.
+
+## Implementation notes
+Append deviations to implementation-notes.md with cause, observed evidence and chosen action. Preserve failed receipts. After two failed probes under one premise, reassess and change the probe; no automatic extra review cycle.
+
+
+## Showhow #125 approved interaction amendment — 2026-10-18
+
+Owner approval: `/Users/mohamedb/dev/loop-evidence/showhow-125/AMENDMENT-APPROVED.json` (Yes i approve all). The following bounded amendment from the retained STOP.md is approved:
+
+Add src/components/ai-edition/PreviewCanvas.tsx and src/components/ai-edition/PreviewCanvas.playback.test.tsx to conditional ownership solely to investigate the real PreviewCanvas→VirtualPreview→shell transport interaction for first Play/replay and source replacement. First build one integration regression that exercises the actual callback/event pattern and demonstrates the observed desync; if it cannot reproduce the native symptom, retain that result and do not treat callback churn alone as causal RED. Repair only after cause/seam proof; then repeat the original isolated failing native scenario and applicable suites before fresh native Review and the same single ticket PR. Any required NewEditorShell or other path change returns for a further exact amendment rather than an opportunistic edit. No additional broad native matrix or unrelated STT/annotation fix is approved by this proposal.
+
+
+The approved diagnostic limit is at most two new cold synthetic takes, with the exact-editor read-only CDP observer attached before first Play, initial/replay comparison and workload observations. Lead owns native CUA and launches; no repeat of the six-take matrix. All original source ownership and R1–R5 remain in force. No other source paths, permissions/auth, personal media, releases, merge, commit or push are authorised to executor. If this bounded interaction work supplies no discriminating failure, retain the evidence and return a precise stop.
+
+
+## Showhow #125 autonomous round 1 — recorded authority
+
+The latest owner authority supersedes historical parking/exhaustion wording above. The lead recorded the following decision before scratch instrumentation; no causal repair is yet selected:
+
+# Active autonomous resumption — 2026-10-18
+
+Owner latest instruction supersedes parking and exhausted narrow scope: resolve125 in same lane, meaningful RED/GREEN, original native recheck, fresh one-shot independent review, one PR; agents never merge. Lead may select further bounded diagnostics and expand source/test ownership when observations justify seam, recording before edits. No speculative repair, credentials/env/private recordings, permission/auth/release work. Prior evidence/failures and dirty candidate preserved; failed-review count0. Native identity refusal remains hard stop. Current lane PASS in RESUME-AUTONOMOUS-LANE.stdout, HEAD e54cc63e, no PR, issue OPEN/bug. Coordinator owns board; owner states125 active, latest board not independently observed by lead.
+
+Round1 decision before edits: repair observer first, at most2 isolated cold fresh-recording diagnostic runs (j/k), plus same-take replay within each. No six-matrix repeat. Observe media/store/native clocks, view lifecycle and transport command/frame-delivery metadata before first CUA Play; samples synchronous with no dynamic imports or forced transport. Need actual canvas/frame divergence, source media independent decode, timestamped owned workload. If two probes fail same premise, reassess predictions and change seam. Scratch instrumentation permitted only in external cloned source with tagged DEBUG-125 boundaries, reviewed patch/hash, no production repair. Production ownership expansions remain conditional on observed failing seam. Executor initially read-only proposal; lead native CUA.
+
+Round1 uses scratch-only Vite transforms from autonomous/observer-plugin.mjs and lead frozen j/k driver/sampler bindings; original external source is immutable. No dynamic imports/native awaits in the synchronous sampler. All production ownership remains conditional on an observed failing seam and a recorded lead scope decision before edits. No extra owner chat approval is required for evidence-justified ownership under this authority; native identity/review/no-merge and privacy restrictions remain.
+
+
+## Showhow #125 scope decision002 — observed early end replay
+
+# Scope decision002 before source edits — real end replay boundary
+
+Owner autonomous authority AUTHORITY.md. Native runj: atclipend media13.212847/13.243333 pausedtrue endedfalse; projectplayhead13.243333. Current CUA Play button click changes storetrue→false within10ms, native true seq2912 thenfalse2913+presentTimeend2914; screenshot02-end-replay.png remains13.2/counter135. Focused Enter confirmation also shows no restart; direct synchronous metadata trace retained. This is actual interaction RED at the early virtual clip-end boundary, not callback churn, fixture failure or a claimed cause of originalf freeze.
+
+Expand conditional source/test ownership to src/components/ai-edition/NewEditorShell.tsx solely for its shared togglePlay restart/seek coordination, plus same-package test PreviewCanvas.playback.test.tsx alreadyowned and VirtualPreview playback surfaces alreadyowned. Read all callers and existing handleSeek path first. First add a regression exercising actual shell+VirtualPreview early clip-stop, currentTime belowphysicalduration, endedfalse, real productionrAF/pause, then actualPlay plusrAF; mockmustnotrewindtime or setstoreplaying onPlay. Observe RED against unchangedproduction before anyrepair. Prefer reuseexistingseekTarget and actualstartclip/source mapping; preserve normalpausedmidclip behavior and multiclips/trims/crossasset boundary. Exact correction chosenonlyafterRED, appenddecision beforeedit.
+
+This reproduced restart defect belongs to fresh-recordingplayback diagnosis, but doesnotclearoriginalf first-playfreeze. Continue original scenario instrumentedfirstPlay k afterward; no closure/readinessclaim until requirement/evidence accounted. No unrelated shell/UIbehavior, auth/permissions/persistence change. No speculative fallback or native transport patch. Failedreviews0.
+
+
+
+## Showhow #125 repair decision003 — confirmed end replay
+
+# Repair decision003 before production edits — confirmed end restart
+
+Native jtrace + source end-replay-red-01 exit1 reach intended paused/playing assertion on actual shell/preview/rAF; originalinteractionteststillpasses. Test recreates observed13.212847 media versus13.243333 virtualend with endedfalse, thenPlay doesnotresume. No mockrewind or storeplayingwrite. REDchecked beforeproductionedits. This authorises minimal endrestartrepair only; it isnotcause/fixfororiginalf frozenframe.
+
+Chosen bounded repair: in shared NewEditorShell togglePlay, terminaltimelineposition requests first kept playable segment through existing seekTarget path with explicit internal play intent, then returns instead of playing old endelement. Existing VirtualPreview seek/pending-source path performs mapped seek/resume oncorrectelement (incl leadingtrim/crossasset). Add optionalplayintent to existing typedseekTarget surface through Preview/PreviewCanvas/VirtualPreview; no new persistence/IPC/publicfeature. Reuse existing resolvePlaybackSegments/getRawVirtualStartTime or equivalent currenthelpers rather than inventedmapping. Preserve midclipresume, manualseek/latestintent, emptyplayablesegment handling, naturalmulticlipadvance and playrejection handling. No other productpath.
+
+Owned source additions NewEditorShell.tsx alreadydecision002; Preview.tsx/PreviewCanvas.tsx/VirtualPreview.tsx and correspondingplaybacktests alreadyoriginal/amended ownership. Evidencefullyjustifies this seam. Executor mayimplementnow and addedgechecks but no heavytests while leadnativek runs. Leadwillrecheckthisactualnativeendreplay and originalfreshfirstPlay afterward with candidatebinding; broaderrequiredchecks/freshreview stillneeded. Continue investigateoriginalfreeze separately.
+
+
+## Showhow #125 scope decision004 — shared model progress emitter
+
+# Scope decision004 before new source/test edits: bound model progress at its shared emitter
+
+Authority: owner autonomous evidence-justified source/test expansion. Passive native p reproduces frozen paint while store/media advance (ROUND7-SYMPTOM.json): gen31/source0.27s held during2.504→5.924s; gen87/source2.562s held during6.030→9.047s. Independent screenshots corroborate counter6 at4.5s andcounter29 at9.0s. No profiler/Debugger or externalhighfrequencyCDP duringPlay. Stableview2/liveelement1.
+
+The same run processed14,876 transcription updates/14,875 changed scalar snapshots by70.596s. Retained loading-model history advances16KiB per event about4ms apart. Source chain: modelManager.ensureFile every stream data→EnsureModels onProgress→LocalSttService.prepare emit→stt status IPC→transcribeAsset onStatus→patchJob→NewEditorShell subscription. Earlier n CPU profile shows23.59/28.55s Reactsync work; o accepted scheduler caller includes patchJob. Together this justifies shared download progress delivery as the next causal seam; callbackchurn alone remains unproven and untouched.
+
+Expand owned product paths ONLY to electron/stt/modelManager.ts and electron/stt/modelManager.test.ts, plus existing PLAN/implementation-notes. Read all ensureFile/ensureModels callers before edits. Tests first against unchanged emitter: real stream many16KiB chunks, controlled monotonic clock, assert bounded intermediate delivery instead of oneeventperchunk, first progress and exact final byte count retained, correct bytes/hash/install outcome, no delayed event after termination. Observe intended RED before repair. Existing download rejection, retry, cancellation/stall/checksum/preservation tests remain applicable. No network in regression.
+
+Proposed smallest repair after correct RED: bound notifications in existing shared ensureFile progress path to100ms intervals, immediate first and exact final bytes (avoid duplicate final); keep per-byte accounting and stall liveness unchanged; no timer queue/new dependency/config. Preserve atomicwrite/hash/failure/cancellation semantics. Choose final implementation only after testRED and record if direction changes. Do not alter transcription behavior/model choice/download URLs/native transport or optimise unrelated Tooltip/callbacks.
+
+Proof plan: focused RED/GREEN andaffected STTsuites; baseline p versus repaired same-original-f cold fixture underpassiveobserver, plus original freshrecording session recheck onexactcandidate andnative end-replay check. Source model-progress regression is separate from actual native frozen-paint RED/after, not a substitute. A later passing native take alone willnotclaimoriginalcausefixed; candidate binding, progress reduction, actualtimeline/media/paint alignment andscreenshots must agree. Then all applicable source checks/fresh independentone-shotreview/onePR. No merge/closure. Failedreviews0. PreserveallpreviousSTOP/amendment/raw/failures; no env/credentials/private media/permissions/auth/releases.
+
+
+## Showhow #125 scope decision005 — controlled native progress comparison
+
+# Native causal comparison decision before scratch edits
+
+Scope004 source RED observed201 notifications over804ms; GREEN cap pendingaffected checks. Passive p alreadyprovides actual frozen-paint/advancing-time nativeRED plus14,876modelprogressupdates. Original actualfresh f runtimealso retains264,464,607-byte small model and885,098-byteVAD inits initiallyprivateempty modelcache, consistentwithfirst-run download andwarm-pass contrast. Do notclaimhistoricalcausefromcorrelationalone.
+
+For causal native comparison, make identical bounded inputdelivery across one baseline fixture q0 andone repaired fixture q1: original-f clonedmedia, fresh isolated profiles/caches, passive6moduleobserver, actualCUAPlay. A scratch-only main bootstrap fetch fixture interceptsONLYtwo exact immutable publicSTTmodelURLs andstreams hash-verified own p downloadedmodelbytes in16KiB chunks with2msdelay. Samebytes/order/cadence beforeandafter, no externalnetworkforthesefiles, no productstate/UI/transportchanges, no credentials. Delegateallotherfetch tooriginal. Log fixturestart/end/chunkcount/bytesandactualduration; preservemodeloriginalhashes. This controlsavailabilitywithoutanothernetworkdownload/capture. It intentionally substitutes modelinputdelivery, so labelpairedcontrolledfixtureNativeUIevidence, notunmodifiedfresh-recordingacceptance.
+
+Recordmodule/driver/hash/sourcebindingsbeforelaunch; selfcheckstreambytes/cancel/containment/exactURLscope. Ifbaselinefails toshowfrozen/time divergence, preserveanddon'tcallitnativeRED; p remainsactualobservedRED. Candidateaftermustshowboundednotificationsandactualnativeframe/timeadvancementwhilemodeldownloadactive, notmerelylaterplayafterdownload. NoDebugger/gate/GPUreadbacks duringPlay. Reassessaftertwofailedprobesunderthispremise.
+
+Afterpairedfixtureevidence, original fresh recording scenario recheck onexactcandidate withproductionnetwork/modelinput, plusnativeendreplay andapplicableexport/packageproof. Theseareseparateprooftracks. Neverclaimpassingmockorone laternative takefixesoriginal. Currentcandidateincludesindependentlyprovedendreplayrepair; itdoesnotchangefirstPlaybeforeterminalboundary. Preservebaseline source andallfailedreceipts. No newlane/matrix, permission/auth/release/tag/merge/issueclosure.
+
+
+### #125 final approved execution scope and proof
+
+Owner autonomous authority superseded prior parking and exhausted narrow amendment. Recorded scope decisions002/003/004/005 preceded edits. Final ownership is the existing shell/preview playback surfaces, modelManager and same-package regressions, plus these plan/notes. The original approved plan above remains preserved verbatim. Final outcomes and proof limits are recorded in implementation-notes.md under “#125 final candidate and acceptance”; fresh review and one PR are required, never agent merge or automatic issue closure.
+
+
+## Scope007 — hosted progress-test timeout repair (2026-10-18)
+
+Authority: external `autonomous/SCOPE-007-CI-TEST-DIAGNOSIS.md`. Ownership is limited to `electron/stt/modelManager.test.ts`, this plan and implementation notes. Preserve runtime/native/package evidence, PR150, previous reviews and hosted failure receipts. No timeout, configuration or production change.
+
+The scratch phase probe measured generic deep equality of the 3,293,184-byte Buffer at 3,678.2 ms, versus about 39.4 ms for download/hash/install and 1.2 ms for timer draining. The decision was recorded before edits in `autonomous/ci-test-diagnosis/FINDINGS-AND-REPAIR-DECISION.md`: use native `Buffer.equals` for exact byte equality. Retain the 201 × 16 KiB real stream, controlled monotonic clock, expected digest, atomic install, first/final bytes, notification rate/spacing and no queued callbacks.
+
+Validation complete: revised case fails with the original emitter (201 notifications versus ≤11), passes with the repaired emitter; focused 21 tests and affected 230 tests pass; test TypeScript and Biome exit0. Full unit rerun passes 356 files / 4,632 tests with two baseline skips and the same single environment-template exclusion. The first full run's missing public scratch fixtures and its failure are retained separately. Production five and other two playback-test hashes are unchanged. Lead owns fresh review and the same-PR update; executor does not stage, commit or push.

@@ -3,7 +3,7 @@ import { existsSync } from "node:fs";
 import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	alignerPath,
 	areModelsPresent,
@@ -234,6 +234,57 @@ describe("modelManager", () => {
 			expect(progressCalls.length).toBeGreaterThanOrEqual(1);
 			expect(progressCalls[0].file).toBe("ggml-small-q8_0.bin");
 		} finally {
+			STT_MODELS.whisper.files[0].expectedSha256 = originalSha;
+		}
+	});
+
+	it("bounds streamed model progress to 100ms while retaining first/final bytes and verified data", async () => {
+		const chunks = Array.from({ length: 201 }, (_, i) => Buffer.alloc(16_384, i % 251));
+		const content = Buffer.concat(chunks);
+		const originalSha = STT_MODELS.whisper.files[0].expectedSha256;
+		STT_MODELS.whisper.files[0].expectedSha256 = createHash("sha256").update(content).digest("hex");
+		let now = 0;
+		const clock = vi.spyOn(performance, "now").mockImplementation(() => now);
+		vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+		const progress: Array<{ at: number; bytes: number }> = [];
+		let next = 0;
+		const fetcher: typeof fetch = async () =>
+			new Response(
+				new ReadableStream<Uint8Array>({
+					pull(controller) {
+						if (next === chunks.length) {
+							controller.close();
+							return;
+						}
+						now += 4;
+						controller.enqueue(chunks[next++]);
+					},
+				}),
+			);
+		try {
+			await ensureModels({
+				baseDir: dir,
+				only: ["whisper"],
+				fetcher,
+				onProgress: ({ downloadedBytes }) => progress.push({ at: now, bytes: downloadedBytes }),
+			});
+			expect((await readFile(modelPaths(dir).whisper)).equals(content)).toBe(true);
+			expect(existsSync(`${modelPaths(dir).whisper}.partial`)).toBe(false);
+			expect(progress[0].bytes).toBe(chunks[0].length);
+			expect(progress.at(-1)?.bytes).toBe(content.length);
+			expect(new Set(progress.map((event) => event.bytes)).size).toBe(progress.length);
+			// A 16KiB network packet is not a renderer update: bound intermediate delivery.
+			expect(progress.length).toBeLessThanOrEqual(Math.ceil(now / 100) + 2);
+			for (let i = 1; i < progress.length - 1; i++) {
+				expect(progress[i].at - progress[i - 1].at).toBeGreaterThanOrEqual(100);
+			}
+			const finishedCount = progress.length;
+			expect(vi.getTimerCount()).toBe(0);
+			await vi.runAllTimersAsync();
+			expect(progress).toHaveLength(finishedCount);
+		} finally {
+			clock.mockRestore();
+			vi.useRealTimers();
 			STT_MODELS.whisper.files[0].expectedSha256 = originalSha;
 		}
 	});
