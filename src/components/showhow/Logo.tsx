@@ -8,16 +8,17 @@ export interface LogoProps extends HTMLAttributes<HTMLDivElement> {
 
 export function Logo({ size = 40, withWordmark = false, className, ...props }: LogoProps) {
 	return (
-		<div className={cn("inline-flex items-center gap-2", className)} {...props}>
+		<div className={cn("inline-flex items-center gap-[14px]", className)} {...props}>
 			<svg
 				aria-label="Showhow"
 				role="img"
+				className="shrink-0 border border-[#2F2F2F] shadow-[4px_4px_0_var(--ds-accent)]"
 				viewBox="0 0 50 50"
 				width={size}
 				height={size}
 				fill="none"
 			>
-				<rect width="50" height="50" rx="6" fill="var(--ds-surface)" />
+				<rect width="50" height="50" rx="0" fill="#FFFCF7" />
 				<rect x="8" y="8" width="37" height="37" fill="#82B09A" />
 				<rect x="6" y="6" width="37" height="37" fill="#2F2F2F" />
 				<path
@@ -36,7 +37,7 @@ export function Logo({ size = 40, withWordmark = false, className, ...props }: L
 				<rect x="35.5" y="11.5" width="3" height="3" fill="#E4572E" />
 			</svg>
 			{withWordmark && (
-				<span className="font-ds-display text-[19px] font-medium tracking-[-0.4px] text-ds-on-panel">
+				<span className="font-ds-display text-[17px] font-semibold tracking-[-0.17px] text-ds-on-panel">
 					Showhow
 				</span>
 			)}

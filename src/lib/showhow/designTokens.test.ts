@@ -14,6 +14,12 @@ function blockFor(selector: string): string {
 }
 
 describe("Showhow design tokens", () => {
+	it("uses the approved orange and sans compatibility aliases", () => {
+		expect(DS_TOKENS["ds-rec"].light).toBe("#E3582D");
+		expect(DS_TOKENS["ds-rec-wash"].light).toBe("#E3582D1F");
+		expect(DS_TOKENS["ds-font-serif"].light).toBe("Inter Tight");
+		expect(css).not.toContain("Instrument Serif");
+	});
 	it("declares every light and dark manifest value in CSS", () => {
 		const light = blockFor(":root");
 		const dark = blockFor('[data-sh-theme="dark"]');

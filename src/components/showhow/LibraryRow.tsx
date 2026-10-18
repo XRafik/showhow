@@ -15,8 +15,8 @@ export function LibraryRow({ title, meta, isNew, selected, onSelect, trailing }:
 		<button
 			type="button"
 			className={cn(
-				"flex w-full flex-col items-stretch gap-[5px] rounded-[6px] p-[10px] text-left",
-				selected ? "bg-ds-accent-tint" : "bg-transparent hover:bg-ds-on-panel-wash",
+				"flex w-full flex-col items-stretch gap-[5px] rounded-[6px] p-[10px] text-left transition-colors [transition-duration:120ms] focus-visible:outline focus-visible:outline-2 focus-visible:outline-ds-accent motion-reduce:transition-none",
+				selected ? "bg-ds-on-panel-wash" : "bg-transparent hover:bg-[#FFFCF70D]",
 			)}
 			aria-current={selected ? "true" : undefined}
 			onClick={onSelect}

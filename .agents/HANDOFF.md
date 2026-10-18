@@ -1,13 +1,15 @@
 # Project handoff
 
-Updated: 2026-10-17
+Updated: 2026-10-18
 
 ## In flight
 
 - **#122 AI guide shipped** (PR #126, merged 2026-10-17 as `500cea16`). Make guide runs an AI pass over the deterministic steps through OpenRouter, with `anthropic/claude-haiku-5.5` as the default model (owner decision 2026-10-17, no bake-off). Plan: "Showhow AI guide Plan" in `PLAN.md`. Evidence: `~/dev/loop-evidence/showhow-122/` (READY.md, PROVE.md, PROVE-CI.md, `live-smoke/run-OKsXUE/`). Lane removed; card Done.
 - **#128 Connect ChatGPT** is published and deferred (`needs-human`, Creating plan/spec). Retain parked lane w6Q; no implementation or auth changes. The installed Codex version lacks the required proven tool/config isolation. Original approved scope remains in: "Showhow Connect ChatGPT Plan" in `PLAN.md`, mock in `design/mocks/2026-10-17-chatgpt-connect/`. It uses the owner's own Codex login (`codex app-server`) for Make guide only. Issue #128 is published. Resume only after owner direction and supported isolation controls.
 - **Move onto upstream v2:** #115 and #116 are done (#116 merged on stable upstream `v2.0.0` via PR #121). #117 is closed: owner merged PR #130 as `371d940d14d7392ae090b9bfc57b2cf311c6de78`; both boards show Done and its clean lane is removed. Evidence: `~/dev/loop-evidence/showhow-117/READY.md`, `PROVE.md` and `SHOWHOW-COORDINATOR-HANDOFF.md`. #118 is closed: owner merged PR #132 as `573d9f2c8fea9855b6f0ab9cdd47aabdb49c8db0`. All four milestone tickets are complete. #118 passed fresh review and all 11 CI checks; its clean lane is removed and evidence remains at `~/dev/loop-evidence/showhow-118/READY.md`. No release tag was created. The authorised handoff index is `/Users/mohamedb/dev/loop-evidence/HANDOFF-INDEX.md`.
-- **Bugs in Todo:** #124 (pressing Stop on the recorder bar becomes a guide step), #125 (a fresh dev-build take would not play in the editor; seen once), #127 (ready-guide view polish: stray "Check what gets sent" link, plain-text Edit/Delete).
+- **#125 Done:** owner merged PR #150 as `27494aa34f2467cc107adfb586db308157ccc372`; issue closed and card Done. Reviewed head `a2873cf`: fresh Standards PASS / Requirements PASS and all 10 CI checks passed. Evidence: `~/dev/loop-evidence/showhow-125/READY.md`. No active #125 source work.
+- **Final designs active:** milestone 13, approved plan and T1–T10 published as #139–#148. #139 shared components/tokens is In progress in `ticket/139-final-design-foundations`, worktree `~/dev/projects/showhow-ticket-139-final-design-foundations`, lane w72 (lead w72:p1). Base `27494aa34f`; source remains current-main based. Evidence: `~/dev/loop-evidence/showhow-139/`. Normal feature/ui review, no Greptile; one PR, agents never merge. Routine bounded scope/review repairs are owner-authorised. #140 follows only after the owner merge of #139 is verified.
+- **Bugs in Todo:** #124 (pressing Stop on the recorder bar becomes a guide step). #127 is closed as superseded by #140; its UI fixes await that ticket.
 
 ### Earlier context (2026-10-16)
 The move onto upstream v2 is shaped and published: milestone "Move onto upstream v2" with #115 → #116 → #117 → #118, all in Ready to implement, none priority. The plan is the "Showhow move onto upstream v2 Plan" section of `PLAN.md`; decisions are in `.agents/decisions.md` (2026-10-16). The design phase is merged (#109). The app size ticket (#110, PR #113) and the Copilot controller retirement (#108, PR #112) shipped on 2026-10-16.
@@ -22,7 +24,7 @@ The move onto upstream v2 is shaped and published: milestone "Move onto upstream
 
 ## Next action
 
-Owner reviews the session close-out documentation PR, then chooses the next product ticket or a separate release-readiness review. Keep #128 parked until supported isolation controls and explicit owner direction permit resuming it; do not create a release tag automatically.
+Lead completes #139 Build, Prove, fresh independent Standards/Requirements review, and one review-ready PR on its ticket branch. Write exact-head proof, PR and current CI to `~/dev/loop-evidence/showhow-139/READY.md`. Owner reviews and merges in GitHub. Coordinator verifies that merge before dispatching #140. Keep #128 parked; do not create a release tag.
 
 ## Open decisions
 

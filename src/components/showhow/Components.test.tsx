@@ -5,10 +5,15 @@ import { describe, expect, it, vi } from "vitest";
 import { Button } from "./Button";
 import { Card } from "./Card";
 import { EmptyState } from "./EmptyState";
+import { Field } from "./Field";
 import { GuideStep } from "./GuideStep";
 import { LibraryRow } from "./LibraryRow";
 import { Logo } from "./Logo";
+import { Progress } from "./Progress";
+import { Sheet } from "./Sheet";
+import { Shell } from "./Shell";
 import { Sidebar } from "./Sidebar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./Tabs";
 import { Tag } from "./Tag";
 import { ShowhowToaster, showhowToast } from "./Toast";
 import { VideoPlayer } from "./VideoPlayer";
@@ -48,14 +53,19 @@ describe("Showhow reusable components", () => {
 	});
 
 	it("renders every Tag status variant", () => {
-		const variants = ["neutral", "chip", "accent", "progress", "alert"] as const;
+		const variants = ["neutral", "chip", "accent", "progress", "alert", "failed"] as const;
 		const { rerender } = render(<Tag variant={variants[0]}>Status</Tag>);
 		for (const [index, variant] of variants.entries()) {
 			rerender(<Tag variant={variant}>Status</Tag>);
 			expect(screen.getByText("Status")).toHaveClass(
-				["bg-ds-on-panel-wash", "bg-ds-chip", "bg-ds-accent", "bg-ds-accent-100", "bg-ds-rec-wash"][
-					index
-				],
+				[
+					"bg-ds-on-panel-wash",
+					"bg-ds-chip",
+					"bg-ds-accent",
+					"bg-ds-accent-tint",
+					"bg-ds-rec-wash",
+					"bg-ds-rec-ink",
+				][index],
 			);
 		}
 	});
@@ -70,7 +80,7 @@ describe("Showhow reusable components", () => {
 		const onSelect = vi.fn();
 		render(<LibraryRow title="Recording" meta="Today" selected isNew onSelect={onSelect} />);
 		const row = screen.getByRole("button", { name: /Recording/ });
-		expect(row).toHaveClass("bg-ds-accent-tint");
+		expect(row).toHaveClass("bg-ds-on-panel-wash");
 		expect(row).toHaveAttribute("aria-current", "true");
 		expect(screen.getByText("· NEW")).toBeInTheDocument();
 		fireEvent.click(row);
@@ -157,3 +167,93 @@ describe("Showhow reusable components", () => {
 function Action() {
 	return <button type="button">Action</button>;
 }
+
+describe("Final shared foundations", () => {
+	it("keeps shell navigation and content in separate reachable landmarks", () => {
+		render(
+			<Shell sidebar={<aside aria-label="Recordings">Recordings</aside>}>
+				<h1>Active recording</h1>
+			</Shell>,
+		);
+		expect(screen.getByRole("complementary", { name: "Recordings" })).toBeInTheDocument();
+		expect(screen.getByRole("main")).toContainElement(
+			screen.getByRole("heading", { name: "Active recording" }),
+		);
+	});
+	it("labels fields, forwards native input props, and links error text", () => {
+		const onChange = vi.fn();
+		render(
+			<Field
+				label="Recording title"
+				defaultValue="Take one"
+				onChange={onChange}
+				error="Enter a title"
+				required
+			/>,
+		);
+		const input = screen.getByRole("textbox", { name: "Recording title" });
+		expect(input).toBeRequired();
+		expect(input).toHaveAttribute("aria-invalid", "true");
+		expect(document.getElementById(input.getAttribute("aria-describedby") ?? "")).toHaveTextContent(
+			"Enter a title",
+		);
+		fireEvent.change(input, { target: { value: "Take two" } });
+		expect(onChange).toHaveBeenCalledOnce();
+	});
+	it("exposes progress values and preserves the last completed percentage on failure", () => {
+		const { rerender } = render(<Progress label="Making guide" value={38} />);
+		expect(screen.getByRole("progressbar", { name: "Making guide" })).toHaveAttribute(
+			"aria-valuenow",
+			"38",
+		);
+		rerender(<Progress label="Guide failed" value={38} failed />);
+		expect(screen.getByRole("progressbar", { name: "Guide failed" })).toHaveAttribute(
+			"aria-valuenow",
+			"38",
+		);
+		expect(screen.getByRole("progressbar")).toHaveAttribute("data-state", "failed");
+		rerender(<Progress label="Loading" />);
+		expect(screen.getByRole("progressbar")).not.toHaveAttribute("aria-valuenow");
+		rerender(<Progress label="Complete" value={120} />);
+		expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "100");
+	});
+	it("selects tabs and exposes only their matching panel", () => {
+		render(
+			<Tabs defaultValue="guide">
+				<TabsList aria-label="Output">
+					<TabsTrigger value="guide">Guide</TabsTrigger>
+					<TabsTrigger value="brief">Agent brief</TabsTrigger>
+				</TabsList>
+				<TabsContent value="guide">Guide content</TabsContent>
+				<TabsContent value="brief">Brief content</TabsContent>
+			</Tabs>,
+		);
+		expect(screen.getByRole("tab", { name: "Guide" })).toHaveAttribute("aria-selected", "true");
+		fireEvent.mouseDown(screen.getByRole("tab", { name: "Agent brief" }), {
+			button: 0,
+			ctrlKey: false,
+		});
+		expect(screen.getByRole("tabpanel")).toHaveTextContent("Brief content");
+	});
+	it("opens a named modal sheet, closes it with Escape and restores trigger focus", async () => {
+		render(
+			<Sheet
+				title="Rename recording"
+				trigger={<Button>Rename</Button>}
+				footer={<Button>Save</Button>}
+			>
+				<Field label="New title" />
+			</Sheet>,
+		);
+		const trigger = screen.getByRole("button", { name: "Rename" });
+		trigger.focus();
+		fireEvent.click(trigger);
+		const dialog = screen.getByRole("dialog", { name: "Rename recording" });
+		expect(dialog).toHaveAttribute("aria-modal", "true");
+		expect(dialog).toContainElement(screen.getByRole("textbox", { name: "New title" }));
+		await waitFor(() => expect(dialog).toContainElement(document.activeElement as HTMLElement));
+		fireEvent.keyDown(document.activeElement ?? dialog, { key: "Escape" });
+		await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+		await waitFor(() => expect(trigger).toHaveFocus());
+	});
+});

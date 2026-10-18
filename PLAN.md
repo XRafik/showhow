@@ -813,3 +813,245 @@ Authority: external `autonomous/SCOPE-007-CI-TEST-DIAGNOSIS.md`. Ownership is li
 The scratch phase probe measured generic deep equality of the 3,293,184-byte Buffer at 3,678.2 ms, versus about 39.4 ms for download/hash/install and 1.2 ms for timer draining. The decision was recorded before edits in `autonomous/ci-test-diagnosis/FINDINGS-AND-REPAIR-DECISION.md`: use native `Buffer.equals` for exact byte equality. Retain the 201 × 16 KiB real stream, controlled monotonic clock, expected digest, atomic install, first/final bytes, notification rate/spacing and no queued callbacks.
 
 Validation complete: revised case fails with the original emitter (201 notifications versus ≤11), passes with the repaired emitter; focused 21 tests and affected 230 tests pass; test TypeScript and Biome exit0. Full unit rerun passes 356 files / 4,632 tests with two baseline skips and the same single environment-template exclusion. The first full run's missing public scratch fixtures and its failure are retained separately. Production five and other two playback-test hashes are unchanged. Lead owns fresh review and the same-PR update; executor does not stage, commit or push.
+
+# Showhow Final design implementation Plan
+
+## Goal
+Make the approved Library, HUD, Editor and Settings designs work as one macOS desktop experience: record, find a take, make and edit a guide, edit/export video, and hand off a brief or PDF. Implement the approved visual language and named interactions, with no dummy controls presented as finished functionality.
+
+## Context and decisions
+- Owner requested the whole approved Library, Editor and HUD design, explicitly included Settings, and approved normal review for the design tickets on 2026-10-18. No priority labels or Greptile.
+- Reuse the approved mock `design/mocks/2026-10-15-house-style/index.html`, SPEC.md, and Final exports/manifest under `pen-final/`. The 50 exported Final frame hashes were checked on 2026-10-18: zero mismatches. This is design evidence, not app acceptance.
+- Working base for shaping: origin/main `e54cc63e3d2cd72430588906d5550f7a968daf1a`. #125 continues in its own lane; refresh its eventual result before editor work.
+- Keep existing Electron, ScreenCaptureKit/WGC, native compositor, project store, AI editing engine and native transcript engine. Layout/presentation changes may reorganise the upstream shell, with those touchpoints recorded. No engine rewrite.
+- Current gaps observed in source: RecordingLibrary still uses legacy sh-* inline layout rather than the shared Sidebar; it has no search/import/brief/PDF interface. Showhow guide components partly use ds-* tokens. Upstream editor chat is left of the stage, whereas the Final design uses the right inspector. HUD uses inherited geometry/chrome. Theme helpers and some shared components already exist: extend these rather than rebuild them.
+- Latest decisions outrank literal mock data. Notes (HUD-06) remains excluded. #128 remains parked: ChatGPT controls must be truthfully unavailable, never shown connected or implemented here. OpenRouter remains the working guide provider with the owner-selected default. Existing upstream editor providers remain supported.
+- #127 explicitly requires removing the ready-guide review link and styling Edit/Delete; its later requirement supersedes the older Library-06 export's link. Retain first-provider review and Make/Remake review access. Plan proposes absorbing #127 into T2, with closure only through the separate approved publication preview.
+- Library-28 is adapted to current #122 behaviour: no speech with usable clicks still permits a click-only guide. Do not restore an obsolete no-speech dead end.
+- Protected landing design, personal recordings, failed receipts and parked #128 are untouched. Existing parked Phase 6/10 modes are not changed by this new milestone.
+
+## Bounded requirements
+- Supported acceptance environment: macOS arm64 on the available Mac; report exact OS/build. macOS 13 hardware, Windows and Linux runtime remain untested unless separately authorised and exercised.
+- Cover 49 in-scope Final frames: Library01–28, HUD01–05/07–08, Editor01–08, Settings01–06. Record adaptations above and unsupported Settings fields below in a frame-to-evidence table; do not label an adapted/deferred state an exact match.
+- At the reference 1200px frame widths, match layout, type, spacing, semantic colours, selected-row fill, compact guide rows, signature offset shadows and state copy. Compare representative light/dark renders and the native HUD. At the app's supported minimum window size, controls must remain reachable without horizontal clipping; establish and record that size before T2/T8 implementation, not an invented mobile layout.
+- Use Inter body, Inter Tight display and JetBrains Mono labels, sage accent and orange recording/failure/playhead meaning. No serif display or permanent sidebar dither floor. Mosaic occurs only at processing/redaction/frontier locations defined in SPEC.md.
+- Recording, transcript, guide, brief and export failures preserve source media. Preserve .showhow/.openscreen compatibility and the video.cursor.json convention. New metadata/files use Showhow ownership; reads tolerate absence on older bundles.
+- Real interactions in T2–T9 require same-package behaviour tests and observed Electron proof on synthetic scratch data. Fixture renders can cover unreachable/error/permission states; permission grants and real provider/account changes remain owner-only.
+- Shared keyboard/focus semantics, readable contrast, reduced motion and complete disabled/loading/error states are acceptance criteria. Prefer existing local icons; no runtime CDN, new paid service or dependency introduced solely for polish.
+
+## Architecture
+Reuse src/components/showhow/, src/lib/showhow/ and electron/showhow/. Main owns folder validation, file writes, file dialogs, clipboard and PDF output. Renderer owns presentation and typed view state. New IPC belongs in the Showhow block of existing handlers/preload/types. Do not let renderer-supplied paths bypass existing media/bundle containment.
+New modules proposed below are the default ownership seams; a demonstrated need outside a task's listed paths returns for a bounded amendment before edits. Keep focused same-package tests; no duplicated implementation-mirroring checks.
+Expose existing guide provider calls through a small shared model adapter for T4 rather than making a second auth store. Preserve existing first-provider evidence consent, cancellation and previous successful output until replacement validates. Agent-brief consent must identify its own payload; existing guide consent cannot silently authorise additional data.
+State screenshots use deterministic scratch fixtures and the same reference dimensions, with evidence paths outside the repository by default. No permanent demo toggle or fake product route is required.
+
+## Milestones
+Proposed new milestone: **Implement approved Showhow designs**. It does not yet exist; creation and issue publication remain behind the exact owner preview gate.
+Execution is sequential, one ticket/worktree/PR at a time:
+T1 → T2 → T3 → T4 → T5 → T6 → T7 → T8 → T9 → T10.
+This order makes the Library visible early, finishes its missing flows, then brings Settings, recording and the editor into the same language. T8 also waits for #125's resolved/explicitly accepted outcome. #124 remains a separate recorder bug; T7 must not silently fold in a capture-policy change.
+Tasks have behavioural dependencies as listed below; the sequence is the dispatch order, even where independent work would be technically possible.
+
+## Common proof and review
+For changed app code: focused same-package tests during iteration; affected full suites before PR. Run production/test TypeScript, Biome, branding, and i18n checks when their surfaces change. Rendering tasks run the affected browser suites. Required commands are `npx tsc --noEmit`, `npx tsc --noEmit -p tsconfig.test.json`, `npm run lint`, `npm run branding:check`, and `npm run i18n:check` for copy/locale changes. Use the repository's heavy-resource scheduling.
+Each implementation task captures BEFORE/AFTER, preserves failed receipts, and requires fresh independent Standards PASS and Requirements PASS plus current-head applicable CI before one review-ready PR. UI review includes accessibility. Native reviewer passes the literal one-shot identity gate before inspecting the candidate. No agent merges.
+Editor/export tasks follow docs/testing/verification-recipe.md with isolated synthetic fixtures, independent media decode, observed native pixels and complete owned-process cleanup. Successful export does not alone establish live playback.
+Documentation-only T10 evidence reconciliation does not trigger broad code-suite reruns unless it changes a harness or exposes a regression.
+
+### Task 1: Align shared components and theme tokens with the Final design
+**Priority:** no (owner approved normal review).
+**Labels:** feature, ui.
+**Milestone:** Implement approved Showhow designs (proposed).
+**Depends on:** none.
+**Files:** src/index.css; src/styles/fonts.css; src/lib/showhow/designTokens.ts and designTokens.test.ts; src/lib/showhow/theme.ts and theme.test.ts; src/lib/showhow/upstreamTheme.css and upstreamTheme.test.ts; src/components/showhow/Button.tsx, Tag.tsx, Logo.tsx, Card.tsx, EmptyState.tsx, Sidebar.tsx, LibraryRow.tsx, Toast.tsx, Components.test.tsx, Button.test.tsx, theme.browser.test.tsx, button-hover.browser.test.tsx; tailwind.config.cjs (only existing ds-* mapping); implementation-notes.md.
+**Requirements:** Reconcile existing ds-* definitions with SPEC.md and the verified component exports. Reuse current Showhow theme preference with legacy-key fallback. Define a shared shell/sheet/tab/field/progress vocabulary; new components, if needed, stay in the same directory and are named explicitly in the task PR. No global selector that changes unrelated upstream controls. Maintain source-compatible component props until their consumers migrate.
+**Interfaces:** Shared React components and semantic CSS tokens consumed by T2/T6/T7/T8.
+**Constraints and reasons:** Do not remove sh-* aliases while live consumers still use them; do not change persisted theme keys or globally substitute native helper identifiers.
+- [ ] RED: component renders show the observed wrong token/type/selected-row/sheet state; theme fallback and cross-window System change checks exercise the existing public helper.
+- [ ] Implement only the component/token discrepancies used by this milestone.
+- [ ] GREEN: component renders and theme cases pass; light/dark reference comparisons and keyboard/reduced-motion checks recorded.
+- [ ] Fresh Review and one PR.
+**Verification:** `npx vitest run src/lib/showhow/designTokens.test.ts src/lib/showhow/theme.test.ts src/lib/showhow/upstreamTheme.test.ts src/components/showhow/Components.test.tsx src/components/showhow/Button.test.tsx`; affected browser tests and common checks. Inspect six component-reference exports alongside native rendered components.
+**DONE WHEN:** Sidebar, row, button variants, typography, sheet, tab and progress states use the agreed tokens in light/dark; System preference survives reopen and responds to a simulated system change; existing consumers still compile.
+**Outside cases / follow-ups:** Screen implementation and unrelated global CSS cleanup.
+
+### Task 2: Implement the Final Library shell and existing guide states
+**Priority:** no (owner approved normal review).
+**Labels:** feature, ui.
+**Milestone:** Implement approved Showhow designs (proposed).
+**Depends on:** T1; #122 already merged.
+**Files:** src/components/library/RecordingLibrary.tsx and RecordingLibrary.test.tsx; src/components/showhow/Sidebar.tsx, LibraryRow.tsx, VideoPlayer.tsx and VideoPlayer.test.tsx, GuideStep.tsx, AiGuidePanel.tsx and AiGuidePanel.test.tsx, AiGuideSheets.tsx; new src/components/library/library-search.ts and library-search.test.ts; src/lib/showhow/recordingLibrary.ts; src/i18n/locales/*/common.json for new keys; implementation-notes.md.
+**Requirements:** Cover Library01–06,08–11,13–16,19,26–28 using current bundle/guide behaviour. Add local title search, empty query, matching title and no-results/Clear search cases without changing bundle order or selection when a matching row remains. Selecting a different recording must not display the previous take's guide/title/save result. Preserve title editing, step edit/delete/reveal and timestamp seek. Make/Remake retains #122 error/cancel/previous-output semantics. Apply #127's two fixes with BEFORE/AFTER evidence. Do not show unfinished Import/PDF/brief actions as working before T3–T5; introduce their real controls in those tasks.
+**Interfaces:** Existing Showhow list/update/guide IPC and VideoPlayer; typed selected bundle identity rather than array index for pending async writes.
+**Constraints and reasons:** Existing media/path and save contracts stay unchanged. The evidence-review access follows the later #127 decision, not the stale ready-guide mock link.
+- [ ] RED: search/no-results/selection race and existing guide state renders expose the missing/wrong layout or behaviour.
+- [ ] Implement the shell and named state cases.
+- [ ] GREEN: same cases pass; step edits/reveal/timestamp seek and late title-save protection remain covered.
+- [ ] Fresh Review and one PR.
+**Verification:** `npx vitest run src/components/library src/components/showhow src/lib/showhow`; affected browser tests; common checks. Isolated Electron walkthrough: empty → selected saved take → title edit → Make guide → ready → step edit/delete → Remake cancel/error; use fake provider for failure cases.
+**DONE WHEN:** Named Library states and search cases have frame-to-evidence rows; reference-width and supported-minimum layouts are readable in both themes; a real synthetic bundle opens and its timestamp seeks to the chosen step; #127's two behaviours are proved.
+**Outside cases / follow-ups:** T3–T5 features, new guide model/provider changes, capture filtering #124.
+
+### Task 3: Add MP4 import to the Library
+**Priority:** no (owner approved normal review).
+**Labels:** feature, ui.
+**Milestone:** Implement approved Showhow designs (proposed).
+**Depends on:** T2.
+**Files:** new electron/showhow/importRecording.ts and importRecording.test.ts; src/lib/showhow/recordingLibrary.ts; electron/showhow/recordingLibrary.ts and recordingLibrary.test.ts; electron/ipc/handlers.ts (Showhow registration only), electron/preload.ts, electron/electron-env.d.ts; new src/components/showhow/ImportVideoSheet.tsx and ImportVideoSheet.test.tsx; src/components/library/RecordingLibrary.tsx and RecordingLibrary.test.tsx; src/i18n/locales/*/common.json; implementation-notes.md.
+**Requirements:** Library17/18: system picker selects one local MP4, imports into a new bundle without modifying source, shows copying progress and selects the resulting row marked IMPORTED. Supported test fixture: H.264/AAC MP4 accepted by the current editor; reject unreadable, truncated, directory and non-MP4 inputs with actionable error. Duplicate filenames create distinct bundles. Cancel before selection writes nothing; cancellation/failure during copying leaves no completed library entry and preserves source. No invented cursor/click telemetry for imports; use narration-only/click-unavailable guide semantics.
+**Interfaces:** Typed Showhow import request/progress/cancel/result; main validates and owns source/destination and uses existing bundle/media metadata logic.
+**Constraints and reasons:** Finalise metadata only after the copied media is complete; asynchronous cancellation must not delete another import's files. Size is not artificially capped, but tests use bounded small fixtures.
+- [ ] RED: same-package real temporary-file cases for successful import, duplicate name, cancellation and truncated input.
+- [ ] Implement the import path and sheets.
+- [ ] GREEN: cases pass and source hashes remain unchanged.
+- [ ] Fresh Review and one PR.
+**Verification:** Focused import/library tests, full affected Showhow suites, common checks. Native scratch import → visible row → editor playback; inspect both progress and failure sheets.
+**DONE WHEN:** Accepted MP4 becomes a complete separate bundle with truthful metadata; cancel/error cases do not create a finished row; source hashes match before/after; Library17/18 evidence is retained.
+**Outside cases / follow-ups:** Batch import, arbitrary codec/transcoding support, external/removable-source recovery.
+
+### Task 4: Generate the agent brief and implement Copy for agent
+**Priority:** no (owner approved normal review).
+**Labels:** feature, ui.
+**Milestone:** Implement approved Showhow designs (proposed).
+**Depends on:** T2.
+**Files:** new electron/showhow/agentBrief.ts and agentBrief.test.ts, guideModel.ts and guideModel.test.ts; electron/showhow/aiGuide.ts and aiGuide.test.ts, aiGuideConsent.ts and aiGuideConsent.test.ts; new src/lib/showhow/agentBrief.ts and agentBrief.test.ts; new src/components/showhow/AgentBriefPanel.tsx and AgentBriefPanel.test.tsx; src/components/showhow/AiGuideSheets.tsx; src/components/library/RecordingLibrary.tsx and RecordingLibrary.test.tsx; electron/ipc/handlers.ts (Showhow block), electron/preload.ts, electron/electron-env.d.ts; docs/architecture/showhow-bundles.md; src/i18n/locales/*/common.json; implementation-notes.md.
+**Requirements:** Library07/20–24: brief not-made/making/failed/ready states; Copy for agent generates a brief first when absent, then copies that brief plus exact local bundle path. Clipboard success appears only after generation and write both succeed; restore the same button width and show two-second copied feedback. Copy path remains independent and local. Propose a versioned optional agent-brief.json and agent-brief.md pair with title, observed steps/times, expected/actual only when supported by inputs, and explicit unknowns; metadata records provider/model/source revision. Validate before atomic replacement; previous brief and guide/media survive failure/cancel. Use existing OpenRouter connection, default model and per-payload evidence review. Include transcript/selected frames only as reviewed. No silent export of revealed sensitive content.
+**Interfaces:** Shared guide/brief model adapter, dedicated brief status/run/cancel and clipboard IPC. Existing bundles without brief files read as not-made. Reuse existing guide payload validators where applicable rather than weakening them.
+**Constraints and reasons:** No invented diagnosis, provider fallback, credential store or ChatGPT integration. A guide-derived brief must not overwrite deterministic steps or source transcript.
+- [ ] RED: absent brief → generate → copy ordering; generation error, clipboard rejection, invalid model output, cancellation, stale result after selecting another bundle and previous-output retention.
+- [ ] Implement typed brief pipeline, persistence and UI.
+- [ ] GREEN: same cases pass with fake model/clipboard; atomic replacement and older-bundle reads are covered.
+- [ ] Fresh Review and one PR.
+**Verification:** Focused Showhow main/renderer tests then affected full suites/common checks. Native synthetic bundle, fake provider returns fixture response, actual scratch clipboard handoff verified only with explicit isolated test clipboard handling; do not overwrite/read the owner's current clipboard without separate authority. If no isolated system clipboard is available, report native clipboard untested and use main-process clipboard adapter assertions.
+**DONE WHEN:** Named brief states have evidence; generation precedes clipboard write for absent brief; errors preserve prior artefacts and do not show Copied; exact bundle path and evidence-derived content are verified. Native clipboard limitation is declared if applicable.
+**Outside cases / follow-ups:** MCP server, remote sharing, other providers and new auth, automatic inferred root-cause claims.
+
+### Task 5: Export a real workflow PDF from the Library
+**Priority:** no (owner approved normal review).
+**Labels:** feature, ui.
+**Milestone:** Implement approved Showhow designs (proposed).
+**Depends on:** T2.
+**Files:** new electron/showhow/exportPdf.ts and exportPdf.test.ts, pdfDocument.ts and pdfDocument.test.ts; new src/components/showhow/ExportPdfSheet.tsx and ExportPdfSheet.test.tsx; src/components/library/RecordingLibrary.tsx and RecordingLibrary.test.tsx; electron/ipc/handlers.ts (Showhow block), electron/preload.ts, electron/electron-env.d.ts; src/i18n/locales/*/common.json; docs/architecture/showhow-bundles.md; implementation-notes.md.
+**Requirements:** Library12/25: preview, include toggles, save destination, saved/Show in Finder states. PDF uses current persisted guide title/ordered steps/screenshots/timestamps with the selected options. Escape text and restrict local image resolution to the selected bundle; no remote resources or scripts. Save picker cancellation writes nothing and shows no success. Write/render failure preserves bundle/previous destination, reports error and permits retry. Sensitive text/image treatment follows the persisted reveal/redaction choice and explicit include settings; no hidden inclusion.
+**Interfaces:** Main-owned PDF render from sanitised structured data in an isolated offscreen document using existing Electron PDF facility; write to chosen destination only after bytes are produced.
+**Constraints and reasons:** Renderer cannot supply arbitrary HTML or local files. PDF export is a derived output and cannot damage source recordings.
+- [ ] RED: two-step guide, no screenshots selected, long title/multiline step, sensitive field excluded, path escape attempt, picker cancel and write failure.
+- [ ] Implement document renderer, save flow and UI.
+- [ ] GREEN: cases pass, fixture PDF text/order/page bounds and nonempty image content verified.
+- [ ] Fresh Review and one PR.
+**Verification:** Same-package tests/common checks. Native scratch real PDF render and save, independent PDF text/page inspection and rendered-page visual check; screenshots of modal and success. Main dialog selection may be replaced with the explicit scratch destination and reported as such.
+**DONE WHEN:** A real readable PDF matches selected options; synthetic long-content pages have no clipped steps; cancel/failure never shows saved; the source bundle is unchanged.
+**Outside cases / follow-ups:** DOCX/HTML/ZIP export, hosted links, custom templates or print-driver support.
+
+### Task 6: Implement the Final Settings screens
+**Priority:** no (owner approved normal review).
+**Labels:** feature, ui.
+**Milestone:** Implement approved Showhow designs (proposed).
+**Depends on:** T1, T2; refresh supported features after T4.
+**Files:** new src/components/showhow/SettingsView.tsx and SettingsView.test.tsx; src/components/showhow/AiConnections.tsx and AiConnections.test.tsx, AiGuideSettings.tsx; src/components/library/RecordingLibrary.tsx and RecordingLibrary.test.tsx; src/lib/showhow/theme.ts and theme.test.ts; electron/ipc/recordingPrefs.ts and its same-package tests; electron/ipc/handlers.ts (recording settings/Showhow block only), electron/preload.ts, electron/electron-env.d.ts; new electron/showhow/settings.ts and settings.test.ts only for settings not owned by an existing store; src/i18n/locales/*/settings.json and common.json; implementation-notes.md.
+**Requirements:** Settings01–06 shell with no selected recording row while active. AI Connections adapts connected/expired states to actual OpenRouter status; ChatGPT remains disabled and clearly deferred under128, no fake expiry/account information. Recording fields bind to existing folder/countdown/hide-icons capabilities. Appearance offers Light/Dark/System via current theme store and updates open app windows. Transcription truthfully identifies bundled local engine/model; Agents exposes actual handoff format and disabled coming-later MCP row. Preserve existing editor provider settings rather than replacing their auth configuration.
+**Interfaces:** Existing recording preference APIs and theme helpers; narrow Showhow settings module only where persistence has no current owner.
+**Constraints and reasons:** No cosmetic control may pretend to change behaviour. Design fields without current support (notably transcription names/terms and any unsupported recording preference) must be listed in an implementation inventory before Build. The default proposal is a visibly unavailable explanatory field, not a new native transcription feature; active support needs a separately approved bounded task. This is an explicit design exception for plan approval.
+- [ ] RED: Settings nav/selected-row state, preference save/error/reopen, System update and disconnected/error provider state.
+- [ ] Implement the named working controls and truthful unavailable states.
+- [ ] GREEN: same cases pass; legacy preferences survive and rejected writes do not show success.
+- [ ] Fresh Review and one PR.
+**Verification:** Focused settings/theme/recording preference tests, affected browser suite/common checks. Native light/dark/System propagation across Library/HUD/Editor; use fake provider status, no real account or permission changes.
+**DONE WHEN:** Six screen references have working-control/evidence/explicit-exception entries; saved supported preferences persist; active Settings does not imply a selected recording; no unsupported backend feature is claimed.
+**Outside cases / follow-ups:** #128, credential migration, custom transcription dictionary/native engine features, active MCP integration.
+
+### Task 7: Implement the Final HUD and recording sheets
+**Priority:** no (owner approved normal review).
+**Labels:** feature, ui.
+**Milestone:** Implement approved Showhow designs (proposed).
+**Depends on:** T1, T6; account for #124's current status without absorbing its capture-policy change.
+**Files:** src/components/launch/LaunchWindow.tsx and LaunchWindow.test.tsx, LaunchWindow.module.css, HudControls.tsx, HudIcons.tsx, SourceSelector.tsx and SourceSelector.test.tsx, SourceSelector.module.css, CountdownOverlay.tsx, HudDeviceSettings.tsx and existing tests, hudGeometry.ts and hudGeometry.test.ts; new same-package HudControls.test.tsx; src/lib/showhow/upstreamTheme.css; src/i18n/locales/*/launch.json; docs/architecture/upstream-touchpoints.md; implementation-notes.md.
+**Requirements:** HUD01–05/07–08: source selector, countdown, idle, recording, saving, screen-permission missing and missing microphone. Match signature shadow, compact groups, orange Stop/timer and saving lock state. Keep inherited shortcuts, drag/no-drag, click-through margins, source/device selection, pause/restart/discard controls and capture exclusion. Preserve unsupported-OS/device behaviour. Permission/microphone sheets provide real recovery links/actions through existing handlers, with fixture coverage for denied/missing states. Notes remains excluded from the V1 design pass; do not delete unrelated inherited Notes code as cleanup.
+**Interfaces:** Existing recorder hooks and IPC; only presentation and geometry needed for the approved bar/sheets.
+**Constraints and reasons:** No new capture/native permission policy, helper changes or removal of established controls for a pixel match. Recalculate native overlay geometry through current hudGeometry seam; no viewport-size feedback loop.
+- [ ] RED: named state renders, saving double-click protection, keyboard navigation and geometry/control-reachability cases.
+- [ ] Implement bar and sheets.
+- [ ] GREEN: same cases pass; capture/save/stop remains intact.
+- [ ] Fresh Review and one PR.
+**Verification:** `npx vitest run src/components/launch`; browser rendering and common checks. Native synthetic own-window start/pause/resume/stop/save and capture-exclusion observation; state no personal media/permission changes. Report native controls that require owner input.
+**DONE WHEN:** Seven in-scope HUD frames have evidence; recording/save works with no source loss; bar remains excluded and recovery states have accessible keyboard paths.
+**Outside cases / follow-ups:** Notes frame, capture backend rewrite, #124 policy fix and new platform support.
+
+### Task 8: Implement the Final Editor shell, inspector and timeline presentation
+**Priority:** no (owner approved normal review).
+**Labels:** feature, ui.
+**Milestone:** Implement approved Showhow designs (proposed).
+**Depends on:** T1, T2, T7; #125 resolved or owner explicitly accepts its recorded residual limits.
+**Files:** src/components/ai-edition/NewEditorShell.tsx and existing shell tests, NewEditorShell.module.css; src/components/ai-edition/v4/EditorTopBar.tsx and EditorTopBar.test.tsx, EditorShellV4.module.css, FloatingInspector.tsx and FloatingInspector.test.tsx, V4Timeline.tsx, V4Timeline.waveform.test.tsx, V4Timeline.geometry.test.tsx; src/components/ai-edition/TransportBar.tsx and TransportBar.test.tsx; src/lib/showhow/upstreamTheme.css; src/i18n/locales/*/editor.json; docs/architecture/upstream-touchpoints.md; implementation-notes.md.
+**Requirements:** Editor01/06 plus shared frame structure: Showhow top bar, Library/New recording/Open navigation, warm right inspector, dark preview stage, transport and timeline lanes with orange playhead/cut semantics. Keep current editing tools, native preview, timeline gestures/zoom/trim/text/audio, save/undo/redo and shortcut guards. Move AI entry/content to the right-inspector design seam, with T9 supplying its detailed states. Preserve available upstream controls not shown in a single reference image using existing menus/facets.
+**Interfaces:** Existing document/settings/timeline/native playback stores; view adapters instead of alternate editor state.
+**Constraints and reasons:** No new decoder/compositor or duplicated project store. Do not reintroduce #125 callback/transport failures. Respect current .showhow/.openscreen read/save contracts.
+- [ ] RED: right-inspector layout, no-project navigation, controls at minimum size and preserved timeline/shortcut cases.
+- [ ] Implement shell/inspector/timeline presentation.
+- [ ] GREEN: same cases pass; persisted document output and undo/redo behaviour remain unchanged for fixture edits.
+- [ ] Fresh Review and one PR.
+**Verification:** Focused shell/inspector/timeline tests, affected full unit/browser suites/common checks. Native synthetic playback, scrub/edit/undo/save/reopen and two isolated GIF verification-recipe runs when export/layout changes affect that path.
+**DONE WHEN:** Editor01/06 and shared shell match approved reference with documented extra-tool placement; actual native playback and edit/save work; .openscreen is not overwritten on open.
+**Outside cases / follow-ups:** Native renderer rewrite, new editing algorithms, source bug125 diagnosis beyond its own approved ticket.
+
+### Task 9: Implement the Final Editor assistant and export/dialog states
+**Priority:** no (owner approved normal review).
+**Labels:** feature, ui.
+**Milestone:** Implement approved Showhow designs (proposed).
+**Depends on:** T8, T6.
+**Files:** src/components/ai-edition/LeftPanel.tsx, LeftPanel.providerRefresh.test.tsx, LeftPanel.copyMessage.test.tsx, LeftPanel.tooltips.test.tsx, Modals.tsx, new Modals.design.test.tsx; src/components/video-editor/ShortcutsConfigDialog.tsx and new ShortcutsConfigDialog.design.test.tsx, NewEditorShell.tsx and NewEditorShell.chatOpen.test.tsx, ExportDialog.tsx and existing ExportDialog tests, NewEditorShell.module.css; src/components/ai-edition/v4/FloatingInspector.tsx and FloatingInspector.test.tsx; src/i18n/locales/*/editor.json and dialogs.json; docs/architecture/upstream-touchpoints.md; implementation-notes.md. No blanket authority over electron AI/native code.
+**Requirements:** Editor02–05/07–08: assistant proposal/applied/Undo in right inspector, export options/rendering, unsaved changes and keyboard shortcuts. Reuse current upstream proposal/apply/undo and export services; fake backend responses are permitted in tests only. Existing editor providers are truthful; disconnected, error, cancellation and undo states are accessible. Export must not advertise completion before file write finishes. Do not promise ChatGPT Codex-login connectivity from the reference provider label.
+**Interfaces:** Current chat/document action and export/dialog APIs; no provider/auth redesign.
+**Constraints and reasons:** Match visual state using existing product semantics; a missing proposal/undo capability must be evidenced and returned for an explicit implementation seam, not replaced by a hard-coded success card.
+- [ ] RED: proposal→apply→undo, rejected/stale proposal, export cancel/failure/success and unsaved-dialog keyboard cases.
+- [ ] Implement right-inspector states and sheets/dialogs.
+- [ ] GREEN: same cases pass, no document mutation after rejected/cancelled actions.
+- [ ] Fresh Review and one PR.
+**Verification:** Focused assistant/shell/export tests, affected full unit/browser suites/common checks. Native fake-service proposal→apply→undo on synthetic document; actual isolated GIF export with independent decode plus project-compatible MP4 export when offered by the design/current UI.
+**DONE WHEN:** Six named Editor state references have evidence; assistant operations modify and undo the real document through existing actions; actual export output decodes; unsaved/shortcuts dialogs preserve focus and shortcut safety.
+**Outside cases / follow-ups:** New AI provider integration, #128, editor agent tool expansion.
+
+### Task 10: Verify the implemented Final design journey
+**Priority:** no (owner approved normal review).
+**Labels:** feature, ui.
+**Milestone:** Implement approved Showhow designs (proposed).
+**Depends on:** T2–T9.
+**Files:** new docs/testing/final-design-acceptance.md; .agents/HANDOFF.md (retained sections only); implementation-notes.md; tests/e2e/final-design.spec.ts only if a reusable integration gap is demonstrated and approved in this task's Build record.
+**Requirements:** Reconcile the 49-state matrix with exact source/artifact references, frame adaptations and unavailable features. Walk launch→record→saved library→guide→edit step→brief/copy→PDF→editor edit/undo→video export→library, plus import→library→editor. Include Settings theme propagation and keyboard/reduced-motion observations. Use synthetic scratch media and fake AI for repeatable runs; owner-only real-provider/clipboard acceptance stays separately labelled.
+**Interfaces:** Prior tasks' actual product controls and retained evidence; no new product behaviour.
+**Constraints and reasons:** Reuse unchanged candidate-bound evidence with explicit comparison; do not call static fixture screenshots native acceptance or historical CI current-head green. If a behaviour fails, report it to the owning ticket/new bounded bug rather than fixing source in this documentation task.
+- [ ] Build a frame-to-implementation/evidence/exception table.
+- [ ] Exercise the two named journeys and recovery examples: guide failure, import cancel, PDF write failure and export cancel.
+- [ ] Confirm native cleanup and unchanged source-media hashes.
+- [ ] Fresh Review and one documentation/evidence PR.
+**Verification:** Observe named journeys on the final integrated macOS build; inspect representative real-app reference comparisons, independent exported PDF/video decode, cleanup, evidence bindings and current-head relevant CI. No redundant broad suite run for documentation-only reconciliation.
+**DONE WHEN:** 49 reference rows have measured outcomes or explicit approved exceptions; the two journeys and four recovery examples have observed results; unresolved limitations are stated, not marked complete. No release/tag or cross-platform acceptance implied.
+**Outside cases / follow-ups:** Shipping/signing/notarisation, Windows/Linux/macOS13 hardware, broader performance goals and deferred feature work.
+
+## Superseded issues
+Propose closing #127 only after explicit publication-table approval, because T2 includes its exact two fixes and evidence. Do not close #124, #125 or #128. Closed #92–#96 remain historical and are not reopened or treated as proof of current Final-design implementation. This plan does not alter parked Phase 6/10 modes.
+
+## Self-review
+Requirements and DONE WHEN are bounded to 49 named frames, supported fixture cases and two named journeys. Language such as source preservation refers to the current task's source inputs and existing saved bundle contract. Unsupported Settings fields and deferred ChatGPT/Notes are explicit exceptions. No blanket claim about arbitrary media codecs, platforms, AI accounts or screen sizes.
+
+## Implementation notes
+For each ticket append deviations to implementation-notes.md under Deviations: observed need, changed scope and approved substitute. Keep failed receipts and native proof separate from source/CI. Resolve a source-ownership mismatch before implementation, not through opportunistic edits.
+
+
+## Publication mapping — 2026-10-18
+Milestone: https://github.com/bedarstudios/showhow/milestone/13
+- T1 = https://github.com/bedarstudios/showhow/issues/139
+- T2 = https://github.com/bedarstudios/showhow/issues/140
+- T3 = https://github.com/bedarstudios/showhow/issues/141
+- T4 = https://github.com/bedarstudios/showhow/issues/142
+- T5 = https://github.com/bedarstudios/showhow/issues/143
+- T6 = https://github.com/bedarstudios/showhow/issues/144
+- T7 = https://github.com/bedarstudios/showhow/issues/145
+- T8 = https://github.com/bedarstudios/showhow/issues/146
+- T9 = https://github.com/bedarstudios/showhow/issues/147
+- T10 = https://github.com/bedarstudios/showhow/issues/148
+#127 is closed as superseded by #140; fixes are not yet shipped. Owner authorises routine implementation/scope decisions without chat approval, and will approve/merge PRs in GitHub. Agents never merge. #125 is active under broader diagnosis authority and must be resolved; previous parking proposal is superseded. No second implementation lane until current ticket is returned.
+
+## Final-design execution status — 2026-10-18
+
+The approved plan above is retained as published, including its historical shaping and publication statements. Current execution supersedes those statements: milestone 13 and T1 #139 through T10 #148 are published and approved. #125 is closed/Done after owner-merged PR #150 at `27494aa34f2467cc107adfb586db308157ccc372`; no #125 source work remains active. T1 #139 is the only dispatched design ticket. Its base is that current-main merge, rather than the older shaping base. Routine bounded implementation/review repairs are authorised by the owner; record decisions before edits. Only the owner reviews and merges PRs in GitHub; agents never merge or release. Verify the owner merge of #139 before dispatching #140. Authority: `/Users/mohamedb/dev/loop-evidence/showhow-final-design-shape/AUTONOMY.json` and the owner dispatch instruction for #139.

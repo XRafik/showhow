@@ -45,7 +45,7 @@ describe("Showhow primary button hover contrast", () => {
 			.getComputedStyle(document.documentElement)
 			.getPropertyValue("--showhow-accent-hover")
 			.trim();
-		expect(normalizeColor(lightHover)).toBe("rgb(207, 228, 218)");
+		expect(normalizeColor(lightHover)).toBe("rgb(143, 187, 166)");
 		expect(contrastRatio(lightHover, onAccent)).toBeGreaterThanOrEqual(4.5);
 
 		rerender(
@@ -58,7 +58,7 @@ describe("Showhow primary button hover contrast", () => {
 			.getComputedStyle(document.documentElement)
 			.getPropertyValue("--showhow-accent-hover")
 			.trim();
-		expect(normalizeColor(darkHover)).toBe("rgb(169, 205, 187)");
+		expect(normalizeColor(darkHover)).toBe("rgb(143, 187, 166)");
 		expect(contrastRatio(darkHover, onAccent)).toBeGreaterThanOrEqual(4.5);
 		expect(screen.getByRole("button", { name: "Primary" }).className).toContain(
 			"hover:bg-[var(--showhow-accent-hover)]",
