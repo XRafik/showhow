@@ -103,6 +103,18 @@
 				{
 					"text": "**DONE WHEN:** (a) at 1440x900 and 390x844 `document.documentElement.scrollWidth` equals the viewport width; (b) the seven sections appear in the listed order with the exact headings from the prototype; (c) the primary button text is \"DOWNLOAD EARLY BUILD FOR MAC\" and its href is the repository URL; (d) the \"Coming next\" section has two \"SOON\" pills and two chips with `aria-disabled=\"true\"`; (e) the FAQ holds the six listed items and the fork answer names OpenScreen and Siddharth Vaddem; (f) with `prefers-reduced-motion: reduce` emulated, the hero `video` has no `autoplay` attribute and shows the poster; (g) at 1440x900 with the loop paused at 3.0 s, the progress card top edge is inside the viewport; (h) no `<script src>` points to a host other than the page's own, and the page sets no cookie.",
 					"count": 1
+				},
+				{
+					"text": "- Recording, transcript, guide, brief and export failures preserve source media. Preserve .showhow/.openscreen compatibility and the video.cursor.json convention. New metadata/files use Showhow ownership; reads tolerate absence on older bundles.",
+					"count": 1
+				},
+				{
+					"text": "**Constraints and reasons:** No new decoder/compositor or duplicated project store. Do not reintroduce #125 callback/transport failures. Respect current .showhow/.openscreen read/save contracts.",
+					"count": 1
+				},
+				{
+					"text": "**DONE WHEN:** Editor01/06 and shared shell match approved reference with documented extra-tool placement; actual native playback and edit/save work; .openscreen is not overwritten on open.",
+					"count": 1
 				}
 			]
 		},

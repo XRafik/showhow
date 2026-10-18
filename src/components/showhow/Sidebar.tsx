@@ -13,7 +13,7 @@ export interface SidebarProps {
 
 export function Sidebar({ primary, libraryLabel, children, settings, onPrimary }: SidebarProps) {
 	return (
-		<aside className="flex w-[272px] flex-col gap-6 bg-ds-panel px-[18px] py-[26px] text-ds-on-panel">
+		<aside className="flex w-[272px] shrink-0 flex-col gap-6 bg-ds-panel px-[18px] py-[26px] font-ds-body text-ds-on-panel">
 			<Logo withWordmark />
 			{primary && (
 				<Button
@@ -25,9 +25,9 @@ export function Sidebar({ primary, libraryLabel, children, settings, onPrimary }
 					{primary.label ?? "New recording"}
 				</Button>
 			)}
-			<div className="flex flex-col gap-1">
+			<div className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
 				{libraryLabel && (
-					<span className="px-2 pb-2 font-ds-label text-[11px] tracking-[0.6px] uppercase text-ds-on-panel-muted">
+					<span className="px-2 pb-2 font-ds-label text-[10px] tracking-[0.8px] uppercase text-ds-on-panel-muted">
 						{libraryLabel}
 					</span>
 				)}

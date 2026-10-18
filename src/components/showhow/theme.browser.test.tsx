@@ -16,6 +16,15 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Button } from "./Button";
 import { Card } from "./Card";
 import { EmptyState } from "./EmptyState";
+import { Field } from "./Field";
+import { LibraryRow } from "./LibraryRow";
+import { Logo } from "./Logo";
+import { Progress } from "./Progress";
+import { Sheet } from "./Sheet";
+import { Sidebar } from "./Sidebar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./Tabs";
+import { Tag } from "./Tag";
+import { ShowhowToaster, showhowToast } from "./Toast";
 
 describe("Showhow design tokens in a browser", () => {
 	it("renders Button, Card, and EmptyState with light and dark computed token values", () => {
@@ -267,6 +276,350 @@ it("renders real HUD labels and editor text in Inter Tight with house HUD surfac
 	} finally {
 		document.documentElement.style.removeProperty("--ds-radius");
 		unmount();
+		if (prior === null) document.documentElement.removeAttribute("data-sh-theme");
+		else document.documentElement.setAttribute("data-sh-theme", prior);
+	}
+});
+
+it("uses the Final selected-row fill without a left bar in either theme", () => {
+	const { rerender, getByRole, unmount } = render(
+		<div data-sh-theme="light">
+			<LibraryRow title="Final selected" meta="Desktop" selected onSelect={() => undefined} />
+		</div>,
+	);
+	try {
+		for (const theme of ["light", "dark"]) {
+			rerender(
+				<div data-sh-theme={theme}>
+					<LibraryRow title="Final selected" meta="Desktop" selected onSelect={() => undefined} />
+				</div>,
+			);
+			const row = getByRole("button", { name: /Final selected/ });
+			const style = getComputedStyle(row);
+			expect(style.backgroundColor).toBe("rgba(255, 252, 247, 0.1)");
+			expect(style.borderLeftWidth).toBe("0px");
+			expect(style.boxShadow).toBe("none");
+		}
+	} finally {
+		unmount();
+	}
+});
+
+it("renders Final secondary and ghost borders and recording meaning", () => {
+	const { getByRole, unmount } = render(
+		<div data-sh-theme="light">
+			<Button variant="secondary">Final secondary</Button>
+			<Button variant="ghost">Final ghost</Button>
+		</div>,
+	);
+	try {
+		const secondary = getComputedStyle(getByRole("button", { name: "Final secondary" }));
+		const ghost = getComputedStyle(getByRole("button", { name: "Final ghost" }));
+		expect.soft(secondary.backgroundColor).toBe("rgba(0, 0, 0, 0)");
+		expect.soft(secondary.borderTopWidth).toBe("1px");
+		expect.soft(ghost.borderTopWidth).toBe("0px");
+	} finally {
+		unmount();
+	}
+});
+
+it("renders the Final logo signature shadow and sans compatibility typography", () => {
+	const { getByRole, getByText, unmount } = render(
+		<div data-sh-theme="light">
+			<Logo withWordmark />
+			<span style={{ fontFamily: "var(--ds-font-serif)" }}>Legacy display</span>
+		</div>,
+	);
+	try {
+		expect
+			.soft(getComputedStyle(getByRole("img", { name: "Showhow" })).boxShadow)
+			.toContain("rgb(130, 176, 154) 4px 4px 0px 0px");
+		expect.soft(getComputedStyle(getByText("Showhow")).fontSize).toBe("17px");
+		expect.soft(getComputedStyle(getByText("Legacy display")).fontFamily).toContain("Inter Tight");
+	} finally {
+		unmount();
+	}
+});
+
+it("renders Final sheet, fields, tabs and failed progress in both themes with keyboard semantics", async () => {
+	const prior = document.documentElement.getAttribute("data-sh-theme");
+	try {
+		for (const theme of ["light", "dark"]) {
+			document.documentElement.setAttribute("data-sh-theme", theme);
+			const { getByRole, unmount } = render(
+				<Sheet title="Foundation sheet" open description="Synthetic shared controls">
+					<Field label="Title" error="A title is needed" />
+					<Tabs defaultValue="guide">
+						<TabsList aria-label="Foundation outputs">
+							<TabsTrigger value="guide">Guide output</TabsTrigger>
+							<TabsTrigger value="brief">Brief output</TabsTrigger>
+						</TabsList>
+						<TabsContent value="guide">
+							<Progress label="Failed generation" value={38} failed />
+						</TabsContent>
+						<TabsContent value="brief">Brief panel</TabsContent>
+					</Tabs>
+				</Sheet>,
+			);
+			try {
+				const sheet = getByRole("dialog", { name: "Foundation sheet" });
+				const style = getComputedStyle(sheet);
+				if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+					expect(style.animationName).toBe("none");
+					expect(style.transitionProperty).toBe("none");
+					const overlay = sheet.previousElementSibling as HTMLElement;
+					expect(getComputedStyle(overlay).animationName).toBe("none");
+					expect(getComputedStyle(overlay).transitionProperty).toBe("none");
+				}
+				expect(style.backgroundColor).toBe(
+					theme === "light" ? "rgb(255, 252, 247)" : "rgb(47, 47, 47)",
+				);
+				expect(style.borderRadius).toBe("10px");
+				expect(style.boxShadow).toContain("rgb(130, 176, 154) 4px 4px 0px 0px");
+				const input = getByRole("textbox", { name: "Title" });
+				expect(getComputedStyle(input).fontFamily).toContain("Inter");
+				expect(input.getAttribute("aria-invalid")).toBe("true");
+				const progress = getByRole("progressbar", { name: "Failed generation" });
+				expect(progress.getAttribute("aria-valuenow")).toBe("38");
+				expect(getComputedStyle(progress.firstElementChild as HTMLElement).backgroundColor).toBe(
+					theme === "light" ? "rgb(179, 67, 31)" : "rgb(242, 139, 107)",
+				);
+				const guide = getByRole("tab", { name: "Guide output" });
+				expect(getComputedStyle(guide).borderBottomWidth).toBe("2px");
+				expect(getComputedStyle(guide).borderBottomColor).toBe(
+					theme === "light" ? "rgb(47, 47, 47)" : "rgb(255, 252, 247)",
+				);
+				guide.focus();
+				fireEvent.keyDown(guide, { key: "ArrowRight" });
+				await expect
+					.poll(() => getByRole("tab", { name: "Brief output" }).getAttribute("aria-selected"))
+					.toBe("true");
+				expect(getByRole("tabpanel").textContent).toBe("Brief panel");
+			} finally {
+				unmount();
+			}
+		}
+	} finally {
+		if (prior === null) document.documentElement.removeAttribute("data-sh-theme");
+		else document.documentElement.setAttribute("data-sh-theme", prior);
+	}
+});
+
+function textContrast(foreground: string, background: string) {
+	const fg = (foreground.match(/[\d.]+/g) ?? []).map(Number);
+	const bg = (background.match(/[\d.]+/g) ?? []).map(Number);
+	const alpha = fg[3] ?? 1;
+	const luminance = (channels: number[]) => {
+		const linear = channels.slice(0, 3).map((value) => {
+			const x = value / 255;
+			return x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4;
+		});
+		return linear[0] * 0.2126 + linear[1] * 0.7152 + linear[2] * 0.0722;
+	};
+	const ink = luminance(
+		fg.slice(0, 3).map((value, index) => value * alpha + bg[index] * (1 - alpha)),
+	);
+	const surface = luminance(bg);
+	return (Math.max(ink, surface) + 0.05) / (Math.min(ink, surface) + 0.05);
+}
+
+it("keeps enabled small foundation text readable in both themes", () => {
+	const prior = document.documentElement.getAttribute("data-sh-theme");
+	try {
+		for (const theme of ["light", "dark"]) {
+			document.documentElement.setAttribute("data-sh-theme", theme);
+			const { getByRole, getByText, unmount } = render(
+				<>
+					<Sidebar libraryLabel="Readable library" />
+					<Card eyebrow="Readable card" />
+					<EmptyState title="Readable empty" body="Readable empty body" />
+					<Sheet
+						title="Readable sheet"
+						eyebrow="Readable eyebrow"
+						description="Readable description"
+						open
+					>
+						<Field label="Readable field" />
+						<Tabs defaultValue="one">
+							<TabsList aria-label="Readable tabs">
+								<TabsTrigger value="one">Active readable tab</TabsTrigger>
+								<TabsTrigger value="two">Inactive readable tab</TabsTrigger>
+							</TabsList>
+						</Tabs>
+					</Sheet>
+				</>,
+			);
+			try {
+				const surface = getComputedStyle(getByRole("dialog")).backgroundColor;
+				for (const name of [
+					"Readable field",
+					"Inactive readable tab",
+					"Readable eyebrow",
+					"Readable description",
+				]) {
+					expect
+						.soft(
+							textContrast(getComputedStyle(getByText(name)).color, surface),
+							`${theme}: ${name}`,
+						)
+						.toBeGreaterThanOrEqual(4.5);
+				}
+				// Radix hides the background from accessibility queries while the sheet is open.
+				for (const [name, bg] of [
+					["Readable card", theme === "light" ? "rgb(255,252,247)" : "rgb(47,47,47)"],
+					["Readable empty body", theme === "light" ? "rgb(249,245,236)" : "rgb(54,54,54)"],
+					["Readable library", theme === "light" ? "rgb(47,47,47)" : "rgb(36,36,36)"],
+				]) {
+					expect
+						.soft(textContrast(getComputedStyle(getByText(name)).color, bg), `${theme}: ${name}`)
+						.toBeGreaterThanOrEqual(4.5);
+				}
+			} finally {
+				unmount();
+			}
+		}
+	} finally {
+		if (prior === null) document.documentElement.removeAttribute("data-sh-theme");
+		else document.documentElement.setAttribute("data-sh-theme", prior);
+	}
+});
+
+it("renders actual Sonner notifications with Final surface and offset shadow", async () => {
+	const prior = document.documentElement.getAttribute("data-sh-theme");
+	const { getByText, unmount } = render(<ShowhowToaster />);
+	try {
+		showhowToast("Final toast evidence");
+		await expect.poll(() => document.querySelector("[data-sonner-toast]") !== null).toBe(true);
+		const toast = getByText("Final toast evidence").closest("[data-sonner-toast]") as HTMLElement;
+		for (const theme of ["light", "dark"]) {
+			document.documentElement.setAttribute("data-sh-theme", theme);
+			expect
+				.soft(getComputedStyle(toast).backgroundColor)
+				.toBe(theme === "light" ? "rgb(47, 47, 47)" : "rgb(36, 36, 36)");
+			expect
+				.soft(getComputedStyle(toast).boxShadow)
+				.toContain("rgb(130, 176, 154) 4px 4px 0px 0px");
+			if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+				expect(getComputedStyle(toast).transitionProperty).toBe("none");
+			}
+		}
+	} finally {
+		unmount();
+		if (prior === null) document.documentElement.removeAttribute("data-sh-theme");
+		else document.documentElement.setAttribute("data-sh-theme", prior);
+	}
+});
+
+it("removes control transitions when reduced motion is requested", () => {
+	const { getByRole, unmount } = render(<Button>Reduced motion control</Button>);
+	try {
+		if (matchMedia("(prefers-reduced-motion: reduce)").matches)
+			expect(
+				getComputedStyle(getByRole("button", { name: "Reduced motion control" }))
+					.transitionProperty,
+			).toBe("none");
+	} finally {
+		unmount();
+	}
+});
+
+it("keeps all enabled button and tag variants readable on their intended surfaces", () => {
+	const prior = document.documentElement.getAttribute("data-sh-theme");
+	const buttons = ["primary", "secondary", "ghost", "dark", "rec", "sidebar", "toolbar"] as const;
+	const tags = ["neutral", "chip", "accent", "progress", "alert", "failed"] as const;
+	try {
+		for (const theme of ["light", "dark"]) {
+			document.documentElement.setAttribute("data-sh-theme", theme);
+			const { getByText, unmount } = render(
+				<>
+					{buttons.map((variant) => (
+						<div
+							key={variant}
+							style={{
+								background:
+									variant === "sidebar" || variant === "toolbar"
+										? "var(--ds-panel)"
+										: "var(--ds-surface)",
+							}}
+						>
+							<Button variant={variant}>{`Contrast button ${variant}`}</Button>
+						</div>
+					))}
+					{tags.map((variant) => (
+						<div
+							key={variant}
+							style={{
+								background: variant === "neutral" ? "var(--ds-panel)" : "var(--ds-surface)",
+							}}
+						>
+							<Tag variant={variant}>{`Contrast tag ${variant}`}</Tag>
+						</div>
+					))}
+				</>,
+			);
+			try {
+				for (const name of [
+					...buttons.map((v) => `Contrast button ${v}`),
+					...tags.map((v) => `Contrast tag ${v}`),
+				]) {
+					const el = getByText(name);
+					const style = getComputedStyle(el);
+					const parent = (
+						getComputedStyle(el.parentElement as HTMLElement).backgroundColor.match(/[\d.]+/g) ?? []
+					).map(Number);
+					const bg = (style.backgroundColor.match(/[\d.]+/g) ?? []).map(Number);
+					const a = bg[3] ?? 1;
+					const backdrop = `rgb(${bg
+						.slice(0, 3)
+						.map((v, i) => v * a + parent[i] * (1 - a))
+						.join(",")})`;
+					expect
+						.soft(
+							textContrast(style.color, backdrop),
+							`${theme}: ${name}, ${style.color} on ${backdrop}`,
+						)
+						.toBeGreaterThanOrEqual(4.5);
+				}
+			} finally {
+				unmount();
+			}
+		}
+	} finally {
+		if (prior === null) document.documentElement.removeAttribute("data-sh-theme");
+		else document.documentElement.setAttribute("data-sh-theme", prior);
+	}
+});
+
+it("keeps active and failed progress graphics at 3:1 against the track in both themes", () => {
+	const prior = document.documentElement.getAttribute("data-sh-theme");
+	try {
+		for (const theme of ["light", "dark"]) {
+			document.documentElement.setAttribute("data-sh-theme", theme);
+			const { getByRole, unmount } = render(
+				<>
+					<Progress label="Active graphical contrast" value={38} />
+					<Progress label="Failed graphical contrast" value={38} failed />
+				</>,
+			);
+			try {
+				for (const label of ["Active graphical contrast", "Failed graphical contrast"]) {
+					const track = getByRole("progressbar", { name: label });
+					const fill = track.firstElementChild as HTMLElement;
+					const fillColor = getComputedStyle(fill).backgroundColor;
+					const trackColor = getComputedStyle(track).backgroundColor;
+					expect
+						.soft(
+							textContrast(fillColor, trackColor),
+							`${theme}: ${label}, ${fillColor} on ${trackColor}`,
+						)
+						.toBeGreaterThanOrEqual(3);
+					expect(track.getAttribute("aria-valuenow")).toBe("38");
+				}
+			} finally {
+				unmount();
+			}
+		}
+	} finally {
 		if (prior === null) document.documentElement.removeAttribute("data-sh-theme");
 		else document.documentElement.setAttribute("data-sh-theme", prior);
 	}

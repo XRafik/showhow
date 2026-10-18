@@ -351,7 +351,7 @@
 	--sh-signal: #6bff7e;
 	--sh-radius-md: 8px;
 	--sh-radius-lg: 14px;
-	--sh-font-heading: "Instrument Serif", Georgia, serif;
+	--sh-font-heading: "Inter Tight", Inter, system-ui, sans-serif;
 }
 
 [data-sh-theme="dark"] {
@@ -378,14 +378,14 @@
 	--ds-line: #2F2F2F24;
 	--ds-accent: #82B09A;
 	--ds-on-accent: #2F2F2F;
-	--showhow-accent-hover: var(--ds-accent-200);
+	--showhow-accent-hover: #8FBBA6;
 	--ds-space: 16;
 	--ds-radius: 8;
 	--ds-font-size: 14;
 	--ds-font-body: Inter;
 	--ds-font-label: "JetBrains Mono";
 	--ds-font-display: "Inter Tight";
-	--ds-font-serif: "Instrument Serif";
+	--ds-font-serif: "Inter Tight";
 	--ds-surface-raised: #F9F5EC;
 	--ds-surface-sunken: #F7F2E8;
 	--ds-ink-soft: #2F2F2FB3;
@@ -412,8 +412,8 @@
 	--ds-accent-200: #CFE4DA;
 	--ds-accent-strong: #33564A;
 	--ds-accent-strong-soft: #33564A99;
-	--ds-rec: #E4572E;
-	--ds-rec-wash: #E4572E1F;
+	--ds-rec: #E3582D;
+	--ds-rec-wash: #E3582D1F;
 	--ds-rec-ink: #B3431F;
 	--ds-rec-soft: #F28B6B;
 	--ds-forest: #142F18;
@@ -434,14 +434,14 @@
 	--ds-line: #FFFCF724;
 	--ds-accent: #82B09A;
 	--ds-on-accent: #2F2F2F;
-	--showhow-accent-hover: var(--ds-accent-strong);
+	--showhow-accent-hover: #8FBBA6;
 	--ds-space: 16;
 	--ds-radius: 8;
 	--ds-font-size: 14;
 	--ds-font-body: Inter;
 	--ds-font-label: "JetBrains Mono";
 	--ds-font-display: "Inter Tight";
-	--ds-font-serif: "Instrument Serif";
+	--ds-font-serif: "Inter Tight";
 	--ds-surface-raised: #363636;
 	--ds-surface-sunken: #292929;
 	--ds-ink-soft: #FFFCF7B3;
@@ -468,8 +468,8 @@
 	--ds-accent-200: #3F6A5A;
 	--ds-accent-strong: #A9CDBB;
 	--ds-accent-strong-soft: #A9CDBB99;
-	--ds-rec: #E4572E;
-	--ds-rec-wash: #E4572E33;
+	--ds-rec: #E3582D;
+	--ds-rec-wash: #E3582D33;
 	--ds-rec-ink: #F28B6B;
 	--ds-rec-soft: #F28B6B;
 	--ds-forest: #142F18;

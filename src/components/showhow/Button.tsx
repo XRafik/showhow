@@ -5,15 +5,18 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-	"inline-flex items-center gap-2 px-[14px] py-[10px] rounded-[4px] font-ds-label text-[11px] font-medium tracking-[0.6px] uppercase cursor-pointer transition-colors duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ds-accent disabled:pointer-events-none disabled:opacity-50",
+	"inline-flex items-center justify-center gap-2 px-[14px] py-[10px] rounded-[4px] font-ds-label text-[11px] font-medium tracking-[0.6px] uppercase cursor-pointer transition-[background-color,transform] duration-150 active:scale-[0.96] motion-reduce:transform-none motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ds-ink disabled:pointer-events-none disabled:opacity-50",
 	{
 		variants: {
 			variant: {
 				primary: "bg-ds-accent text-ds-on-accent hover:bg-[var(--showhow-accent-hover)]",
-				secondary: "bg-ds-chip text-ds-ink",
-				ghost: "border border-ds-line bg-transparent text-ds-ink",
-				dark: "bg-ds-panel text-ds-on-panel",
-				sidebar: "w-full justify-start bg-ds-on-panel-hover text-ds-on-panel",
+				secondary:
+					"border border-ds-line bg-transparent px-[13px] py-[9px] text-ds-ink hover:bg-ds-ink-wash",
+				ghost: "bg-transparent text-ds-ink-soft hover:underline",
+				dark: "bg-ds-ink text-ds-surface hover:bg-ds-ink-soft",
+				rec: "bg-ds-rec-ink text-ds-surface",
+				sidebar:
+					"w-full justify-start bg-ds-on-panel-wash text-ds-on-panel hover:bg-ds-on-panel-line focus-visible:outline-ds-on-panel",
 				toolbar: "gap-1.5 bg-transparent px-2 py-1.5 text-ds-on-panel-soft",
 			},
 		},

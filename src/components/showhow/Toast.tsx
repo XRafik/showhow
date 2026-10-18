@@ -1,14 +1,17 @@
 import { Toaster, toast } from "sonner";
 
 const showhowToastClass =
-	"rounded-[4px] px-4 py-[10px] font-ds-label text-[11px] font-medium tracking-[0.6px] uppercase bg-ds-ink text-ds-surface shadow-[0_16px_40px_rgba(20,15,8,0.2)]";
+	"rounded-[6px] px-[18px] py-[11px] font-ds-body text-[13px] bg-ds-panel text-ds-on-panel shadow-[4px_4px_0_var(--ds-accent)] motion-reduce:!transition-none motion-reduce:!animate-none";
 
 export function ShowhowToaster() {
 	return (
-		<Toaster position="bottom-right" toastOptions={{ classNames: { toast: showhowToastClass } }} />
+		<Toaster
+			position="bottom-right"
+			toastOptions={{ unstyled: true, classNames: { toast: showhowToastClass } }}
+		/>
 	);
 }
 
 export function showhowToast(message: string) {
-	toast(message, { className: showhowToastClass });
+	toast(message, { unstyled: true, className: showhowToastClass });
 }

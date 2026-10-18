@@ -213,3 +213,36 @@ describe("theme preferences", () => {
 		expect(removeSpy).toHaveBeenCalledWith("storage", expect.any(Function));
 	});
 });
+
+it("reopens System from legacy storage and follows cross-window preference changes", () => {
+	const storage = createStorage({ [LEGACY_THEME_STORAGE_KEY]: "system" });
+	let listener: ((isDark: boolean) => void) | undefined;
+	window.electronAPI = {
+		...window.electronAPI,
+		showhowGetSystemTheme: async () => false,
+		showhowOnSystemThemeChanged: (callback) => {
+			listener = callback;
+			return () => {
+				listener = undefined;
+			};
+		},
+	};
+	const first = initTheme({ storage, systemIsDark: false });
+	expect(document.documentElement.dataset.shTheme).toBe("light");
+	first?.();
+	const reopened = initTheme({ storage, systemIsDark: true });
+	expect(document.documentElement.dataset.shTheme).toBe("dark");
+	expect(storage.getItem(THEME_STORAGE_KEY)).toBe("system");
+	storage.setItem(THEME_STORAGE_KEY, "light");
+	window.dispatchEvent(new StorageEvent("storage", { key: THEME_STORAGE_KEY }));
+	listener?.(true);
+	expect(document.documentElement.dataset.shTheme).toBe("light");
+	storage.setItem(THEME_STORAGE_KEY, "system");
+	window.dispatchEvent(new StorageEvent("storage", { key: THEME_STORAGE_KEY }));
+	listener?.(false);
+	expect(document.documentElement.dataset.shTheme).toBe("light");
+	listener?.(true);
+	expect(document.documentElement.dataset.shTheme).toBe("dark");
+	expect(storage.getItem(LEGACY_THEME_STORAGE_KEY)).toBe("system");
+	reopened?.();
+});

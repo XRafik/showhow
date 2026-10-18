@@ -4,11 +4,9 @@ import { render } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { Logo } from "./Logo";
 
-// .pen XXi60: the cream tile is $ds-surface (light #FFFCF7 / dark #2F2F2F), so
-// the tile must follow the active theme. The remaining logo geometry (sage
-// shadow, ink slab, cursor, rec dot) is fixed-hex by design intent.
-describe("Logo tile follows the theme", () => {
-	it("computes the tile fill from ds-surface in both themes", () => {
+// Final SPEC/mock .mark: the cream tile stays fixed in both themes.
+describe("Final Logo tile stays cream", () => {
+	it("keeps the approved cream tile in both themes", () => {
 		const { rerender } = render(
 			<div data-sh-theme="light">
 				<Logo />
@@ -24,6 +22,6 @@ describe("Logo tile follows the theme", () => {
 			</div>,
 		);
 		const darkTile = document.querySelector("svg rect");
-		expect(window.getComputedStyle(darkTile as SVGRectElement).fill).toBe("rgb(47, 47, 47)");
+		expect(window.getComputedStyle(darkTile as SVGRectElement).fill).toBe("rgb(255, 252, 247)");
 	});
 });
