@@ -804,3 +804,12 @@ Afterpairedfixtureevidence, original fresh recording scenario recheck onexactcan
 ### #125 final approved execution scope and proof
 
 Owner autonomous authority superseded prior parking and exhausted narrow amendment. Recorded scope decisions002/003/004/005 preceded edits. Final ownership is the existing shell/preview playback surfaces, modelManager and same-package regressions, plus these plan/notes. The original approved plan above remains preserved verbatim. Final outcomes and proof limits are recorded in implementation-notes.md under “#125 final candidate and acceptance”; fresh review and one PR are required, never agent merge or automatic issue closure.
+
+
+## Scope007 — hosted progress-test timeout repair (2026-10-18)
+
+Authority: external `autonomous/SCOPE-007-CI-TEST-DIAGNOSIS.md`. Ownership is limited to `electron/stt/modelManager.test.ts`, this plan and implementation notes. Preserve runtime/native/package evidence, PR150, previous reviews and hosted failure receipts. No timeout, configuration or production change.
+
+The scratch phase probe measured generic deep equality of the 3,293,184-byte Buffer at 3,678.2 ms, versus about 39.4 ms for download/hash/install and 1.2 ms for timer draining. The decision was recorded before edits in `autonomous/ci-test-diagnosis/FINDINGS-AND-REPAIR-DECISION.md`: use native `Buffer.equals` for exact byte equality. Retain the 201 × 16 KiB real stream, controlled monotonic clock, expected digest, atomic install, first/final bytes, notification rate/spacing and no queued callbacks.
+
+Validation complete: revised case fails with the original emitter (201 notifications versus ≤11), passes with the repaired emitter; focused 21 tests and affected 230 tests pass; test TypeScript and Biome exit0. Full unit rerun passes 356 files / 4,632 tests with two baseline skips and the same single environment-template exclusion. The first full run's missing public scratch fixtures and its failure are retained separately. Production five and other two playback-test hashes are unchanged. Lead owns fresh review and the same-PR update; executor does not stage, commit or push.

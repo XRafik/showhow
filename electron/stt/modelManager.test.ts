@@ -268,7 +268,7 @@ describe("modelManager", () => {
 				fetcher,
 				onProgress: ({ downloadedBytes }) => progress.push({ at: now, bytes: downloadedBytes }),
 			});
-			expect(await readFile(modelPaths(dir).whisper)).toEqual(content);
+			expect((await readFile(modelPaths(dir).whisper)).equals(content)).toBe(true);
 			expect(existsSync(`${modelPaths(dir).whisper}.partial`)).toBe(false);
 			expect(progress[0].bytes).toBe(chunks[0].length);
 			expect(progress.at(-1)?.bytes).toBe(content.length);
