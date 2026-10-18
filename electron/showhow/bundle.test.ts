@@ -1742,3 +1742,20 @@ describe("click visibility filtering (issue #66: exclude outside clicks)", () =>
 		);
 	});
 });
+
+describe("import metadata compatibility", () => {
+	it("builds imported MP4 metadata without cursor or webcam references", () => {
+		const meta = buildMeta({
+			createdAt: 123,
+			durationMs: 1000,
+			source: "imported",
+			videoFileName: "video.mp4",
+			hasWebcam: false,
+			hasCursorTelemetry: false,
+		});
+		expect(meta.source).toBe("imported");
+		expect(meta.video).toBe("video.mp4");
+		expect(meta).not.toHaveProperty("cursorTelemetry");
+		expect(meta).not.toHaveProperty("webcam");
+	});
+});

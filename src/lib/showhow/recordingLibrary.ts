@@ -67,8 +67,8 @@ export interface RecordingLibraryEntry {
 	bundleDir: string;
 	/** Human-readable title from meta.json. */
 	title: string;
-	/** Recording source: desktop OS capture or browser tab via the companion extension. */
-	source: "desktop" | "browser";
+	/** Recording source: desktop capture, browser companion, or imported local video. */
+	source: "desktop" | "browser" | "imported";
 	/** Unix epoch ms when the recording started (from meta.json). */
 	createdAt: number;
 	/** Recording duration in milliseconds, if known. */
@@ -82,3 +82,20 @@ export interface RecordingLibraryEntry {
 	/** Step-capture availability from meta.json, when present. */
 	stepCapture?: StepCaptureStatus;
 }
+
+export interface ImportRecordingRequest {
+	requestId: string;
+}
+
+export interface ImportRecordingProgress {
+	requestId: string;
+	phase: "picking" | "copying" | "validating" | "saving";
+	fileName?: string;
+	bytesCopied: number;
+	totalBytes: number;
+}
+
+export type ImportRecordingResult =
+	| { status: "imported"; entry: RecordingLibraryEntry }
+	| { status: "cancelled" }
+	| { status: "failed"; error: string };

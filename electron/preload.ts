@@ -95,6 +95,27 @@ contextBridge.exposeInMainWorld("electronAPI", {
 	},
 	showhowOpenRecording: (bundleDir: string) =>
 		ipcRenderer.invoke("showhow:open-recording", bundleDir) as Promise<{ success: boolean }>,
+	showhowImportRecording: (
+		request: import("../src/lib/showhow/recordingLibrary").ImportRecordingRequest,
+	) =>
+		ipcRenderer.invoke("showhow:import-recording", request) as Promise<
+			import("../src/lib/showhow/recordingLibrary").ImportRecordingResult
+		>,
+	showhowCancelImport: (
+		request: import("../src/lib/showhow/recordingLibrary").ImportRecordingRequest,
+	) => ipcRenderer.invoke("showhow:cancel-import", request) as Promise<{ cancelled: boolean }>,
+	showhowOnImportProgress: (
+		callback: (
+			progress: import("../src/lib/showhow/recordingLibrary").ImportRecordingProgress,
+		) => void,
+	) => {
+		const listener = (
+			_event: Electron.IpcRendererEvent,
+			progress: import("../src/lib/showhow/recordingLibrary").ImportRecordingProgress,
+		) => callback(progress);
+		ipcRenderer.on("showhow:import-progress", listener);
+		return () => ipcRenderer.removeListener("showhow:import-progress", listener);
+	},
 	showhowListRecordings: () =>
 		ipcRenderer.invoke("showhow:list-recordings") as Promise<
 			import("../src/lib/showhow/recordingLibrary").RecordingLibraryEntry[]

@@ -136,6 +136,17 @@ interface Window {
 			}) => void,
 		) => () => void;
 		showhowOpenRecording: (bundleDir: string) => Promise<{ success: boolean }>;
+		showhowImportRecording: (
+			request: import("../src/lib/showhow/recordingLibrary").ImportRecordingRequest,
+		) => Promise<import("../src/lib/showhow/recordingLibrary").ImportRecordingResult>;
+		showhowCancelImport: (
+			request: import("../src/lib/showhow/recordingLibrary").ImportRecordingRequest,
+		) => Promise<{ cancelled: boolean }>;
+		showhowOnImportProgress: (
+			callback: (
+				progress: import("../src/lib/showhow/recordingLibrary").ImportRecordingProgress,
+			) => void,
+		) => () => void;
 		showhowListRecordings: () => Promise<
 			import("../src/lib/showhow/recordingLibrary").RecordingLibraryEntry[]
 		>;

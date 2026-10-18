@@ -5,6 +5,7 @@ import { Logo } from "./Logo";
 
 export interface SidebarProps {
 	primary?: { label?: string; icon?: LucideIcon; onClick: () => void };
+	secondaryAction?: ReactNode;
 	libraryLabel?: string;
 	onLibrarySelect?: () => void;
 	children?: ReactNode;
@@ -15,6 +16,7 @@ export interface SidebarProps {
 
 export function Sidebar({
 	primary,
+	secondaryAction,
 	libraryLabel,
 	children,
 	settings,
@@ -35,6 +37,7 @@ export function Sidebar({
 					{primary.label ?? "New recording"}
 				</Button>
 			)}
+			{secondaryAction}
 			<div className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto">
 				{libraryLabel &&
 					(onLibrarySelect ? (

@@ -257,3 +257,28 @@ describe("Final shared foundations", () => {
 		await waitFor(() => expect(trigger).toHaveFocus());
 	});
 });
+
+it("places the optional Sidebar secondary action after primary and before the library", () => {
+	render(
+		<Sidebar
+			primary={{ onClick: () => undefined }}
+			secondaryAction={<Button>Import video</Button>}
+			libraryLabel="Library"
+		>
+			<input aria-label="Search" />
+		</Sidebar>,
+	);
+	const primary = screen.getByRole("button", { name: "New recording" });
+	const secondary = screen.getByRole("button", { name: "Import video" });
+	expect(
+		primary.compareDocumentPosition(secondary) & Node.DOCUMENT_POSITION_FOLLOWING,
+	).toBeTruthy();
+	expect(
+		secondary.compareDocumentPosition(screen.getByText("Library")) &
+			Node.DOCUMENT_POSITION_FOLLOWING,
+	).toBeTruthy();
+	expect(
+		secondary.compareDocumentPosition(screen.getByRole("textbox", { name: "Search" })) &
+			Node.DOCUMENT_POSITION_FOLLOWING,
+	).toBeTruthy();
+});

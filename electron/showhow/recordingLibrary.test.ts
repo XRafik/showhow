@@ -10,6 +10,37 @@ async function makeTempRoot(): Promise<string> {
 }
 
 describe("listRecordings", () => {
+	it("reads an imported MP4 bundle without inventing capture telemetry", async () => {
+		const root = await makeTempRoot();
+		const dir = path.join(root, "imported");
+		await mkdir(dir);
+		await writeFile(path.join(dir, "video.mp4"), "copied media");
+		await writeFile(
+			path.join(dir, "meta.json"),
+			JSON.stringify({
+				title: "Imported demo",
+				source: "imported",
+				createdAt: 123,
+				video: "video.mp4",
+				durationMs: 1000,
+				stepCapture: {
+					status: "unavailable",
+					reason: "no-clicks",
+					message: "Imported video has no click capture.",
+				},
+			}),
+		);
+		const entries = await listRecordings(root);
+		expect(entries).toHaveLength(1);
+		expect(entries[0]).toMatchObject({
+			source: "imported",
+			title: "Imported demo",
+			video: "video.mp4",
+			durationMs: 1000,
+		});
+		expect(entries[0].stepCapture?.status).toBe("unavailable");
+	});
+
 	it("projects only known optional guide statuses and narration kind without changing source files", async () => {
 		const root = await makeTempRoot();
 		for (const [index, status] of [

@@ -31,8 +31,8 @@ interface RawStep {
 	kind?: unknown;
 }
 
-function isValidSource(value: unknown): value is "desktop" | "browser" {
-	return value === "desktop" || value === "browser";
+function isValidSource(value: unknown): value is "desktop" | "browser" | "imported" {
+	return value === "desktop" || value === "browser" || value === "imported";
 }
 
 function isVideoName(value: unknown): value is "video.mp4" | "video.webm" {
@@ -208,7 +208,7 @@ export async function listRecordings(
 	}
 	const results = await Promise.all(
 		entries
-			.filter((entry) => entry.isDirectory())
+			.filter((entry) => entry.isDirectory() && !entry.name.startsWith(".import-"))
 			.map((entry) => readEntryForDir(recordingsRoot, entry.name)),
 	);
 	return results

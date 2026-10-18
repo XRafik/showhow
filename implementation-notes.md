@@ -974,3 +974,87 @@ failure state and IPC. Retain exact path in the button's title and a small
 Recording folder disclosure after guide content. No engine or new feature work.
 Prior executor-freeze-01 and matrix images remain retained pre-repair evidence.
 Rerun affected suites/types/browser/lint/build with new receipt names, then freeze.
+
+## #141 bounded Sidebar amendment — recorded before source edit
+Reference Library17/18 places Import immediately below New recording and above Library/search. Add only an optional secondaryAction ReactNode slot to src/components/showhow/Sidebar.tsx, with coverage in its existing Components.test.tsx, then pass the real import Button from RecordingLibrary. Existing consumers omit the slot. This necessary shared presentation repair is authorised by the standing owner autonomy and lead direction. No generic menu or Sheet geometry change. The shared 560px Sheet is an explicit adaptation from reference 460px.
+
+## #141 MP4 Library import — implementation and limits
+
+The main-owned system picker accepts one local MP4. The renderer supplies only a
+request id, never source/destination paths. The production registration function
+is exported from importRecording.ts for the same native proof entry point. Sender
+and request ownership gates cancellation; malformed requests are rejected before
+the picker. Cancel while the picker is pending writes nothing.
+
+Import copies bytes into an exclusively created .import-* staging directory,
+which the scanner excludes even when staged metadata exists. The source is opened
+read-only; no sidecar is imported or fabricated. After a complete copy, FFmpeg is
+resolved through the existing packaged-tool resolver and fully decodes the copied
+H.264/AAC media, so readable headers alone do not establish a complete video.
+Validation and finalisation are indeterminate phases; copying reports actual
+bytes, bounded to 100ms updates plus initial/final values. Metadata, empty
+workflow artifacts and a pending transcript marker precede the atomic rename.
+Unique destination ids keep duplicate names separate. Cleanup removes only the
+job's own staging directory. A cancellation after publication returns success
+and keeps the complete bundle. Transcript work reuses the existing local job and
+narration guide path; failure preserves imported media. Imported metadata extends
+only the bundle/buildMeta source union, not the recorder input or click tiers.
+
+The sheet reuses the house Sheet/Progress/Button primitives. Its 560px maximum
+width adapts the 460px reference to the established house sheet. Import appears
+immediately after New recording through Sidebar's optional secondaryAction slot.
+Success clears search/overview and selects the imported row. Existing capture
+rows and guide status behavior remain compatible. New locale keys use English
+fallback text in all 15 locale files; translation quality is not claimed.
+
+Focused proof includes real temporary synthetic H.264/AAC MP4 files, unchanged
+source hashes, duplicate names, mid-copy and decode cancellation, truncated
+faststart input, invalid/unreadable/directory/symlink/path inputs, hidden staging,
+exact bytes, picker cancellation, forged renderer paths, foreign/stale cancel,
+actual Library selection and sheet states. Import-reader, success, production
+registration, Library action and Sidebar-order RED receipts are retained.
+Duplicate/cancel/truncated checks were added after the initial import success
+slice and passed on their first run; they are GREEN boundary coverage, not
+separate preimplementation RED claims.
+
+Setup receipts retained: the first synthetic encoder was unavailable; the test
+fixture was repaired to use system FFmpeg/libx264. One initial Library test used
+an ambiguous text query; it was corrected before the meaningful missing-control
+RED. Test TypeScript found an unsupported getByRole option; repaired without
+weakening the assertion. A shared external runner pathname changed during use;
+one green attempt was unscheduled. The executor switched to an exclusive unique
+runner with mandatory heavy scheduling, then reran the affected checks. Initial
+real-file tests used the OS temporary directory; subsequent/final checks set
+TMPDIR/TMP/TEMP to each unique external evidence directory. Old receipts remain
+unchanged. Vite production build and final unit/browser wrappers point envDir to
+a fresh empty external directory; the environment-template unit remains excluded
+locally per the approved privacy boundary, with normal hosted CI still required.
+
+Native macOS proof, editor playback, source hashes after native probes and frame
+comparisons are lead-owned. Executor source checks do not claim native acceptance,
+Windows/Linux runtime, macOS13 hardware, installer/signing or hosted CI results.
+
+### #141 executor final source verification — frozen
+
+- Production TypeScript: exit 0; external showhow-141/final-ts-production-7ximihru/ (command.json, stdout, stderr, result.json).
+- Test TypeScript: exit 0; external showhow-141/final-ts-tests-nci3kppe/ (command.json, stdout, stderr, result.json).
+- Biome: exit 0; 27 inherited warnings; external showhow-141/final-lint-swbpd8j9/ (command.json, stdout, stderr, result.json).
+- Branding: exit 0; external showhow-141/final-branding-4gljvxnr/ (command.json, stdout, stderr, result.json).
+- i18n: exit 0; all 15 locales aligned; external showhow-141/final-i18n-v_nzgcp2/ (command.json, stdout, stderr, result.json).
+- Affected browser: exit 0; 3 files, 14 tests; external showhow-141/final-browser-egcxb_wl/ (command.json, stdout, stderr, result.json).
+- Broad unit: exit 0; 359 files, 4678 passed / 3 skipped; external showhow-141/final-broad-units-n9g7dck_/ (command.json, stdout, stderr, result.json).
+- Production main/preload/renderer build: exit 0; external showhow-141/final-production-build-jacca_30/ (command.json, stdout, stderr, result.json).
+- Affected Showhow: exit 0; 29 files, 359 tests; external showhow-141/affected-showhow-final-djsijb0m/ (command.json, stdout, stderr, result.json).
+
+All final code checks cover the frozen production/test candidate at base HEAD 9eb781dcbc1d46528d2cfe387d1285bae7fab40b plus the dirty ticket diff. Production/test source frozen on lead request. No further source edits or heavy checks pending lead native proof. Independent review has not run; failed-review count remains 0. No executor commit, staging, push, PR, CUA or merge.
+
+
+### #141 lead native proof and retained limitations
+
+External `~/dev/loop-evidence/showhow-141/PROVE.md` binds source checks and two real production Electron import journeys on macOS26.6.2 arm64/Electron41.2.1. Actual picker cancel and actual mid-copy cancel leave no entry; truncated input fails with retry; valid input selects an IMPORTED row; duplicate names create two distinct bundles. Source and all3 copied MP4 hashes match; independent full decode passes for3 copies and4 native recordings. Native editor pixels/counter and timeline advance in both slow-source and unthrottled runs; Library preview also plays. Minimum800×600, light/dark, focus trap/Escape/return and simulated reduced motion are observed.
+
+Scratch bootstrap isolates Electron/OS paths before main, sets only the real picker initial folder, and uses unchanged hash-bound125 native engine inputs. The slow-source fixture delays only reads of the exact generated MP4; the second run is unthrottled. No fabricated events/clocks or fake importer. The loose bootstrap lacks bundled base/native STT helper: transcript failure markers preserve imported media; successful speech/provider/guide generation is not claimed by these import runs. Fixed small/VAD public input caches are verified synthetic copies, with no auth changes.
+
+Both media journeys closed Electron but scratch driver exit13 occurred when reading app.process() after disposed transport. Original raw stacks/drivers remain. Independent process cleanup receipts confirm no owned descendants. The cached-child correction passes a separate short launch/close check with exit0/rootGone; it is not a repeated media-journey claim. BEFORE initial wrongURL setup failure is also retained; corrected paired native BEFORE/AFTER exit0. Full evidence roots are retained outside the worktree. Only notes changed after frozen code checks/native binding; production/test hashes remain equal.
+
+Windows/Linux runtime, macOS13 hardware, current packaging/install/signing and real speech/provider/clipboard acceptance are untested. Fresh independent review and exact-head hosted CI remain separate Ship gates; only owner merges in GitHub.

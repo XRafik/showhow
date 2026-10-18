@@ -154,12 +154,14 @@ import {
 	updateWorkflowDocument,
 } from "../showhow/bundle";
 import { finishShowhowRecording } from "../showhow/finishRecording";
+import { registerImportRecordingHandlers } from "../showhow/importRecording";
 import {
 	listRecordings,
 	readRecordingEntry,
 	regenerateRecordingDoc,
 } from "../showhow/recordingLibrary";
 import { restorePendingBundleTranscript } from "../showhow/resumeTranscript";
+import { requestBundleTranscript } from "../showhow/transcriptJob";
 import { registerNativeBridgeHandlers } from "./nativeBridge";
 import { createNativeMacMidCaptureErrorWatch } from "./nativeMacMidCaptureErrorWatch";
 import { registerRecordingPrefsHandlers } from "./recordingPrefs";
@@ -3937,6 +3939,21 @@ export function registerIpcHandlers(
 			console.error("Showhow recording could not open:", error);
 			return { success: false };
 		}
+	});
+
+	registerImportRecordingHandlers({
+		handle: (channel, handler) => ipcMain.handle(channel, handler),
+		recordingsRoot: SHOWHOW_RECORDINGS_ROOT,
+		selectFile: async () => {
+			const result = await dialog.showOpenDialog({
+				properties: ["openFile"],
+				filters: [{ name: "MP4 video", extensions: ["mp4"] }],
+			});
+			return result.canceled ? null : (result.filePaths[0] ?? null);
+		},
+		onImported: (entry) => {
+			void requestBundleTranscript(entry.bundleDir, path.join(entry.bundleDir, "video.mp4"));
+		},
 	});
 
 	ipcMain.handle("showhow:list-recordings", async () => {
