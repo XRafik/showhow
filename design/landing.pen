@@ -3768,6 +3768,3483 @@
           "height": 14
         }
       ]
+    },
+    {
+      "type": "frame",
+      "id": "Ro86s",
+      "x": 0,
+      "y": -2760,
+      "name": "Landing · Components",
+      "width": 1440,
+      "fill": "$landing-bg",
+      "layout": "vertical",
+      "gap": 32,
+      "padding": 48,
+      "children": [
+        {
+          "type": "text",
+          "id": "DZwHv",
+          "name": "Library heading",
+          "fill": "$landing-text",
+          "content": "Showhow / Landing library",
+          "lineHeight": 1.02,
+          "fontFamily": "$landing-font-heading",
+          "fontSize": 40,
+          "fontWeight": "700",
+          "letterSpacing": -1.44
+        },
+        {
+          "type": "text",
+          "id": "Dwt11",
+          "name": "Library description",
+          "fill": "$landing-text-dim",
+          "content": "11 COMPONENTS · 8 COLOURS · 3 FONTS",
+          "lineHeight": 1.5,
+          "fontFamily": "$landing-font-mono",
+          "fontSize": 12,
+          "fontWeight": "500",
+          "letterSpacing": 0.8
+        },
+        {
+          "type": "frame",
+          "id": "xv0bv",
+          "name": "Nav example",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "children": [
+            {
+              "type": "text",
+              "id": "SrY3k",
+              "name": "Component name",
+              "fill": "$landing-accent",
+              "content": "NAV",
+              "lineHeight": 1.5,
+              "fontFamily": "$landing-font-mono",
+              "fontSize": 12,
+              "fontWeight": "500",
+              "letterSpacing": 0.8
+            },
+            {
+              "type": "frame",
+              "id": "W2SgD",
+              "name": "Nav",
+              "reusable": true,
+              "width": "fill_container",
+              "height": 80,
+              "padding": [
+                0,
+                64
+              ],
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "tuwkI",
+                  "name": "Brand",
+                  "gap": 10,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "rectangle",
+                      "cornerRadius": 8,
+                      "id": "VSUSy",
+                      "name": "Logo",
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "landing-assets/logo.png",
+                        "mode": "contain"
+                      },
+                      "width": 34,
+                      "height": 34
+                    },
+                    {
+                      "type": "text",
+                      "id": "h3Qyhk",
+                      "name": "Wordmark",
+                      "fill": "$landing-text",
+                      "content": "Showhow",
+                      "lineHeight": 1.02,
+                      "fontFamily": "$landing-font-heading",
+                      "fontSize": 20,
+                      "fontWeight": "700",
+                      "letterSpacing": -0.72
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "Yvfbk",
+                  "name": "Links",
+                  "gap": 32,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "R86DzA",
+                      "name": "Link · HOW IT WORKS",
+                      "fill": "$landing-text-dim",
+                      "content": "HOW IT WORKS",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$landing-font-mono",
+                      "fontSize": 12,
+                      "fontWeight": "500",
+                      "letterSpacing": 0.8
+                    },
+                    {
+                      "type": "text",
+                      "id": "LtZtd",
+                      "name": "Link · HOW TO OPEN",
+                      "fill": "$landing-text-dim",
+                      "content": "HOW TO OPEN",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$landing-font-mono",
+                      "fontSize": 12,
+                      "fontWeight": "500",
+                      "letterSpacing": 0.8
+                    },
+                    {
+                      "type": "text",
+                      "id": "N5JBR",
+                      "name": "Link · FAQ",
+                      "fill": "$landing-text-dim",
+                      "content": "FAQ",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$landing-font-mono",
+                      "fontSize": 12,
+                      "fontWeight": "500",
+                      "letterSpacing": 0.8
+                    },
+                    {
+                      "type": "text",
+                      "id": "wDYLO",
+                      "name": "Link · GITHUB",
+                      "fill": "$landing-text-dim",
+                      "content": "GITHUB",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$landing-font-mono",
+                      "fontSize": 12,
+                      "fontWeight": "500",
+                      "letterSpacing": 0.8
+                    }
+                  ]
+                },
+                {
+                  "id": "EHIT1",
+                  "type": "ref",
+                  "ref": "Oy1n2",
+                  "name": "Download",
+                  "descendants": {
+                    "ZsWY6": {
+                      "content": "DOWNLOAD"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "YTqlb",
+          "name": "Controls",
+          "width": "fill_container",
+          "gap": 24,
+          "children": [
+            {
+              "type": "frame",
+              "id": "liOyv",
+              "name": "Button/Primary example",
+              "width": 288,
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "dqTWF",
+                  "name": "Component name",
+                  "fill": "$landing-accent",
+                  "content": "BUTTON/PRIMARY",
+                  "lineHeight": 1.5,
+                  "fontFamily": "$landing-font-mono",
+                  "fontSize": 12,
+                  "fontWeight": "500",
+                  "letterSpacing": 0.8
+                },
+                {
+                  "type": "frame",
+                  "id": "ToC7y",
+                  "name": "Button/Primary",
+                  "context": "Primary action → https://github.com/bedarstudios/showhow until owner supplies a release URL. Minimum hit area: 44px.",
+                  "reusable": true,
+                  "height": 44,
+                  "fill": "$landing-text",
+                  "cornerRadius": 6,
+                  "gap": 10,
+                  "padding": [
+                    0,
+                    20
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "icon",
+                      "id": "k5Qjj",
+                      "name": "Apple",
+                      "width": 16,
+                      "height": 16,
+                      "icon": "apple-logo",
+                      "library": "phosphor",
+                      "fill": "$landing-bg"
+                    },
+                    {
+                      "type": "text",
+                      "id": "Jjg15",
+                      "name": "Label",
+                      "fill": "$landing-bg",
+                      "content": "DOWNLOAD EARLY BUILD FOR MAC",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$landing-font-mono",
+                      "fontSize": 12,
+                      "fontWeight": "500",
+                      "letterSpacing": 0.7
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "RVRLS",
+              "name": "Button/Outline example",
+              "width": 153,
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "hnOnD",
+                  "name": "Component name",
+                  "fill": "$landing-accent",
+                  "content": "BUTTON/OUTLINE",
+                  "lineHeight": 1.5,
+                  "fontFamily": "$landing-font-mono",
+                  "fontSize": 12,
+                  "fontWeight": "500",
+                  "letterSpacing": 0.8
+                },
+                {
+                  "type": "frame",
+                  "id": "Oy1n2",
+                  "name": "Button/Outline",
+                  "context": "Secondary action → https://github.com/bedarstudios/showhow. Minimum hit area: 44px.",
+                  "reusable": true,
+                  "height": 44,
+                  "cornerRadius": 6,
+                  "stroke": "$landing-hairline",
+                  "strokeWidth": 1,
+                  "gap": 10,
+                  "padding": [
+                    0,
+                    20
+                  ],
+                  "justifyContent": "center",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "ZsWY6",
+                      "name": "Label",
+                      "fill": "$landing-text",
+                      "content": "VIEW ON GITHUB",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$landing-font-mono",
+                      "fontSize": 12,
+                      "fontWeight": "500",
+                      "letterSpacing": 0.8
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "e782H",
+              "name": "Eyebrow pill example",
+              "width": 267,
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "P7FzG",
+                  "name": "Component name",
+                  "fill": "$landing-accent",
+                  "content": "EYEBROW PILL",
+                  "lineHeight": 1.5,
+                  "fontFamily": "$landing-font-mono",
+                  "fontSize": 12,
+                  "fontWeight": "500",
+                  "letterSpacing": 0.8
+                },
+                {
+                  "type": "frame",
+                  "id": "VGhAf",
+                  "name": "Eyebrow pill",
+                  "reusable": true,
+                  "fill": "$landing-surface",
+                  "cornerRadius": 999,
+                  "stroke": "$landing-hairline",
+                  "strokeWidth": 1,
+                  "gap": 10,
+                  "padding": [
+                    7,
+                    14
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "lYgXc",
+                      "name": "Status dot",
+                      "fill": "$landing-accent",
+                      "width": 7,
+                      "height": 7
+                    },
+                    {
+                      "type": "text",
+                      "id": "JJFyV",
+                      "name": "Label",
+                      "fill": "$landing-text-dim",
+                      "content": "FREE · OPEN SOURCE · FOR MACOS",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$landing-font-mono",
+                      "fontSize": 11,
+                      "fontWeight": "500",
+                      "letterSpacing": 0.8
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "T2LDPt",
+              "name": "Soon pill example",
+              "width": 100,
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "gYuL0",
+                  "name": "Component name",
+                  "fill": "$landing-accent",
+                  "content": "SOON PILL",
+                  "lineHeight": 1.5,
+                  "fontFamily": "$landing-font-mono",
+                  "fontSize": 12,
+                  "fontWeight": "500",
+                  "letterSpacing": 0.8
+                },
+                {
+                  "type": "frame",
+                  "id": "AM4Q1",
+                  "name": "Soon pill",
+                  "reusable": true,
+                  "cornerRadius": 4,
+                  "stroke": "$landing-accent",
+                  "strokeWidth": 1,
+                  "padding": [
+                    4,
+                    7
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "t9gFYx",
+                      "name": "Label",
+                      "fill": "$landing-accent",
+                      "content": "SOON",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$landing-font-mono",
+                      "fontSize": 10,
+                      "fontWeight": "500",
+                      "letterSpacing": 0.8
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "fVSjR",
+              "name": "Section label example",
+              "width": 160,
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "rOIhE",
+                  "name": "Component name",
+                  "fill": "$landing-accent",
+                  "content": "SECTION LABEL",
+                  "lineHeight": 1.5,
+                  "fontFamily": "$landing-font-mono",
+                  "fontSize": 12,
+                  "fontWeight": "500",
+                  "letterSpacing": 0.8
+                },
+                {
+                  "type": "frame",
+                  "id": "cb4Bj",
+                  "name": "Section label",
+                  "reusable": true,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Gw3V0",
+                      "name": "Label",
+                      "fill": "$landing-accent",
+                      "content": "01 · HOW IT WORKS",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$landing-font-mono",
+                      "fontSize": 12,
+                      "fontWeight": "500",
+                      "letterSpacing": 0.8
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "x2QCU",
+          "name": "Cards",
+          "width": "fill_container",
+          "gap": 48,
+          "children": [
+            {
+              "type": "frame",
+              "id": "g0gGT",
+              "name": "Step card example",
+              "width": 416,
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "j7TApe",
+                  "name": "Component name",
+                  "fill": "$landing-accent",
+                  "content": "STEP CARD",
+                  "lineHeight": 1.5,
+                  "fontFamily": "$landing-font-mono",
+                  "fontSize": 12,
+                  "fontWeight": "500",
+                  "letterSpacing": 0.8
+                },
+                {
+                  "type": "frame",
+                  "id": "o6UZqE",
+                  "name": "Step card",
+                  "reusable": true,
+                  "width": 416,
+                  "layout": "vertical",
+                  "gap": 8,
+                  "children": [
+                    {
+                      "id": "RADSZ",
+                      "type": "ref",
+                      "ref": "HyEvB",
+                      "name": "Step loop",
+                      "width": "fill_container",
+                      "height": 260
+                    },
+                    {
+                      "type": "text",
+                      "id": "ajQaR",
+                      "name": "Number",
+                      "fill": "$landing-accent",
+                      "content": "01",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$landing-font-mono",
+                      "fontSize": 12,
+                      "fontWeight": "500",
+                      "letterSpacing": 0.8
+                    },
+                    {
+                      "type": "frame",
+                      "id": "B8HlT",
+                      "name": "Title row",
+                      "width": "fill_container",
+                      "gap": 8,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "olWzh",
+                          "name": "Title",
+                          "fill": "$landing-text",
+                          "content": "Record",
+                          "lineHeight": 1.02,
+                          "fontFamily": "$landing-font-heading",
+                          "fontSize": 26,
+                          "fontWeight": "700",
+                          "letterSpacing": -0.9359999999999999
+                        },
+                        {
+                          "id": "XJvS9",
+                          "type": "ref",
+                          "ref": "AM4Q1",
+                          "name": "Coming soon",
+                          "enabled": false
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "f2QgW",
+                      "name": "Description",
+                      "fill": "$landing-text-dim",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Capture your screen. Your clicks and cursor are tracked.",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$landing-font-body",
+                      "fontSize": 16,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "WM6fT",
+              "name": "Handoff panel example",
+              "width": 632,
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "SerVy",
+                  "name": "Component name",
+                  "fill": "$landing-accent",
+                  "content": "HANDOFF PANEL",
+                  "lineHeight": 1.5,
+                  "fontFamily": "$landing-font-mono",
+                  "fontSize": 12,
+                  "fontWeight": "500",
+                  "letterSpacing": 0.8
+                },
+                {
+                  "type": "frame",
+                  "id": "BEoKz",
+                  "name": "Handoff panel",
+                  "reusable": true,
+                  "width": 632,
+                  "fill": "$landing-surface",
+                  "cornerRadius": 10,
+                  "stroke": "$landing-hairline",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 20,
+                  "padding": 20,
+                  "children": [
+                    {
+                      "id": "X777d1",
+                      "type": "ref",
+                      "ref": "HyEvB",
+                      "name": "Handoff still",
+                      "width": "fill_container",
+                      "height": 370,
+                      "descendants": {
+                        "Ki5dz": {
+                          "fill": {
+                            "type": "image",
+                            "enabled": true,
+                            "url": "landing-assets/handoff-agent-brief.png",
+                            "mode": "cover",
+                            "transform": [
+                              1.466,
+                              0,
+                              0,
+                              2.068,
+                              -0.399,
+                              -0.996
+                            ]
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "type": "frame",
+                      "id": "LYj9o",
+                      "name": "Title row",
+                      "width": "fill_container",
+                      "gap": 12,
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "lf5EI",
+                          "name": "Title",
+                          "fill": "$landing-text",
+                          "content": "For your agent",
+                          "lineHeight": 1.02,
+                          "fontFamily": "$landing-font-heading",
+                          "fontSize": 28,
+                          "fontWeight": "700",
+                          "letterSpacing": -1.008
+                        },
+                        {
+                          "id": "xo9fI",
+                          "type": "ref",
+                          "ref": "AM4Q1",
+                          "name": "Soon"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "KK0kB",
+                      "type": "ref",
+                      "ref": "Oy1n2",
+                      "name": "Disabled chip",
+                      "height": 36,
+                      "opacity": 0.55,
+                      "fill": "$landing-surface",
+                      "context": "Disabled · aria-disabled=true in Task 2",
+                      "descendants": {
+                        "ZsWY6": {
+                          "content": "COPY FOR AGENT"
+                        }
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "id": "vRKtv",
+                      "name": "Description",
+                      "fill": "$landing-text-dim",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "A detailed brief plus the recording folder path, pasted straight into Claude Code or Codex.",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$landing-font-body",
+                      "fontSize": 16,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "gXRZi",
+          "name": "Media and disclosure",
+          "width": "fill_container",
+          "gap": 32,
+          "children": [
+            {
+              "type": "frame",
+              "id": "TOkiL",
+              "name": "Loop slot example",
+              "width": 400,
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "N9WqZ",
+                  "name": "Component name",
+                  "fill": "$landing-accent",
+                  "content": "LOOP SLOT",
+                  "lineHeight": 1.5,
+                  "fontFamily": "$landing-font-mono",
+                  "fontSize": 12,
+                  "fontWeight": "500",
+                  "letterSpacing": 0.8
+                },
+                {
+                  "type": "frame",
+                  "id": "HyEvB",
+                  "name": "Loop slot",
+                  "reusable": true,
+                  "clip": true,
+                  "width": 400,
+                  "height": 250,
+                  "fill": "$landing-surface",
+                  "cornerRadius": 10,
+                  "stroke": "$landing-hairline",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "rectangle",
+                      "id": "Ki5dz",
+                      "name": "Design frame placeholder",
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "landing-assets/app-guide.png",
+                        "mode": "cover"
+                      },
+                      "width": "fill_container",
+                      "height": "fill_container"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "DApbK",
+                      "layoutPosition": "absolute",
+                      "x": 10,
+                      "y": 10,
+                      "name": "Placeholder tag",
+                      "fill": "$landing-bg",
+                      "cornerRadius": 4,
+                      "padding": [
+                        5,
+                        8
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "W4w9sw",
+                          "name": "Tag",
+                          "fill": "$landing-text-dim",
+                          "content": "PLACEHOLDER",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$landing-font-mono",
+                          "fontSize": 10,
+                          "fontWeight": "500",
+                          "letterSpacing": 0.8
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "H6I53Z",
+              "name": "FAQ item example",
+              "width": 860,
+              "layout": "vertical",
+              "gap": 16,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "kjJm5",
+                  "name": "Component name",
+                  "fill": "$landing-accent",
+                  "content": "FAQ ITEM",
+                  "lineHeight": 1.5,
+                  "fontFamily": "$landing-font-mono",
+                  "fontSize": 12,
+                  "fontWeight": "500",
+                  "letterSpacing": 0.8
+                },
+                {
+                  "type": "frame",
+                  "id": "Q9CyA",
+                  "name": "FAQ item",
+                  "reusable": true,
+                  "width": 860,
+                  "stroke": "$landing-hairline",
+                  "strokeWidth": {
+                    "bottom": 1
+                  },
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "e4Gwa",
+                      "name": "Question row",
+                      "width": "fill_container",
+                      "gap": 16,
+                      "padding": [
+                        22,
+                        8
+                      ],
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "s0SJYT",
+                          "name": "Question",
+                          "fill": "$landing-text",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Is it really free?",
+                          "lineHeight": 1.02,
+                          "fontFamily": "$landing-font-heading",
+                          "fontSize": 22,
+                          "fontWeight": "700",
+                          "letterSpacing": -0.7919999999999999
+                        },
+                        {
+                          "type": "text",
+                          "id": "FzgiG",
+                          "name": "Toggle",
+                          "fill": "$landing-accent",
+                          "content": "+",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$landing-font-mono",
+                          "fontSize": 20,
+                          "fontWeight": "500",
+                          "letterSpacing": 0.8
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "dJ8Py",
+                      "x": 0,
+                      "y": 0,
+                      "name": "Answer",
+                      "enabled": false,
+                      "width": 844,
+                      "layout": "vertical",
+                      "padding": [
+                        0,
+                        8,
+                        24,
+                        8
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "dPOb1",
+                          "name": "Answer text",
+                          "fill": "$landing-text-dim",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Yes. Free and open source, no paywall or account.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$landing-font-body",
+                          "fontSize": 16,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "id": "IdVz1",
+                  "type": "ref",
+                  "ref": "Q9CyA",
+                  "name": "FAQ item · open",
+                  "width": 860,
+                  "descendants": {
+                    "s0SJYT": {
+                      "fill": "$landing-accent"
+                    },
+                    "FzgiG": {
+                      "content": "×"
+                    },
+                    "dJ8Py": {
+                      "enabled": true
+                    },
+                    "dPOb1": {
+                      "content": "Yes. Free and open source, no paywall or account."
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "qSDcA",
+          "name": "Footer call to action example",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "children": [
+            {
+              "type": "text",
+              "id": "RW8Tr",
+              "name": "Component name",
+              "fill": "$landing-accent",
+              "content": "FOOTER CALL TO ACTION",
+              "lineHeight": 1.5,
+              "fontFamily": "$landing-font-mono",
+              "fontSize": 12,
+              "fontWeight": "500",
+              "letterSpacing": 0.8
+            },
+            {
+              "type": "frame",
+              "id": "XiuwO",
+              "name": "Footer call to action",
+              "reusable": true,
+              "width": "fill_container",
+              "stroke": "$landing-hairline",
+              "strokeWidth": {
+                "top": 1
+              },
+              "layout": "vertical",
+              "gap": 36,
+              "padding": [
+                80,
+                64,
+                48,
+                64
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "dD8RE",
+                  "name": "Closing headline",
+                  "fill": "$landing-text",
+                  "textGrowth": "fixed-width",
+                  "width": 900,
+                  "content": "Next time a client messages, record it.",
+                  "lineHeight": 1.02,
+                  "textAlign": "center",
+                  "fontFamily": "$landing-font-heading",
+                  "fontSize": 56,
+                  "fontWeight": "700",
+                  "letterSpacing": -2.016
+                },
+                {
+                  "id": "A8JbBs",
+                  "type": "ref",
+                  "ref": "ToC7y",
+                  "name": "Download early build"
+                },
+                {
+                  "type": "frame",
+                  "id": "vzF9i",
+                  "name": "Footer row",
+                  "width": "fill_container",
+                  "stroke": "$landing-hairline",
+                  "strokeWidth": {
+                    "top": 1
+                  },
+                  "gap": 24,
+                  "padding": [
+                    32,
+                    0,
+                    0,
+                    0
+                  ],
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "nEEz8",
+                      "name": "Wordmark",
+                      "fill": "$landing-text",
+                      "content": "Showhow",
+                      "lineHeight": 1.02,
+                      "fontFamily": "$landing-font-heading",
+                      "fontSize": 20,
+                      "fontWeight": "700",
+                      "letterSpacing": -0.72
+                    },
+                    {
+                      "type": "text",
+                      "id": "OhFaH",
+                      "name": "GitHub",
+                      "fill": "$landing-text-dim",
+                      "content": "GITHUB",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$landing-font-mono",
+                      "fontSize": 12,
+                      "fontWeight": "500",
+                      "letterSpacing": 0.8
+                    },
+                    {
+                      "type": "text",
+                      "id": "G19Rr0",
+                      "name": "Free promise",
+                      "fill": "$landing-text-dim",
+                      "content": "Free forever · Open source",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$landing-font-body",
+                      "fontSize": 16,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "IlvZ9",
+                      "name": "Copyright",
+                      "fill": "$landing-text-dim",
+                      "content": "© BEDAR STUDIOS",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$landing-font-mono",
+                      "fontSize": 12,
+                      "fontWeight": "500",
+                      "letterSpacing": 0.8
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "TRpgX",
+      "x": 1560,
+      "y": 1360,
+      "name": "Landing · Final · desktop",
+      "clip": true,
+      "width": 1440,
+      "fill": "$landing-bg",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "rectangle",
+          "id": "Xse4s",
+          "layoutPosition": "absolute",
+          "x": 0,
+          "y": 0,
+          "name": "Darkroom grain · decorative",
+          "opacity": 0.3,
+          "fill": {
+            "type": "shader",
+            "enabled": true,
+            "url": "landing-assets/grain-darkroom-fade.glsl",
+            "uniforms": {
+              "u_gy": 0.62,
+              "u_grain": 0.15,
+              "u_warp": 0.6,
+              "u_room": "$landing-bg",
+              "u_sage": "$landing-accent",
+              "u_ember": "$landing-record"
+            }
+          },
+          "width": 1440,
+          "height": 1200
+        },
+        {
+          "id": "szmRC",
+          "type": "ref",
+          "ref": "W2SgD",
+          "name": "Nav"
+        },
+        {
+          "type": "frame",
+          "id": "C7iuz",
+          "name": "Hero",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 12,
+          "padding": [
+            36,
+            64,
+            0,
+            64
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "id": "GmIdU",
+              "type": "ref",
+              "ref": "VGhAf",
+              "name": "Free and open source"
+            },
+            {
+              "type": "frame",
+              "id": "xTe4y",
+              "name": "Headline",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "O0kGHF",
+                  "name": "Headline text",
+                  "fill": "$landing-text",
+                  "content": "Show how it’s done",
+                  "lineHeight": 0.95,
+                  "fontFamily": "$landing-font-heading",
+                  "fontSize": 116,
+                  "fontWeight": "700",
+                  "letterSpacing": -4.175999999999999
+                },
+                {
+                  "type": "text",
+                  "id": "fruGd",
+                  "name": "Record orange full stop",
+                  "fill": "$landing-record",
+                  "content": ".",
+                  "lineHeight": 0.95,
+                  "fontFamily": "$landing-font-heading",
+                  "fontSize": 116,
+                  "fontWeight": "700",
+                  "letterSpacing": -4.175999999999999
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "UAF47",
+              "name": "Subhead",
+              "fill": "$landing-text-dim",
+              "textGrowth": "fixed-width",
+              "width": 640,
+              "content": "A client messages. Three agents are waiting. Record your screen once, press one button, and Showhow turns it into a step-by-step guide you can hand to an agent or send to a client.",
+              "lineHeight": 1.5,
+              "textAlign": "center",
+              "fontFamily": "$landing-font-body",
+              "fontSize": 19,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "r4k20w",
+              "name": "Actions",
+              "gap": 12,
+              "padding": [
+                8,
+                0,
+                0,
+                0
+              ],
+              "children": [
+                {
+                  "id": "q33nS",
+                  "type": "ref",
+                  "ref": "ToC7y",
+                  "name": "Download early build for Mac"
+                },
+                {
+                  "id": "SEFpL",
+                  "type": "ref",
+                  "ref": "Oy1n2",
+                  "name": "View on GitHub"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "qND9y",
+              "name": "Build details",
+              "width": "fill_container",
+              "layout": "vertical",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "iJ64i",
+                  "name": "Build metadata",
+                  "fill": "$landing-text-dim",
+                  "content": "macOS 13+ · Universal, 167 MB · Early build: recording and guides work, more coming",
+                  "lineHeight": 1.5,
+                  "fontFamily": "$landing-font-mono",
+                  "fontSize": 12,
+                  "fontWeight": "500",
+                  "letterSpacing": 0.2
+                },
+                {
+                  "type": "text",
+                  "id": "YjUfH",
+                  "name": "Unsigned build link",
+                  "fill": "$landing-accent",
+                  "content": "Unsigned build — here’s how to open it",
+                  "lineHeight": 1.5,
+                  "fontFamily": "$landing-font-mono",
+                  "fontSize": 12,
+                  "fontWeight": "500",
+                  "letterSpacing": 0.2
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "qGVI5",
+              "name": "Hero media",
+              "width": 1040,
+              "layout": "vertical",
+              "padding": [
+                16,
+                0,
+                0,
+                0
+              ],
+              "children": [
+                {
+                  "id": "SqqCq",
+                  "type": "ref",
+                  "ref": "HyEvB",
+                  "name": "Hero loop · 3.0 seconds",
+                  "width": 1040,
+                  "height": 460,
+                  "context": "Muted 6s loop. Reduced motion: poster, no autoplay. Design frame at 3.0 seconds.",
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "$landing-accent",
+                    "offset": {
+                      "x": 6,
+                      "y": 6
+                    }
+                  },
+                  "descendants": {
+                    "Ki5dz": {
+                      "layoutPosition": "absolute",
+                      "x": 0,
+                      "y": -31,
+                      "width": 1040,
+                      "height": 650,
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "landing-assets/hero-make-guide-progress.png",
+                        "mode": "stretch"
+                      },
+                      "context": "Intentional image crop. Source is 1856×1160 at t=3.0s, scaled to 1040×650 and shifted -31px. Card bottom is y=898 on the desktop page."
+                    },
+                    "DApbK": {
+                      "x": 16,
+                      "y": 420
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "wVynh",
+          "name": "How it works",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            24,
+            64,
+            128,
+            64
+          ],
+          "children": [
+            {
+              "id": "pdPaj",
+              "type": "ref",
+              "ref": "cb4Bj",
+              "name": "01 · How it works"
+            },
+            {
+              "type": "text",
+              "id": "my1RB",
+              "name": "Heading",
+              "fill": "$landing-text",
+              "content": "Record once. Get the guide.",
+              "lineHeight": 1.02,
+              "fontFamily": "$landing-font-heading",
+              "fontSize": 56,
+              "fontWeight": "700",
+              "letterSpacing": -2.016
+            },
+            {
+              "type": "frame",
+              "id": "mF6Zs",
+              "name": "Three steps",
+              "width": "fill_container",
+              "gap": 32,
+              "padding": [
+                36,
+                0,
+                0,
+                0
+              ],
+              "children": [
+                {
+                  "id": "eq9GE",
+                  "type": "ref",
+                  "ref": "o6UZqE",
+                  "name": "Record",
+                  "width": "fill_container",
+                  "descendants": {
+                    "RADSZ": {
+                      "context": "Muted 4s loop; poster in reduced motion"
+                    },
+                    "RADSZ/Ki5dz": {
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "landing-assets/app-guide.png",
+                        "mode": "cover",
+                        "transform": [
+                          1.2931,
+                          0,
+                          0,
+                          1.2931,
+                          -0.2931,
+                          0
+                        ]
+                      }
+                    },
+                    "ajQaR": {
+                      "content": "01"
+                    },
+                    "olWzh": {
+                      "content": "Record"
+                    },
+                    "XJvS9": {
+                      "enabled": false
+                    },
+                    "f2QgW": {
+                      "content": "Capture your screen. Your clicks and cursor are tracked."
+                    }
+                  }
+                },
+                {
+                  "id": "HQ1Uh",
+                  "type": "ref",
+                  "ref": "o6UZqE",
+                  "name": "Press one button",
+                  "width": "fill_container",
+                  "descendants": {
+                    "RADSZ": {
+                      "context": "Muted 4s loop; poster in reduced motion"
+                    },
+                    "RADSZ/Ki5dz": {
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "landing-assets/app-guide.png",
+                        "mode": "cover",
+                        "transform": [
+                          1.2931,
+                          0,
+                          0,
+                          1.2931,
+                          -0.2931,
+                          -0.21
+                        ]
+                      }
+                    },
+                    "ajQaR": {
+                      "content": "02"
+                    },
+                    "olWzh": {
+                      "content": "Press one button"
+                    },
+                    "XJvS9": {
+                      "enabled": false
+                    },
+                    "f2QgW": {
+                      "content": "Make guide turns it into steps with screenshots and timestamps."
+                    }
+                  }
+                },
+                {
+                  "id": "aRfXD",
+                  "type": "ref",
+                  "ref": "o6UZqE",
+                  "name": "Hand it off",
+                  "width": "fill_container",
+                  "descendants": {
+                    "RADSZ": {
+                      "context": "Still"
+                    },
+                    "RADSZ/Ki5dz": {
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "landing-assets/app-guide.png",
+                        "mode": "cover",
+                        "transform": [
+                          1.2931,
+                          0,
+                          0,
+                          1.2931,
+                          -0.2931,
+                          0
+                        ]
+                      }
+                    },
+                    "ajQaR": {
+                      "content": "03"
+                    },
+                    "olWzh": {
+                      "content": "Hand it off"
+                    },
+                    "XJvS9": {
+                      "enabled": true
+                    },
+                    "f2QgW": {
+                      "content": "Send the guide to an agent or a client. Handoffs are coming soon."
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Y934X",
+          "name": "Coming next",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            0,
+            64,
+            128,
+            64
+          ],
+          "children": [
+            {
+              "id": "rnLJ7",
+              "type": "ref",
+              "ref": "cb4Bj",
+              "name": "02 · Coming next",
+              "descendants": {
+                "Gw3V0": {
+                  "content": "02 · COMING NEXT"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "HrcZu",
+              "name": "Heading",
+              "fill": "$landing-text",
+              "content": "One guide. Two handoffs.",
+              "lineHeight": 1.02,
+              "fontFamily": "$landing-font-heading",
+              "fontSize": 56,
+              "fontWeight": "700",
+              "letterSpacing": -2.016
+            },
+            {
+              "type": "text",
+              "id": "p5MpQz",
+              "name": "Status",
+              "fill": "$landing-text-dim",
+              "content": "Guides work today. These two handoffs ship next.",
+              "lineHeight": 1.5,
+              "fontFamily": "$landing-font-body",
+              "fontSize": 17,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "WR8hH",
+              "name": "Two handoffs",
+              "width": "fill_container",
+              "gap": 24,
+              "padding": [
+                36,
+                0,
+                0,
+                0
+              ],
+              "children": [
+                {
+                  "id": "yqr2P",
+                  "type": "ref",
+                  "ref": "BEoKz",
+                  "name": "For your agent",
+                  "width": "fill_container",
+                  "height": 583
+                },
+                {
+                  "id": "k4tym",
+                  "type": "ref",
+                  "ref": "BEoKz",
+                  "name": "For your client",
+                  "width": "fill_container",
+                  "height": 583,
+                  "descendants": {
+                    "X777d1/Ki5dz": {
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "landing-assets/handoff-pdf-saved.png",
+                        "mode": "cover",
+                        "transform": [
+                          1.734,
+                          0,
+                          0,
+                          3.322,
+                          -0.372,
+                          -0.434
+                        ]
+                      }
+                    },
+                    "lf5EI": {
+                      "content": "For your client"
+                    },
+                    "KK0kB/ZsWY6": {
+                      "content": "EXPORT PDF"
+                    },
+                    "vRKtv": {
+                      "content": "A clean walkthrough with screenshots they can read without a call."
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "ZNAp4",
+          "name": "How to open",
+          "width": "fill_container",
+          "gap": 64,
+          "padding": [
+            0,
+            64,
+            128,
+            64
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "HLtAR",
+              "name": "Open instructions",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 20,
+              "children": [
+                {
+                  "id": "PfTRi",
+                  "type": "ref",
+                  "ref": "cb4Bj",
+                  "name": "03 · How to open",
+                  "descendants": {
+                    "Gw3V0": {
+                      "content": "03 · HOW TO OPEN"
+                    }
+                  }
+                },
+                {
+                  "type": "text",
+                  "id": "ZeZFj",
+                  "name": "Heading",
+                  "fill": "$landing-text",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "It’s an unsigned build. Here’s the 30-second fix.",
+                  "lineHeight": 1.02,
+                  "fontFamily": "$landing-font-heading",
+                  "fontSize": 44,
+                  "fontWeight": "700",
+                  "letterSpacing": -1.5839999999999999
+                },
+                {
+                  "type": "frame",
+                  "id": "ExHkU",
+                  "name": "Three open steps",
+                  "width": "fill_container",
+                  "stroke": "$landing-hairline",
+                  "strokeWidth": {
+                    "top": 1
+                  },
+                  "layout": "vertical",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "chfOp",
+                      "name": "Open step 1",
+                      "width": "fill_container",
+                      "stroke": "$landing-hairline",
+                      "strokeWidth": {
+                        "bottom": 1
+                      },
+                      "gap": 20,
+                      "padding": [
+                        20,
+                        0
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "lAddp",
+                          "name": "Number",
+                          "fill": "$landing-accent",
+                          "content": "01",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$landing-font-mono",
+                          "fontSize": 12,
+                          "fontWeight": "500",
+                          "letterSpacing": 0.8
+                        },
+                        {
+                          "type": "text",
+                          "id": "cfPGD",
+                          "name": "Instruction",
+                          "fill": "$landing-text",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Drag Showhow to Applications.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$landing-font-body",
+                          "fontSize": 18,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Sf6N0",
+                      "name": "Open step 2",
+                      "width": "fill_container",
+                      "stroke": "$landing-hairline",
+                      "strokeWidth": {
+                        "bottom": 1
+                      },
+                      "gap": 20,
+                      "padding": [
+                        20,
+                        0
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "IQfxG",
+                          "name": "Number",
+                          "fill": "$landing-accent",
+                          "content": "02",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$landing-font-mono",
+                          "fontSize": 12,
+                          "fontWeight": "500",
+                          "letterSpacing": 0.8
+                        },
+                        {
+                          "type": "text",
+                          "id": "XNjSQ",
+                          "name": "Instruction",
+                          "fill": "$landing-text",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "Try to open it, then dismiss the warning.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$landing-font-body",
+                          "fontSize": 18,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "zu1jX",
+                      "name": "Open step 3",
+                      "width": "fill_container",
+                      "stroke": "$landing-hairline",
+                      "strokeWidth": {
+                        "bottom": 1
+                      },
+                      "gap": 20,
+                      "padding": [
+                        20,
+                        0
+                      ],
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "qeFLM",
+                          "name": "Number",
+                          "fill": "$landing-accent",
+                          "content": "03",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$landing-font-mono",
+                          "fontSize": 12,
+                          "fontWeight": "500",
+                          "letterSpacing": 0.8
+                        },
+                        {
+                          "type": "text",
+                          "id": "vy2vZ",
+                          "name": "Instruction",
+                          "fill": "$landing-text",
+                          "textGrowth": "fixed-width",
+                          "width": "fill_container",
+                          "content": "System Settings → Privacy & Security → Open Anyway.",
+                          "lineHeight": 1.5,
+                          "fontFamily": "$landing-font-body",
+                          "fontSize": 18,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "L8myQ",
+              "type": "ref",
+              "ref": "HyEvB",
+              "name": "How to open loop",
+              "width": "fill_container",
+              "height": 390,
+              "context": "Muted 6s loop; poster in reduced motion"
+            },
+            {
+              "type": "frame",
+              "id": "NluRl",
+              "layoutPosition": "absolute",
+              "x": 810,
+              "y": 145,
+              "name": "Open loop overlay",
+              "width": 440,
+              "fill": "$landing-bg",
+              "cornerRadius": 8,
+              "stroke": "$landing-hairline",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 12,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "NHq1r",
+                  "name": "Open preview step 1",
+                  "fill": "$landing-accent",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "1  Drag Showhow to Applications",
+                  "lineHeight": 1.5,
+                  "fontFamily": "$landing-font-mono",
+                  "fontSize": 11,
+                  "fontWeight": "500",
+                  "letterSpacing": 0.8
+                },
+                {
+                  "type": "text",
+                  "id": "pm5ue",
+                  "name": "Open preview step 2",
+                  "fill": "$landing-text",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "2  Open it, dismiss the warning",
+                  "lineHeight": 1.5,
+                  "fontFamily": "$landing-font-mono",
+                  "fontSize": 11,
+                  "fontWeight": "500",
+                  "letterSpacing": 0.8
+                },
+                {
+                  "type": "text",
+                  "id": "HvH7t",
+                  "name": "Open preview step 3",
+                  "fill": "$landing-accent",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "3  Privacy & Security → Open Anyway",
+                  "lineHeight": 1.5,
+                  "fontFamily": "$landing-font-mono",
+                  "fontSize": 11,
+                  "fontWeight": "500",
+                  "letterSpacing": 0.8
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Slg6o",
+          "name": "FAQ",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            0,
+            64,
+            128,
+            64
+          ],
+          "children": [
+            {
+              "id": "hQ95L",
+              "type": "ref",
+              "ref": "cb4Bj",
+              "name": "04 · FAQ",
+              "descendants": {
+                "Gw3V0": {
+                  "content": "04 · FAQ"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "YClO7",
+              "name": "Six questions",
+              "width": 860,
+              "layout": "vertical",
+              "children": [
+                {
+                  "id": "xCPiE",
+                  "type": "ref",
+                  "ref": "Q9CyA",
+                  "name": "Is it really free?",
+                  "width": "fill_container",
+                  "descendants": {
+                    "s0SJYT": {
+                      "content": "Is it really free?",
+                      "fill": "$landing-accent"
+                    },
+                    "FzgiG": {
+                      "content": "×"
+                    },
+                    "dJ8Py": {
+                      "enabled": true
+                    },
+                    "dPOb1": {
+                      "content": "Yes. Free and open source, no paywall or account."
+                    }
+                  }
+                },
+                {
+                  "id": "U5FK6",
+                  "type": "ref",
+                  "ref": "Q9CyA",
+                  "name": "Is Showhow a new app or a fork?",
+                  "width": "fill_container",
+                  "descendants": {
+                    "s0SJYT": {
+                      "content": "Is Showhow a new app or a fork?",
+                      "fill": "$landing-text"
+                    },
+                    "FzgiG": {
+                      "content": "+"
+                    },
+                    "dJ8Py": {
+                      "enabled": false
+                    },
+                    "dPOb1": {
+                      "content": "It is a fork of OpenScreen, the open-source screen recorder created by Siddharth Vaddem and now continued by the OpenScreen contributors. Showhow keeps OpenScreen’s recorder and editor and adds a library of your recordings and the step-by-step guides. If you only want a recorder, OpenScreen is excellent on its own. Both are MIT licensed."
+                    }
+                  }
+                },
+                {
+                  "id": "Zhwn9",
+                  "type": "ref",
+                  "ref": "Q9CyA",
+                  "name": "Does it upload my recordings?",
+                  "width": "fill_container",
+                  "descendants": {
+                    "s0SJYT": {
+                      "content": "Does it upload my recordings?",
+                      "fill": "$landing-text"
+                    },
+                    "FzgiG": {
+                      "content": "+"
+                    },
+                    "dJ8Py": {
+                      "enabled": false
+                    },
+                    "dPOb1": {
+                      "content": "No. Recording happens on your Mac. AI only runs when you connect your own OpenRouter key, and only for the guide step."
+                    }
+                  }
+                },
+                {
+                  "id": "xvIvG",
+                  "type": "ref",
+                  "ref": "Q9CyA",
+                  "name": "What if the AI step fails?",
+                  "width": "fill_container",
+                  "descendants": {
+                    "s0SJYT": {
+                      "content": "What if the AI step fails?",
+                      "fill": "$landing-text"
+                    },
+                    "FzgiG": {
+                      "content": "+"
+                    },
+                    "dJ8Py": {
+                      "enabled": false
+                    },
+                    "dPOb1": {
+                      "content": "The recording always saves. A failed guide never loses a take."
+                    }
+                  }
+                },
+                {
+                  "id": "G7WXz",
+                  "type": "ref",
+                  "ref": "Q9CyA",
+                  "name": "Windows or Linux?",
+                  "width": "fill_container",
+                  "descendants": {
+                    "s0SJYT": {
+                      "content": "Windows or Linux?",
+                      "fill": "$landing-text"
+                    },
+                    "FzgiG": {
+                      "content": "+"
+                    },
+                    "dJ8Py": {
+                      "enabled": false
+                    },
+                    "dPOb1": {
+                      "content": "Not yet. macOS only for now."
+                    }
+                  }
+                },
+                {
+                  "id": "WT2gk",
+                  "type": "ref",
+                  "ref": "Q9CyA",
+                  "name": "Which agents does it work with?",
+                  "width": "fill_container",
+                  "descendants": {
+                    "s0SJYT": {
+                      "content": "Which agents does it work with?",
+                      "fill": "$landing-text"
+                    },
+                    "FzgiG": {
+                      "content": "+"
+                    },
+                    "dJ8Py": {
+                      "enabled": false
+                    },
+                    "dPOb1": {
+                      "content": "Anything that reads text and a folder path, including Claude Code and Codex."
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "gBj7J",
+          "type": "ref",
+          "ref": "XiuwO",
+          "name": "Footer call to action"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "ma1pm",
+      "x": 3160,
+      "y": 1360,
+      "name": "Landing · Final · mobile",
+      "clip": true,
+      "width": 390,
+      "fill": "$landing-bg",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "rectangle",
+          "id": "kztGq",
+          "layoutPosition": "absolute",
+          "x": 0,
+          "y": 0,
+          "name": "Darkroom grain · decorative",
+          "opacity": 0.3,
+          "fill": {
+            "type": "shader",
+            "enabled": true,
+            "url": "landing-assets/grain-darkroom-fade.glsl",
+            "uniforms": {
+              "u_gy": 0.7,
+              "u_grain": 0.15,
+              "u_warp": 0.6,
+              "u_room": "$landing-bg",
+              "u_sage": "$landing-accent",
+              "u_ember": "$landing-record"
+            }
+          },
+          "width": 390,
+          "height": 1000
+        },
+        {
+          "id": "kpgZk",
+          "type": "ref",
+          "ref": "W2SgD",
+          "name": "Nav",
+          "width": "fill_container",
+          "padding": [
+            0,
+            20
+          ],
+          "descendants": {
+            "Yvfbk": {
+              "enabled": false
+            }
+          }
+        },
+        {
+          "type": "frame",
+          "id": "b8VC6g",
+          "name": "Hero",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 24,
+          "padding": [
+            56,
+            20,
+            0,
+            20
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "id": "mjtSO",
+              "type": "ref",
+              "ref": "VGhAf",
+              "name": "Free and open source"
+            },
+            {
+              "type": "frame",
+              "id": "nDf7k",
+              "name": "Headline",
+              "width": "fill_container",
+              "layout": "vertical",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "Q5V4m",
+                  "name": "Headline line one",
+                  "fill": "$landing-text",
+                  "content": "Show how",
+                  "lineHeight": 0.95,
+                  "fontFamily": "$landing-font-heading",
+                  "fontSize": 52,
+                  "fontWeight": "700",
+                  "letterSpacing": -1.8719999999999999
+                },
+                {
+                  "type": "frame",
+                  "id": "OMcn2",
+                  "name": "Headline line two",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "w90AWy",
+                      "name": "Headline text",
+                      "fill": "$landing-text",
+                      "content": "it’s done",
+                      "lineHeight": 0.95,
+                      "fontFamily": "$landing-font-heading",
+                      "fontSize": 52,
+                      "fontWeight": "700",
+                      "letterSpacing": -1.8719999999999999
+                    },
+                    {
+                      "type": "text",
+                      "id": "cv0KL",
+                      "name": "Record orange full stop",
+                      "fill": "$landing-record",
+                      "content": ".",
+                      "lineHeight": 0.95,
+                      "fontFamily": "$landing-font-heading",
+                      "fontSize": 52,
+                      "fontWeight": "700",
+                      "letterSpacing": -1.8719999999999999
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "CbHWv",
+              "name": "Subhead",
+              "fill": "$landing-text-dim",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "A client messages. Three agents are waiting. Record your screen once, press one button, and Showhow turns it into a step-by-step guide you can hand to an agent or send to a client.",
+              "lineHeight": 1.5,
+              "textAlign": "center",
+              "fontFamily": "$landing-font-body",
+              "fontSize": 19,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "K3etK",
+              "name": "Actions",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 12,
+              "padding": [
+                8,
+                0,
+                0,
+                0
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "id": "r1KUn",
+                  "type": "ref",
+                  "ref": "ToC7y",
+                  "name": "Download early build for Mac"
+                },
+                {
+                  "id": "p7Iior",
+                  "type": "ref",
+                  "ref": "Oy1n2",
+                  "name": "View on GitHub"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "CFoT3",
+              "name": "Build details",
+              "width": "fill_container",
+              "layout": "vertical",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "KZc5R",
+                  "name": "Build metadata",
+                  "fill": "$landing-text-dim",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "macOS 13+ · Universal, 167 MB · Early build: recording and guides work, more coming",
+                  "lineHeight": 1.5,
+                  "textAlign": "center",
+                  "fontFamily": "$landing-font-mono",
+                  "fontSize": 12,
+                  "fontWeight": "500",
+                  "letterSpacing": 0.2
+                },
+                {
+                  "type": "text",
+                  "id": "Wn7xa",
+                  "name": "Unsigned build link",
+                  "fill": "$landing-accent",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Unsigned build — here’s how to open it",
+                  "lineHeight": 1.5,
+                  "textAlign": "center",
+                  "fontFamily": "$landing-font-mono",
+                  "fontSize": 12,
+                  "fontWeight": "500",
+                  "letterSpacing": 0.2
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "Z2vU3F",
+              "name": "Hero media",
+              "width": "fill_container",
+              "layout": "vertical",
+              "padding": [
+                24,
+                0,
+                0,
+                0
+              ],
+              "children": [
+                {
+                  "id": "CPqTZ",
+                  "type": "ref",
+                  "ref": "HyEvB",
+                  "name": "Hero loop · 3.0 seconds",
+                  "width": "fill_container",
+                  "height": 219,
+                  "context": "Muted 6s loop; show poster without autoplay in reduced motion.",
+                  "descendants": {
+                    "Ki5dz": {
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "landing-assets/hero-make-guide-progress.png",
+                        "mode": "contain"
+                      }
+                    },
+                    "DApbK": {
+                      "x": 10,
+                      "y": 180
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "WizJu",
+          "name": "How it works",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            72,
+            20
+          ],
+          "children": [
+            {
+              "id": "Rj6FM",
+              "type": "ref",
+              "ref": "cb4Bj",
+              "name": "01 · How it works"
+            },
+            {
+              "type": "text",
+              "id": "VgmlU",
+              "name": "Heading",
+              "fill": "$landing-text",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Record once. Get the guide.",
+              "lineHeight": 1.02,
+              "fontFamily": "$landing-font-heading",
+              "fontSize": 40,
+              "fontWeight": "700",
+              "letterSpacing": -1.44
+            },
+            {
+              "type": "frame",
+              "id": "soPNN",
+              "name": "Three steps",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 40,
+              "padding": [
+                36,
+                0,
+                0,
+                0
+              ],
+              "children": [
+                {
+                  "id": "pKGob",
+                  "type": "ref",
+                  "ref": "o6UZqE",
+                  "name": "Record",
+                  "width": "fill_container",
+                  "descendants": {
+                    "RADSZ": {
+                      "height": 219,
+                      "context": "Muted 4s loop; poster in reduced motion"
+                    },
+                    "RADSZ/Ki5dz": {
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "landing-assets/app-guide.png",
+                        "mode": "cover",
+                        "transform": [
+                          1.2931,
+                          0,
+                          0,
+                          1.553,
+                          -0.2931,
+                          0
+                        ]
+                      }
+                    },
+                    "ajQaR": {
+                      "content": "01"
+                    },
+                    "olWzh": {
+                      "content": "Record"
+                    },
+                    "XJvS9": {
+                      "enabled": false
+                    },
+                    "f2QgW": {
+                      "content": "Capture your screen. Your clicks and cursor are tracked."
+                    }
+                  }
+                },
+                {
+                  "id": "qhRK0",
+                  "type": "ref",
+                  "ref": "o6UZqE",
+                  "name": "Press one button",
+                  "width": "fill_container",
+                  "descendants": {
+                    "RADSZ": {
+                      "height": 219,
+                      "context": "Muted 4s loop; poster in reduced motion"
+                    },
+                    "RADSZ/Ki5dz": {
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "landing-assets/app-guide.png",
+                        "mode": "cover",
+                        "transform": [
+                          1.2931,
+                          0,
+                          0,
+                          1.553,
+                          -0.2931,
+                          -0.3979
+                        ]
+                      }
+                    },
+                    "ajQaR": {
+                      "content": "02"
+                    },
+                    "olWzh": {
+                      "content": "Press one button"
+                    },
+                    "XJvS9": {
+                      "enabled": false
+                    },
+                    "f2QgW": {
+                      "content": "Make guide turns it into steps with screenshots and timestamps."
+                    }
+                  }
+                },
+                {
+                  "id": "c3RQy",
+                  "type": "ref",
+                  "ref": "o6UZqE",
+                  "name": "Hand it off",
+                  "width": "fill_container",
+                  "descendants": {
+                    "RADSZ": {
+                      "height": 219,
+                      "context": "Still"
+                    },
+                    "RADSZ/Ki5dz": {
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "landing-assets/app-guide.png",
+                        "mode": "cover",
+                        "transform": [
+                          1.373,
+                          0,
+                          0,
+                          1.647,
+                          -0.373,
+                          -0.237
+                        ]
+                      }
+                    },
+                    "ajQaR": {
+                      "content": "03"
+                    },
+                    "olWzh": {
+                      "content": "Hand it off"
+                    },
+                    "XJvS9": {
+                      "enabled": true
+                    },
+                    "f2QgW": {
+                      "content": "Send the guide to an agent or a client. Handoffs are coming soon."
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "dJgpJ",
+          "name": "Coming next",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            0,
+            20,
+            72,
+            20
+          ],
+          "children": [
+            {
+              "id": "t1pgea",
+              "type": "ref",
+              "ref": "cb4Bj",
+              "name": "02 · Coming next",
+              "descendants": {
+                "Gw3V0": {
+                  "content": "02 · COMING NEXT"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "m1znYY",
+              "name": "Heading",
+              "fill": "$landing-text",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "One guide. Two handoffs.",
+              "lineHeight": 1.02,
+              "fontFamily": "$landing-font-heading",
+              "fontSize": 40,
+              "fontWeight": "700",
+              "letterSpacing": -1.44
+            },
+            {
+              "type": "text",
+              "id": "KIn7F",
+              "name": "Status",
+              "fill": "$landing-text-dim",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Guides work today. These two handoffs ship next.",
+              "lineHeight": 1.5,
+              "fontFamily": "$landing-font-body",
+              "fontSize": 17,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "QxCi3",
+              "name": "Two handoffs",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 24,
+              "padding": [
+                36,
+                0,
+                0,
+                0
+              ],
+              "children": [
+                {
+                  "id": "GznjD",
+                  "type": "ref",
+                  "ref": "BEoKz",
+                  "name": "For your agent",
+                  "width": "fill_container",
+                  "descendants": {
+                    "X777d1": {
+                      "height": 194
+                    }
+                  }
+                },
+                {
+                  "id": "LHspC",
+                  "type": "ref",
+                  "ref": "BEoKz",
+                  "name": "For your client",
+                  "width": "fill_container",
+                  "descendants": {
+                    "X777d1": {
+                      "height": 194
+                    },
+                    "X777d1/Ki5dz": {
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "landing-assets/handoff-pdf-saved.png",
+                        "mode": "cover",
+                        "transform": [
+                          1.734,
+                          0,
+                          0,
+                          3.322,
+                          -0.372,
+                          -0.434
+                        ]
+                      }
+                    },
+                    "lf5EI": {
+                      "content": "For your client"
+                    },
+                    "KK0kB/ZsWY6": {
+                      "content": "EXPORT PDF"
+                    },
+                    "vRKtv": {
+                      "content": "A clean walkthrough with screenshots they can read without a call."
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "u2M8LI",
+          "name": "How to open",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 32,
+          "padding": [
+            0,
+            20,
+            72,
+            20
+          ],
+          "children": [
+            {
+              "id": "mwKR4",
+              "type": "ref",
+              "ref": "cb4Bj",
+              "name": "03 · How to open",
+              "descendants": {
+                "Gw3V0": {
+                  "content": "03 · HOW TO OPEN"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "sZLVb",
+              "name": "Heading",
+              "fill": "$landing-text",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "It’s an unsigned build. Here’s the 30-second fix.",
+              "lineHeight": 1.02,
+              "fontFamily": "$landing-font-heading",
+              "fontSize": 36,
+              "fontWeight": "700",
+              "letterSpacing": -1.2959999999999998
+            },
+            {
+              "type": "frame",
+              "id": "UiDPk",
+              "name": "Three open steps",
+              "width": "fill_container",
+              "stroke": "$landing-hairline",
+              "strokeWidth": {
+                "top": 1
+              },
+              "layout": "vertical",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "s7bk3s",
+                  "name": "Open step 1",
+                  "width": "fill_container",
+                  "stroke": "$landing-hairline",
+                  "strokeWidth": {
+                    "bottom": 1
+                  },
+                  "gap": 20,
+                  "padding": [
+                    20,
+                    0
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "eXnyk",
+                      "name": "Number",
+                      "fill": "$landing-accent",
+                      "content": "01",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$landing-font-mono",
+                      "fontSize": 12,
+                      "fontWeight": "500",
+                      "letterSpacing": 0.8
+                    },
+                    {
+                      "type": "text",
+                      "id": "TFPOZ",
+                      "name": "Instruction",
+                      "fill": "$landing-text",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Drag Showhow to Applications.",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$landing-font-body",
+                      "fontSize": 18,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "An1sI",
+                  "name": "Open step 2",
+                  "width": "fill_container",
+                  "stroke": "$landing-hairline",
+                  "strokeWidth": {
+                    "bottom": 1
+                  },
+                  "gap": 20,
+                  "padding": [
+                    20,
+                    0
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "eooNq",
+                      "name": "Number",
+                      "fill": "$landing-accent",
+                      "content": "02",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$landing-font-mono",
+                      "fontSize": 12,
+                      "fontWeight": "500",
+                      "letterSpacing": 0.8
+                    },
+                    {
+                      "type": "text",
+                      "id": "FhBQA",
+                      "name": "Instruction",
+                      "fill": "$landing-text",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "Try to open it, then dismiss the warning.",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$landing-font-body",
+                      "fontSize": 18,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "A9Du90",
+                  "name": "Open step 3",
+                  "width": "fill_container",
+                  "stroke": "$landing-hairline",
+                  "strokeWidth": {
+                    "bottom": 1
+                  },
+                  "gap": 20,
+                  "padding": [
+                    20,
+                    0
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "KjKL5",
+                      "name": "Number",
+                      "fill": "$landing-accent",
+                      "content": "03",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$landing-font-mono",
+                      "fontSize": 12,
+                      "fontWeight": "500",
+                      "letterSpacing": 0.8
+                    },
+                    {
+                      "type": "text",
+                      "id": "lmXV5",
+                      "name": "Instruction",
+                      "fill": "$landing-text",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "System Settings → Privacy & Security → Open Anyway.",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$landing-font-body",
+                      "fontSize": 18,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "h4VeM",
+              "name": "Open loop",
+              "width": "fill_container",
+              "height": 219,
+              "layout": "none",
+              "children": [
+                {
+                  "id": "CUJCQ",
+                  "type": "ref",
+                  "ref": "HyEvB",
+                  "name": "How to open placeholder",
+                  "width": 350,
+                  "height": 219,
+                  "x": 0,
+                  "y": 0,
+                  "context": "Muted 6s loop; poster in reduced motion."
+                },
+                {
+                  "type": "frame",
+                  "id": "aBbn7",
+                  "x": 20,
+                  "y": 60,
+                  "name": "Open loop overlay",
+                  "width": 310,
+                  "fill": "$landing-bg",
+                  "cornerRadius": 8,
+                  "stroke": "$landing-hairline",
+                  "strokeWidth": 1,
+                  "layout": "vertical",
+                  "gap": 12,
+                  "padding": 12,
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "b4Whd",
+                      "name": "Open preview step 1",
+                      "fill": "$landing-accent",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "1  Drag Showhow to Applications",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$landing-font-mono",
+                      "fontSize": 10,
+                      "fontWeight": "500",
+                      "letterSpacing": 0.2
+                    },
+                    {
+                      "type": "text",
+                      "id": "q3XdR",
+                      "name": "Open preview step 2",
+                      "fill": "$landing-text",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "2  Open it, dismiss the warning",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$landing-font-mono",
+                      "fontSize": 10,
+                      "fontWeight": "500",
+                      "letterSpacing": 0.2
+                    },
+                    {
+                      "type": "text",
+                      "id": "zcccB",
+                      "name": "Open preview step 3",
+                      "fill": "$landing-accent",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "3  Privacy & Security → Open Anyway",
+                      "lineHeight": 1.5,
+                      "fontFamily": "$landing-font-mono",
+                      "fontSize": 10,
+                      "fontWeight": "500",
+                      "letterSpacing": 0.2
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "G5Als",
+          "name": "FAQ",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            0,
+            20,
+            72,
+            20
+          ],
+          "children": [
+            {
+              "id": "Kb0Hy",
+              "type": "ref",
+              "ref": "cb4Bj",
+              "name": "04 · FAQ",
+              "descendants": {
+                "Gw3V0": {
+                  "content": "04 · FAQ"
+                }
+              }
+            },
+            {
+              "type": "frame",
+              "id": "xeyQq",
+              "name": "Six questions",
+              "width": "fill_container",
+              "layout": "vertical",
+              "children": [
+                {
+                  "id": "G7nOtO",
+                  "type": "ref",
+                  "ref": "Q9CyA",
+                  "name": "Is it really free?",
+                  "width": "fill_container",
+                  "descendants": {
+                    "s0SJYT": {
+                      "content": "Is it really free?",
+                      "fill": "$landing-accent"
+                    },
+                    "FzgiG": {
+                      "content": "×"
+                    },
+                    "dJ8Py": {
+                      "enabled": true,
+                      "width": 334
+                    },
+                    "dPOb1": {
+                      "content": "Yes. Free and open source, no paywall or account."
+                    }
+                  }
+                },
+                {
+                  "id": "wjTrJ",
+                  "type": "ref",
+                  "ref": "Q9CyA",
+                  "name": "Is Showhow a new app or a fork?",
+                  "width": "fill_container",
+                  "descendants": {
+                    "s0SJYT": {
+                      "content": "Is Showhow a new app or a fork?",
+                      "fill": "$landing-text"
+                    },
+                    "FzgiG": {
+                      "content": "+"
+                    },
+                    "dJ8Py": {
+                      "enabled": false,
+                      "width": 334
+                    },
+                    "dPOb1": {
+                      "content": "It is a fork of OpenScreen, the open-source screen recorder created by Siddharth Vaddem and now continued by the OpenScreen contributors. Showhow keeps OpenScreen’s recorder and editor and adds a library of your recordings and the step-by-step guides. If you only want a recorder, OpenScreen is excellent on its own. Both are MIT licensed."
+                    }
+                  }
+                },
+                {
+                  "id": "twh3B",
+                  "type": "ref",
+                  "ref": "Q9CyA",
+                  "name": "Does it upload my recordings?",
+                  "width": "fill_container",
+                  "descendants": {
+                    "s0SJYT": {
+                      "content": "Does it upload my recordings?",
+                      "fill": "$landing-text"
+                    },
+                    "FzgiG": {
+                      "content": "+"
+                    },
+                    "dJ8Py": {
+                      "enabled": false,
+                      "width": 334
+                    },
+                    "dPOb1": {
+                      "content": "No. Recording happens on your Mac. AI only runs when you connect your own OpenRouter key, and only for the guide step."
+                    }
+                  }
+                },
+                {
+                  "id": "quo4h",
+                  "type": "ref",
+                  "ref": "Q9CyA",
+                  "name": "What if the AI step fails?",
+                  "width": "fill_container",
+                  "descendants": {
+                    "s0SJYT": {
+                      "content": "What if the AI step fails?",
+                      "fill": "$landing-text"
+                    },
+                    "FzgiG": {
+                      "content": "+"
+                    },
+                    "dJ8Py": {
+                      "enabled": false,
+                      "width": 334
+                    },
+                    "dPOb1": {
+                      "content": "The recording always saves. A failed guide never loses a take."
+                    }
+                  }
+                },
+                {
+                  "id": "x2ngFt",
+                  "type": "ref",
+                  "ref": "Q9CyA",
+                  "name": "Windows or Linux?",
+                  "width": "fill_container",
+                  "descendants": {
+                    "s0SJYT": {
+                      "content": "Windows or Linux?",
+                      "fill": "$landing-text"
+                    },
+                    "FzgiG": {
+                      "content": "+"
+                    },
+                    "dJ8Py": {
+                      "enabled": false,
+                      "width": 334
+                    },
+                    "dPOb1": {
+                      "content": "Not yet. macOS only for now."
+                    }
+                  }
+                },
+                {
+                  "id": "rPTLd",
+                  "type": "ref",
+                  "ref": "Q9CyA",
+                  "name": "Which agents does it work with?",
+                  "width": "fill_container",
+                  "descendants": {
+                    "s0SJYT": {
+                      "content": "Which agents does it work with?",
+                      "fill": "$landing-text"
+                    },
+                    "FzgiG": {
+                      "content": "+"
+                    },
+                    "dJ8Py": {
+                      "enabled": false,
+                      "width": 334
+                    },
+                    "dPOb1": {
+                      "content": "Anything that reads text and a folder path, including Claude Code and Codex."
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "K03dF",
+          "type": "ref",
+          "ref": "XiuwO",
+          "name": "Footer call to action",
+          "padding": [
+            72,
+            20,
+            48,
+            20
+          ],
+          "descendants": {
+            "dD8RE": {
+              "fontSize": 40,
+              "letterSpacing": -1.44,
+              "width": "fill_container"
+            },
+            "vzF9i": {
+              "layout": "vertical",
+              "alignItems": "center",
+              "gap": 16
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "J82Ol2",
+      "x": 3710,
+      "y": 1360,
+      "name": "Landing · Final · states",
+      "clip": true,
+      "width": 1440,
+      "fill": "$landing-bg",
+      "layout": "vertical",
+      "gap": 32,
+      "padding": 48,
+      "children": [
+        {
+          "type": "text",
+          "id": "u2deLK",
+          "name": "Title",
+          "fill": "$landing-text",
+          "content": "States / quiet, clear feedback",
+          "lineHeight": 1.02,
+          "fontFamily": "$landing-font-heading",
+          "fontSize": 48,
+          "fontWeight": "700",
+          "letterSpacing": -1.7279999999999998
+        },
+        {
+          "type": "text",
+          "id": "s7TZc",
+          "name": "Scope",
+          "fill": "$landing-text-dim",
+          "content": "BUTTONS · FAQ · PLACEHOLDER MEDIA",
+          "lineHeight": 1.5,
+          "fontFamily": "$landing-font-mono",
+          "fontSize": 12,
+          "fontWeight": "500",
+          "letterSpacing": 0.8
+        },
+        {
+          "type": "frame",
+          "id": "idFh7",
+          "name": "Buttons · Default",
+          "width": "fill_container",
+          "gap": 32,
+          "padding": 8,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "mCm1h",
+              "name": "State label",
+              "fill": "$landing-text-dim",
+              "textGrowth": "fixed-width",
+              "width": 140,
+              "content": "DEFAULT",
+              "lineHeight": 1.5,
+              "fontFamily": "$landing-font-mono",
+              "fontSize": 12,
+              "fontWeight": "500",
+              "letterSpacing": 0.8
+            },
+            {
+              "type": "frame",
+              "id": "muEGy",
+              "name": "Primary Default container",
+              "cornerRadius": 11,
+              "stroke": "$landing-bg",
+              "strokeWidth": 2,
+              "layout": "vertical",
+              "padding": 5,
+              "children": [
+                {
+                  "id": "H37t0",
+                  "type": "ref",
+                  "ref": "ToC7y",
+                  "name": "Primary · Default",
+                  "opacity": 1,
+                  "context": "Default"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "en92v",
+              "name": "Outline Default container",
+              "cornerRadius": 11,
+              "stroke": "$landing-bg",
+              "strokeWidth": 2,
+              "layout": "vertical",
+              "padding": 5,
+              "children": [
+                {
+                  "id": "RGuif",
+                  "type": "ref",
+                  "ref": "Oy1n2",
+                  "name": "Outline · Default",
+                  "opacity": 1,
+                  "context": "Default"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "Bxfal",
+          "name": "Buttons · Hover",
+          "width": "fill_container",
+          "gap": 32,
+          "padding": 8,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "dxPT1",
+              "name": "State label",
+              "fill": "$landing-text-dim",
+              "textGrowth": "fixed-width",
+              "width": 140,
+              "content": "HOVER",
+              "lineHeight": 1.5,
+              "fontFamily": "$landing-font-mono",
+              "fontSize": 12,
+              "fontWeight": "500",
+              "letterSpacing": 0.8
+            },
+            {
+              "type": "frame",
+              "id": "VYypR",
+              "name": "Primary Hover container",
+              "cornerRadius": 11,
+              "stroke": "$landing-bg",
+              "strokeWidth": 2,
+              "layout": "vertical",
+              "padding": 5,
+              "children": [
+                {
+                  "id": "Y7lss",
+                  "type": "ref",
+                  "ref": "ToC7y",
+                  "name": "Primary · Hover",
+                  "opacity": 1,
+                  "context": "Hover: raise 1px; 140ms ease-out.",
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "$landing-accent",
+                    "offset": {
+                      "x": 4,
+                      "y": 4
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "w6WUI",
+              "name": "Outline Hover container",
+              "cornerRadius": 11,
+              "stroke": "$landing-bg",
+              "strokeWidth": 2,
+              "layout": "vertical",
+              "padding": 5,
+              "children": [
+                {
+                  "id": "SfiN9",
+                  "type": "ref",
+                  "ref": "Oy1n2",
+                  "name": "Outline · Hover",
+                  "opacity": 1,
+                  "context": "Hover: raise 1px; 140ms ease-out.",
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "$landing-accent",
+                    "offset": {
+                      "x": 4,
+                      "y": 4
+                    }
+                  },
+                  "fill": "$landing-bg"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "d8W9e",
+          "name": "Buttons · Focus",
+          "width": "fill_container",
+          "gap": 32,
+          "padding": 8,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "OZcf9",
+              "name": "State label",
+              "fill": "$landing-text-dim",
+              "textGrowth": "fixed-width",
+              "width": 140,
+              "content": "FOCUS",
+              "lineHeight": 1.5,
+              "fontFamily": "$landing-font-mono",
+              "fontSize": 12,
+              "fontWeight": "500",
+              "letterSpacing": 0.8
+            },
+            {
+              "type": "frame",
+              "id": "y2jdf",
+              "name": "Primary Focus container",
+              "cornerRadius": 11,
+              "stroke": "$landing-accent",
+              "strokeWidth": 2,
+              "layout": "vertical",
+              "padding": 5,
+              "children": [
+                {
+                  "id": "F973z",
+                  "type": "ref",
+                  "ref": "ToC7y",
+                  "name": "Primary · Focus",
+                  "opacity": 1,
+                  "context": "Focus-visible: 2px sage outline, 3px offset."
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "J7OOKr",
+              "name": "Outline Focus container",
+              "cornerRadius": 11,
+              "stroke": "$landing-accent",
+              "strokeWidth": 2,
+              "layout": "vertical",
+              "padding": 5,
+              "children": [
+                {
+                  "id": "NsIJn",
+                  "type": "ref",
+                  "ref": "Oy1n2",
+                  "name": "Outline · Focus",
+                  "opacity": 1,
+                  "context": "Focus-visible: 2px sage outline, 3px offset."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "TdVYP",
+          "name": "Buttons · Disabled",
+          "width": "fill_container",
+          "gap": 32,
+          "padding": 8,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "xzfoq",
+              "name": "State label",
+              "fill": "$landing-text-dim",
+              "textGrowth": "fixed-width",
+              "width": 140,
+              "content": "DISABLED",
+              "lineHeight": 1.5,
+              "fontFamily": "$landing-font-mono",
+              "fontSize": 12,
+              "fontWeight": "500",
+              "letterSpacing": 0.8
+            },
+            {
+              "type": "frame",
+              "id": "xRKXC",
+              "name": "Primary Disabled container",
+              "cornerRadius": 11,
+              "stroke": "$landing-bg",
+              "strokeWidth": 2,
+              "layout": "vertical",
+              "padding": 5,
+              "children": [
+                {
+                  "id": "zHqFE",
+                  "type": "ref",
+                  "ref": "ToC7y",
+                  "name": "Primary · Disabled",
+                  "opacity": 0.55,
+                  "context": "Disabled. No activation."
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "PnOfr",
+              "name": "Outline Disabled container",
+              "cornerRadius": 11,
+              "stroke": "$landing-bg",
+              "strokeWidth": 2,
+              "layout": "vertical",
+              "padding": 5,
+              "children": [
+                {
+                  "id": "dD2X9",
+                  "type": "ref",
+                  "ref": "Oy1n2",
+                  "name": "Outline · Disabled",
+                  "opacity": 0.55,
+                  "context": "Disabled. No activation."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "XwRus",
+          "name": "Motion reference",
+          "fill": "$landing-text-dim",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "ACTIVE: RETURN TO REST · REDUCED MOTION: POSTER, NO AUTOPLAY",
+          "lineHeight": 1.5,
+          "fontFamily": "$landing-font-mono",
+          "fontSize": 12,
+          "fontWeight": "500",
+          "letterSpacing": 0.8
+        },
+        {
+          "type": "text",
+          "id": "jYveE",
+          "name": "FAQ heading",
+          "fill": "$landing-text",
+          "content": "FAQ / closed and open",
+          "lineHeight": 1.02,
+          "fontFamily": "$landing-font-heading",
+          "fontSize": 36,
+          "fontWeight": "700",
+          "letterSpacing": -1.2959999999999998
+        },
+        {
+          "id": "BFH5Y",
+          "type": "ref",
+          "ref": "Q9CyA",
+          "name": "FAQ · closed",
+          "width": 860
+        },
+        {
+          "id": "xCsT2",
+          "type": "ref",
+          "ref": "Q9CyA",
+          "name": "FAQ · open · Is it really free?",
+          "width": 860,
+          "descendants": {
+            "s0SJYT": {
+              "content": "Is it really free?",
+              "fill": "$landing-accent"
+            },
+            "FzgiG": {
+              "content": "×"
+            },
+            "dJ8Py": {
+              "enabled": true,
+              "width": 844
+            },
+            "dPOb1": {
+              "content": "Yes. Free and open source, no paywall or account."
+            }
+          }
+        },
+        {
+          "id": "ZuueD",
+          "type": "ref",
+          "ref": "Q9CyA",
+          "name": "FAQ · open · Is Showhow a new app or a fork?",
+          "width": 860,
+          "descendants": {
+            "s0SJYT": {
+              "content": "Is Showhow a new app or a fork?",
+              "fill": "$landing-accent"
+            },
+            "FzgiG": {
+              "content": "×"
+            },
+            "dJ8Py": {
+              "enabled": true,
+              "width": 844
+            },
+            "dPOb1": {
+              "content": "It is a fork of OpenScreen, the open-source screen recorder created by Siddharth Vaddem and now continued by the OpenScreen contributors. Showhow keeps OpenScreen’s recorder and editor and adds a library of your recordings and the step-by-step guides. If you only want a recorder, OpenScreen is excellent on its own. Both are MIT licensed."
+            }
+          }
+        },
+        {
+          "id": "ou1IH",
+          "type": "ref",
+          "ref": "Q9CyA",
+          "name": "FAQ · open · Does it upload my recordings?",
+          "width": 860,
+          "descendants": {
+            "s0SJYT": {
+              "content": "Does it upload my recordings?",
+              "fill": "$landing-accent"
+            },
+            "FzgiG": {
+              "content": "×"
+            },
+            "dJ8Py": {
+              "enabled": true,
+              "width": 844
+            },
+            "dPOb1": {
+              "content": "No. Recording happens on your Mac. AI only runs when you connect your own OpenRouter key, and only for the guide step."
+            }
+          }
+        },
+        {
+          "id": "N65zc",
+          "type": "ref",
+          "ref": "Q9CyA",
+          "name": "FAQ · open · What if the AI step fails?",
+          "width": 860,
+          "descendants": {
+            "s0SJYT": {
+              "content": "What if the AI step fails?",
+              "fill": "$landing-accent"
+            },
+            "FzgiG": {
+              "content": "×"
+            },
+            "dJ8Py": {
+              "enabled": true,
+              "width": 844
+            },
+            "dPOb1": {
+              "content": "The recording always saves. A failed guide never loses a take."
+            }
+          }
+        },
+        {
+          "id": "D4GiMK",
+          "type": "ref",
+          "ref": "Q9CyA",
+          "name": "FAQ · open · Windows or Linux?",
+          "width": 860,
+          "descendants": {
+            "s0SJYT": {
+              "content": "Windows or Linux?",
+              "fill": "$landing-accent"
+            },
+            "FzgiG": {
+              "content": "×"
+            },
+            "dJ8Py": {
+              "enabled": true,
+              "width": 844
+            },
+            "dPOb1": {
+              "content": "Not yet. macOS only for now."
+            }
+          }
+        },
+        {
+          "id": "gFgPG",
+          "type": "ref",
+          "ref": "Q9CyA",
+          "name": "FAQ · open · Which agents does it work with?",
+          "width": 860,
+          "descendants": {
+            "s0SJYT": {
+              "content": "Which agents does it work with?",
+              "fill": "$landing-accent"
+            },
+            "FzgiG": {
+              "content": "×"
+            },
+            "dJ8Py": {
+              "enabled": true,
+              "width": 844
+            },
+            "dPOb1": {
+              "content": "Anything that reads text and a folder path, including Claude Code and Codex."
+            }
+          }
+        },
+        {
+          "type": "text",
+          "id": "S95UO",
+          "name": "Media heading",
+          "fill": "$landing-text",
+          "content": "Loop slot / placeholder",
+          "lineHeight": 1.02,
+          "fontFamily": "$landing-font-heading",
+          "fontSize": 36,
+          "fontWeight": "700",
+          "letterSpacing": -1.2959999999999998
+        },
+        {
+          "id": "SL9Np",
+          "type": "ref",
+          "ref": "HyEvB",
+          "name": "Loop slot · placeholder",
+          "width": 600,
+          "height": 375,
+          "context": "PLACEHOLDER remains until a real recording replaces this image."
+        }
+      ]
     }
   ],
   "variables": {
@@ -3798,6 +7275,50 @@
     "app-frame": {
       "type": "color",
       "value": "#242424"
+    },
+    "landing-bg": {
+      "type": "color",
+      "value": "#161616"
+    },
+    "landing-surface": {
+      "type": "color",
+      "value": "#1E1E1E"
+    },
+    "landing-hairline": {
+      "type": "color",
+      "value": "#FFFCF72E"
+    },
+    "landing-text": {
+      "type": "color",
+      "value": "#FFFCF7"
+    },
+    "landing-text-dim": {
+      "type": "color",
+      "value": "#FFFCF7B3"
+    },
+    "landing-text-faint": {
+      "type": "color",
+      "value": "#FFFCF78C"
+    },
+    "landing-accent": {
+      "type": "color",
+      "value": "#82B09A"
+    },
+    "landing-record": {
+      "type": "color",
+      "value": "#E3582D"
+    },
+    "landing-font-heading": {
+      "type": "string",
+      "value": "Inter Tight"
+    },
+    "landing-font-body": {
+      "type": "string",
+      "value": "Inter"
+    },
+    "landing-font-mono": {
+      "type": "string",
+      "value": "JetBrains Mono"
     }
   },
   "fileToken": "3b0fe278-4422-47d0-a5c1-943afc1cb62e"

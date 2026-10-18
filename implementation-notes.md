@@ -692,3 +692,42 @@ The four old-to-current log mappings are: `ci-attempt-01/02-npm-branding:check.t
 - Finding1/R4.3: my reference inventory incorrectly classified rec-button.png as unreferenced. The corrected exact source search across src, electron, index.html and public retains `electron/main.ts:178:const recordingTrayIcon = getTrayIcon("rec-button.png", trayIconSize);`, defaultTrayIcon at177, getTrayIcon loading the packaged dist path, updateTrayMenu selecting recordingTrayIcon and tray.setImage consuming it. This was an avoidable classification error; no product/native-source change is required.
 - Remove the dist/rec-button.png packaging exclusion and forbidden-image audit/test entry. Retain showhow.png and rec-button.png as nonempty referenced icons at their actual dist paths; audit reports both and fails on missing/empty copies. Fixtures copy actual public PNG bytes; separate missing/empty tests cover both icons. Meaningful RED03 rejected the valid referenced recording icon; RED05/06 showed missing/empty icons incorrectly passing (including a separate rec-button.png assertion). GREEN07 then passes both node suites. Source-reference receipts01/02 and all RED/GREEN streams are retained externally; actual rebuilt ASAR presence and decoded image proof remain lead-owned.
 - Same six owned paths only; package.json has no incremental repair diff. No Vite, native, i18n scripts/tests, dependency sections or lockfile changes; no symlink-root hardening (review follow-up stays nonblocking). Existing locale/wallpaper/model/fail-open contracts remain. Fresh production/test TypeScript, lint, i18n, branding, schema, renderer and full-unit checks plus final freeze/manifest/finding-to-fix map are retained in external round1-repair. Lead owns fresh packaging, native acceptance and one fresh independent reviewer.
+
+
+## Showhow #134 — landing design Build — 2026-10-18
+
+Task 1 only. Base and HEAD: 7c66c1afa1912aa998d4d0a9021a2d46b63d218f.
+Branch: ticket/134-landing-design. Executor w71:p2 returns to lead w71:p1.
+Design edits have stopped. The lead must save the active ticket Pencil document
+with Cmd+S, then prove its disk state. No native UI was used by the executor.
+
+The design has eleven reusable components, eight landing colour variables,
+three landing font variables, desktop TRpgX, mobile ma1pm, states J82Ol2, and
+component sheet Ro86s. Four scale-1 PNGs and REPORT.md are in design/landing-final/.
+The final check and probe files are external:
+`/Users/mohamedb/dev/loop-evidence/showhow-134/executor/`.
+The verification script exits 0. All five inherited PNG exports are byte-identical
+to the before/ files. The current palette/font walks are green. The only visible
+layout warning is the intended desktop hero image crop.
+
+### Deviations
+
+- The plan says six media slots but names seven placements. The lead followed the
+  explicit list and kept all seven named placements. No section was added.
+- Tighten desktop hero spacing to show the full progress card by y=898.3.
+  Keep the approved copy, including its unverified 167 MB prototype size.
+- Copy the inherited Darkroom shader to grain-darkroom-fade.glsl. Add only a
+  bottom alpha fade. Apply the copied layers at opacity 0.3. The raster contrast
+  check gives at least 5.176:1 for information text over these backgrounds.
+  The original shader and all inherited frames remain unchanged.
+- The initial flat background and duplicate outline-hover label were found in
+  visual checks and repaired. The copied shader is visible in final exports.
+  The outline hover state has a solid landing-bg fill behind its shadow.
+- Store probe PNGs, check scripts, check responses, and failure notes in external
+  evidence. Keep only four final PNGs and REPORT.md in design/landing-final/.
+
+The design asset uses the Pencil checks as its public behaviour seam. No app
+code was built or tested. This work does not prove browser motion, physical
+accessibility, download size, or installed app behaviour. Failed reviews remain 0.
+No reviewer identity or independent verdict exists. The owner must see all three
+final frames before Task 2. No commit, push, PR, merge, tag, or Greptile run occurred.
