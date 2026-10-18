@@ -16,10 +16,9 @@ export interface ShowhowMeta {
 	schemaVersion: 1;
 	title: string;
 	/**
-	 * Bundle creator currently writes `"desktop"`.
-	 * `"browser"` is accepted for forward-compatible readers/importers.
+	 * Recordings use `"desktop"` or `"browser"`; imported local MP4s use `"imported"`.
 	 */
-	source: "desktop" | "browser";
+	source: "desktop" | "browser" | "imported";
 	createdAt: number;
 	durationMs?: number;
 	video: "video.webm" | "video.mp4";
@@ -43,7 +42,7 @@ export interface BuildMetaInput {
 	hasCursorTelemetry: boolean;
 	videoFileName?: "video.webm" | "video.mp4";
 	/** Recording source; defaults to "desktop". "browser" is forward-compatible. */
-	source?: "desktop" | "browser";
+	source?: "desktop" | "browser" | "imported";
 }
 
 export interface CreateBundleInput {

@@ -141,5 +141,25 @@
 		"pick": "Pick a recording",
 		"pickBody": "Choose one from the library, or record something new.",
 		"changeProvider": "Change provider"
+	},
+	"importVideo": {
+		"title": "Import video",
+		"eyebrow": "Your Library",
+		"description": "Add one local MP4 to your Library. The original file stays unchanged.",
+		"choose": "Choose MP4",
+		"retry": "Choose another MP4",
+		"cancel": "Cancel",
+		"cancelFailed": "Could not cancel yet. Try again, or wait for the import to finish.",
+		"failed": "Couldn't import video",
+		"failedBody": "The import could not finish. Check that the file is readable and that there is enough disk space, then try again.",
+		"picking": "Choosing a video…",
+		"copying": "Copying video…",
+		"validating": "Checking video…",
+		"saving": "Finishing import…",
+		"cancelling": "Cancelling import…",
+		"bytes": "{{copied}} / {{total}} bytes copied",
+		"local": "Choose a local MP4",
+		"body": "H.264 video with AAC audio. Click capture is unavailable for imported videos; guides can use narration.",
+		"imported": "Imported"
 	}
 }

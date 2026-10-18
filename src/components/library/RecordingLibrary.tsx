@@ -1,4 +1,4 @@
-import { CircleDot, Folder, Scissors, Search } from "lucide-react";
+import { CircleDot, Folder, Scissors, Search, Upload } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AiGuidePanel } from "@/components/showhow/AiGuidePanel";
 import { AiGuideSettings } from "@/components/showhow/AiGuideSettings";
@@ -6,6 +6,7 @@ import { Button } from "@/components/showhow/Button";
 import { EmptyState } from "@/components/showhow/EmptyState";
 import { Field } from "@/components/showhow/Field";
 import { GuideStep, Mosaic } from "@/components/showhow/GuideStep";
+import { ImportVideoSheet } from "@/components/showhow/ImportVideoSheet";
 import { LibraryRow } from "@/components/showhow/LibraryRow";
 import { Progress } from "@/components/showhow/Progress";
 import { Shell } from "@/components/showhow/Shell";
@@ -90,6 +91,7 @@ function RecordingDetail({
 		status: NonNullable<RecordingLibraryEntry["guideStatus"]>,
 	) => void;
 }) {
+	const t = useScopedT("common");
 	const videoRef = useRef<HTMLVideoElement | null>(null);
 	const [pendingSeekMs, setPendingSeekMs] = useState<number | null>(null);
 	const [editingTitle, setEditingTitle] = useState(false);
@@ -111,7 +113,8 @@ function RecordingDetail({
 		};
 	}, []);
 	const isDesktop = entry.source === "desktop";
-	const sourceLabel = isDesktop ? "Desktop" : "Browser";
+	const sourceLabel =
+		entry.source === "imported" ? t("importVideo.imported") : isDesktop ? "Desktop" : "Browser";
 	const videoSrc =
 		entry.videoUrl ?? (entry.video ? fallbackBundleUrl(entry.bundleDir, entry.video) : undefined);
 	const openInEditor = async () => {
@@ -302,8 +305,10 @@ function RecordingDetail({
 				</p>
 			)}
 			<p className="mb-5 font-ds-label text-[10px] uppercase tracking-[0.8px] text-ds-ink-soft">
-				<span>{sourceLabel} recording</span> ·{" "}
-				{entry.durationMs !== undefined && `${formatDuration(entry.durationMs)} · `}
+				<span>
+					{sourceLabel} {entry.source === "imported" ? "video" : "recording"}
+				</span>{" "}
+				· {entry.durationMs !== undefined && `${formatDuration(entry.durationMs)} · `}
 				{formatWhen(entry.createdAt)}
 			</p>
 			{videoSrc && (
@@ -568,6 +573,12 @@ function getStepCaptureCopy(
 		return fallback;
 	}
 
+	if (entry.source === "imported")
+		return {
+			heading: "Click capture unavailable",
+			explanation:
+				"Imported videos have no captured cursor or clicks. Guides can use narration when speech is available.",
+		};
 	const { message, reason } = entry.stepCapture;
 	const detail = message ?? "Click capture was unavailable for this recording.";
 	const frameExtractionFailed =
@@ -656,6 +667,8 @@ export function RecordingLibrary() {
 	const [entries, setEntries] = useState<RecordingLibraryEntry[]>([]);
 	const [selectedBundleDir, setSelectedBundleDir] = useState<string | null>(null);
 	const [query, setQuery] = useState("");
+	const [importOpen, setImportOpen] = useState(false);
+	const importButton = useRef<HTMLButtonElement>(null);
 	const [overview, setOverview] = useState(false);
 	const [loading, setLoading] = useState(true);
 	const [loadError, setLoadError] = useState(false);
@@ -715,6 +728,17 @@ export function RecordingLibrary() {
 			sidebar={
 				<Sidebar
 					primary={{ icon: CircleDot, onClick: () => void window.electronAPI.switchToHud() }}
+					secondaryAction={
+						<Button
+							ref={importButton}
+							disabled={loading}
+							variant="sidebar"
+							icon={Upload}
+							onClick={() => setImportOpen(true)}
+						>
+							{t("importVideo.title")}
+						</Button>
+					}
 					onLibrarySelect={() => setOverview(true)}
 					libraryLabel={`Library · ${entries.length}`}
 					footer={<AiGuideSettings />}
@@ -730,6 +754,7 @@ export function RecordingLibrary() {
 							className="min-w-0 flex-1 bg-transparent font-ds-body text-[13px] text-ds-on-panel placeholder:text-ds-on-panel-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-ds-accent"
 						/>
 					</label>
+
 					{loading && (
 						<p role="status" className="p-2 text-sm text-ds-on-panel-soft">
 							Loading…
@@ -740,7 +765,7 @@ export function RecordingLibrary() {
 							<LibraryRow
 								key={entry.bundleDir}
 								title={entry.title}
-								meta={`${entry.source === "browser" ? "Browser" : "Desktop"}${entry.durationMs === undefined ? "" : ` · ${formatDuration(entry.durationMs)}`}`}
+								meta={`${entry.source === "imported" ? t("importVideo.imported") : entry.source === "browser" ? "Browser" : "Desktop"}${entry.durationMs === undefined ? "" : ` · ${formatDuration(entry.durationMs)}`}`}
 								trailing={
 									<Tag
 										variant={
@@ -773,6 +798,24 @@ export function RecordingLibrary() {
 				</Sidebar>
 			}
 		>
+			<ImportVideoSheet
+				open={importOpen}
+				onOpenChange={setImportOpen}
+				onCloseAutoFocus={(event) => {
+					event.preventDefault();
+					importButton.current?.focus();
+				}}
+				onImported={(entry) => {
+					setEntries((current) => [
+						entry,
+						...current.filter((item) => item.bundleDir !== entry.bundleDir),
+					]);
+					setSelectedBundleDir(entry.bundleDir);
+					setQuery("");
+					setOverview(false);
+					setLoadError(false);
+				}}
+			/>
 			<div className="mx-auto max-w-[928px] px-6 pb-16 pt-14 min-[1100px]:px-[54px]">
 				{loading && (
 					<div

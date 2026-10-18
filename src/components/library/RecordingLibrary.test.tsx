@@ -23,6 +23,9 @@ import { RecordingLibrary } from "./RecordingLibrary";
 // Mock window.electronAPI
 const mockShowhowListRecordings = vi.fn<() => Promise<RecordingLibraryEntry[]>>();
 const mockOpenRecording = vi.fn();
+const mockImportRecording = vi.fn();
+const mockCancelImport = vi.fn();
+const mockOnImportProgress = vi.fn(() => () => undefined);
 const mockSwitchToHud = vi.fn<() => Promise<void>>();
 const mockClipboardWriteText = vi.fn<(text: string) => Promise<void>>();
 const mockShowhowCopyPath = vi.fn<(bundleDir: string) => Promise<{ success: boolean }>>();
@@ -41,6 +44,9 @@ const mockShowhowRegenerateDoc =
 beforeEach(() => {
 	vi.resetAllMocks();
 	mockSwitchToHud.mockResolvedValue();
+	mockImportRecording.mockResolvedValue({ status: "cancelled" });
+	mockCancelImport.mockResolvedValue({ cancelled: true });
+	mockOnImportProgress.mockReturnValue(() => undefined);
 	mockClipboardWriteText.mockResolvedValue(undefined);
 	mockShowhowCopyPath.mockResolvedValue({ success: true });
 	mockShowhowUpdateWorkflowDocument.mockResolvedValue({ success: true });
@@ -53,6 +59,9 @@ beforeEach(() => {
 	Object.defineProperty(window, "electronAPI", {
 		value: {
 			showhowListRecordings: mockShowhowListRecordings,
+			showhowImportRecording: mockImportRecording,
+			showhowCancelImport: mockCancelImport,
+			showhowOnImportProgress: mockOnImportProgress,
 			showhowOpenRecording: mockOpenRecording,
 			showhowCopyPath: mockShowhowCopyPath,
 			showhowUpdateWorkflowDocument: mockShowhowUpdateWorkflowDocument,
@@ -1322,4 +1331,43 @@ describe("round1 finding3: background guide completion", () => {
 		}
 		expect(run).toHaveBeenCalledTimes(1);
 	});
+});
+
+it("imports a video, clears search and selects the resulting Imported row", async () => {
+	mockShowhowListRecordings.mockResolvedValue([desktopEntry]);
+	const imported: RecordingLibraryEntry = {
+		...desktopEntry,
+		bundleDir: "/recordings/imported",
+		title: "New demo",
+		source: "imported",
+	};
+	mockImportRecording.mockResolvedValue({ status: "imported", entry: imported });
+	render(<RecordingLibrary />);
+	await screen.findByRole("heading", { name: desktopEntry.title });
+	fireEvent.change(screen.getByRole("searchbox"), { target: { value: "no matches" } });
+	await userEvent.click(screen.getByRole("button", { name: "Import video" }));
+	await userEvent.click(screen.getByRole("button", { name: "Choose MP4" }));
+	await screen.findByRole("heading", { name: "New demo" });
+	expect(screen.getByRole("searchbox")).toHaveValue("");
+	expect(screen.getAllByText(/Imported/).length).toBeGreaterThan(0);
+	expect(screen.getByText("Imported video")).toBeInTheDocument();
+});
+
+it("places the actual Import action between New recording and Library/search", async () => {
+	mockShowhowListRecordings.mockResolvedValue([]);
+	render(<RecordingLibrary />);
+	const action = screen.getByRole("button", { name: "Import video" });
+	await waitFor(() => expect(action).toBeEnabled());
+	expect(
+		screen.getByRole("button", { name: "New recording" }).compareDocumentPosition(action) &
+			Node.DOCUMENT_POSITION_FOLLOWING,
+	).toBeTruthy();
+	expect(
+		action.compareDocumentPosition(screen.getByRole("button", { name: "Library · 0" })) &
+			Node.DOCUMENT_POSITION_FOLLOWING,
+	).toBeTruthy();
+	expect(
+		action.compareDocumentPosition(screen.getByRole("searchbox")) &
+			Node.DOCUMENT_POSITION_FOLLOWING,
+	).toBeTruthy();
 });
