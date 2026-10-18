@@ -1,7 +1,7 @@
 import { type ReactNode, useRef } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { useScopedT } from "@/contexts/I18nContext";
 import { Button } from "./Button";
+import { Sheet } from "./Sheet";
 export function GuideSheet({
 	title,
 	description,
@@ -19,27 +19,24 @@ export function GuideSheet({
 		document.activeElement instanceof HTMLElement ? document.activeElement : null,
 	);
 	return (
-		<Dialog
+		<Sheet
 			open
+			title={title}
+			description={description}
 			onOpenChange={(open) => {
 				if (!open) onClose();
 			}}
+			onCloseAutoFocus={(event) => {
+				event.preventDefault();
+				const target = returnFocusTo ?? fallbackReturnFocus.current;
+				if (target?.isConnected) target.focus();
+			}}
 		>
-			<DialogContent
-				onCloseAutoFocus={(event) => {
-					event.preventDefault();
-					const target = returnFocusTo ?? fallbackReturnFocus.current;
-					if (target?.isConnected) target.focus();
-				}}
-				className="max-h-[85vh] max-w-[560px] overflow-y-auto rounded-[12px] border-ds-line bg-ds-surface p-5 text-ds-ink shadow-[4px_4px_0_var(--showhow-accent)]"
-			>
-				<DialogTitle className="pr-8 font-ds-body text-[20px]">{title}</DialogTitle>
-				<DialogDescription className="text-ds-ink-soft">{description}</DialogDescription>
-				{children}
-			</DialogContent>
-		</Dialog>
+			{children}
+		</Sheet>
 	);
 }
+
 export function GuideConnectSheet({
 	onClose,
 	onConnect,

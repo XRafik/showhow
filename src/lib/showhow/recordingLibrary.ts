@@ -15,6 +15,8 @@
 export interface WorkflowStep {
 	/** Instruction label (from transcript-matched step label). */
 	label: string;
+	/** Missing on legacy click steps. */
+	kind?: "click" | "narration";
 	/** Click time in milliseconds (source of truth for the timestamp chip). */
 	ts: number;
 	/** `step-NN.png` filename inside the bundle's `screenshots/` directory. */
@@ -59,6 +61,8 @@ export interface StepCaptureStatus {
  * bundles continue to serialize exactly as before.
  */
 export interface RecordingLibraryEntry {
+	/** Validated optional existing guide status, absent on legacy bundles. */
+	guideStatus?: "none" | "making" | "ready" | "failed";
 	/** Absolute path to the bundle directory. */
 	bundleDir: string;
 	/** Human-readable title from meta.json. */
