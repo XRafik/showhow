@@ -127,6 +127,16 @@
 			"reason": "Contains the literal legacy-brand strings required to define the branding policy"
 		},
 		{
+			"file": "design/landing.pen",
+			"reason": "Reviewed #134 FAQ fork attribution in desktop, mobile and states; exact text only, with at most three occurrences",
+			"lines": [
+				{
+					"text": "\"content\": \"It is a fork of OpenScreen, the open-source screen recorder created by Siddharth Vaddem and now continued by the OpenScreen contributors. Showhow keeps OpenScreen’s recorder and editor and adds a library of your recordings and the step-by-step guides. If you only want a recorder, OpenScreen is excellent on its own. Both are MIT licensed.\"",
+					"count": 3
+				}
+			]
+		},
+		{
 			"file": "design/showhow.pen",
 			"reason": "Design source of truth; allows only the two inherited project-format file references",
 			"lines": [

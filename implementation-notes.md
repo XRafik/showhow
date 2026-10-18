@@ -731,3 +731,25 @@ code was built or tested. This work does not prove browser motion, physical
 accessibility, download size, or installed app behaviour. Failed reviews remain 0.
 No reviewer identity or independent verdict exists. The owner must see all three
 final frames before Task 2. No commit, push, PR, merge, tag, or Greptile run occurred.
+
+
+## Showhow #134 — PR #149 branding policy repair — 2026-10-18
+
+Hosted CI rejected the approved FAQ fork attribution at PR head
+`5c3d1ec7f85aa499843781b15e6fe1ff114809ff` (tree prefix `03991db`).
+The failed log remains at
+`/Users/mohamedb/dev/loop-evidence/showhow-134/ci-job-117690407133-failed.txt`.
+Its pen line numbers 5635, 6613, and 7130 are provenance, not policy selectors.
+
+Add one exact-text allowance with maximum count 3 for the required attribution
+in desktop, mobile, and states. No whole-file exemption is added. No design,
+checker, site, or app change is needed.
+
+The existing checker was imported and run against attribution.txt in an explicit
+scratch root only. The prior policy rejected the three CI-derived lines. The
+repair accepts those three lines; a fourth copy, an unrelated reference, and
+changed attribution text remain rejected. The check exits 0. No pen file was
+read, hashed, or changed. The full local branding scan was not run because it
+reads pen files. Hosted policy proof and fresh review remain lead-owned.
+Round 1 PASS is historical. This CI repair is not a failed review; the failed
+review count remains 0. No staging, commit, push, or native UI action occurred.
