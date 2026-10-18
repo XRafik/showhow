@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useRef, useState } from "react";
+import { type ReactNode, useEffect, useReducer, useRef, useState } from "react";
 import { useScopedT } from "@/contexts/I18nContext";
 import {
 	type GuideOptions,
@@ -10,12 +10,21 @@ import type { RecordingLibraryEntry } from "@/lib/showhow/recordingLibrary";
 import { AiConnections } from "./AiConnections";
 import { GuideConnectSheet, GuideSheet } from "./AiGuideSheets";
 import { Button } from "./Button";
+import { Mosaic } from "./GuideStep";
+import { Progress } from "./Progress";
 export function AiGuidePanel({
 	entry,
 	onEntryChange,
+	onStatusChange,
+	actions,
 }: {
 	entry: RecordingLibraryEntry;
+	actions?: ReactNode;
 	onEntryChange: (entry: RecordingLibraryEntry) => void;
+	onStatusChange?: (
+		bundleDir: string,
+		status: NonNullable<RecordingLibraryEntry["guideStatus"]>,
+	) => void;
 }) {
 	const t = useScopedT("common");
 	const [state, dispatch] = useReducer(guidePanelTransition, { view: "idle" });
@@ -59,7 +68,18 @@ export function AiGuidePanel({
 			requestId.current++;
 			dispose?.();
 		};
-	}, [entry]);
+	}, [entry.bundleDir, entry.title, entry.steps]);
+	useEffect(() => {
+		const next =
+			state.view === "making"
+				? "making"
+				: state.view === "failed"
+					? "failed"
+					: state.view === "ready"
+						? "ready"
+						: status?.guide?.status;
+		if (next) onStatusChange?.(entry.bundleDir, next);
+	}, [entry.bundleDir, state.view, status?.guide?.status, onStatusChange]);
 	async function refresh() {
 		const entries = await window.electronAPI.showhowListRecordings();
 		const next = entries.find((value) => value.bundleDir === entry.bundleDir);
@@ -163,10 +183,10 @@ export function AiGuidePanel({
 				<h2 className="border-b-2 border-ds-ink pb-2 font-ds-label text-[11px] uppercase tracking-wider">
 					{t("showhowGuide.walkthrough")}
 				</h2>
-				<div className="flex gap-2">
+				<div className="flex flex-wrap gap-2">
 					<Button
 						type="button"
-						variant="ghost"
+						variant="secondary"
 						disabled={busy || state.view === "making"}
 						onClick={(event) => {
 							invoker.current = event.currentTarget;
@@ -175,21 +195,24 @@ export function AiGuidePanel({
 					>
 						{isReady ? t("showhowGuide.remake") : t("showhowGuide.make")}
 					</Button>
+					{actions}
 				</div>
 			</div>
-			<button
-				type="button"
-				disabled={busy || state.view === "making"}
-				className="mb-4 text-xs text-ds-ink-soft underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2"
-				onClick={(event) => {
-					invoker.current = event.currentTarget;
-					void begin(true, true);
-				}}
-			>
-				{t("showhowGuide.check")}
-			</button>
+			{!isReady && (
+				<button
+					type="button"
+					disabled={busy || state.view === "making"}
+					className="mb-4 text-xs text-ds-ink-soft underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2"
+					onClick={(event) => {
+						invoker.current = event.currentTarget;
+						void begin(true, true);
+					}}
+				>
+					{t("showhowGuide.check")}
+				</button>
+			)}
 			{!isReady && state.view !== "making" && !failed && (
-				<div className="rounded-lg border border-ds-line p-6">
+				<div className="rounded-[8px] border border-ds-line bg-ds-surface-raised p-6">
 					<h3 className="mb-2 text-xl font-medium">{t("showhowGuide.turnInto")}</h3>
 					<p className="max-w-xl text-sm leading-relaxed text-ds-ink-soft">
 						{t("showhowGuide.localBody")}
@@ -197,13 +220,24 @@ export function AiGuidePanel({
 				</div>
 			)}
 			{state.view === "making" && (
-				<div role="status" aria-live="polite" className="rounded-lg border border-ds-line p-6">
+				<div
+					role="status"
+					aria-live="polite"
+					className="rounded-[8px] border border-ds-line bg-ds-surface-raised p-6"
+				>
 					<h3 className="mb-4 text-xl font-medium">{t("showhowGuide.making")}</h3>
-					<progress
-						aria-label={t("showhowGuide.progress")}
-						max={3}
-						value={state.phase === "writing" ? 3 : state.phase === "sorting" ? 2 : 1}
-						className="mb-4 w-full appearance-none bg-ds-line [&::-webkit-progress-bar]:bg-ds-line [&::-webkit-progress-value]:bg-ds-accent"
+					<Progress
+						label={t("showhowGuide.progress")}
+						value={state.phase === "writing" ? 100 : state.phase === "sorting" ? 200 / 3 : 100 / 3}
+						aria-valuetext={t(
+							state.phase === "writing"
+								? "showhowGuide.phaseWriting"
+								: state.phase === "sorting"
+									? "showhowGuide.phaseSorting"
+									: "showhowGuide.phaseTranscript",
+						)}
+						frontier={<Mosaic edge={state.phase === "writing" ? 0.8 : 0.42} />}
+						className="mb-5"
 					/>
 					<ol className="grid gap-2 text-sm">
 						<li>{t("showhowGuide.phaseTranscript")}</li>
@@ -220,13 +254,33 @@ export function AiGuidePanel({
 				</div>
 			)}
 			{failed && (
-				<div role="alert" className="rounded-lg border border-ds-rec p-6">
+				<div
+					role="alert"
+					className="overflow-hidden rounded-[8px] border border-ds-rec bg-ds-rec-wash p-6"
+				>
+					<Progress
+						label={t("showhowGuide.progress")}
+						failed
+						frontier={<Mosaic failed />}
+						className="mb-4"
+					/>
 					<h3 className="mb-3 text-xl font-medium text-ds-rec-ink">{t("showhowGuide.failed")}</h3>
 					<p className="mb-4 text-sm text-ds-ink-soft">
 						{error || status?.guide?.error || t("showhowGuide.safe")}
 					</p>
 					<Button type="button" disabled={busy} onClick={() => void begin(true)}>
 						{t("showhowGuide.retry")}
+					</Button>
+					<Button
+						type="button"
+						variant="secondary"
+						className="ml-2"
+						onClick={(event) => {
+							settingsInvoker.current = event.currentTarget;
+							setSettings(true);
+						}}
+					>
+						{t("showhowLibrary.changeProvider")}
 					</Button>
 				</div>
 			)}
@@ -272,7 +326,10 @@ export function AiGuidePanel({
 					returnFocusTo={invoker.current}
 					onClose={close}
 				>
-					<div className="flex justify-end gap-2">
+					<div className="flex flex-wrap justify-end gap-2">
+						<Button type="button" variant="ghost" onClick={() => void begin(true, true)}>
+							{t("showhowGuide.check")}
+						</Button>
 						<Button type="button" variant="ghost" onClick={close}>
 							{t("showhowGuide.cancel")}
 						</Button>

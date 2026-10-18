@@ -66,6 +66,45 @@ beforeEach(() => {
 	});
 });
 afterEach(cleanup);
+it("offers connection settings after guide failure without sending another request", async () => {
+	status.mockResolvedValue({
+		...connected,
+		guide: { status: "failed", provider: "openrouter", model: "fake", editedSinceAi: false },
+	});
+	render(<AiGuidePanel entry={entry} onEntryChange={onChange} />);
+	await screen.findByRole("heading", { name: "Couldn’t make the guide" });
+	const change = screen.queryByRole("button", { name: "Change provider" });
+	expect(change).not.toBeNull();
+	if (!change) return;
+	expect(screen.getByRole("progressbar")).not.toHaveAttribute("aria-valuenow");
+	fireEvent.click(change);
+	await screen.findByRole("heading", { name: "Settings" });
+	expect(run).not.toHaveBeenCalled();
+	expect(consent).not.toHaveBeenCalled();
+});
+it("#127 keeps evidence review out of ready output and reachable from edited Remake", async () => {
+	status.mockResolvedValue({
+		...connected,
+		reviewed: true,
+		guide: {
+			status: "ready",
+			provider: "openrouter",
+			model: "fake",
+			editedSinceAi: true,
+		},
+	});
+	render(<AiGuidePanel entry={entry} onEntryChange={onChange} />);
+	await screen.findByRole("button", { name: "Remake" });
+	expect(screen.queryByRole("button", { name: "Check what gets sent" })).toBeNull();
+	fireEvent.click(screen.getByRole("button", { name: "Remake" }));
+	const dialog = await screen.findByRole("dialog");
+	fireEvent.click(within(dialog).getByRole("button", { name: "Check what gets sent" }));
+	await screen.findByRole("heading", { name: "Check what gets sent" });
+	expect(run).not.toHaveBeenCalled();
+	fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+	expect(screen.getByRole("button", { name: "Remake" })).toBeEnabled();
+});
+
 it("missing key shows only active OpenRouter plus disabled ChatGPT; cancel sends nothing", async () => {
 	status.mockResolvedValue({ ...connected, connected: false });
 	render(<AiGuidePanel entry={entry} onEntryChange={onChange} />);

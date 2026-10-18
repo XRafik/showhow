@@ -882,3 +882,95 @@ All-variant browser RED additionally found alert Tag dark text on rec-wash at 4.
 Standards FAIL / Requirements FAIL; failed-review count is now 1. Lead diagnosis `REVIEW1-DIAGNOSIS.md` and retained original 25-file staged candidate bind the single blocker: active Progress fill/track graphical contrast is 1.9200:1 in light mode (dark 4.6722:1). Authorised scope for this repair is only Progress.tsx, theme.browser.test.tsx and this note. Add actual rendered active and failed fill/track contrast assertions >=3:1 in both themes, observe original RED, then substitute existing stronger semantic fill tokens only where needed (`ds-accent-strong` and, if failure coverage also reproduces a shortfall, `ds-rec-ink`). This is an accessibility adaptation from literal fill colours, not a palette redesign or pixel-exact claim. Preserve props, track, layout, values, failure semantics and motion behaviour. No fonts, screens, aliases, staging, commit or push. Lead owns renewed visual proof, fresh round-2 native reviewer identity and review. Prior 4639/18/11 green results and failures remain retained.
 
 Round-1 actual browser RED reached the intended assertions: active light 1.9200256759870886:1; failed light 2.905631305539747:1, both against rendered chip rgb(232,228,220). Both dark states passed. The requested failed-state coverage therefore also requires `ds-rec-ink`; this is the same bounded progress-graphic finding and does not add another review failure. Retained `round1-repair/progress-red.log` and its screenshot precede the production fix.
+
+
+## Showhow #140 — bounded implementation decisions before production edits
+
+Executor w73:p2, clean base dd98eab42f8d9a4de44f9ac8a1328e2946a8315e.
+Approved T2 ownership and latest owner exceptions apply. Lead confirmed inspected
+BEFORE light/dark native/browser captures in external showhow-140/visual/before-*
+before production authorisation. Existing supported minimum is 800×600.
+
+- Reuse shared Sidebar, LibraryRow, VideoPlayer, GuideStep, Button, Field,
+  Progress and Sheet vocabulary. Keep existing list/update/guide IPC and media
+  containment contracts. No imports, PDF, brief, ChatGPT connectivity or native work.
+- Search trims and case-folds titles locally, preserving scanner order. Selection
+  uses bundleDir identity: keep the selected match; display first match only if
+  selection is filtered out; no-results hides detail and Clear restores selection.
+- Keep existing meaningful deferred title-save, guide completion, step persistence,
+  reveal and seek tests. First new RED exercises actual library search through RTL,
+  matching selection, no results/Clear and unchanged list order without refetch.
+- #127 removes the ready-output review link; first-provider and Make/Remake review
+  remain accessible. Step actions use house buttons. Existing #122 cancellation,
+  failure and prior-output contracts take precedence over static mock content.
+- Do not fabricate provider phases, streamed steps, transcript quotes or remaining
+  time. Narration-only/no-speech notices reflect actual status; clicks remain usable.
+- Lead owns PLAN/HANDOFF and native synthetic disk-bundle/frame evidence. Executor
+  owns source/tests and raw source-check receipts; no commit/push/PR.
+
+Operational receipt: Herdr refused executor messaging (`executor cannot message
+panes`); status is exchanged through external EXECUTOR-STATUS.md as directed.
+
+### Bounded amendments before edits
+
+Lead identified that Final sidebar statuses cannot be represented from the current
+scanner entry. Extend electron/showhow/recordingLibrary.ts and its same-package
+test only to project validated optional meta.guide.status and step.kind. No write,
+IPC, auth or path contract change. Missing/invalid status stays absent. Test real
+scratch meta/steps files before implementation. Live selected making/failure state
+uses an optional existing-panel callback, keyed by bundleDir; list refresh supplies
+persisted final status. Avoid per-row provider/status requests.
+
+Components.test.tsx is added to test ownership solely to replace its now-obsolete
+serif quote assertion with the approved body font. Preserve content/action tests.
+Final exported thumbnails are 240×136 despite SPEC's 160×90; export wins at reference
+width, with smaller thumbnails/wrapping at 800. No fabricated narration quotes.
+Mosaic uses a deterministic static SVG rendition of the shader's block hash/frontier
+and dot screen; no animation loop, GPU context or new dependency. It is restricted
+to empty/loading, redaction and progress frontiers, not finished screenshots.
+
+Shared sheet amendment before edit: extend Sheet.tsx with its underlying Radix
+onCloseAutoFocus callback prop, then make GuideSheet a thin consumer. This removes
+duplicate sheet geometry/motion and preserves #122's tested explicit focus return.
+No dialog-wide CSS or unrelated consumer changes. Existing focus/escape/cancel
+regressions remain the acceptance seam. Failed progress is indeterminate; making
+progress is three discrete phases, never measured duration/ETA. Cancellation stays
+before-send review/Remake confirmation. The engine keeps the previous guide on disk
+until validated replacement, and its existing failure recovery remains unchanged;
+T2 does not revise deterministic-artifact restoration or AI output rules.
+
+Observed reciprocal race RED: step-title-race-red exit1 loses the newer sidebar
+rename after a deferred step save, while the other bundle remains selected. Repair
+before edit: send only the saved steps plus originating bundleDir to the parent;
+merge those fields into the current entry. Keep guide completion's full scanner
+replacement and independent title patch. This fixes the shared persistence seam
+for edit/delete/reveal writes without serialising unrelated title work.
+
+Library01 overview choice before edit: retain inherited first-take selection on
+load and add an explicit Library heading button to return to the approved Pick a
+recording overview. Row selection leaves overview. The new public regression is
+RED on absent overview navigation before implementation; no hidden fixture route.
+
+### Receipt correction
+
+The initial source-check runner reused affected-02 / production-types-01 /
+test-types-01 output names on its second invocation, overwriting those first-run
+streams. First-run affected-02 was green. First production/test TypeScript failed
+on the callback-assigned readonly React ref; this was observed in the terminal
+session and by the lead, then fixed by the appropriate nullable mutable ref type.
+The earlier raw compiler streams are lost; do not reconstruct them or claim they
+were retained. Current same-named streams prove the later green checks only.
+All meaningful behavior RED files and focused-01 failures remain untouched.
+The final broad runner uses a new checks-final-01 directory and exclusive-create
+streams. Any further run must allocate a unique new directory/name.
+
+### Final observed layout repair — before edits
+
+Lead's measured matrix-ready-light has correct video x326/y140/820×340, but the
+standalone path/Copy row shifts the guide header to y573 instead of Final y529.
+Add one optional ReactNode actions slot to AiGuidePanel's existing header. Move
+the same real Copy path button into it beside Remake; preserve pending/success/
+failure state and IPC. Retain exact path in the button's title and a small
+Recording folder disclosure after guide content. No engine or new feature work.
+Prior executor-freeze-01 and matrix images remain retained pre-repair evidence.
+Rerun affected suites/types/browser/lint/build with new receipt names, then freeze.

@@ -5,6 +5,33 @@ import { describe, expect, it, vi } from "vitest";
 import { VideoPlayer } from "./VideoPlayer";
 
 describe("VideoPlayer media behavior", () => {
+	it("uses decoded duration when a legacy bundle has no duration metadata", () => {
+		const { container } = render(<VideoPlayer src="video.mp4" durationMs={0} />);
+		const video = container.querySelector("video")!;
+		Object.defineProperty(video, "duration", { value: 18, configurable: true });
+		fireEvent.loadedMetadata(video);
+		expect(screen.queryByText("0:00 / 0:18")).not.toBeNull();
+		expect(screen.getByRole("slider", { name: "Seek" })).toHaveAttribute("max", "18000");
+	});
+	it("exposes the actual media element for workflow timestamp seeks and updates the transport", () => {
+		let media: HTMLVideoElement | null = null;
+		const { unmount } = render(
+			<VideoPlayer
+				src="video.mp4"
+				durationMs={65_000}
+				onVideoReady={(video) => {
+					media = video;
+				}}
+			/>,
+		);
+		expect(media).not.toBeNull();
+		if (!media) return;
+		(media as HTMLVideoElement).currentTime = 12;
+		fireEvent(media, new Event("seeked"));
+		expect(screen.getByText("0:12 / 1:05")).toBeVisible();
+		unmount();
+		expect(media).toBeNull();
+	});
 	it("syncs the Play affordance with native play and pause events", () => {
 		const { container } = render(<VideoPlayer src="video.mp4" durationMs={65_000} />);
 		const video = container.querySelector("video");

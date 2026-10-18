@@ -7,6 +7,7 @@ export interface VideoPlayerProps
 	src: string;
 	durationMs: number;
 	onEnded?: () => void;
+	onVideoReady?: (video: HTMLVideoElement | null) => void;
 }
 
 function formatTime(milliseconds: number) {
@@ -22,13 +23,17 @@ function VideoPlayerInstance({
 	src,
 	durationMs,
 	onEnded,
+	onVideoReady,
+	onLoadedMetadata,
 	className,
 	...videoProps
 }: VideoPlayerProps) {
-	const videoRef = useRef<HTMLVideoElement>(null);
+	const videoRef = useRef<HTMLVideoElement | null>(null);
 	const playRequestRef = useRef(0);
 	const [playing, setPlaying] = useState(false);
 	const [currentTime, setCurrentTime] = useState(0);
+	const [decodedDuration, setDecodedDuration] = useState(0);
+	const duration = durationMs > 0 ? durationMs : decodedDuration;
 	useEffect(() => {
 		const video = videoRef.current;
 		if (!video) return;
@@ -47,11 +52,13 @@ function VideoPlayerInstance({
 			}
 		};
 		video.addEventListener("timeupdate", updateCurrentTime);
+		video.addEventListener("seeked", updateCurrentTime);
 		video.addEventListener("play", handlePlay);
 		video.addEventListener("pause", handlePause);
 		return () => {
 			active = false;
 			video.removeEventListener("timeupdate", updateCurrentTime);
+			video.removeEventListener("seeked", updateCurrentTime);
 			video.removeEventListener("play", handlePlay);
 			video.removeEventListener("pause", handlePause);
 		};
@@ -92,9 +99,17 @@ function VideoPlayerInstance({
 		>
 			<video
 				{...videoProps}
-				className="min-h-0 flex-1"
-				ref={videoRef}
+				className="min-h-0 w-full flex-1 object-contain"
+				ref={(video) => {
+					videoRef.current = video;
+					onVideoReady?.(video);
+				}}
 				src={src}
+				onLoadedMetadata={(event) => {
+					const seconds = event.currentTarget.duration;
+					if (Number.isFinite(seconds) && seconds > 0) setDecodedDuration(seconds * 1000);
+					onLoadedMetadata?.(event);
+				}}
 				onEnded={() => {
 					setPlaying(false);
 					onEnded?.();
@@ -104,18 +119,18 @@ function VideoPlayerInstance({
 				<button
 					type="button"
 					aria-label={playing ? "Pause" : "Play"}
-					className="text-ds-on-panel"
+					className="rounded p-2 text-ds-on-panel focus-visible:outline focus-visible:outline-2 focus-visible:outline-ds-accent"
 					onClick={togglePlayback}
 				>
 					{playing ? <Pause size={14} /> : <Play size={14} />}
 				</button>
 				<span className="whitespace-nowrap font-ds-label text-[11px] tracking-[0.6px] text-ds-on-panel-soft">
-					{formatTime(currentTime)} / {formatTime(durationMs)}
+					{formatTime(currentTime)} / {formatTime(duration)}
 				</span>
 				<input
 					aria-label="Seek"
-					className="h-[2px] w-full accent-ds-accent"
-					max={durationMs}
+					className="h-[2px] w-full accent-ds-rec"
+					max={duration}
 					min={0}
 					onChange={(event) => {
 						const video = videoRef.current;

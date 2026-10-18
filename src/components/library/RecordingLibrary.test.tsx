@@ -142,6 +142,114 @@ const browserDocEntry: WorkflowDocumentEntry = {
 };
 
 describe("RecordingLibrary", () => {
+	it("places the real Copy path action beside guide actions and retains the exact folder", async () => {
+		mockShowhowListRecordings.mockResolvedValue([desktopDocEntry]);
+		render(<RecordingLibrary />);
+		await screen.findByRole("heading", { level: 1, name: desktopEntry.title });
+		const guide = screen.getByRole("region", { name: "AI guide" });
+		const copy = within(guide).queryByRole("button", { name: "Copy path" });
+		expect(copy).not.toBeNull();
+		if (!copy) return;
+		expect(copy).toHaveAttribute("title", desktopDocEntry.bundleDir);
+		await userEvent.click(copy);
+		expect(mockShowhowCopyPath).toHaveBeenCalledWith(desktopDocEntry.bundleDir);
+		expect(await screen.findByText("Path copied")).toBeInTheDocument();
+		expect(screen.getByText(desktopDocEntry.bundleDir)).toBeInTheDocument();
+	});
+	it.each([
+		false,
+		"reject",
+	])("preserves the saved step and exposes retryable failure (%s)", async (outcome) => {
+		mockShowhowListRecordings.mockResolvedValue([desktopDocEntry, browserDocEntry]);
+		if (outcome === false) mockShowhowUpdateWorkflowDocument.mockResolvedValue({ success: false });
+		else mockShowhowUpdateWorkflowDocument.mockRejectedValue(new Error("disk unavailable"));
+		render(<RecordingLibrary />);
+		await screen.findByRole("heading", { level: 1, name: desktopEntry.title });
+		await userEvent.click(screen.getByRole("button", { name: "Delete step 1" }));
+		expect(await screen.findByRole("alert")).toHaveTextContent("Couldn't save step");
+		expect(screen.getByText("Open the products page")).toBeVisible();
+		await userEvent.click(screen.getByRole("button", { name: /Browser recording/ }));
+		expect(screen.queryByRole("alert")).toBeNull();
+		expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(browserEntry.title);
+	});
+
+	it("opens the Library overview without losing recordings, then selects a take", async () => {
+		mockShowhowListRecordings.mockResolvedValue([desktopDocEntry]);
+		render(<RecordingLibrary />);
+		await screen.findByRole("heading", { level: 1, name: desktopEntry.title });
+		const overview = screen.queryByRole("button", { name: "Library · 1" });
+		expect(overview).not.toBeNull();
+		if (!overview) return;
+		await userEvent.click(overview);
+		expect(screen.getByRole("heading", { name: "Pick a recording" })).toBeVisible();
+		expect(screen.queryByRole("heading", { name: desktopEntry.title })).toBeNull();
+		await userEvent.click(screen.getByRole("button", { name: new RegExp(desktopEntry.title) }));
+		expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(desktopEntry.title);
+		expect(mockShowhowListRecordings).toHaveBeenCalledTimes(1);
+	});
+
+	it("keeps a newer rename when an older step save completes, even across selection changes", async () => {
+		const stepSave = deferred<{ success: boolean }>();
+		mockShowhowListRecordings.mockResolvedValue([desktopDocEntry, browserDocEntry]);
+		mockShowhowUpdateWorkflowDocument.mockImplementation((_bundleDir, update) =>
+			typeof update === "object" && update !== null && "type" in update && update.type === "step"
+				? stepSave.promise
+				: Promise.resolve({ success: true }),
+		);
+		render(<RecordingLibrary />);
+		await screen.findByRole("heading", { level: 1, name: desktopEntry.title });
+		await userEvent.click(screen.getByRole("button", { name: "Edit step 1" }));
+		const instruction = screen.getByRole("textbox", { name: "Step 1 instruction" });
+		await userEvent.clear(instruction);
+		await userEvent.type(instruction, "Updated instruction{Enter}");
+		await userEvent.click(screen.getByRole("button", { name: "Edit title" }));
+		const title = screen.getByRole("textbox", { name: "Recording title" });
+		await userEvent.clear(title);
+		await userEvent.type(title, "Newer title{Enter}");
+		await screen.findByRole("heading", { level: 1, name: "Newer title" });
+		await userEvent.click(screen.getByRole("button", { name: /Browser recording/ }));
+		await act(async () => stepSave.resolve({ success: true }));
+		expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(browserEntry.title);
+		await userEvent.click(screen.getByRole("button", { name: /Newer title/ }));
+		expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Newer title");
+		expect(screen.getByText("Updated instruction")).toBeVisible();
+	});
+
+	it("filters titles locally, preserves a matching selection and order, and clears no results", async () => {
+		mockShowhowListRecordings.mockResolvedValue([desktopDocEntry, browserDocEntry]);
+		render(<RecordingLibrary />);
+		await screen.findByRole("heading", { level: 1, name: desktopEntry.title });
+		await userEvent.click(screen.getByRole("button", { name: /Browser recording/ }));
+		const search = screen.queryByRole("searchbox", { name: "Search recordings" });
+		expect(search).not.toBeNull();
+		if (!search) return;
+		await userEvent.type(search, "recording");
+		expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(browserEntry.title);
+		expect(mockShowhowListRecordings).toHaveBeenCalledTimes(1);
+		await userEvent.clear(search);
+		await userEvent.type(search, "BROWSER");
+		expect(
+			screen.queryByRole("button", { name: new RegExp(desktopEntry.title) }),
+		).not.toBeInTheDocument();
+		expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(browserEntry.title);
+		await userEvent.clear(search);
+		await userEvent.type(search, "missing invoice");
+		expect(screen.getByText("No recordings found")).toBeVisible();
+		expect(
+			screen.queryByRole("heading", { level: 1, name: browserEntry.title }),
+		).not.toBeInTheDocument();
+		await userEvent.click(screen.getByRole("button", { name: "Clear search" }));
+		expect(search).toHaveValue("");
+		expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(browserEntry.title);
+		const rows = screen
+			.getAllByRole("button")
+			.filter((button) => button.hasAttribute("aria-pressed"));
+		expect(rows.map((row) => row.textContent)).toEqual([
+			expect.stringContaining(desktopEntry.title),
+			expect.stringContaining(browserEntry.title),
+		]);
+	});
+
 	it("returns to the configured recorder tray from the prominent New recording action", async () => {
 		mockShowhowListRecordings.mockResolvedValue([desktopEntry]);
 		render(<RecordingLibrary />);
@@ -259,7 +367,7 @@ describe("RecordingLibrary", () => {
 		mockShowhowListRecordings.mockResolvedValue([]);
 		render(<RecordingLibrary />);
 		// The sidebar "LIBRARY" heading is always present
-		expect(screen.getByText("Library")).toBeInTheDocument();
+		expect(screen.getByText("Library · 0")).toBeInTheDocument();
 	});
 
 	it("returns to the recorder from the library", async () => {
@@ -267,7 +375,7 @@ describe("RecordingLibrary", () => {
 		render(<RecordingLibrary />);
 
 		await screen.findByTestId("empty-library-state");
-		await userEvent.click(screen.getByRole("button", { name: "Back to recorder" }));
+		await userEvent.click(screen.getByRole("button", { name: "New recording" }));
 
 		expect(mockSwitchToHud).toHaveBeenCalledTimes(1);
 	});
@@ -655,7 +763,7 @@ describe("RecordingLibrary — workflow document view (issue #23)", () => {
 		expect(screen.getByText("Enter the product title")).toBeInTheDocument();
 
 		// Step numbers 1, 2, 3 are rendered (one per step).
-		for (const num of ["1", "2", "3"]) {
+		for (const num of ["01", "02", "03"]) {
 			expect(screen.getAllByText(num).length).toBeGreaterThan(0);
 		}
 
@@ -1157,8 +1265,8 @@ describe("round1 finding3: background guide completion", () => {
 		});
 		render(<RecordingLibrary />);
 		await screen.findByRole("heading", { name: "Original title" });
-		const firstRow = screen.getByRole("button", { name: "Original title Desktop" });
-		const secondRow = screen.getByRole("button", { name: "Other recording Desktop" });
+		const firstRow = screen.getByRole("button", { name: /Original title Desktop/ });
+		const secondRow = screen.getByRole("button", { name: /Other recording Desktop/ });
 		await user.click(screen.getByRole("button", { name: "Make guide" }));
 		await waitFor(() => expect(run).toHaveBeenCalledTimes(1));
 		await user.click(secondRow);

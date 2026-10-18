@@ -114,7 +114,7 @@ describe("Showhow reusable components", () => {
 		expect(screen.getByText("0:12 / 1:05")).toBeInTheDocument();
 	});
 
-	it("renders numbered guide content, serif quote, and actions", () => {
+	it("renders numbered guide content, body-font quote, and actions", () => {
 		render(
 			<GuideStep
 				number={3}
@@ -126,7 +126,7 @@ describe("Showhow reusable components", () => {
 		);
 		expect(screen.getByText("03")).toBeInTheDocument();
 		expect(screen.getByText("Choose a plan")).toBeInTheDocument();
-		expect(screen.getByText("A narrated step")).toHaveClass("font-ds-serif");
+		expect(screen.getByText("A narrated step")).toHaveClass("font-ds-body");
 		expect(screen.getByText("Edit · Delete")).toBeInTheDocument();
 		expect(screen.getByRole("article")).toBeInTheDocument();
 	});

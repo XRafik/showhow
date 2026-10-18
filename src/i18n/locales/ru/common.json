@@ -126,5 +126,20 @@
 		"frameAlt": "Frame at {{seconds}} seconds",
 		"evidence": "Labels, timestamps and transcript",
 		"always": "Always send transcript and frames"
+	},
+	"showhowLibrary": {
+		"search": "Search recordings",
+		"clear": "Clear search",
+		"noResults": "No recordings found",
+		"noMatch": "No titles match “{{query}}”. Try another search.",
+		"loading": "Loading your library",
+		"finding": "Finding recordings on this Mac…",
+		"none": "No guide",
+		"ready": "Guide",
+		"making": "Making guide…",
+		"failed": "Failed",
+		"pick": "Pick a recording",
+		"pickBody": "Choose one from the library, or record something new.",
+		"changeProvider": "Change provider"
 	}
 }

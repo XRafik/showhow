@@ -10,6 +10,38 @@ async function makeTempRoot(): Promise<string> {
 }
 
 describe("listRecordings", () => {
+	it("projects only known optional guide statuses and narration kind without changing source files", async () => {
+		const root = await makeTempRoot();
+		for (const [index, status] of [
+			"none",
+			"making",
+			"ready",
+			"failed",
+			"unknown",
+			undefined,
+		].entries()) {
+			const dir = path.join(root, `status-${index}`);
+			await mkdir(dir);
+			const meta = JSON.stringify({
+				title: `Take ${index}`,
+				source: "desktop",
+				createdAt: index,
+				...(status ? { guide: { status } } : {}),
+			});
+			await writeFile(path.join(dir, "meta.json"), meta);
+			await writeFile(
+				path.join(dir, "steps.json"),
+				JSON.stringify([
+					{ label: "Explain the screen", ts: 1200, screenshot: "", kind: "narration" },
+				]),
+			);
+			const entry = await readRecordingEntry(dir);
+			expect(entry?.guideStatus).toBe(index < 4 ? status : undefined);
+			expect(entry?.steps?.[0].kind).toBe("narration");
+			expect(await readFile(path.join(dir, "meta.json"), "utf8")).toBe(meta);
+		}
+	});
+
 	it("returns [] when the recordings root does not exist", async () => {
 		const root = path.join(os.tmpdir(), `showhow-nonexistent-${Date.now()}`);
 		const entries = await listRecordings(root);

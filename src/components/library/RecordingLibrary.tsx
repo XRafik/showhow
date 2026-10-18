@@ -1,8 +1,21 @@
-import { useEffect, useRef, useState } from "react";
+import { CircleDot, Folder, Scissors, Search } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AiGuidePanel } from "@/components/showhow/AiGuidePanel";
 import { AiGuideSettings } from "@/components/showhow/AiGuideSettings";
+import { Button } from "@/components/showhow/Button";
+import { EmptyState } from "@/components/showhow/EmptyState";
+import { Field } from "@/components/showhow/Field";
+import { GuideStep, Mosaic } from "@/components/showhow/GuideStep";
+import { LibraryRow } from "@/components/showhow/LibraryRow";
+import { Progress } from "@/components/showhow/Progress";
+import { Shell } from "@/components/showhow/Shell";
+import { Sidebar } from "@/components/showhow/Sidebar";
+import { Tag } from "@/components/showhow/Tag";
+import { VideoPlayer } from "@/components/showhow/VideoPlayer";
+import { useScopedT } from "@/contexts/I18nContext";
 import type { RecordingLibraryEntry } from "@/lib/showhow/recordingLibrary";
 import type { WorkflowDocumentUpdate } from "@/lib/showhow/workflowDocument";
+import { filterRecordings } from "./library-search";
 
 // ---- helpers -----------------------------------------------------------------
 
@@ -22,182 +35,22 @@ function fallbackBundleUrl(bundleDir: string, relativePath: string): string {
 	return `file://${bundleDir.replace(/\\/g, "/")}/${relativePath}`;
 }
 
-// ---- icons -------------------------------------------------------------------
-
-function GlobeIcon({ color }: { color: string }) {
-	return (
-		<svg
-			width="15"
-			height="15"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke={color}
-			strokeWidth="2.75"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-			aria-hidden="true"
-		>
-			<circle cx="12" cy="12" r="9" />
-			<path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
-		</svg>
-	);
-}
-
-function MonitorIcon({ color }: { color: string }) {
-	return (
-		<svg
-			width="15"
-			height="15"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke={color}
-			strokeWidth="2.75"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-			aria-hidden="true"
-		>
-			<rect x="3" y="4" width="18" height="13" rx="2" />
-			<path d="M8 21h8M12 17v4" />
-		</svg>
-	);
-}
-
-// ---- sidebar entry -----------------------------------------------------------
-
-interface LibraryRowProps {
-	entry: RecordingLibraryEntry;
-	isActive: boolean;
-	onSelect: () => void;
-}
-
-function LibraryRow({ entry, isActive, onSelect }: LibraryRowProps) {
-	const iconColor = isActive ? "var(--sh-color-accent)" : "var(--sh-muted)";
-	const sourceLabel = entry.source === "browser" ? "Browser" : "Desktop";
-	const duration = entry.durationMs !== undefined ? formatDuration(entry.durationMs) : "";
-	const subtitle = duration ? `${sourceLabel} · ${duration}` : sourceLabel;
-
-	return (
-		<button
-			type="button"
-			onClick={onSelect}
-			aria-pressed={isActive}
-			style={{
-				display: "flex",
-				alignItems: "center",
-				gap: "10px",
-				padding: "9px 8px",
-				borderRadius: "var(--sh-radius-md)",
-				cursor: "pointer",
-				background: isActive ? "var(--sh-color-accent-100)" : "transparent",
-				border: "none",
-				width: "100%",
-				textAlign: "left",
-			}}
-		>
-			<span
-				style={{
-					width: "26px",
-					height: "26px",
-					flex: "none",
-					display: "flex",
-					alignItems: "center",
-					justifyContent: "center",
-				}}
-			>
-				{entry.source === "browser" ? (
-					<GlobeIcon color={iconColor} />
-				) : (
-					<MonitorIcon color={iconColor} />
-				)}
-			</span>
-			<span style={{ minWidth: 0, flex: 1 }}>
-				<span
-					style={{
-						display: "block",
-						fontSize: "13.5px",
-						fontWeight: 600,
-						color: "var(--sh-color-text)",
-						whiteSpace: "nowrap",
-						overflow: "hidden",
-						textOverflow: "ellipsis",
-					}}
-				>
-					{entry.title}
-				</span>
-				<span
-					style={{
-						display: "block",
-						fontSize: "11.5px",
-						color: "var(--sh-muted)",
-						marginTop: "2px",
-					}}
-				>
-					{subtitle}
-				</span>
-			</span>
-		</button>
-	);
-}
-
 // ---- empty state (no recordings in the library) ------------------------------
 
 function EmptyLibraryState() {
 	return (
 		<div
-			style={{
-				display: "flex",
-				flexDirection: "column",
-				alignItems: "center",
-				textAlign: "center",
-				gap: "16px",
-				padding: "120px 40px",
-				borderRadius: "var(--sh-radius-lg)",
-				background: "var(--sh-card-bg)",
-			}}
 			data-testid="empty-library-state"
+			className="flex min-h-[520px] flex-col items-center justify-center gap-5 [&>div]:bg-transparent [&_h3]:text-[32px]"
 		>
-			<div
-				style={{
-					width: "60px",
-					height: "60px",
-					borderRadius: "50%",
-					background: "var(--sh-color-accent-100)",
-					display: "flex",
-					alignItems: "center",
-					justifyContent: "center",
-				}}
-			>
-				<svg
-					width="26"
-					height="26"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="var(--sh-color-accent-700)"
-					strokeWidth="2.75"
-					strokeLinecap="round"
-					strokeLinejoin="round"
-					aria-hidden="true"
-				>
-					<rect x="3" y="4" width="18" height="13" rx="2" />
-					<path d="M8 21h8M12 17v4" />
-					<circle cx="12" cy="10.5" r="3" />
-				</svg>
+			<div className="h-[200px] w-full max-w-[440px] overflow-hidden rounded-[8px]">
+				<Mosaic />
 			</div>
-			<h3 style={{ margin: 0, fontSize: "23px", color: "var(--sh-color-text)" }}>
-				No recordings yet
-			</h3>
-			<p
-				style={{
-					margin: 0,
-					maxWidth: "360px",
-					fontSize: "14.5px",
-					color: "var(--sh-muted)",
-					lineHeight: 1.6,
-				}}
-			>
-				Record a browser tab or your whole desktop, and it&apos;ll show up here as a folder — video,
-				transcript and screenshots ready to turn into a doc.
-			</p>
+			<EmptyState
+				title="Show it once."
+				body="Record a browser tab or your whole desktop, and it'll show up here as a folder — video, transcript and screenshots ready to turn into a doc."
+			/>
+			<p className="text-sm text-ds-ink-soft">No recordings yet</p>
 		</div>
 	);
 }
@@ -205,32 +58,16 @@ function EmptyLibraryState() {
 function ErrorLibraryState() {
 	return (
 		<div
-			style={{
-				display: "flex",
-				flexDirection: "column",
-				alignItems: "center",
-				textAlign: "center",
-				gap: "16px",
-				padding: "120px 40px",
-				borderRadius: "var(--sh-radius-lg)",
-				background: "var(--sh-card-bg)",
-			}}
 			data-testid="recording-library-error-state"
+			className="flex min-h-[520px] flex-col items-center justify-center gap-5 [&>div]:bg-transparent [&_h3]:text-[32px]"
 		>
-			<h3 style={{ margin: 0, fontSize: "23px", color: "var(--sh-color-text)" }}>
-				Couldn&apos;t load recordings
-			</h3>
-			<p
-				style={{
-					margin: 0,
-					maxWidth: "360px",
-					fontSize: "14.5px",
-					color: "var(--sh-muted)",
-					lineHeight: 1.6,
-				}}
-			>
-				Check folder permissions or disk access, then reopen the library.
-			</p>
+			<div className="h-[200px] w-full max-w-[440px] overflow-hidden rounded-[8px]">
+				<Mosaic failed />
+			</div>
+			<EmptyState
+				title="Couldn't load recordings"
+				body="Check folder permissions or disk access, then reopen the library."
+			/>
 		</div>
 	);
 }
@@ -241,12 +78,19 @@ function RecordingDetail({
 	entry,
 	onEntryChange,
 	onTitleChange,
+	onStepsChange,
+	onGuideStatusChange,
 }: {
 	entry: RecordingLibraryEntry;
 	onEntryChange: (entry: RecordingLibraryEntry) => void;
 	onTitleChange: (bundleDir: string, title: string) => void;
+	onStepsChange: (bundleDir: string, steps: RecordingLibraryEntry["steps"]) => void;
+	onGuideStatusChange: (
+		bundleDir: string,
+		status: NonNullable<RecordingLibraryEntry["guideStatus"]>,
+	) => void;
 }) {
-	const videoRef = useRef<HTMLVideoElement>(null);
+	const videoRef = useRef<HTMLVideoElement | null>(null);
 	const [pendingSeekMs, setPendingSeekMs] = useState<number | null>(null);
 	const [editingTitle, setEditingTitle] = useState(false);
 	const [titleDraft, setTitleDraft] = useState(entry.title);
@@ -255,6 +99,8 @@ function RecordingDetail({
 	const [copyStatus, setCopyStatus] = useState<"idle" | "copying" | "success" | "failure">("idle");
 	const [editingStepIndex, setEditingStepIndex] = useState<number | null>(null);
 	const [instructionDraft, setInstructionDraft] = useState("");
+	const [stepBusy, setStepBusy] = useState(false);
+	const [stepError, setStepError] = useState(false);
 	const [revealedSteps, setRevealedSteps] = useState<Set<number>>(() => new Set());
 	const [docStatus, setDocStatus] = useState<"idle" | "generating" | "failure">("idle");
 	const isMountedRef = useRef(true);
@@ -266,14 +112,6 @@ function RecordingDetail({
 	}, []);
 	const isDesktop = entry.source === "desktop";
 	const sourceLabel = isDesktop ? "Desktop" : "Browser";
-	const sourceTagStyle: React.CSSProperties = {
-		fontSize: "12px",
-		fontWeight: 600,
-		color: isDesktop ? "var(--sh-color-accent-2-700)" : "var(--sh-color-accent-700)",
-		background: isDesktop ? "var(--sh-color-accent-2-100)" : "var(--sh-color-accent-100)",
-		padding: "3px 10px",
-		borderRadius: "999px",
-	};
 	const videoSrc =
 		entry.videoUrl ?? (entry.video ? fallbackBundleUrl(entry.bundleDir, entry.video) : undefined);
 	const openInEditor = async () => {
@@ -296,9 +134,23 @@ function RecordingDetail({
 		}
 	};
 	const persist = async (update: WorkflowDocumentUpdate, nextEntry: RecordingLibraryEntry) => {
-		const result = await window.electronAPI.showhowUpdateWorkflowDocument(entry.bundleDir, update);
-		if (result.success) onEntryChange(nextEntry);
-		return result.success;
+		if (stepBusy) return false;
+		setStepBusy(true);
+		setStepError(false);
+		try {
+			const result = await window.electronAPI.showhowUpdateWorkflowDocument(
+				entry.bundleDir,
+				update,
+			);
+			if (result.success) onStepsChange(entry.bundleDir, nextEntry.steps);
+			if (isMountedRef.current) setStepError(!result.success);
+			return result.success;
+		} catch {
+			if (isMountedRef.current) setStepError(true);
+			return false;
+		} finally {
+			if (isMountedRef.current) setStepBusy(false);
+		}
 	};
 	const saveTitle = async () => {
 		const title = titleDraft.trim();
@@ -376,69 +228,72 @@ function RecordingDetail({
 	};
 
 	return (
-		<div>
-			<div
-				style={{
-					display: "flex",
-					alignItems: "flex-start",
-					justifyContent: "space-between",
-					gap: "16px",
-					marginBottom: "8px",
-				}}
-			>
+		<div className="min-w-0">
+			<header className="mb-3 flex flex-wrap items-start justify-between gap-3">
 				{editingTitle ? (
+					<div className="flex w-full flex-wrap items-end gap-2">
+						<div className="min-w-0 flex-1">
+							<Field
+								label="Recording title"
+								value={titleDraft}
+								disabled={titleStatus === "saving"}
+								onChange={(event) => setTitleDraft(event.target.value)}
+								onKeyDown={(event) => {
+									if (event.key === "Enter" && titleStatus !== "saving") void saveTitle();
+									if (event.key === "Escape" && titleStatus !== "saving") cancelTitleEdit();
+								}}
+								autoFocus
+							/>
+						</div>
+						<Button
+							aria-label="Cancel title edit"
+							variant="ghost"
+							disabled={titleStatus === "saving"}
+							onClick={cancelTitleEdit}
+						>
+							Cancel
+						</Button>
+						<Button
+							aria-label="Save title"
+							disabled={titleStatus === "saving" || !titleDraft.trim()}
+							onClick={() => void saveTitle()}
+						>
+							Save
+						</Button>
+					</div>
+				) : (
 					<>
-						<input
-							aria-label="Recording title"
-							value={titleDraft}
-							onChange={(event) => setTitleDraft(event.target.value)}
-							onKeyDown={(event) => {
-								if (event.key === "Enter") void saveTitle();
-								if (event.key === "Escape") cancelTitleEdit();
-							}}
-							autoFocus
-							style={{ fontSize: "30px", flex: 1 }}
-						/>
-						<div style={{ display: "flex", gap: "8px" }}>
-							<button
-								type="button"
-								aria-label="Save title"
-								disabled={titleStatus === "saving"}
-								onClick={() => void saveTitle()}
+						<h1 className="min-w-0 flex-1 break-words font-ds-display text-[32px] font-semibold leading-[1.15] tracking-[-0.64px]">
+							{entry.title}
+						</h1>
+						<div className="flex flex-wrap gap-2">
+							{entry.video && (
+								<Button
+									aria-label="Open in editor"
+									variant="secondary"
+									icon={Scissors}
+									onClick={() => void openInEditor()}
+								>
+									Edit video
+								</Button>
+							)}
+							<Button
+								aria-label="Edit title"
+								variant="secondary"
+								onClick={() => {
+									setTitleDraft(entry.title);
+									setTitleStatus("idle");
+									setEditingTitle(true);
+								}}
 							>
-								Save
-							</button>
-							<button
-								type="button"
-								aria-label="Cancel title edit"
-								disabled={titleStatus === "saving"}
-								onClick={cancelTitleEdit}
-							>
-								Cancel
-							</button>
+								Rename
+							</Button>
 						</div>
 					</>
-				) : (
-					<h1 style={{ fontSize: "30px", margin: 0, color: "var(--sh-color-text)", flex: 1 }}>
-						{entry.title}
-					</h1>
 				)}
-				{!editingTitle && (
-					<button
-						type="button"
-						aria-label="Edit title"
-						onClick={() => {
-							setTitleDraft(entry.title);
-							setTitleStatus("idle");
-							setEditingTitle(true);
-						}}
-					>
-						Edit
-					</button>
-				)}
-			</div>
+			</header>
 			{titleStatus !== "idle" && (
-				<p role="status" style={{ margin: "0 0 12px", color: "var(--sh-muted)", fontSize: "13px" }}>
+				<p role="status" className="mb-3 text-sm text-ds-ink-soft">
 					{titleStatus === "saving"
 						? "Saving title…"
 						: titleStatus === "success"
@@ -446,114 +301,47 @@ function RecordingDetail({
 							: "Couldn't save title"}
 				</p>
 			)}
-
-			<div
-				style={{
-					display: "flex",
-					alignItems: "center",
-					gap: "8px",
-					marginBottom: "18px",
-					flexWrap: "wrap",
-				}}
-			>
-				<span style={sourceTagStyle}>{sourceLabel} recording</span>
-				<span style={{ color: "var(--sh-muted)", fontSize: "13px" }}>·</span>
-				<span style={{ fontSize: "13px", color: "var(--sh-muted)" }}>
-					{formatWhen(entry.createdAt)}
-				</span>
-				{entry.durationMs !== undefined && (
-					<>
-						<span style={{ color: "var(--sh-muted)", fontSize: "13px" }}>·</span>
-						<span style={{ fontSize: "13px", color: "var(--sh-muted)" }}>
-							{formatDuration(entry.durationMs)}
-						</span>
-					</>
-				)}
-			</div>
-
-			<div
-				style={{
-					display: "flex",
-					alignItems: "center",
-					gap: "10px",
-					padding: "10px 14px",
-					borderRadius: "var(--sh-radius-md)",
-					background: "var(--sh-card-bg)",
-				}}
-			>
-				<svg
-					width="15"
-					height="15"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="var(--sh-muted)"
-					strokeWidth="2.75"
-					strokeLinecap="round"
-					strokeLinejoin="round"
-					style={{ flex: "none" }}
-					aria-hidden="true"
-				>
-					<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" />
-				</svg>
-				<div
-					style={{
-						flex: 1,
-						minWidth: 0,
-						fontFamily: "ui-monospace, 'SF Mono', Menlo, Consolas, monospace",
-						fontSize: "12.5px",
-						color: "var(--sh-muted)",
-						whiteSpace: "nowrap",
-						overflow: "hidden",
-						textOverflow: "ellipsis",
+			<p className="mb-5 font-ds-label text-[10px] uppercase tracking-[0.8px] text-ds-ink-soft">
+				<span>{sourceLabel} recording</span> ·{" "}
+				{entry.durationMs !== undefined && `${formatDuration(entry.durationMs)} · `}
+				{formatWhen(entry.createdAt)}
+			</p>
+			{videoSrc && (
+				<VideoPlayer
+					src={videoSrc}
+					durationMs={entry.durationMs ?? 0}
+					preload="metadata"
+					aria-label="Recording video"
+					onVideoReady={(video) => {
+						videoRef.current = video;
 					}}
-				>
-					{entry.bundleDir}
-				</div>
-				{entry.video && (
-					<button
-						type="button"
-						onClick={() => void openInEditor()}
-						style={{
-							border: "1px solid var(--sh-color-divider)",
-							borderRadius: "8px",
-							background: "transparent",
-							color: "var(--sh-color-text)",
-							padding: "6px 9px",
-							fontSize: "12px",
-							fontWeight: 600,
-							cursor: "pointer",
-							whiteSpace: "nowrap",
-						}}
-					>
-						Open in editor
-					</button>
-				)}
-				<button
-					type="button"
-					disabled={copyStatus === "copying"}
-					onClick={() => void copyPath()}
-					style={{
-						border: "1px solid var(--sh-color-divider)",
-						borderRadius: "8px",
-						background: "transparent",
-						color: "var(--sh-color-text)",
-						padding: "6px 9px",
-						fontSize: "12px",
-						fontWeight: 600,
-						cursor: "pointer",
-						whiteSpace: "nowrap",
-					}}
-				>
-					{copyStatus === "copying" ? "Copying…" : "Copy path"}
-				</button>
-			</div>
+					onLoadedMetadata={applyPendingSeek}
+					className="h-[240px] min-[1100px]:h-[340px]"
+				/>
+			)}
 			{editorError && (
-				<p role="alert">
+				<p role="alert" className="mt-3 text-sm text-ds-rec-ink">
 					Couldn’t open this recording in the editor. The recording is still saved.
 				</p>
 			)}
+			<AiGuidePanel
+				entry={entry}
+				onEntryChange={onEntryChange}
+				onStatusChange={onGuideStatusChange}
+				actions={
+					<Button
+						title={entry.bundleDir}
+						variant="secondary"
+						icon={Folder}
+						disabled={copyStatus === "copying"}
+						onClick={() => void copyPath()}
+					>
+						{copyStatus === "copying" ? "Copying…" : "Copy path"}
+					</Button>
+				}
+			/>
 			{copyStatus !== "idle" && (
-				<p role="status" style={{ margin: "8px 0 0", color: "var(--sh-muted)", fontSize: "13px" }}>
+				<p role="status" className="mt-2 text-sm text-ds-ink-soft">
 					{copyStatus === "copying"
 						? "Copying path…"
 						: copyStatus === "success"
@@ -561,191 +349,139 @@ function RecordingDetail({
 							: "Couldn't copy path"}
 				</p>
 			)}
-
-			{videoSrc && (
-				<video
-					ref={videoRef}
-					src={videoSrc}
-					controls
-					preload="metadata"
-					onLoadedMetadata={applyPendingSeek}
-					style={{
-						width: "100%",
-						marginTop: "28px",
-						borderRadius: "var(--sh-radius-lg)",
-						background: "#171916",
-						display: "block",
-					}}
-				>
-					<track kind="captions" />
-				</video>
-			)}
-
-			<AiGuidePanel entry={entry} onEntryChange={onEntryChange} />
-
 			{entry.steps && entry.steps.length > 0 && <StepCaptureDegradationNotice entry={entry} />}
-
+			{stepError && (
+				<p role="alert" className="mb-3 text-sm text-ds-rec-ink">
+					Couldn't save step. The saved guide is unchanged. Try again.
+				</p>
+			)}
 			{entry.steps && entry.steps.length > 0 ? (
-				<section style={{ marginTop: "40px" }} aria-label="Workflow steps">
-					<h2 style={{ fontSize: "20px", margin: "0 0 18px", color: "var(--sh-color-text)" }}>
-						Steps
-					</h2>
-					<ol
-						style={{
-							display: "flex",
-							flexDirection: "column",
-							gap: "20px",
-							margin: 0,
-							padding: 0,
-							listStyle: "none",
-						}}
-					>
+				<section aria-label="Workflow steps">
+					<h2 className="sr-only">Steps</h2>
+					<ol>
 						{entry.steps.map((step, index) => {
+							const hidden = step.redaction && !revealedSteps.has(index);
 							const screenshotSrc =
 								step.screenshot === ""
 									? undefined
 									: (step.screenshotUrl ??
 										fallbackBundleUrl(entry.bundleDir, `screenshots/${step.screenshot}`));
 							return (
-								<li
-									key={`${step.ts}-${step.screenshot}`}
-									style={{
-										display: "grid",
-										gridTemplateColumns: "36px minmax(0, 1fr)",
-										gap: "14px",
-										padding: "18px",
-										borderRadius: "var(--sh-radius-lg)",
-										background: "var(--sh-card-bg)",
-									}}
-								>
-									<span
-										style={{
-											width: "28px",
-											height: "28px",
-											borderRadius: "50%",
-											background: "var(--sh-color-accent-100)",
-											color: "var(--sh-color-accent-700)",
-											display: "grid",
-											placeItems: "center",
-											fontWeight: 700,
-											fontSize: "13px",
-										}}
+								<li key={`${step.ts}-${step.screenshot}`}>
+									<GuideStep
+										number={index + 1}
+										title={hidden ? "Sensitive text hidden" : step.label}
+										shot={
+											hidden ? (
+												<Mosaic />
+											) : screenshotSrc ? (
+												<img
+													src={screenshotSrc}
+													alt={`Step ${index + 1}: ${step.label}`}
+													className="h-full w-full object-contain"
+												/>
+											) : (
+												<span className="px-3 text-center font-ds-label text-[10px] uppercase text-ds-on-panel-soft">
+													{step.kind === "narration" ? "Narration" : "No screenshot"}
+												</span>
+											)
+										}
+										actions={
+											<>
+												<Button
+													variant="ghost"
+													className="p-0 text-ds-rec-ink"
+													onClick={() => seekToStep(step.ts)}
+												>
+													{formatDuration(step.ts)}
+												</Button>
+												<Button
+													variant="ghost"
+													className="px-1 py-1"
+													aria-label={`Edit step ${index + 1}`}
+													disabled={Boolean(hidden) || stepBusy}
+													onClick={() => {
+														setInstructionDraft(step.label);
+														setEditingStepIndex(index);
+													}}
+												>
+													Edit
+												</Button>
+												<Button
+													variant="ghost"
+													className="px-1 py-1"
+													aria-label={`Delete step ${index + 1}`}
+													disabled={stepBusy}
+													onClick={() => void deleteStep(index)}
+												>
+													Delete
+												</Button>
+												{step.redaction && hidden && (
+													<Button
+														variant="ghost"
+														className="px-1 py-1"
+														aria-label={`Reveal step ${index + 1} text`}
+														onClick={() =>
+															setRevealedSteps((current) => new Set(current).add(index))
+														}
+													>
+														Reveal
+													</Button>
+												)}
+											</>
+										}
 									>
-										{index + 1}
-									</span>
-									<div style={{ minWidth: 0 }}>
-										{screenshotSrc && (
-											<img
-												src={screenshotSrc}
-												alt={`Step ${index + 1}: ${step.label}`}
-												style={{
-													width: "100%",
-													display: "block",
-													borderRadius: "var(--sh-radius-md)",
-													marginBottom: "12px",
-												}}
-											/>
-										)}
-										<div
-											style={{
-												display: "flex",
-												alignItems: "center",
-												justifyContent: "space-between",
-												gap: "12px",
-											}}
-										>
-											<div style={{ minWidth: 0, flex: 1 }}>
-												{editingStepIndex === index ? (
-													<input
-														aria-label={`Step ${index + 1} instruction`}
-														value={instructionDraft}
-														onChange={(event) => setInstructionDraft(event.target.value)}
-														onKeyDown={(event) => {
-															if (event.key === "Enter") void saveStep(index);
-															if (event.key === "Escape") setEditingStepIndex(null);
-														}}
-														autoFocus
-													/>
-												) : (
-													<p style={{ margin: 0, fontSize: "15px", fontWeight: 600 }}>
-														{step.redaction && !revealedSteps.has(index)
-															? "Sensitive text hidden"
-															: step.label}
-													</p>
-												)}
-												<div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
-													<button
-														type="button"
-														aria-label={`Edit step ${index + 1}`}
-														disabled={step.redaction && !revealedSteps.has(index)}
-														onClick={() => {
-															setInstructionDraft(step.label);
-															setEditingStepIndex(index);
-														}}
-													>
-														Edit
-													</button>
-													<button
-														type="button"
-														aria-label={`Delete step ${index + 1}`}
-														onClick={() => void deleteStep(index)}
-													>
-														Delete
-													</button>
-													{step.redaction && (
-														<button
-															type="button"
-															aria-label={`Reveal step ${index + 1} text`}
-															onClick={() =>
-																setRevealedSteps((current) => new Set(current).add(index))
-															}
-														>
-															Reveal
-														</button>
-													)}
-												</div>
-												{step.redaction && revealedSteps.has(index) && (
-													<label>
-														<input
-															type="checkbox"
-															checked={step.includeRevealedText === true}
-															onChange={(event) => {
-																const includeRevealedText = event.target.checked;
-																const steps = entry.steps?.map((current, stepIndex) =>
-																	stepIndex === index
-																		? { ...current, includeRevealedText }
-																		: current,
-																);
-																if (steps) {
-																	void persist(
-																		{ type: "step", index, includeRevealedText },
-																		{ ...entry, steps },
-																	);
-																}
-															}}
-														/>
-														Include revealed text in steps.md
-													</label>
-												)}
+										{editingStepIndex === index && (
+											<div className="flex flex-wrap items-end gap-2">
+												<Field
+													label={`Step ${index + 1} instruction`}
+													value={instructionDraft}
+													disabled={stepBusy}
+													onChange={(event) => setInstructionDraft(event.target.value)}
+													onKeyDown={(event) => {
+														if (event.key === "Enter" && !stepBusy) void saveStep(index);
+														if (event.key === "Escape" && !stepBusy) setEditingStepIndex(null);
+													}}
+													autoFocus
+												/>
+												<Button
+													variant="secondary"
+													disabled={stepBusy || !instructionDraft.trim()}
+													onClick={() => void saveStep(index)}
+												>
+													Save step
+												</Button>
+												<Button
+													variant="ghost"
+													disabled={stepBusy}
+													onClick={() => setEditingStepIndex(null)}
+												>
+													Cancel
+												</Button>
 											</div>
-											<button
-												type="button"
-												onClick={() => seekToStep(step.ts)}
-												style={{
-													border: "none",
-													borderRadius: "999px",
-													background: "var(--sh-color-accent-100)",
-													color: "var(--sh-color-accent-700)",
-													padding: "5px 9px",
-													fontWeight: 700,
-													fontSize: "12px",
-													cursor: "pointer",
-												}}
-											>
-												{formatDuration(step.ts)}
-											</button>
-										</div>
-									</div>
+										)}
+										{step.redaction && !hidden && (
+											<label className="flex items-center gap-2 text-sm">
+												<input
+													type="checkbox"
+													disabled={stepBusy}
+													checked={step.includeRevealedText === true}
+													onChange={(event) => {
+														const includeRevealedText = event.target.checked;
+														const steps = entry.steps?.map((current, stepIndex) =>
+															stepIndex === index ? { ...current, includeRevealedText } : current,
+														);
+														if (steps)
+															void persist(
+																{ type: "step", index, includeRevealedText },
+																{ ...entry, steps },
+															);
+													}}
+												/>
+												Include revealed text in steps.md
+											</label>
+										)}
+									</GuideStep>
 								</li>
 							);
 						})}
@@ -756,6 +492,10 @@ function RecordingDetail({
 			) : (
 				<TranscriptOnlyDocSection entry={entry} />
 			)}
+			<details className="mt-6 text-xs text-ds-ink-soft">
+				<summary className="cursor-pointer font-ds-label uppercase">Recording folder</summary>
+				<p className="mt-2 break-all font-ds-label">{entry.bundleDir}</p>
+			</details>
 		</div>
 	);
 }
@@ -778,118 +518,42 @@ function MissingDocSection({
 	});
 
 	return (
-		<section style={{ marginTop: "40px" }} aria-label="Workflow document">
-			<h2 style={{ fontSize: "20px", margin: "0 0 18px", color: "var(--sh-color-text)" }}>
-				Workflow doc
-			</h2>
+		<section className="mt-8" aria-label="Workflow document">
+			<h2 className="mb-4 font-ds-display text-lg font-semibold">Workflow doc</h2>
 			{docStatus === "generating" ? (
 				<div
 					data-testid="generating-doc-state"
-					style={{
-						padding: "28px 24px",
-						borderRadius: "var(--sh-radius-lg)",
-						background: "var(--sh-card-bg)",
-						color: "var(--sh-muted)",
-						fontSize: "14.5px",
-					}}
+					className="rounded-[8px] border border-ds-line bg-ds-surface-raised p-6"
 				>
-					Generating workflow doc…
+					<p role="status" className="mb-4 text-sm text-ds-ink-soft">
+						Generating workflow doc…
+					</p>
+					<Progress label="Generating workflow doc" frontier={<Mosaic />} />
 				</div>
 			) : docStatus === "failure" ? (
 				<div
 					data-testid="doc-failure-state"
-					style={{
-						padding: "28px 24px",
-						borderRadius: "var(--sh-radius-lg)",
-						background: "var(--sh-card-bg)",
-					}}
+					className="rounded-[8px] border border-ds-rec bg-ds-rec-wash p-6"
 				>
-					<p
-						style={{
-							margin: "0 0 14px",
-							fontSize: "15px",
-							fontWeight: 600,
-							color: "var(--sh-color-text)",
-						}}
-					>
-						Couldn&apos;t generate the workflow doc
-					</p>
-					<p
-						style={{
-							margin: "0 0 18px",
-							fontSize: "14.5px",
-							color: "var(--sh-muted)",
-							lineHeight: 1.6,
-						}}
-					>
+					<p className="mb-3 font-medium">Couldn't generate the workflow doc</p>
+					<p className="mb-4 text-sm leading-relaxed text-ds-ink-soft">
 						The recording, transcript, and any existing steps are safe. Try again to regenerate the
 						doc.
 					</p>
-					<button
-						type="button"
-						aria-label="Retry"
-						onClick={onCreate}
-						style={{
-							border: "1px solid var(--sh-color-divider)",
-							borderRadius: "8px",
-							background: "transparent",
-							color: "var(--sh-color-text)",
-							padding: "8px 14px",
-							fontSize: "13px",
-							fontWeight: 600,
-							cursor: "pointer",
-						}}
-					>
+					<Button variant="secondary" aria-label="Retry" onClick={onCreate}>
 						Retry
-					</button>
+					</Button>
 				</div>
 			) : (
 				<div
 					data-testid="missing-doc-state"
-					style={{
-						padding: "28px 24px",
-						borderRadius: "var(--sh-radius-lg)",
-						background: "var(--sh-card-bg)",
-					}}
+					className="rounded-[8px] border border-ds-line bg-ds-surface-raised p-6"
 				>
-					<p
-						style={{
-							margin: "0 0 8px",
-							fontSize: "15px",
-							fontWeight: 600,
-							color: "var(--sh-color-text)",
-						}}
-					>
-						{heading}
-					</p>
-					<p
-						style={{
-							margin: "0 0 18px",
-							fontSize: "14.5px",
-							color: "var(--sh-muted)",
-							lineHeight: 1.6,
-							maxWidth: "560px",
-						}}
-					>
-						{explanation}
-					</p>
-					<button
-						type="button"
-						aria-label="Create workflow doc"
-						onClick={onCreate}
-						style={{
-							border: "1px solid var(--sh-color-divider)",
-							borderRadius: "8px",
-							background: "transparent",
-							color: "var(--sh-color-text)",
-							padding: "8px 14px",
-							fontSize: "13px",
-							fontWeight: 600,
-							cursor: "pointer",
-						}}
-					>
+					<p className="mb-3 font-medium">{heading}</p>
+					<p className="mb-4 text-sm leading-relaxed text-ds-ink-soft">{explanation}</p>
+					<Button variant="secondary" aria-label="Create workflow doc" onClick={onCreate}>
 						Create workflow doc
-					</button>
+					</Button>
 				</div>
 			)}
 		</section>
@@ -950,17 +614,9 @@ function StepCaptureDegradationNotice({ entry }: { entry: RecordingLibraryEntry 
 	return (
 		<div
 			data-testid="step-capture-degradation-notice"
-			style={{
-				marginTop: "28px",
-				padding: "14px 18px",
-				borderRadius: "var(--sh-radius-md)",
-				background: "var(--sh-card-bg)",
-				color: "var(--sh-muted)",
-				fontSize: "14px",
-				lineHeight: 1.6,
-			}}
+			className="my-5 rounded-[8px] border border-ds-line bg-ds-surface-sunken p-4 text-sm leading-relaxed text-ds-ink-soft"
 		>
-			<strong style={{ color: "var(--sh-color-text)" }}>{heading}. </strong>
+			<strong className="text-ds-ink">{heading}. </strong>
 			{explanation}
 		</div>
 	);
@@ -972,22 +628,14 @@ function TranscriptOnlyDocSection({ entry }: { entry: RecordingLibraryEntry }) {
 		explanation: "This workflow doc has no captured click steps.",
 	});
 	return (
-		<section style={{ marginTop: "40px" }} aria-label="Workflow document">
-			<h2 style={{ fontSize: "20px", margin: "0 0 18px", color: "var(--sh-color-text)" }}>
-				Workflow doc
-			</h2>
+		<section className="mt-8" aria-label="Workflow document">
+			<h2 className="mb-4 font-ds-display text-lg font-semibold">Workflow doc</h2>
 			<div
 				data-testid="transcript-only-doc-state"
-				style={{
-					padding: "28px 24px",
-					borderRadius: "var(--sh-radius-lg)",
-					background: "var(--sh-card-bg)",
-				}}
+				className="rounded-[8px] border border-ds-line bg-ds-surface-sunken p-6"
 			>
-				<p style={{ margin: "0 0 8px", fontSize: "15px", fontWeight: 600 }}>{heading}</p>
-				<p style={{ margin: 0, fontSize: "14.5px", color: "var(--sh-muted)", lineHeight: 1.6 }}>
-					{explanation}
-				</p>
+				<p className="mb-2 font-medium">{heading}</p>
+				<p className="text-sm leading-relaxed text-ds-ink-soft">{explanation}</p>
 			</div>
 		</section>
 	);
@@ -1000,38 +648,60 @@ function TranscriptOnlyDocSection({ entry }: { entry: RecordingLibraryEntry }) {
  *
  * Loads the local recording list via `window.electronAPI.showhowListRecordings`,
  * renders each valid bundle as a sidebar row (globe = browser, monitor = desktop),
- * highlights the active row with the accent-100 background, and renders the
+ * highlights the selected bundle with the Final filled row, and renders the
  * approved empty state when no recordings are present.
  */
 export function RecordingLibrary() {
+	const t = useScopedT("common");
 	const [entries, setEntries] = useState<RecordingLibraryEntry[]>([]);
-	const [activeIndex, setActiveIndex] = useState(0);
+	const [selectedBundleDir, setSelectedBundleDir] = useState<string | null>(null);
+	const [query, setQuery] = useState("");
+	const [overview, setOverview] = useState(false);
 	const [loading, setLoading] = useState(true);
 	const [loadError, setLoadError] = useState(false);
-
 	useEffect(() => {
+		let active = true;
 		window.electronAPI
 			.showhowListRecordings()
 			.then((result) => {
+				if (!active) return;
 				setEntries(result);
-				setActiveIndex(0);
-				setLoadError(false);
+				setSelectedBundleDir(result[0]?.bundleDir ?? null);
 			})
-			.catch((err: unknown) => {
-				console.error("[RecordingLibrary] failed to load recordings:", err);
-				setEntries([]);
-				setLoadError(true);
+			.catch((error: unknown) => {
+				console.error("[RecordingLibrary] failed to load recordings:", error);
+				if (active) setLoadError(true);
 			})
 			.finally(() => {
-				setLoading(false);
+				if (active) setLoading(false);
 			});
+		return () => {
+			active = false;
+		};
 	}, []);
-
-	const hasRecordings = entries.length > 0;
-	const activeEntry = hasRecordings ? entries[activeIndex] : null;
+	const visibleEntries = filterRecordings(entries, query);
+	const activeEntry =
+		visibleEntries.find((entry) => entry.bundleDir === selectedBundleDir) ?? visibleEntries[0];
+	const onGuideStatusChange = useCallback(
+		(bundleDir: string, status: NonNullable<RecordingLibraryEntry["guideStatus"]>) => {
+			setEntries((current) =>
+				current.map((entry) =>
+					entry.bundleDir === bundleDir && entry.guideStatus !== status
+						? { ...entry, guideStatus: status }
+						: entry,
+				),
+			);
+		},
+		[],
+	);
 	const replaceEntry = (nextEntry: RecordingLibraryEntry) => {
 		setEntries((current) =>
 			current.map((entry) => (entry.bundleDir === nextEntry.bundleDir ? nextEntry : entry)),
+		);
+	};
+	const updateSteps = (bundleDir: string, steps: RecordingLibraryEntry["steps"]) => {
+		setEntries((current) =>
+			current.map((entry) => (entry.bundleDir === bundleDir ? { ...entry, steps } : entry)),
 		);
 	};
 	const updateTitle = (bundleDir: string, title: string) => {
@@ -1039,196 +709,119 @@ export function RecordingLibrary() {
 			current.map((entry) => (entry.bundleDir === bundleDir ? { ...entry, title } : entry)),
 		);
 	};
-
 	return (
-		<div
-			style={{
-				display: "flex",
-				height: "100vh",
-				background: "var(--sh-color-bg)",
-				color: "var(--sh-color-text)",
-			}}
-		>
-			{/* ---- sidebar ---- */}
-			<div
-				style={{
-					width: "272px",
-					flex: "none",
-					height: "100vh",
-					display: "flex",
-					flexDirection: "column",
-					gap: "28px",
-					padding: "26px 18px",
-					background: "var(--sh-sidebar-bg)",
-					borderRight: "1px solid var(--sh-color-divider)",
-				}}
-			>
-				{/* wordmark */}
-				<div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "0 8px" }}>
-					<div
-						style={{
-							width: "32px",
-							height: "32px",
-							borderRadius: "10px",
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "center",
-							flex: "none",
-							backgroundColor: "#8CB7A2",
-						}}
-					>
-						<svg width="15" height="15" viewBox="0 0 24 24" fill="#FFFCF7" aria-hidden="true">
-							<path d="M8 5v14l11-7z" />
-						</svg>
-					</div>
-					<span
-						style={{
-							fontFamily: "var(--sh-font-heading)",
-							fontSize: "19px",
-							color: "var(--sh-color-text)",
-						}}
-					>
-						Showhow
-					</span>
-				</div>
-
-				<button
-					type="button"
-					onClick={() => window.electronAPI.switchToHud()}
-					style={{
-						display: "flex",
-						alignItems: "center",
-						justifyContent: "center",
-						gap: "8px",
-						width: "100%",
-						padding: "11px 14px",
-						border: "none",
-						borderRadius: "10px",
-						background: "var(--sh-color-accent)",
-						color: "white",
-						fontFamily: "var(--sh-font-body)",
-						fontSize: "13px",
-						fontWeight: 700,
-						cursor: "pointer",
-					}}
+		<Shell
+			className="h-screen"
+			sidebar={
+				<Sidebar
+					primary={{ icon: CircleDot, onClick: () => void window.electronAPI.switchToHud() }}
+					onLibrarySelect={() => setOverview(true)}
+					libraryLabel={`Library · ${entries.length}`}
+					footer={<AiGuideSettings />}
 				>
-					New recording
-				</button>
-
-				{/* library list */}
-				<div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-					<div
-						style={{
-							fontSize: "11px",
-							letterSpacing: "0.09em",
-							textTransform: "uppercase",
-							color: "var(--sh-muted)",
-							padding: "0 8px",
-							marginBottom: "6px",
-						}}
-					>
-						Library
-					</div>
-
+					<label className="mb-1 flex items-center gap-2 rounded-[4px] border border-ds-on-panel-line bg-ds-on-panel-wash px-[10px] py-[9px] text-ds-on-panel-soft">
+						<Search size={14} aria-hidden="true" />
+						<input
+							type="search"
+							aria-label={t("showhowLibrary.search")}
+							placeholder={t("showhowLibrary.search")}
+							value={query}
+							onChange={(event) => setQuery(event.target.value)}
+							className="min-w-0 flex-1 bg-transparent font-ds-body text-[13px] text-ds-on-panel placeholder:text-ds-on-panel-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-ds-accent"
+						/>
+					</label>
 					{loading && (
-						<div style={{ padding: "14px 8px", fontSize: "12.5px", color: "var(--sh-muted)" }}>
+						<p role="status" className="p-2 text-sm text-ds-on-panel-soft">
 							Loading…
-						</div>
+						</p>
 					)}
-
 					{!loading &&
-						hasRecordings &&
-						entries.map((entry, index) => (
+						visibleEntries.map((entry) => (
 							<LibraryRow
 								key={entry.bundleDir}
-								entry={entry}
-								isActive={index === activeIndex}
-								onSelect={() => setActiveIndex(index)}
+								title={entry.title}
+								meta={`${entry.source === "browser" ? "Browser" : "Desktop"}${entry.durationMs === undefined ? "" : ` · ${formatDuration(entry.durationMs)}`}`}
+								trailing={
+									<Tag
+										variant={
+											entry.guideStatus === "ready"
+												? "accent"
+												: entry.guideStatus === "failed"
+													? "failed"
+													: "neutral"
+										}
+									>
+										{t(`showhowLibrary.${entry.guideStatus ?? "none"}`)}
+									</Tag>
+								}
+								processing={entry.guideStatus === "making" ? <Mosaic /> : undefined}
+								selected={!overview && entry.bundleDir === activeEntry?.bundleDir}
+								onSelect={() => {
+									setOverview(false);
+									setSelectedBundleDir(entry.bundleDir);
+								}}
 							/>
 						))}
-
 					{!loading && loadError && (
-						<div
-							style={{
-								padding: "14px 8px",
-								fontSize: "12.5px",
-								color: "var(--sh-muted)",
-								lineHeight: 1.6,
-							}}
-						>
-							Couldn&apos;t load recordings.
-						</div>
+						<p className="p-2 text-sm text-ds-on-panel-soft">Couldn't load recordings.</p>
 					)}
-
-					{!loading && !loadError && !hasRecordings && (
-						<div
-							style={{
-								padding: "14px 8px",
-								fontSize: "12.5px",
-								color: "var(--sh-muted)",
-								lineHeight: 1.6,
-							}}
-						>
+					{!loading && !loadError && entries.length === 0 && (
+						<p className="p-2 text-sm text-ds-on-panel-soft">
 							No recordings yet. Start one to see it here.
-						</div>
+						</p>
 					)}
-				</div>
-
-				<AiGuideSettings />
-
-				<button
-					type="button"
-					onClick={() => window.electronAPI.switchToHud()}
-					style={{
-						marginTop: "auto",
-						display: "flex",
-						alignItems: "center",
-						justifyContent: "center",
-						gap: "8px",
-						width: "100%",
-						padding: "10px 14px",
-						border: "1px solid var(--sh-color-divider)",
-						borderRadius: "10px",
-						background: "var(--sh-card-bg)",
-						color: "var(--sh-color-text)",
-						fontFamily: "var(--sh-font-body)",
-						fontSize: "13px",
-						fontWeight: 600,
-						cursor: "pointer",
-					}}
-				>
-					<svg
-						width="15"
-						height="15"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						strokeWidth="2.25"
-						strokeLinecap="round"
-						strokeLinejoin="round"
-						aria-hidden="true"
+				</Sidebar>
+			}
+		>
+			<div className="mx-auto max-w-[928px] px-6 pb-16 pt-14 min-[1100px]:px-[54px]">
+				{loading && (
+					<div
+						role="status"
+						className="flex min-h-[420px] flex-col items-center justify-center gap-5"
 					>
-						<path d="m15 18-6-6 6-6" />
-					</svg>
-					Back to recorder
-				</button>
+						<div className="h-[200px] w-full max-w-[440px] overflow-hidden rounded-[8px]">
+							<Mosaic />
+						</div>
+						<h1 className="font-ds-display text-[32px] font-semibold">
+							{t("showhowLibrary.loading")}
+						</h1>
+						<p className="text-ds-ink-soft">{t("showhowLibrary.finding")}</p>
+					</div>
+				)}
+				{!loading && loadError && <ErrorLibraryState />}
+				{!loading && !loadError && entries.length === 0 && <EmptyLibraryState />}
+				{!loading && !loadError && entries.length > 0 && visibleEntries.length === 0 && (
+					<div className="flex min-h-[420px] flex-col items-center justify-center gap-4 text-center">
+						<h1 className="font-ds-display text-[32px] font-semibold">
+							{t("showhowLibrary.noResults")}
+						</h1>
+						<p className="max-w-full break-words text-ds-ink-soft">
+							{t("showhowLibrary.noMatch", { query })}
+						</p>
+						<Button variant="secondary" onClick={() => setQuery("")}>
+							{t("showhowLibrary.clear")}
+						</Button>
+					</div>
+				)}
+				{!loading && !loadError && activeEntry && overview && (
+					<div className="flex min-h-[520px] flex-col items-center justify-center gap-5 [&>div]:bg-transparent [&_h3]:text-[32px]">
+						<div className="h-[200px] w-full max-w-[440px] overflow-hidden rounded-[8px]">
+							<Mosaic />
+						</div>
+						<EmptyState title={t("showhowLibrary.pick")} body={t("showhowLibrary.pickBody")} />
+					</div>
+				)}
+				{!loading && !loadError && activeEntry && !overview && (
+					<RecordingDetail
+						key={activeEntry.bundleDir}
+						entry={activeEntry}
+						onEntryChange={replaceEntry}
+						onTitleChange={updateTitle}
+						onStepsChange={updateSteps}
+						onGuideStatusChange={onGuideStatusChange}
+					/>
+				)}
 			</div>
-
-			{/* ---- main panel ---- */}
-			<div style={{ flex: 1, height: "100vh", overflowY: "auto" }}>
-				<div style={{ maxWidth: "820px", margin: "0 auto", padding: "60px 40px 120px" }}>
-					{!loading && loadError && <ErrorLibraryState />}
-					{!loading && !loadError && !hasRecordings && <EmptyLibraryState />}
-					{!loading && !loadError && activeEntry && (
-						<RecordingDetail
-							key={activeEntry.bundleDir}
-							entry={activeEntry}
-							onEntryChange={replaceEntry}
-							onTitleChange={updateTitle}
-						/>
-					)}
-				</div>
-			</div>
-		</div>
+		</Shell>
 	);
 }

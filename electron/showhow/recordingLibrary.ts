@@ -19,6 +19,7 @@ interface RawMeta {
 	durationMs?: unknown;
 	video?: unknown;
 	stepCapture?: unknown;
+	guide?: unknown;
 }
 
 interface RawStep {
@@ -27,6 +28,7 @@ interface RawStep {
 	screenshot?: unknown;
 	redaction?: unknown;
 	includeRevealedText?: unknown;
+	kind?: unknown;
 }
 
 function isValidSource(value: unknown): value is "desktop" | "browser" {
@@ -101,6 +103,7 @@ async function readSteps(
 					label: raw.label,
 					ts: raw.ts,
 					screenshot: raw.screenshot,
+					...(raw.kind === "narration" || raw.kind === "click" ? { kind: raw.kind } : {}),
 					...(typeof raw.redaction === "boolean" ? { redaction: raw.redaction } : {}),
 					...(typeof raw.includeRevealedText === "boolean"
 						? { includeRevealedText: raw.includeRevealedText }
@@ -163,6 +166,11 @@ async function readEntryForDir(
 	}
 	if (isStepCapture(raw.stepCapture)) {
 		entry.stepCapture = raw.stepCapture;
+	}
+	if (typeof raw.guide === "object" && raw.guide !== null && "status" in raw.guide) {
+		const status = raw.guide.status;
+		if (status === "none" || status === "making" || status === "ready" || status === "failed")
+			entry.guideStatus = status;
 	}
 	const steps = await readSteps(bundleDir);
 	if (steps !== undefined) {
