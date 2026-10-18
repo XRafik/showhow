@@ -551,3 +551,130 @@ None.
 
 ## Self-review
 Unbounded-word scan of requirements and DONE WHEN: "each behave" is bounded to K2–K7. "Every exit path" (constraints) is a reason, bounded in RED by the timeout and error cases. "All", "any" and "valid" do not appear in acceptance.
+
+# Showhow landing page Plan
+
+## Goal
+A visitor who is a solo founder or agency owner, with client messages arriving and several coding agents running, understands in one screen that Showhow turns a screen recording into a step-by-step guide. They can reach the repository, learn how to open the unsigned build and read what is real today and what is coming. The owner is the model user: the copy speaks to the moment of a client message and waiting agents.
+
+## Context and decisions
+- Prototype, shown and approved 2026-10-18: `landing-proto-motion.html` and `landing-proto.html` (scratch, not committed), built from `design/landing.pen` **Landing 2 · Darkroom**. Scratch path: `/private/tmp/claude-501/-Users-mohamedb-dev-projects-showhow/9ea8cf54-bd75-44b2-9bfe-6025a04af465/scratchpad/`. Screenshots checked at 1440 px and 390 px wide.
+- Hero loop (placeholder): Remotion composition `HeroMakeGuide`, 928x580 logical, 30 fps, 180 frames, rendered at 2x (1856x1160). Frame 0 and frame 179 are pixel-identical (0 differing pixels). Sources are the design frames `uNXEY` (finished guide) and `CPka0` (progress card, redrawn in code) from `design/showhow.pen`. MP4 357 KB, WebM 391 KB, GIF 315 KB.
+- Today's truth, checked 2026-10-18: Make guide ships through OpenRouter (#122, PR #126). `src/` and `electron/` hold no "Copy for agent" or "Export PDF" code. No GitHub release exists. Connect ChatGPT (#128) is parked.
+- Owner answers, shaping session 2026-10-18:
+  1. Primary action: **Download early build for Mac**, labelled early. Until a release exists the button is a dummy that links to the repository.
+  2. Headline stays "Show how it's done."; the subhead speaks to the client message and waiting agents.
+  3. Below the hero: How it works, Coming next, How to open, FAQ, footer. Each section carries a short loop.
+  4. Loops come from real recordings of the built app, polished with a Remotion overlay. The page ships with design-frame placeholders until those exist.
+  5. Handoffs (Copy for agent, Export PDF) are shown as "Coming next" with a "Soon" tag. The page does not present them as working.
+  6. Dark Landing 2 look. No analytics. Placeholders may ship.
+  7. The FAQ states that Showhow is a fork of OpenScreen with a library added.
+- Confirmed assumptions: Inter Tight, Inter and JetBrains Mono; colours `#161616`, `#FFFCF7`, sage `#82B09A`, orange `#E3582D`; loops ship as MP4 and WebM with a poster; one scroll, no pricing, testimonials or blog; downloads are counted from GitHub release statistics once a release exists.
+
+## Bounded requirements
+- **Supported viewports:** 1440x900 and 390x844. At both, the page has no horizontal scroll.
+- **Sections, in order:** nav, hero, How it works (3 steps), Coming next (2 handoff panels), How to open (3 steps), FAQ (6 items), footer call to action.
+- **Hero at 1440x900:** the tabs row, the Make guide button and the progress card are fully inside the first 900 px when the loop is at 3.0 s.
+- **Claims allowed on the page:** recording, Make guide through OpenRouter, free and open source, macOS 13+, unsigned build. Copy for agent, Export PDF and ChatGPT sign-in appear only with a "Soon" or "Coming" tag.
+- **Download button:** links to `https://github.com/bedarstudios/showhow` until the owner supplies a release URL. The label is "Download early build for Mac".
+- **Motion:** respects `prefers-reduced-motion: reduce`. In that mode the hero shows the poster and no loop plays.
+- **Media:** 6 loop slots. Slots for steps 1 and 2, the hero and How to open play a muted loop. The step 3 slot and the two Coming next slots show a still.
+- **No third-party scripts, no cookies, no analytics.** Fonts load from Google Fonts only.
+- **Excluded here:** real recordings, a signed build, translations, a blog, pricing, testimonials, deployment (Task 3), and Windows or Linux download paths.
+
+## Architecture
+A static site in `site/`: `index.html`, `styles.css`, `script.js` and `assets/`. It uses plain HTML and CSS with BEM class names (global CSS, per the Loop naming rule) and about 100 lines of vanilla JavaScript for reveal, the FAQ height animation, the nav state and loop pausing off-screen. It shares no code with the Electron app and adds no dependency to the root `package.json`. The loop source lives in `design/landing-loops/` with its own `package.json`; the root build never installs it.
+
+## Milestones
+- **Landing page launch:** Task 1 (design), Task 2 (build), Task 3 (loops), then Task 4 (publish).
+
+### Task 1: Design the full landing page in pen.dev from Landing 2
+
+**Priority:** no (owner answer, 2026-10-18)
+**Labels:** feature, ui
+**Milestone:** Landing page launch
+**Depends on:** none
+**Files:** `design/landing.pen`, `design/landing-assets/`, `design/landing-final/` (PNG exports and `REPORT.md`), `implementation-notes.md`
+**Requirements:** In `design/landing.pen`, using the pencil MCP tools only, extend **Landing 2 · Darkroom** into the full landing page and put its parts in the file's library.
+- **Palette as variables:** colour variables for background `#161616`, surface, hairline `#FFFCF72E`, text `#FFFCF7`, text-dim `#FFFCF7B3`, text-faint `#FFFCF78C`, accent sage `#82B09A` and record orange `#E3582D`, plus string variables for the three font families. Frame fills, strokes and text colours in the new frames reference the variables, not hex values.
+- **Eleven components (reusable):** Nav, Button/Primary, Button/Outline, Eyebrow pill, Section label, Step card, Loop slot, Handoff panel (with "Soon" pill and disabled chip), FAQ item (closed and open variants), Footer call to action, Soon pill.
+- **Frames:** `Landing · Final · desktop` at 1440 wide and `Landing · Final · mobile` at 390 wide, each holding the seven sections in order from "Bounded requirements"; plus one frame `Landing · Final · states` showing button default, hover, focus and disabled, FAQ open and closed, and the loop slot with the PLACEHOLDER tag.
+- Copy, section order and claims follow "Bounded requirements"; placeholder loop slots use the design frames already exported in scratch.
+**Interfaces:** Output is the saved `.pen` file and PNG exports. The consumer is Task 2, which reads the file through the pencil MCP tools.
+**Constraints and reasons:** `.pen` files are encrypted: use the pencil MCP tools, never `Read` or `Grep` on the file. Edits made through the MCP exist on disk only after the app saves (Cmd+S); confirm with `git status` and `git diff --stat design/landing.pen` before the PR. Keep Landing 1 and Landing 3 and the background candidates unchanged: they are the owner's rejected or parked directions. Do not touch `design/showhow.pen`: it is the approved app design.
+
+- [ ] RED: a read-only check with the pencil MCP lists zero reusable components and zero variables named `landing-*` in `design/landing.pen`.
+- [ ] Implement the variables, components and frames.
+- [ ] GREEN: the same check lists the eleven components and the variables; the three frames exist.
+- [ ] Prove with PNG exports at 1x of the three frames and the component sheet; obtain independent review, then open the PR to main.
+
+**Verification:** a pencil MCP `execute` call that prints the component names, the variable names and the three frame names; `git diff --stat design/landing.pen` shows the file changed; PNGs in `design/landing-final/`.
+**DONE WHEN:** (a) the file lists the eleven named components as reusable; (b) it defines the eight colour variables and three font variables named in the requirements; (c) `Landing · Final · desktop` is 1440 wide and `Landing · Final · mobile` is 390 wide, each with the seven sections in order; (d) in the three new frames, a script that walks the nodes finds no hex fill or stroke that is not part of an image or the 12% overlay; (e) `Landing 1`, `Landing 3` and `Background candidates` are byte-for-byte unchanged in their exported PNGs (compare before and after); (f) `design/landing-final/REPORT.md` lists each exported PNG; (g) the owner has seen the three frames before Task 2 starts.
+**Outside cases / follow-ups:** light theme; a second language; custom illustration; motion specs beyond those in the approved prototype.
+
+### Task 2: Build the static landing page from the Task 1 design
+
+**Priority:** unanswered. Ask the owner.
+**Labels:** feature, ui
+**Milestone:** Landing page launch
+**Depends on:** Task 1
+**Files:** `site/index.html`, `site/styles.css`, `site/script.js`, `site/assets/` (logo, hero poster, step stills, handoff stills), `tests/e2e/landing.spec.ts`, `playwright.config.ts` (add a `landing` project that serves `site/`), `design/landing.pen`, `design/landing-assets/` (commit the two untracked inputs), `design/landing-prototype/` (copy the two approved prototype HTML files from scratch so the source of truth is in the repo), `implementation-notes.md`
+**Requirements:** Build the sections, copy and states in "Bounded requirements" from the Task 1 frames in `design/landing.pen`, read through the pencil MCP tools; the approved prototype is the reference for copy and motion. Use the pen colour variables as CSS custom properties with matching names (`--color-landing-bg` and so on) and one BEM block per pen component. Copy is taken from the prototype; FAQ items are: Is it really free; Is Showhow a new app or a fork; Does it upload my recordings (OpenRouter key only); What if the AI step fails; Windows or Linux; Which agents does it work with. Hover, focus-visible, active, disabled (Coming next chips) and reduced-motion states exist.
+**Interfaces:** Input is the static files. The only outbound links are the repository, the repository releases page for "How to open", and OpenScreen's repository in the fork answer.
+**Constraints and reasons:** Do not touch `electron/` or `src/`: the landing page is separate from the app, so a page bug cannot affect a recording. Do not add a `v*` tag. Do not describe Copy for agent or Export PDF as working: AGENTS.md bars claiming planned features. The PROTOTYPE badge is removed from the shipped page. The PLACEHOLDER tag stays on each placeholder loop until a real recording replaces it (see Task 3).
+
+- [ ] RED: `landing.spec.ts` fails because `site/index.html` does not exist.
+- [ ] Implement the page.
+- [ ] GREEN: the spec passes; `npm run lint` passes on the new files; `npm run branding:check` passes.
+- [ ] Prove with screenshots at 1440x900 and 390x844 and obtain independent review, then open the PR to main.
+
+**Verification:** `npx playwright test --project=landing`; `npm run lint`; `npm run branding:check`; screenshots saved as evidence.
+**DONE WHEN:** (a) at 1440x900 and 390x844 `document.documentElement.scrollWidth` equals the viewport width; (b) the seven sections appear in the listed order with the exact headings from the prototype; (c) the primary button text is "DOWNLOAD EARLY BUILD FOR MAC" and its href is the repository URL; (d) the "Coming next" section has two "SOON" pills and two chips with `aria-disabled="true"`; (e) the FAQ holds the six listed items and the fork answer names OpenScreen and Siddharth Vaddem; (f) with `prefers-reduced-motion: reduce` emulated, the hero `video` has no `autoplay` attribute and shows the poster; (g) at 1440x900 with the loop paused at 3.0 s, the progress card top edge is inside the viewport; (h) no `<script src>` points to a host other than the page's own, and the page sets no cookie.
+**Outside cases / follow-ups:** real loops; deployment; localisation; light theme.
+
+### Task 3: Commit the placeholder loops and the swap recipe
+
+**Priority:** unanswered. Ask the owner.
+**Labels:** feature
+**Milestone:** Landing page launch
+**Depends on:** Task 2
+**Files:** `site/assets/loops/`, `design/landing-loops/` (Remotion source: `src/`, `public/hero/`, `package.json`, `package-lock.json`, `scripts/`, `README.md`), `docs/landing/loops.md`, `implementation-notes.md`
+**Requirements:** Commit the hero loop (MP4, WebM, poster) and the four other slot loops or stills as placeholders. `docs/landing/loops.md` states, for one loop, how to replace the placeholder with a real recording: record in Showhow, trim and crop with `ffmpeg` to 928x580 at 2x, optionally add a Remotion overlay for the click ring, export MP4 and WebM with the flags used in the existing render script, and replace the file. It lists the loop file names, durations and the three checks below.
+**Interfaces:** Consumer is Task 2's page, through fixed file names.
+**Constraints and reasons:** The Remotion project is not part of the app build, so root `npm install` must not install it. Each loop must stay under 600 KB so the page loads quickly on a cold visit.
+**Verification:** From `design/landing-loops/`: `npm ci && npm run render`. Outputs match the committed files' dimensions and codec; `ffmpeg` frame comparison of the first and last frame prints 0 differing pixels.
+
+- [ ] RED: a check script `scripts/check-loops.sh` fails because the loop files are absent.
+- [ ] Implement the files and the recipe.
+- [ ] GREEN: `scripts/check-loops.sh` passes.
+- [ ] Prove and obtain independent review, then open the PR to main.
+
+**DONE WHEN:** (a) the hero MP4 and WebM each measure 1856x1160, 30 fps, no audio track; (b) the first and last frames of the hero loop differ in 0 pixels; (c) each committed loop file is under 600 KB; (d) `docs/landing/loops.md` lists the six slots by file name; (e) `npm install` at the repo root does not create `design/landing-loops/node_modules`.
+**Outside cases / follow-ups:** real recordings, which need the built v2 app; the Remotion overlay for real clips.
+
+### Task 4: Publish the landing page
+
+**Priority:** unanswered. Ask the owner.
+**Labels:** feature, needs-human
+**Milestone:** Landing page launch
+**Depends on:** Task 2, Task 3
+**Files:** `.github/workflows/pages.yml` or none, decided by the owner; `docs/landing/deploy.md`; `implementation-notes.md`
+**Requirements:** The owner decides the host (GitHub Pages or Cloudflare Pages) and the domain. The workflow publishes `site/` only on a push to main that changes `site/`.
+**Constraints and reasons:** Do not touch `build.yml` or add upstream's deleted release pipeline: AGENTS.md says to keep a single release workflow. Do not add a secret without the owner.
+**DONE WHEN:** the owner has named the host and domain, `site/` is reachable at that URL over HTTPS, and `docs/landing/deploy.md` states how to redeploy and how to roll back. This ticket stops at `needs-human` until the owner answers.
+**Outside cases / follow-ups:** a custom domain mail setup; release download wiring after the first `v*` pre-release.
+
+### Follow-ups, not tickets yet
+- Replace placeholder loops with real recordings once the v2 build is ready.
+- Remove the "Soon" tags when Copy for agent (brief and path) and Export PDF ship.
+- Point the download button at the first release asset after the first pre-release.
+- Restore the ChatGPT line in the FAQ after #128.
+
+## Superseded issues
+None.
+
+## Self-review
+Scan of requirements and DONE WHEN for `every`, `all`, `any` and `valid`: no occurrence of `every`, `all`, `any` or `valid` remains in the requirements or any DONE WHEN; the words were removed or replaced with named lists (the seven sections, the six FAQ items, the six loop slots, the eleven components). Task 2 DONE WHEN cases (a) to (h) name viewports, selectors and states. The loop-size limit of 600 KB is bound to the six committed loop files by name in `docs/landing/loops.md`.
+
+## Implementation notes
+Append each deviation from this plan to `implementation-notes.md` under "Deviations": what changed, why and what was done instead. Commit it with the ticket. Path-scope checks treat it as an owned path.

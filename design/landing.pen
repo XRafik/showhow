@@ -1,0 +1,3804 @@
+{
+  "version": "2.21",
+  "children": [
+    {
+      "type": "frame",
+      "id": "QFjRE",
+      "x": 0,
+      "y": 0,
+      "name": "Landing 1 · Quiet instrument",
+      "clip": true,
+      "width": 1440,
+      "height": 1200,
+      "fill": "#FFFCF7",
+      "layout": "none",
+      "children": [
+        {
+          "type": "rectangle",
+          "id": "P7LWW1",
+          "x": 0,
+          "y": 560,
+          "name": "Dither glow",
+          "fill": {
+            "type": "shader",
+            "enabled": true,
+            "url": "landing-assets/dither-glow.glsl",
+            "uniforms": {
+              "u_cx": 0.5,
+              "u_cy": 0.29,
+              "u_rx": 0.62,
+              "u_ry": 0.27,
+              "u_strength": 0.75,
+              "u_alpha": 0.6,
+              "u_px": 4
+            }
+          },
+          "width": 1440,
+          "height": 640
+        },
+        {
+          "type": "frame",
+          "id": "cSKaD",
+          "x": 0,
+          "y": 0,
+          "name": "Content",
+          "width": 1440,
+          "height": 1200,
+          "layout": "vertical",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "NY90d",
+              "name": "Nav",
+              "width": "fill_container",
+              "height": 80,
+              "padding": [
+                0,
+                64
+              ],
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "X6Lyk",
+                  "name": "Brand",
+                  "gap": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "rectangle",
+                      "cornerRadius": 8,
+                      "id": "erAki",
+                      "name": "Logo mark",
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "landing-assets/logo.png",
+                        "mode": "cover"
+                      },
+                      "width": 34,
+                      "height": 34,
+                      "effect": {
+                        "type": "shadow",
+                        "shadowType": "outer",
+                        "color": "#82B09A",
+                        "offset": {
+                          "x": 3,
+                          "y": 3
+                        }
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "id": "k9cAK",
+                      "name": "Wordmark",
+                      "fill": "#2F2F2F",
+                      "content": "Showhow",
+                      "fontFamily": "Inter Tight",
+                      "fontSize": 19,
+                      "fontWeight": "600",
+                      "letterSpacing": -0.2
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "tr4aQ",
+                  "name": "Links",
+                  "gap": 32,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "ofyzG",
+                      "name": "Link · How it works",
+                      "fill": "#2F2F2FB3",
+                      "content": "HOW IT WORKS",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 12,
+                      "fontWeight": "500",
+                      "letterSpacing": 1
+                    },
+                    {
+                      "type": "text",
+                      "id": "jaJ8i",
+                      "name": "Link · How to open",
+                      "fill": "#2F2F2FB3",
+                      "content": "HOW TO OPEN",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 12,
+                      "fontWeight": "500",
+                      "letterSpacing": 1
+                    },
+                    {
+                      "type": "text",
+                      "id": "Thb9K",
+                      "name": "Link · FAQ",
+                      "fill": "#2F2F2FB3",
+                      "content": "FAQ",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 12,
+                      "fontWeight": "500",
+                      "letterSpacing": 1
+                    },
+                    {
+                      "type": "text",
+                      "id": "v0NicQ",
+                      "name": "Link · GitHub",
+                      "fill": "#2F2F2FB3",
+                      "content": "GITHUB",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 12,
+                      "fontWeight": "500",
+                      "letterSpacing": 1
+                    },
+                    {
+                      "type": "frame",
+                      "id": "t70k2C",
+                      "name": "Nav download",
+                      "cornerRadius": 4,
+                      "stroke": "#2F2F2F",
+                      "strokeWidth": 1,
+                      "padding": [
+                        10,
+                        14
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "j5CCWc",
+                          "name": "Label",
+                          "fill": "#2F2F2F",
+                          "content": "DOWNLOAD",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 11,
+                          "fontWeight": "500",
+                          "letterSpacing": 0.9
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "TkgQ5",
+              "name": "Copy",
+              "layout": "vertical",
+              "gap": 28,
+              "padding": [
+                92,
+                0,
+                0,
+                0
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "jaqIg",
+                  "name": "Eyebrow",
+                  "fill": "#FFFCF7B3",
+                  "cornerRadius": 999,
+                  "stroke": "#2F2F2F24",
+                  "strokeWidth": 1,
+                  "gap": 10,
+                  "padding": [
+                    8,
+                    14
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "ZtMfs",
+                      "name": "Dot",
+                      "fill": "#82B09A",
+                      "width": 7,
+                      "height": 7
+                    },
+                    {
+                      "type": "text",
+                      "id": "Utywv",
+                      "name": "Label",
+                      "fill": "#2F2F2FB3",
+                      "content": "FREE · OPEN SOURCE · FOR MACOS",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 11,
+                      "fontWeight": "500",
+                      "letterSpacing": 1.3
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "dhymt",
+                  "name": "Headline",
+                  "fill": "#2F2F2F",
+                  "content": "Show how it's done.",
+                  "lineHeight": 0.95,
+                  "fontFamily": "Inter Tight",
+                  "fontSize": 116,
+                  "fontWeight": "700",
+                  "letterSpacing": -4.2
+                },
+                {
+                  "type": "text",
+                  "id": "AuzlJ",
+                  "name": "Subhead",
+                  "fill": "#2F2F2FB3",
+                  "textGrowth": "fixed-width",
+                  "width": 600,
+                  "content": "Record your screen, press one button, and Showhow turns it into a step-by-step guide with screenshots and timestamps. Hand it to a coding agent, a teammate or your followers.",
+                  "lineHeight": 1.5,
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 19,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "nrR2t",
+                  "name": "CTAs",
+                  "gap": 12,
+                  "padding": [
+                    8,
+                    0,
+                    0,
+                    0
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "q4g90W",
+                      "name": "Download for Mac",
+                      "fill": "#E3582D",
+                      "cornerRadius": 6,
+                      "gap": 10,
+                      "padding": [
+                        17,
+                        24
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "il4Ty",
+                          "name": "Apple",
+                          "width": 16,
+                          "height": 16,
+                          "icon": "apple-logo",
+                          "library": "phosphor",
+                          "fill": "#FFFCF7"
+                        },
+                        {
+                          "type": "text",
+                          "id": "p1hCn",
+                          "name": "Label",
+                          "fill": "#FFFCF7",
+                          "content": "DOWNLOAD FOR MAC",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 13,
+                          "fontWeight": "500",
+                          "letterSpacing": 0.9
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "qa7nI",
+                      "name": "View on GitHub",
+                      "cornerRadius": 6,
+                      "stroke": "#2F2F2F24",
+                      "strokeWidth": 1,
+                      "gap": 10,
+                      "padding": [
+                        17,
+                        24
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "TAAJd",
+                          "name": "GitHub",
+                          "width": 16,
+                          "height": 16,
+                          "icon": "github-logo",
+                          "library": "phosphor",
+                          "fill": "#2F2F2F"
+                        },
+                        {
+                          "type": "text",
+                          "id": "VK7zK",
+                          "name": "Label",
+                          "fill": "#2F2F2F",
+                          "content": "VIEW ON GITHUB",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 13,
+                          "fontWeight": "500",
+                          "letterSpacing": 0.9
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "u89go",
+                  "name": "Micro",
+                  "fill": "#2F2F2F8C",
+                  "content": "macOS 13 or later  ·  Universal, 167 MB  ·  Unsigned build, here's how to open it",
+                  "fontFamily": "JetBrains Mono",
+                  "fontSize": 12,
+                  "fontWeight": "normal",
+                  "letterSpacing": 0.2
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "hsAsU",
+              "name": "Stage",
+              "width": 1040,
+              "height": 560,
+              "layout": "none",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "kbEMT",
+                  "x": 0,
+                  "y": 80,
+                  "name": "App window",
+                  "clip": true,
+                  "width": 1040,
+                  "height": 560,
+                  "fill": "#242424",
+                  "cornerRadius": 10,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#82B09A",
+                    "offset": {
+                      "x": 6,
+                      "y": 6
+                    }
+                  },
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "bfKFH",
+                      "x": 0,
+                      "y": 0,
+                      "name": "Titlebar",
+                      "width": 1040,
+                      "height": 30,
+                      "fill": "#242424",
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "ellipse",
+                          "id": "GDCEq",
+                          "x": 12,
+                          "y": 9.5,
+                          "name": "Light",
+                          "fill": "#FF5F57",
+                          "width": 11,
+                          "height": 11
+                        },
+                        {
+                          "type": "ellipse",
+                          "id": "HZjP4",
+                          "x": 31,
+                          "y": 9.5,
+                          "name": "Light",
+                          "fill": "#FEBC2E",
+                          "width": 11,
+                          "height": 11
+                        },
+                        {
+                          "type": "ellipse",
+                          "id": "I6kESq",
+                          "x": 50,
+                          "y": 9.5,
+                          "name": "Light",
+                          "fill": "#28C840",
+                          "width": 11,
+                          "height": 11
+                        },
+                        {
+                          "type": "text",
+                          "id": "WiuFO",
+                          "x": 0,
+                          "y": 9,
+                          "name": "Title",
+                          "fill": "#FFFCF78C",
+                          "textGrowth": "fixed-width",
+                          "width": 1040,
+                          "content": "Showhow",
+                          "textAlign": "center",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 11,
+                          "fontWeight": "normal",
+                          "letterSpacing": 0.5
+                        }
+                      ]
+                    },
+                    {
+                      "type": "rectangle",
+                      "id": "NTr2D",
+                      "x": 0,
+                      "y": 30,
+                      "name": "App screenshot",
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "landing-assets/app-guide.png",
+                        "mode": "cover"
+                      },
+                      "width": 1040,
+                      "height": 780
+                    },
+                    {
+                      "type": "rectangle",
+                      "id": "IuQVV",
+                      "x": 0,
+                      "y": 260,
+                      "name": "Fade",
+                      "fill": {
+                        "type": "gradient",
+                        "gradientType": "linear",
+                        "enabled": true,
+                        "rotation": 0,
+                        "size": {
+                          "height": 1
+                        },
+                        "colors": [
+                          {
+                            "color": "#FFFCF700",
+                            "position": 0
+                          },
+                          {
+                            "color": "#FFFCF7B3",
+                            "position": 0.55
+                          },
+                          {
+                            "color": "#FFFCF7",
+                            "position": 1
+                          }
+                        ]
+                      },
+                      "width": 1040,
+                      "height": 300
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "oYm3M",
+                  "x": 690,
+                  "y": 48,
+                  "name": "Recording HUD",
+                  "fill": "#07080AE6",
+                  "cornerRadius": 10,
+                  "stroke": "#FFFFFF1A",
+                  "strokeWidth": 1,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#82B09A",
+                    "offset": {
+                      "x": 4,
+                      "y": 4
+                    }
+                  },
+                  "gap": 12,
+                  "padding": [
+                    8,
+                    8,
+                    8,
+                    14
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "ZiRoP",
+                      "name": "Rec dot",
+                      "fill": "#E3582D",
+                      "width": 9,
+                      "height": 9
+                    },
+                    {
+                      "type": "text",
+                      "id": "wpd1c",
+                      "name": "Timer",
+                      "fill": "#FFFCF7",
+                      "content": "01:24",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 13,
+                      "fontWeight": "500",
+                      "letterSpacing": 0.6
+                    },
+                    {
+                      "type": "frame",
+                      "id": "kXLDI",
+                      "name": "Stop",
+                      "fill": "#E3582D",
+                      "cornerRadius": 4,
+                      "gap": 8,
+                      "padding": [
+                        8,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "id": "nAXAC",
+                          "name": "Square",
+                          "fill": "#FFFFFF",
+                          "width": 9,
+                          "height": 9
+                        },
+                        {
+                          "type": "text",
+                          "id": "gZXLP",
+                          "name": "Label",
+                          "fill": "#FFFFFF",
+                          "content": "STOP",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 11,
+                          "fontWeight": "600",
+                          "letterSpacing": 0.9
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "awrFx",
+                  "x": 840,
+                  "y": 340,
+                  "name": "Toast",
+                  "fill": "#FFFCF7",
+                  "cornerRadius": 8,
+                  "stroke": "#2F2F2F",
+                  "strokeWidth": 1,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#82B09A",
+                    "offset": {
+                      "x": 4,
+                      "y": 4
+                    }
+                  },
+                  "gap": 10,
+                  "padding": [
+                    13,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "BZTGh",
+                      "name": "Check box",
+                      "width": 18,
+                      "height": 18,
+                      "fill": "#82B09A",
+                      "cornerRadius": 4,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "A4Ezlw",
+                          "name": "Check",
+                          "width": 12,
+                          "height": 12,
+                          "icon": "check",
+                          "library": "lucide",
+                          "fill": "#2F2F2F"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "CyLrv",
+                      "name": "Label",
+                      "fill": "#2F2F2F",
+                      "content": "COPIED FOR AGENT",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 11,
+                      "fontWeight": "500",
+                      "letterSpacing": 1
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "FMfkr",
+          "x": 64,
+          "y": 76,
+          "name": "Ruler",
+          "width": 1312,
+          "height": 22,
+          "layout": "none",
+          "children": [
+            {
+              "type": "rectangle",
+              "id": "SwyAp",
+              "x": 0,
+              "y": 0,
+              "name": "Baseline",
+              "fill": "#2F2F2F24",
+              "width": 1312,
+              "height": 1
+            },
+            {
+              "type": "rectangle",
+              "id": "J5Wls",
+              "x": 0,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F66",
+              "width": 1,
+              "height": 9
+            },
+            {
+              "type": "text",
+              "id": "F6rDgI",
+              "x": 5,
+              "y": 8,
+              "name": "Tick label",
+              "fill": "#2F2F2F66",
+              "content": "0:00",
+              "fontFamily": "JetBrains Mono",
+              "fontSize": 9,
+              "fontWeight": "normal",
+              "letterSpacing": 0.6
+            },
+            {
+              "type": "rectangle",
+              "id": "d1DMrP",
+              "x": 20.15,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "sjL0U",
+              "x": 40.3,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "WVmzV",
+              "x": 60.449999999999996,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "qMCsE",
+              "x": 80.6,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "KMjYz",
+              "x": 100.75,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F66",
+              "width": 1,
+              "height": 9
+            },
+            {
+              "type": "rectangle",
+              "id": "LJR6N",
+              "x": 120.89999999999999,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "mV79C",
+              "x": 141.04999999999998,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "zKc2J",
+              "x": 161.2,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "cJyUx",
+              "x": 181.35,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "mcw1N",
+              "x": 201.5,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F66",
+              "width": 1,
+              "height": 9
+            },
+            {
+              "type": "text",
+              "id": "N6Ga1T",
+              "x": 206.5,
+              "y": 8,
+              "name": "Tick label",
+              "fill": "#2F2F2F66",
+              "content": "0:10",
+              "fontFamily": "JetBrains Mono",
+              "fontSize": 9,
+              "fontWeight": "normal",
+              "letterSpacing": 0.6
+            },
+            {
+              "type": "rectangle",
+              "id": "PVyVz",
+              "x": 221.64999999999998,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "GEsqH",
+              "x": 241.79999999999998,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "j2V6c",
+              "x": 261.95,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "D6Pz9s",
+              "x": 282.09999999999997,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "hNnKH",
+              "x": 302.25,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F66",
+              "width": 1,
+              "height": 9
+            },
+            {
+              "type": "rectangle",
+              "id": "IZwfG",
+              "x": 322.4,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "JiOep",
+              "x": 342.54999999999995,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "JzNXj",
+              "x": 362.7,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "pDJDq",
+              "x": 382.84999999999997,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "VXqwG",
+              "x": 403,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F66",
+              "width": 1,
+              "height": 9
+            },
+            {
+              "type": "text",
+              "id": "bPNSB",
+              "x": 408,
+              "y": 8,
+              "name": "Tick label",
+              "fill": "#2F2F2F66",
+              "content": "0:20",
+              "fontFamily": "JetBrains Mono",
+              "fontSize": 9,
+              "fontWeight": "normal",
+              "letterSpacing": 0.6
+            },
+            {
+              "type": "rectangle",
+              "id": "CuqRq",
+              "x": 423.15,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "z8l5SV",
+              "x": 443.29999999999995,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "LrcoW",
+              "x": 463.45,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "F1EoRC",
+              "x": 483.59999999999997,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "yT40o",
+              "x": 503.74999999999994,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F66",
+              "width": 1,
+              "height": 9
+            },
+            {
+              "type": "rectangle",
+              "id": "HjD4m",
+              "x": 523.9,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "w4E2S",
+              "x": 544.05,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "RXyOX",
+              "x": 564.1999999999999,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "U9KHhb",
+              "x": 584.3499999999999,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "B4wGIa",
+              "x": 604.5,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F66",
+              "width": 1,
+              "height": 9
+            },
+            {
+              "type": "text",
+              "id": "w3ssW",
+              "x": 609.5,
+              "y": 8,
+              "name": "Tick label",
+              "fill": "#2F2F2F66",
+              "content": "0:30",
+              "fontFamily": "JetBrains Mono",
+              "fontSize": 9,
+              "fontWeight": "normal",
+              "letterSpacing": 0.6
+            },
+            {
+              "type": "rectangle",
+              "id": "h34bX",
+              "x": 624.65,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "He2Ko",
+              "x": 644.8,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "oRhBW",
+              "x": 664.9499999999999,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "KNjyR",
+              "x": 685.0999999999999,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "fyN6u",
+              "x": 705.25,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F66",
+              "width": 1,
+              "height": 9
+            },
+            {
+              "type": "rectangle",
+              "id": "fTta4",
+              "x": 725.4,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "bFjxF",
+              "x": 745.55,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "KF10i",
+              "x": 765.6999999999999,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "kVp1j",
+              "x": 785.8499999999999,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "V6nfmF",
+              "x": 806,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F66",
+              "width": 1,
+              "height": 9
+            },
+            {
+              "type": "text",
+              "id": "a1tWO",
+              "x": 811,
+              "y": 8,
+              "name": "Tick label",
+              "fill": "#2F2F2F66",
+              "content": "0:40",
+              "fontFamily": "JetBrains Mono",
+              "fontSize": 9,
+              "fontWeight": "normal",
+              "letterSpacing": 0.6
+            },
+            {
+              "type": "rectangle",
+              "id": "UvIvm",
+              "x": 826.15,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "j1rqS",
+              "x": 846.3,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "qQIxm",
+              "x": 866.4499999999999,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "UNEbh",
+              "x": 886.5999999999999,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "Yto2p",
+              "x": 906.7499999999999,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F66",
+              "width": 1,
+              "height": 9
+            },
+            {
+              "type": "rectangle",
+              "id": "M0F3v",
+              "x": 926.9,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "V0O0Ae",
+              "x": 947.05,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "T9b6Y",
+              "x": 967.1999999999999,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "WAWqB",
+              "x": 987.3499999999999,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "KMmds",
+              "x": 1007.4999999999999,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F66",
+              "width": 1,
+              "height": 9
+            },
+            {
+              "type": "text",
+              "id": "RoTsr",
+              "x": 1012.4999999999999,
+              "y": 8,
+              "name": "Tick label",
+              "fill": "#2F2F2F66",
+              "content": "0:50",
+              "fontFamily": "JetBrains Mono",
+              "fontSize": 9,
+              "fontWeight": "normal",
+              "letterSpacing": 0.6
+            },
+            {
+              "type": "rectangle",
+              "id": "T8Uph",
+              "x": 1027.6499999999999,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "AIQsC",
+              "x": 1047.8,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "IJu7V",
+              "x": 1067.9499999999998,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "bx3JH",
+              "x": 1088.1,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "D7nfrT",
+              "x": 1108.25,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F66",
+              "width": 1,
+              "height": 9
+            },
+            {
+              "type": "rectangle",
+              "id": "To0aN",
+              "x": 1128.3999999999999,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "RAdYz",
+              "x": 1148.55,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "AHZ2K",
+              "x": 1168.6999999999998,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "b3mFn2",
+              "x": 1188.85,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "PkkNl",
+              "x": 1209,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F66",
+              "width": 1,
+              "height": 9
+            },
+            {
+              "type": "text",
+              "id": "JTZf5",
+              "x": 1214,
+              "y": 8,
+              "name": "Tick label",
+              "fill": "#2F2F2F66",
+              "content": "1:00",
+              "fontFamily": "JetBrains Mono",
+              "fontSize": 9,
+              "fontWeight": "normal",
+              "letterSpacing": 0.6
+            },
+            {
+              "type": "rectangle",
+              "id": "wZX0l",
+              "x": 1229.1499999999999,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "ML0By",
+              "x": 1249.3,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "P9dl8K",
+              "x": 1269.4499999999998,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "Hnyel",
+              "x": 1289.6,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F33",
+              "width": 1,
+              "height": 4
+            },
+            {
+              "type": "rectangle",
+              "id": "FIAJT",
+              "x": 1309.75,
+              "y": 1,
+              "name": "Tick",
+              "fill": "#2F2F2F66",
+              "width": 1,
+              "height": 9
+            }
+          ]
+        },
+        {
+          "type": "icon",
+          "id": "kLB1R",
+          "x": 64,
+          "y": 160,
+          "name": "Registration mark",
+          "width": 14,
+          "height": 14,
+          "icon": "plus",
+          "library": "lucide",
+          "fill": "#2F2F2F66"
+        },
+        {
+          "type": "icon",
+          "id": "YnbMG",
+          "x": 1362,
+          "y": 160,
+          "name": "Registration mark",
+          "width": 14,
+          "height": 14,
+          "icon": "plus",
+          "library": "lucide",
+          "fill": "#2F2F2F66"
+        },
+        {
+          "type": "icon",
+          "id": "bAM45",
+          "x": 64,
+          "y": 604,
+          "name": "Registration mark",
+          "width": 14,
+          "height": 14,
+          "icon": "plus",
+          "library": "lucide",
+          "fill": "#2F2F2F66"
+        },
+        {
+          "type": "icon",
+          "id": "p5uHSu",
+          "x": 1362,
+          "y": 604,
+          "name": "Registration mark",
+          "width": 14,
+          "height": 14,
+          "icon": "plus",
+          "library": "lucide",
+          "fill": "#2F2F2F66"
+        },
+        {
+          "type": "text",
+          "id": "vc9bg",
+          "x": 88,
+          "y": 161,
+          "name": "Caption left",
+          "fill": "#2F2F2F8C",
+          "content": "REC 00:00:00",
+          "fontFamily": "JetBrains Mono",
+          "fontSize": 10,
+          "fontWeight": "normal",
+          "letterSpacing": 1
+        },
+        {
+          "type": "text",
+          "id": "GDcK6",
+          "x": 1112,
+          "y": 161,
+          "name": "Caption right",
+          "fill": "#2F2F2F8C",
+          "textGrowth": "fixed-width",
+          "width": 250,
+          "content": "1 STEP · 1 CLICK · 1 GUIDE",
+          "textAlign": "right",
+          "fontFamily": "JetBrains Mono",
+          "fontSize": 10,
+          "fontWeight": "normal",
+          "letterSpacing": 1
+        },
+        {
+          "type": "text",
+          "id": "LU9oA",
+          "x": 88,
+          "y": 605,
+          "name": "Caption left low",
+          "fill": "#2F2F2F8C",
+          "content": "X 0064  Y 0604",
+          "fontFamily": "JetBrains Mono",
+          "fontSize": 10,
+          "fontWeight": "normal",
+          "letterSpacing": 1
+        },
+        {
+          "type": "text",
+          "id": "urDzA",
+          "x": 1112,
+          "y": 605,
+          "name": "Caption right low",
+          "fill": "#2F2F2F8C",
+          "textGrowth": "fixed-width",
+          "width": 250,
+          "content": "MACOS 13+  ·  167 MB",
+          "textAlign": "right",
+          "fontFamily": "JetBrains Mono",
+          "fontSize": 10,
+          "fontWeight": "normal",
+          "letterSpacing": 1
+        },
+        {
+          "type": "ellipse",
+          "id": "VO1jy",
+          "x": 1171,
+          "y": 296,
+          "name": "Click ring",
+          "width": 54,
+          "height": 54,
+          "stroke": "#E3582D",
+          "strokeWidth": 3
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "vOiI3",
+      "x": 1560,
+      "y": 0,
+      "name": "Landing 2 · Darkroom",
+      "clip": true,
+      "width": 1440,
+      "height": 1200,
+      "fill": "#161616",
+      "layout": "none",
+      "children": [
+        {
+          "type": "rectangle",
+          "id": "n8vGAN",
+          "x": 0,
+          "y": 0,
+          "name": "Grainient",
+          "fill": {
+            "type": "shader",
+            "enabled": true,
+            "url": "landing-assets/grain-darkroom.glsl",
+            "uniforms": {
+              "u_gy": 0.62,
+              "u_grain": 0.15,
+              "u_warp": 0.6
+            }
+          },
+          "width": 1440,
+          "height": 1200
+        },
+        {
+          "type": "frame",
+          "id": "i8p8T",
+          "x": 0,
+          "y": 0,
+          "name": "Content",
+          "width": 1440,
+          "height": 1200,
+          "layout": "vertical",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "f2G5q",
+              "name": "Nav",
+              "width": "fill_container",
+              "height": 80,
+              "padding": [
+                0,
+                64
+              ],
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "A5J8Re",
+                  "name": "Brand",
+                  "gap": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "rectangle",
+                      "cornerRadius": 8,
+                      "id": "bhngC",
+                      "name": "Logo mark",
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "landing-assets/logo.png",
+                        "mode": "cover"
+                      },
+                      "width": 34,
+                      "height": 34,
+                      "effect": {
+                        "type": "shadow",
+                        "shadowType": "outer",
+                        "color": "#82B09A",
+                        "offset": {
+                          "x": 3,
+                          "y": 3
+                        }
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "id": "jcNOx",
+                      "name": "Wordmark",
+                      "fill": "#FFFCF7",
+                      "content": "Showhow",
+                      "fontFamily": "Inter Tight",
+                      "fontSize": 19,
+                      "fontWeight": "600",
+                      "letterSpacing": -0.2
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "qHuzk",
+                  "name": "Links",
+                  "gap": 32,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "D26Y0I",
+                      "name": "Link · How it works",
+                      "fill": "#FFFCF7B3",
+                      "content": "HOW IT WORKS",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 12,
+                      "fontWeight": "500",
+                      "letterSpacing": 1
+                    },
+                    {
+                      "type": "text",
+                      "id": "cCZcb",
+                      "name": "Link · How to open",
+                      "fill": "#FFFCF7B3",
+                      "content": "HOW TO OPEN",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 12,
+                      "fontWeight": "500",
+                      "letterSpacing": 1
+                    },
+                    {
+                      "type": "text",
+                      "id": "Z4KoXx",
+                      "name": "Link · FAQ",
+                      "fill": "#FFFCF7B3",
+                      "content": "FAQ",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 12,
+                      "fontWeight": "500",
+                      "letterSpacing": 1
+                    },
+                    {
+                      "type": "text",
+                      "id": "h3jD1",
+                      "name": "Link · GitHub",
+                      "fill": "#FFFCF7B3",
+                      "content": "GITHUB",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 12,
+                      "fontWeight": "500",
+                      "letterSpacing": 1
+                    },
+                    {
+                      "type": "frame",
+                      "id": "UOVVN",
+                      "name": "Nav download",
+                      "cornerRadius": 4,
+                      "stroke": "#FFFCF7",
+                      "strokeWidth": 1,
+                      "padding": [
+                        10,
+                        14
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "WO8N3",
+                          "name": "Label",
+                          "fill": "#FFFCF7",
+                          "content": "DOWNLOAD",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 11,
+                          "fontWeight": "500",
+                          "letterSpacing": 0.9
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "R4TI8o",
+              "name": "Copy",
+              "layout": "vertical",
+              "gap": 28,
+              "padding": [
+                92,
+                0,
+                0,
+                0
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "XQSa8",
+                  "name": "Eyebrow",
+                  "fill": "#FFFCF714",
+                  "cornerRadius": 999,
+                  "stroke": "#FFFCF72E",
+                  "strokeWidth": 1,
+                  "gap": 10,
+                  "padding": [
+                    8,
+                    14
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "h9vSj",
+                      "name": "Dot",
+                      "fill": "#82B09A",
+                      "width": 7,
+                      "height": 7
+                    },
+                    {
+                      "type": "text",
+                      "id": "otOxB",
+                      "name": "Label",
+                      "fill": "#FFFCF7B3",
+                      "content": "FREE · OPEN SOURCE · FOR MACOS",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 11,
+                      "fontWeight": "500",
+                      "letterSpacing": 1.3
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "nMqox",
+                  "name": "Headline",
+                  "fill": "#FFFCF7",
+                  "content": "Show how it's done.",
+                  "lineHeight": 0.95,
+                  "fontFamily": "Inter Tight",
+                  "fontSize": 116,
+                  "fontWeight": "700",
+                  "letterSpacing": -4.2
+                },
+                {
+                  "type": "text",
+                  "id": "ErEL4",
+                  "name": "Subhead",
+                  "fill": "#FFFCF7B3",
+                  "textGrowth": "fixed-width",
+                  "width": 600,
+                  "content": "Record your screen, press one button, and Showhow turns it into a step-by-step guide with screenshots and timestamps. Hand it to a coding agent, a teammate or your followers.",
+                  "lineHeight": 1.5,
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 19,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "nczMQ",
+                  "name": "CTAs",
+                  "gap": 12,
+                  "padding": [
+                    8,
+                    0,
+                    0,
+                    0
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "f9MAHl",
+                      "name": "Download for Mac",
+                      "fill": "#FFFCF7",
+                      "cornerRadius": 6,
+                      "gap": 10,
+                      "padding": [
+                        17,
+                        24
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "duxDp",
+                          "name": "Apple",
+                          "width": 16,
+                          "height": 16,
+                          "icon": "apple-logo",
+                          "library": "phosphor",
+                          "fill": "#2F2F2F"
+                        },
+                        {
+                          "type": "text",
+                          "id": "NhSNM",
+                          "name": "Label",
+                          "fill": "#2F2F2F",
+                          "content": "DOWNLOAD FOR MAC",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 13,
+                          "fontWeight": "500",
+                          "letterSpacing": 0.9
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "SLlZ8",
+                      "name": "View on GitHub",
+                      "cornerRadius": 6,
+                      "stroke": "#FFFCF72E",
+                      "strokeWidth": 1,
+                      "gap": 10,
+                      "padding": [
+                        17,
+                        24
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "duDkm",
+                          "name": "GitHub",
+                          "width": 16,
+                          "height": 16,
+                          "icon": "github-logo",
+                          "library": "phosphor",
+                          "fill": "#FFFCF7"
+                        },
+                        {
+                          "type": "text",
+                          "id": "hjC1O",
+                          "name": "Label",
+                          "fill": "#FFFCF7",
+                          "content": "VIEW ON GITHUB",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 13,
+                          "fontWeight": "500",
+                          "letterSpacing": 0.9
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "a9NPO",
+                  "name": "Micro",
+                  "fill": "#FFFCF7B3",
+                  "content": "macOS 13 or later  ·  Universal, 167 MB  ·  Unsigned build, here's how to open it",
+                  "fontFamily": "JetBrains Mono",
+                  "fontSize": 12,
+                  "fontWeight": "normal",
+                  "letterSpacing": 0.2
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "T3EPF",
+              "name": "Stage",
+              "width": 1040,
+              "height": 560,
+              "layout": "none",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "o9q0S",
+                  "x": 0,
+                  "y": 80,
+                  "name": "App window",
+                  "clip": true,
+                  "width": 1040,
+                  "height": 700,
+                  "fill": "#242424",
+                  "cornerRadius": 10,
+                  "effect": [
+                    {
+                      "type": "shadow",
+                      "shadowType": "outer",
+                      "color": "#82B09A",
+                      "offset": {
+                        "x": 6,
+                        "y": 6
+                      }
+                    },
+                    {
+                      "type": "shadow",
+                      "shadowType": "outer",
+                      "color": "#82B09A55",
+                      "blur": 90
+                    }
+                  ],
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "wycG7",
+                      "x": 0,
+                      "y": 0,
+                      "name": "Titlebar",
+                      "width": 1040,
+                      "height": 30,
+                      "fill": "#242424",
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "ellipse",
+                          "id": "QQ8C3",
+                          "x": 12,
+                          "y": 9.5,
+                          "name": "Light",
+                          "fill": "#FF5F57",
+                          "width": 11,
+                          "height": 11
+                        },
+                        {
+                          "type": "ellipse",
+                          "id": "x73cI",
+                          "x": 31,
+                          "y": 9.5,
+                          "name": "Light",
+                          "fill": "#FEBC2E",
+                          "width": 11,
+                          "height": 11
+                        },
+                        {
+                          "type": "ellipse",
+                          "id": "pCU1r",
+                          "x": 50,
+                          "y": 9.5,
+                          "name": "Light",
+                          "fill": "#28C840",
+                          "width": 11,
+                          "height": 11
+                        },
+                        {
+                          "type": "text",
+                          "id": "gRMVd",
+                          "x": 0,
+                          "y": 9,
+                          "name": "Title",
+                          "fill": "#FFFCF78C",
+                          "textGrowth": "fixed-width",
+                          "width": 1040,
+                          "content": "Showhow",
+                          "textAlign": "center",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 11,
+                          "fontWeight": "normal",
+                          "letterSpacing": 0.5
+                        }
+                      ]
+                    },
+                    {
+                      "type": "rectangle",
+                      "id": "sOw1U",
+                      "x": 0,
+                      "y": 30,
+                      "name": "App screenshot",
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "landing-assets/app-guide.png",
+                        "mode": "cover"
+                      },
+                      "width": 1040,
+                      "height": 780
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "mlZqz",
+                  "x": 690,
+                  "y": 48,
+                  "name": "Recording HUD",
+                  "fill": "#07080AE6",
+                  "cornerRadius": 10,
+                  "stroke": "#FFFFFF1A",
+                  "strokeWidth": 1,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#82B09A",
+                    "offset": {
+                      "x": 4,
+                      "y": 4
+                    }
+                  },
+                  "gap": 12,
+                  "padding": [
+                    8,
+                    8,
+                    8,
+                    14
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "KC795",
+                      "name": "Rec dot",
+                      "fill": "#E3582D",
+                      "width": 9,
+                      "height": 9
+                    },
+                    {
+                      "type": "text",
+                      "id": "LpsNU",
+                      "name": "Timer",
+                      "fill": "#FFFCF7",
+                      "content": "01:24",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 13,
+                      "fontWeight": "500",
+                      "letterSpacing": 0.6
+                    },
+                    {
+                      "type": "frame",
+                      "id": "gEz5z",
+                      "name": "Stop",
+                      "fill": "#E3582D",
+                      "cornerRadius": 4,
+                      "gap": 8,
+                      "padding": [
+                        8,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "id": "H4exhG",
+                          "name": "Square",
+                          "fill": "#FFFFFF",
+                          "width": 9,
+                          "height": 9
+                        },
+                        {
+                          "type": "text",
+                          "id": "iGAsV",
+                          "name": "Label",
+                          "fill": "#FFFFFF",
+                          "content": "STOP",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 11,
+                          "fontWeight": "600",
+                          "letterSpacing": 0.9
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "QjVHJ",
+                  "x": 840,
+                  "y": 340,
+                  "name": "Toast",
+                  "fill": "#FFFCF7",
+                  "cornerRadius": 8,
+                  "stroke": "#2F2F2F",
+                  "strokeWidth": 1,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#82B09A",
+                    "offset": {
+                      "x": 4,
+                      "y": 4
+                    }
+                  },
+                  "gap": 10,
+                  "padding": [
+                    13,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "F9Bh2G",
+                      "name": "Check box",
+                      "width": 18,
+                      "height": 18,
+                      "fill": "#82B09A",
+                      "cornerRadius": 4,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "fXG4A",
+                          "name": "Check",
+                          "width": 12,
+                          "height": 12,
+                          "icon": "check",
+                          "library": "lucide",
+                          "fill": "#2F2F2F"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "isXcx",
+                      "name": "Label",
+                      "fill": "#2F2F2F",
+                      "content": "COPIED FOR AGENT",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 11,
+                      "fontWeight": "500",
+                      "letterSpacing": 1
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "ellipse",
+          "id": "PCVJL",
+          "x": 1193,
+          "y": 311,
+          "name": "Rec dot on full stop",
+          "fill": "#E3582D",
+          "width": 21,
+          "height": 21
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "BghX5",
+      "x": 3120,
+      "y": 0,
+      "name": "Landing 3 · Click ripple",
+      "clip": true,
+      "width": 1440,
+      "height": 1200,
+      "fill": "#82B09A",
+      "layout": "none",
+      "children": [
+        {
+          "type": "rectangle",
+          "id": "Q1RpLh",
+          "x": 0,
+          "y": 0,
+          "name": "Click ripple field",
+          "fill": {
+            "type": "shader",
+            "enabled": true,
+            "url": "landing-assets/click-ripple.glsl",
+            "uniforms": {
+              "u_cx": 0.4285,
+              "u_cy": 0.431,
+              "u_block": 24,
+              "u_gap": 230,
+              "u_width": 44,
+              "u_speed": 0,
+              "u_dot": 4,
+              "u_shade": "#6F9E88",
+              "u_click": "#82B09A",
+              "u_calm": [
+                720,
+                440,
+                350,
+                125
+              ],
+              "u_calmSoft": 80
+            }
+          },
+          "width": 1440,
+          "height": 1200
+        },
+        {
+          "type": "frame",
+          "id": "S1sfFu",
+          "x": 0,
+          "y": 0,
+          "name": "Content",
+          "width": 1440,
+          "height": 1200,
+          "layout": "vertical",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "p16dLN",
+              "name": "Nav",
+              "width": "fill_container",
+              "height": 80,
+              "padding": [
+                0,
+                64
+              ],
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "V6qv0",
+                  "name": "Brand",
+                  "gap": 12,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "rectangle",
+                      "cornerRadius": 8,
+                      "id": "DFa3a",
+                      "name": "Logo mark",
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "landing-assets/logo.png",
+                        "mode": "cover"
+                      },
+                      "width": 34,
+                      "height": 34,
+                      "effect": {
+                        "type": "shadow",
+                        "shadowType": "outer",
+                        "color": "#E3582D",
+                        "offset": {
+                          "x": 3,
+                          "y": 3
+                        }
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "id": "X07uyw",
+                      "name": "Wordmark",
+                      "fill": "#1F1F1F",
+                      "content": "Showhow",
+                      "fontFamily": "Inter Tight",
+                      "fontSize": 19,
+                      "fontWeight": "600",
+                      "letterSpacing": -0.2
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "olxLb",
+                  "name": "Links",
+                  "gap": 32,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "hQ2PO",
+                      "name": "Link · How it works",
+                      "fill": "#1F1F1FCC",
+                      "content": "HOW IT WORKS",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 12,
+                      "fontWeight": "500",
+                      "letterSpacing": 1
+                    },
+                    {
+                      "type": "text",
+                      "id": "vM8Ov",
+                      "name": "Link · How to open",
+                      "fill": "#1F1F1FCC",
+                      "content": "HOW TO OPEN",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 12,
+                      "fontWeight": "500",
+                      "letterSpacing": 1
+                    },
+                    {
+                      "type": "text",
+                      "id": "J5Qp3",
+                      "name": "Link · FAQ",
+                      "fill": "#1F1F1FCC",
+                      "content": "FAQ",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 12,
+                      "fontWeight": "500",
+                      "letterSpacing": 1
+                    },
+                    {
+                      "type": "text",
+                      "id": "KxMk4",
+                      "name": "Link · GitHub",
+                      "fill": "#1F1F1FCC",
+                      "content": "GITHUB",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 12,
+                      "fontWeight": "500",
+                      "letterSpacing": 1
+                    },
+                    {
+                      "type": "frame",
+                      "id": "If9oW",
+                      "name": "Nav download",
+                      "cornerRadius": 4,
+                      "stroke": "#1F1F1F",
+                      "strokeWidth": 1,
+                      "padding": [
+                        10,
+                        14
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "koNB1",
+                          "name": "Label",
+                          "fill": "#1F1F1F",
+                          "content": "DOWNLOAD",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 11,
+                          "fontWeight": "500",
+                          "letterSpacing": 0.9
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "etDyG",
+              "name": "Copy",
+              "layout": "vertical",
+              "gap": 28,
+              "padding": [
+                92,
+                0,
+                0,
+                0
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "trEKn",
+                  "name": "Eyebrow",
+                  "fill": "#E7F1EC99",
+                  "cornerRadius": 999,
+                  "stroke": "#1F1F1F55",
+                  "strokeWidth": 1,
+                  "gap": 10,
+                  "padding": [
+                    8,
+                    14
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "t6k6i",
+                      "name": "Dot",
+                      "fill": "#E3582D",
+                      "width": 7,
+                      "height": 7
+                    },
+                    {
+                      "type": "text",
+                      "id": "ONDQN",
+                      "name": "Label",
+                      "fill": "#1F1F1FCC",
+                      "content": "FREE · OPEN SOURCE · FOR MACOS",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 11,
+                      "fontWeight": "500",
+                      "letterSpacing": 1.3
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "ac4Gx",
+                  "name": "Headline",
+                  "gap": 30,
+                  "alignItems": "end",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "y8AvYk",
+                      "name": "Headline · sharp",
+                      "fill": "#1F1F1F",
+                      "content": "Show how it's",
+                      "lineHeight": 0.95,
+                      "fontFamily": "Inter Tight",
+                      "fontSize": 116,
+                      "fontWeight": "700",
+                      "letterSpacing": -4.2
+                    },
+                    {
+                      "type": "text",
+                      "id": "oDlEK",
+                      "name": "Headline · developing",
+                      "fill": "#1F1F1F",
+                      "effect": {
+                        "type": "shader",
+                        "url": "landing-assets/develop-text.glsl",
+                        "uniforms": {
+                          "u_block": 12,
+                          "u_sweep": 0.6,
+                          "u_soft": 0.45,
+                          "u_ink": "#1F1F1F",
+                          "u_hot": "#E3582D",
+                          "u_hotShare": 0.2
+                        }
+                      },
+                      "content": "done.",
+                      "lineHeight": 0.95,
+                      "fontFamily": "Inter Tight",
+                      "fontSize": 116,
+                      "fontWeight": "700",
+                      "letterSpacing": -4.2
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "zEvSE",
+                  "name": "Subhead",
+                  "fill": "#1F1F1FCC",
+                  "textGrowth": "fixed-width",
+                  "width": 600,
+                  "content": "Record your screen, press one button, and Showhow turns it into a step-by-step guide with screenshots and timestamps. Hand it to a coding agent, a teammate or your followers.",
+                  "lineHeight": 1.5,
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 19,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "KDIe2",
+                  "name": "CTAs",
+                  "gap": 12,
+                  "padding": [
+                    8,
+                    0,
+                    0,
+                    0
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "YIksQ",
+                      "name": "Download for Mac",
+                      "fill": "#242424",
+                      "cornerRadius": 6,
+                      "gap": 10,
+                      "padding": [
+                        17,
+                        24
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "MV18A",
+                          "name": "Apple",
+                          "width": 16,
+                          "height": 16,
+                          "icon": "apple-logo",
+                          "library": "phosphor",
+                          "fill": "#FFFCF7"
+                        },
+                        {
+                          "type": "text",
+                          "id": "l9dzT",
+                          "name": "Label",
+                          "fill": "#FFFCF7",
+                          "content": "DOWNLOAD FOR MAC",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 13,
+                          "fontWeight": "500",
+                          "letterSpacing": 0.9
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "PgExb",
+                      "name": "View on GitHub",
+                      "cornerRadius": 6,
+                      "stroke": "#1F1F1F55",
+                      "strokeWidth": 1,
+                      "gap": 10,
+                      "padding": [
+                        17,
+                        24
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "DfBJx",
+                          "name": "GitHub",
+                          "width": 16,
+                          "height": 16,
+                          "icon": "github-logo",
+                          "library": "phosphor",
+                          "fill": "#1F1F1F"
+                        },
+                        {
+                          "type": "text",
+                          "id": "bVB7k",
+                          "name": "Label",
+                          "fill": "#1F1F1F",
+                          "content": "VIEW ON GITHUB",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 13,
+                          "fontWeight": "500",
+                          "letterSpacing": 0.9
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "nUlnS",
+                  "name": "Micro",
+                  "fill": "#1F1F1FCC",
+                  "content": "macOS 13 or later  ·  Universal, 167 MB  ·  Unsigned build, here's how to open it",
+                  "fontFamily": "JetBrains Mono",
+                  "fontSize": 12,
+                  "fontWeight": "normal",
+                  "letterSpacing": 0.2
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "yYZbY",
+              "name": "Stage",
+              "width": 1040,
+              "height": 560,
+              "layout": "none",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "zRSfd",
+                  "x": 0,
+                  "y": 80,
+                  "name": "App window",
+                  "clip": true,
+                  "width": 1040,
+                  "height": 700,
+                  "fill": "#242424",
+                  "cornerRadius": 10,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#E3582D",
+                    "offset": {
+                      "x": 6,
+                      "y": 6
+                    }
+                  },
+                  "layout": "none",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "qDtxU",
+                      "x": 0,
+                      "y": 0,
+                      "name": "Titlebar",
+                      "width": 1040,
+                      "height": 30,
+                      "fill": "#242424",
+                      "layout": "none",
+                      "children": [
+                        {
+                          "type": "ellipse",
+                          "id": "Qw3iK",
+                          "x": 12,
+                          "y": 9.5,
+                          "name": "Light",
+                          "fill": "#FF5F57",
+                          "width": 11,
+                          "height": 11
+                        },
+                        {
+                          "type": "ellipse",
+                          "id": "pmmIB",
+                          "x": 31,
+                          "y": 9.5,
+                          "name": "Light",
+                          "fill": "#FEBC2E",
+                          "width": 11,
+                          "height": 11
+                        },
+                        {
+                          "type": "ellipse",
+                          "id": "zg4bW",
+                          "x": 50,
+                          "y": 9.5,
+                          "name": "Light",
+                          "fill": "#28C840",
+                          "width": 11,
+                          "height": 11
+                        },
+                        {
+                          "type": "text",
+                          "id": "Q6L8yo",
+                          "x": 0,
+                          "y": 9,
+                          "name": "Title",
+                          "fill": "#FFFCF78C",
+                          "textGrowth": "fixed-width",
+                          "width": 1040,
+                          "content": "Showhow",
+                          "textAlign": "center",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 11,
+                          "fontWeight": "normal",
+                          "letterSpacing": 0.5
+                        }
+                      ]
+                    },
+                    {
+                      "type": "rectangle",
+                      "id": "o9PLL",
+                      "x": 0,
+                      "y": 30,
+                      "name": "App screenshot",
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "landing-assets/app-guide.png",
+                        "mode": "cover"
+                      },
+                      "width": 1040,
+                      "height": 780
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "oG4YT",
+                  "x": 690,
+                  "y": 48,
+                  "name": "Recording HUD",
+                  "fill": "#07080AE6",
+                  "cornerRadius": 10,
+                  "stroke": "#FFFFFF1A",
+                  "strokeWidth": 1,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#E3582D",
+                    "offset": {
+                      "x": 4,
+                      "y": 4
+                    }
+                  },
+                  "gap": 12,
+                  "padding": [
+                    8,
+                    8,
+                    8,
+                    14
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "KCQ3N",
+                      "name": "Rec dot",
+                      "fill": "#E3582D",
+                      "width": 9,
+                      "height": 9
+                    },
+                    {
+                      "type": "text",
+                      "id": "UrOga",
+                      "name": "Timer",
+                      "fill": "#FFFCF7",
+                      "content": "01:24",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 13,
+                      "fontWeight": "500",
+                      "letterSpacing": 0.6
+                    },
+                    {
+                      "type": "frame",
+                      "id": "WfUS7",
+                      "name": "Stop",
+                      "fill": "#E3582D",
+                      "cornerRadius": 4,
+                      "gap": 8,
+                      "padding": [
+                        8,
+                        12
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "rectangle",
+                          "id": "r5h3DM",
+                          "name": "Square",
+                          "fill": "#FFFFFF",
+                          "width": 9,
+                          "height": 9
+                        },
+                        {
+                          "type": "text",
+                          "id": "B4vOG",
+                          "name": "Label",
+                          "fill": "#FFFFFF",
+                          "content": "STOP",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 11,
+                          "fontWeight": "600",
+                          "letterSpacing": 0.9
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "enC8n",
+                  "x": 840,
+                  "y": 340,
+                  "name": "Toast",
+                  "fill": "#FFFCF7",
+                  "cornerRadius": 8,
+                  "stroke": "#2F2F2F",
+                  "strokeWidth": 1,
+                  "effect": {
+                    "type": "shadow",
+                    "shadowType": "outer",
+                    "color": "#E3582D",
+                    "offset": {
+                      "x": 4,
+                      "y": 4
+                    }
+                  },
+                  "gap": 10,
+                  "padding": [
+                    13,
+                    16
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "XRvwh",
+                      "name": "Check box",
+                      "width": 18,
+                      "height": 18,
+                      "fill": "#82B09A",
+                      "cornerRadius": 4,
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "b0ccDV",
+                          "name": "Check",
+                          "width": 12,
+                          "height": 12,
+                          "icon": "check",
+                          "library": "lucide",
+                          "fill": "#2F2F2F"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "l0glk",
+                      "name": "Label",
+                      "fill": "#2F2F2F",
+                      "content": "COPIED FOR AGENT",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 11,
+                      "fontWeight": "500",
+                      "letterSpacing": 1
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "rectangle",
+          "cornerRadius": 11,
+          "id": "dwO8W",
+          "x": 496,
+          "y": 478,
+          "name": "Click ring 1",
+          "width": 242,
+          "height": 79,
+          "stroke": "#E3582D",
+          "strokeWidth": 3
+        },
+        {
+          "type": "rectangle",
+          "cornerRadius": 16,
+          "id": "x5EJZ",
+          "x": 480,
+          "y": 462,
+          "name": "Click ring 2",
+          "width": 274,
+          "height": 111,
+          "stroke": "#E3582DAA",
+          "strokeWidth": 2
+        },
+        {
+          "type": "icon",
+          "id": "qvzNM",
+          "x": 694,
+          "y": 520,
+          "name": "Cursor",
+          "width": 34,
+          "height": 34,
+          "icon": "cursor-fill",
+          "library": "phosphor",
+          "fill": "#FFFCF7",
+          "effect": {
+            "type": "shadow",
+            "shadowType": "outer",
+            "color": "#1F1F1F",
+            "offset": {
+              "x": 2,
+              "y": 2
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "JK4pE",
+      "x": 0,
+      "y": 1400,
+      "name": "Background candidates",
+      "width": 1440,
+      "fill": "#FFFCF7",
+      "layout": "vertical",
+      "gap": 28,
+      "padding": 48,
+      "children": [
+        {
+          "type": "text",
+          "id": "XzoLC",
+          "name": "Title",
+          "fill": "#2F2F2F",
+          "content": "Background candidates",
+          "fontFamily": "Inter Tight",
+          "fontSize": 40,
+          "fontWeight": "700",
+          "letterSpacing": -1.2
+        },
+        {
+          "type": "text",
+          "id": "eMU4z",
+          "name": "Intro",
+          "fill": "#2F2F2FB3",
+          "textGrowth": "fixed-width",
+          "width": 900,
+          "content": "Live shaders, tuned to Showhow's tokens. Inspired by React Bits backgrounds (Dither, Grainient, Light Rays, Pixel Blast) and rebuilt from the app's own mosaic, scrub bar and dither rules. Rule carried over from the app: nothing behind body text that costs legibility.",
+          "lineHeight": 1.5,
+          "fontFamily": "Inter",
+          "fontSize": 15,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "frame",
+          "id": "ns2me",
+          "name": "Row 1",
+          "width": "fill_container",
+          "gap": 24,
+          "children": [
+            {
+              "type": "frame",
+              "id": "lub4D",
+              "name": "1 · Dither glow",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 10,
+              "children": [
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 8,
+                  "id": "r0VKq",
+                  "name": "Shader · 1 · Dither glow",
+                  "fill": [
+                    "#FFFCF7",
+                    {
+                      "type": "shader",
+                      "enabled": true,
+                      "url": "landing-assets/dither-glow.glsl",
+                      "uniforms": {
+                        "u_cy": 0.5,
+                        "u_rx": 0.55,
+                        "u_ry": 0.5,
+                        "u_strength": 0.7,
+                        "u_alpha": 0.6
+                      }
+                    }
+                  ],
+                  "width": "fill_container",
+                  "height": 260,
+                  "stroke": "#2F2F2F24",
+                  "strokeWidth": 1
+                },
+                {
+                  "type": "text",
+                  "id": "VlDxB",
+                  "name": "Name",
+                  "fill": "#2F2F2F",
+                  "content": "1 · DITHER GLOW",
+                  "fontFamily": "JetBrains Mono",
+                  "fontSize": 12,
+                  "fontWeight": "600",
+                  "letterSpacing": 1
+                },
+                {
+                  "type": "text",
+                  "id": "EmVQk",
+                  "name": "Reference",
+                  "fill": "#2F2F2F8C",
+                  "content": "React Bits: Dither",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "oa7fQ",
+                  "name": "Use",
+                  "fill": "#33564A",
+                  "content": "Used in Landing 1",
+                  "fontFamily": "JetBrains Mono",
+                  "fontSize": 11,
+                  "fontWeight": "normal",
+                  "letterSpacing": 0.6
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "ljUW6",
+              "name": "2 · Darkroom grainient",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 10,
+              "children": [
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 8,
+                  "id": "J3pWl",
+                  "name": "Shader · 2 · Darkroom grainient",
+                  "fill": {
+                    "type": "shader",
+                    "enabled": true,
+                    "url": "landing-assets/grain-darkroom.glsl",
+                    "uniforms": {
+                      "u_gy": 0.5,
+                      "u_grain": 0.16
+                    }
+                  },
+                  "width": "fill_container",
+                  "height": 260,
+                  "stroke": "#2F2F2F24",
+                  "strokeWidth": 1
+                },
+                {
+                  "type": "text",
+                  "id": "kitPX",
+                  "name": "Name",
+                  "fill": "#2F2F2F",
+                  "content": "2 · DARKROOM GRAINIENT",
+                  "fontFamily": "JetBrains Mono",
+                  "fontSize": 12,
+                  "fontWeight": "600",
+                  "letterSpacing": 1
+                },
+                {
+                  "type": "text",
+                  "id": "k1XxY",
+                  "name": "Reference",
+                  "fill": "#2F2F2F8C",
+                  "content": "React Bits: Grainient, Silk",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "KKnRq",
+                  "name": "Use",
+                  "fill": "#33564A",
+                  "content": "Used in Landing 2",
+                  "fontFamily": "JetBrains Mono",
+                  "fontSize": 11,
+                  "fontWeight": "normal",
+                  "letterSpacing": 0.6
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "m7ioU",
+              "name": "3 · Click ripple",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 10,
+              "children": [
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 8,
+                  "id": "d48R8",
+                  "name": "Shader · 3 · Click ripple",
+                  "fill": {
+                    "type": "shader",
+                    "enabled": true,
+                    "url": "landing-assets/click-ripple.glsl",
+                    "uniforms": {
+                      "u_cx": 0.5,
+                      "u_cy": 0.5,
+                      "u_block": 20,
+                      "u_gap": 120,
+                      "u_width": 30,
+                      "u_speed": 0,
+                      "u_calm": [
+                        220,
+                        140,
+                        0,
+                        0
+                      ],
+                      "u_calmSoft": 1,
+                      "u_click": "#E3582D"
+                    }
+                  },
+                  "width": "fill_container",
+                  "height": 260,
+                  "stroke": "#2F2F2F24",
+                  "strokeWidth": 1
+                },
+                {
+                  "type": "text",
+                  "id": "V22sSa",
+                  "name": "Name",
+                  "fill": "#2F2F2F",
+                  "content": "3 · CLICK RIPPLE",
+                  "fontFamily": "JetBrains Mono",
+                  "fontSize": 12,
+                  "fontWeight": "600",
+                  "letterSpacing": 1
+                },
+                {
+                  "type": "text",
+                  "id": "FeILx",
+                  "name": "Reference",
+                  "fill": "#2F2F2F8C",
+                  "content": "React Bits: Pixel Blast, Ripple Grid (original)",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "EuEiy",
+                  "name": "Use",
+                  "fill": "#33564A",
+                  "content": "Used in Landing 3",
+                  "fontFamily": "JetBrains Mono",
+                  "fontSize": 11,
+                  "fontWeight": "normal",
+                  "letterSpacing": 0.6
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "xfxga",
+          "name": "Row 2",
+          "width": "fill_container",
+          "gap": 24,
+          "children": [
+            {
+              "type": "frame",
+              "id": "VgMQW",
+              "name": "4 · Scrub field",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 10,
+              "children": [
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 8,
+                  "id": "ALh1t",
+                  "name": "Shader · 4 · Scrub field",
+                  "fill": [
+                    "#FFFCF7",
+                    {
+                      "type": "shader",
+                      "enabled": true,
+                      "url": "landing-assets/scrub-field.glsl",
+                      "uniforms": {
+                        "u_pitch": 8,
+                        "u_w": 2,
+                        "u_amp": 0.85,
+                        "u_mark": 0.64,
+                        "u_alpha": 0.4
+                      }
+                    }
+                  ],
+                  "width": "fill_container",
+                  "height": 260,
+                  "stroke": "#2F2F2F24",
+                  "strokeWidth": 1
+                },
+                {
+                  "type": "text",
+                  "id": "sF3Ub",
+                  "name": "Name",
+                  "fill": "#2F2F2F",
+                  "content": "4 · SCRUB FIELD",
+                  "fontFamily": "JetBrains Mono",
+                  "fontSize": 12,
+                  "fontWeight": "600",
+                  "letterSpacing": 1
+                },
+                {
+                  "type": "text",
+                  "id": "jFEOQ",
+                  "name": "Reference",
+                  "fill": "#2F2F2F8C",
+                  "content": "React Bits: Line Waves, Floating Lines (original)",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "oiqO4",
+                  "name": "Use",
+                  "fill": "#33564A",
+                  "content": "Candidate: Landing 1 alt, footer",
+                  "fontFamily": "JetBrains Mono",
+                  "fontSize": 11,
+                  "fontWeight": "normal",
+                  "letterSpacing": 0.6
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "C5S0y",
+              "name": "5 · Mosaic develop",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 10,
+              "children": [
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 8,
+                  "id": "H7oxFu",
+                  "name": "Shader · 5 · Mosaic develop",
+                  "fill": {
+                    "type": "shader",
+                    "enabled": true,
+                    "url": "mosaic.glsl",
+                    "uniforms": {
+                      "u_dir": 2,
+                      "u_block": 30,
+                      "u_dot": 4,
+                      "u_edge": 0.46,
+                      "u_soft": 0.5,
+                      "u_rough": 0.5,
+                      "u_lit": "#82B09A",
+                      "u_dark": "#242424",
+                      "u_dots": 0.45
+                    }
+                  },
+                  "width": "fill_container",
+                  "height": 260,
+                  "stroke": "#2F2F2F24",
+                  "strokeWidth": 1
+                },
+                {
+                  "type": "text",
+                  "id": "INu5x",
+                  "name": "Name",
+                  "fill": "#2F2F2F",
+                  "content": "5 · MOSAIC DEVELOP",
+                  "fontFamily": "JetBrains Mono",
+                  "fontSize": 12,
+                  "fontWeight": "600",
+                  "letterSpacing": 1
+                },
+                {
+                  "type": "text",
+                  "id": "yWfp7",
+                  "name": "Reference",
+                  "fill": "#2F2F2F8C",
+                  "content": "React Bits: Pixel Blast (app's own mosaic.glsl)",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "UlEdb",
+                  "name": "Use",
+                  "fill": "#33564A",
+                  "content": "Candidate: Landing 3 alt, loading states",
+                  "fontFamily": "JetBrains Mono",
+                  "fontSize": 11,
+                  "fontWeight": "normal",
+                  "letterSpacing": 0.6
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "i1kwKo",
+              "name": "6 · Safelight rays",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 10,
+              "children": [
+                {
+                  "type": "rectangle",
+                  "cornerRadius": 8,
+                  "id": "vOtU9",
+                  "name": "Shader · 6 · Safelight rays",
+                  "fill": {
+                    "type": "shader",
+                    "enabled": true,
+                    "url": "landing-assets/safelight-rays.glsl",
+                    "uniforms": {
+                      "u_n": 8,
+                      "u_reach": 1.15
+                    }
+                  },
+                  "width": "fill_container",
+                  "height": 260,
+                  "stroke": "#2F2F2F24",
+                  "strokeWidth": 1
+                },
+                {
+                  "type": "text",
+                  "id": "lamEg",
+                  "name": "Name",
+                  "fill": "#2F2F2F",
+                  "content": "6 · SAFELIGHT RAYS",
+                  "fontFamily": "JetBrains Mono",
+                  "fontSize": 12,
+                  "fontWeight": "600",
+                  "letterSpacing": 1
+                },
+                {
+                  "type": "text",
+                  "id": "LaPmV",
+                  "name": "Reference",
+                  "fill": "#2F2F2F8C",
+                  "content": "React Bits: Light Rays, Light Pillar",
+                  "fontFamily": "Inter",
+                  "fontSize": 13,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "ezJfk",
+                  "name": "Use",
+                  "fill": "#33564A",
+                  "content": "Candidate: Landing 2 alt",
+                  "fontFamily": "JetBrains Mono",
+                  "fontSize": 11,
+                  "fontWeight": "normal",
+                  "letterSpacing": 0.6
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "l67kN",
+      "x": 4680,
+      "y": 0,
+      "name": "Landing 2 · Darkroom · Mobile",
+      "clip": true,
+      "width": 390,
+      "height": 1000,
+      "fill": "#161616",
+      "layout": "none",
+      "children": [
+        {
+          "type": "rectangle",
+          "id": "DM5UT",
+          "x": 0,
+          "y": 0,
+          "name": "Grainient",
+          "fill": {
+            "type": "shader",
+            "enabled": true,
+            "url": "landing-assets/grain-darkroom.glsl",
+            "uniforms": {
+              "u_gy": 0.7,
+              "u_grain": 0.15,
+              "u_warp": 0.6
+            }
+          },
+          "width": 390,
+          "height": 1000
+        },
+        {
+          "type": "frame",
+          "id": "Drfch",
+          "x": 0,
+          "y": 0,
+          "name": "Content",
+          "width": 390,
+          "height": 1000,
+          "layout": "vertical",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "AIDfZ",
+              "name": "Nav",
+              "width": "fill_container",
+              "height": 64,
+              "padding": [
+                0,
+                16
+              ],
+              "justifyContent": "space_between",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "S7iaMB",
+                  "name": "Brand",
+                  "gap": 10,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "rectangle",
+                      "cornerRadius": 7,
+                      "id": "GHFH3",
+                      "name": "Logo mark",
+                      "fill": {
+                        "type": "image",
+                        "enabled": true,
+                        "url": "landing-assets/logo.png",
+                        "mode": "cover"
+                      },
+                      "width": 30,
+                      "height": 30,
+                      "effect": {
+                        "type": "shadow",
+                        "shadowType": "outer",
+                        "color": "#82B09A",
+                        "offset": {
+                          "x": 3,
+                          "y": 3
+                        }
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "id": "vzfMH",
+                      "name": "Wordmark",
+                      "fill": "#FFFCF7",
+                      "content": "Showhow",
+                      "fontFamily": "Inter Tight",
+                      "fontSize": 17,
+                      "fontWeight": "600",
+                      "letterSpacing": -0.2
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "vb0fu",
+                  "name": "Nav download",
+                  "cornerRadius": 4,
+                  "stroke": "#FFFCF7",
+                  "strokeWidth": 1,
+                  "padding": [
+                    9,
+                    12
+                  ],
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Fo3iw",
+                      "name": "Label",
+                      "fill": "#FFFCF7",
+                      "content": "DOWNLOAD",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 11,
+                      "fontWeight": "500",
+                      "letterSpacing": 0.9
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "rQU9j",
+              "name": "Copy",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 20,
+              "padding": [
+                44,
+                16,
+                0,
+                16
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "uJsG7",
+                  "name": "Eyebrow",
+                  "fill": "#FFFCF714",
+                  "cornerRadius": 999,
+                  "stroke": "#FFFCF72E",
+                  "strokeWidth": 1,
+                  "gap": 8,
+                  "padding": [
+                    7,
+                    12
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "ellipse",
+                      "id": "UAKFd",
+                      "name": "Dot",
+                      "fill": "#82B09A",
+                      "width": 6,
+                      "height": 6
+                    },
+                    {
+                      "type": "text",
+                      "id": "gO2fr",
+                      "name": "Label",
+                      "fill": "#FFFCF7B3",
+                      "content": "FREE · OPEN SOURCE · MACOS",
+                      "fontFamily": "JetBrains Mono",
+                      "fontSize": 10,
+                      "fontWeight": "500",
+                      "letterSpacing": 1.1
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "L3Sjo",
+                  "name": "Headline",
+                  "layout": "vertical",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "OrNYj",
+                      "name": "Line 1",
+                      "fill": "#FFFCF7",
+                      "content": "Show how",
+                      "lineHeight": 0.95,
+                      "fontFamily": "Inter Tight",
+                      "fontSize": 68,
+                      "fontWeight": "700",
+                      "letterSpacing": -2.6
+                    },
+                    {
+                      "type": "frame",
+                      "id": "di60U",
+                      "name": "Line 2",
+                      "alignItems": "end",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "C24YR",
+                          "name": "Line 2 text",
+                          "fill": "#FFFCF7",
+                          "content": "it's done.",
+                          "lineHeight": 0.95,
+                          "fontFamily": "Inter Tight",
+                          "fontSize": 68,
+                          "fontWeight": "700",
+                          "letterSpacing": -2.6
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "DHH0E",
+                  "name": "Subhead",
+                  "fill": "#FFFCF7B3",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Record your screen, press one button, and Showhow turns it into a step-by-step guide with screenshots and timestamps. Hand it to a coding agent, a teammate or your followers.",
+                  "lineHeight": 1.5,
+                  "textAlign": "center",
+                  "fontFamily": "Inter",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "g3SzM",
+                  "name": "CTAs",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 10,
+                  "padding": [
+                    4,
+                    0,
+                    0,
+                    0
+                  ],
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "RDk2m",
+                      "name": "Download for Mac",
+                      "width": "fill_container",
+                      "fill": "#FFFCF7",
+                      "cornerRadius": 6,
+                      "gap": 10,
+                      "padding": [
+                        16,
+                        20
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "CLuH1",
+                          "name": "Apple",
+                          "width": 16,
+                          "height": 16,
+                          "icon": "apple-logo",
+                          "library": "phosphor",
+                          "fill": "#2F2F2F"
+                        },
+                        {
+                          "type": "text",
+                          "id": "EKuPh",
+                          "name": "Label",
+                          "fill": "#2F2F2F",
+                          "content": "DOWNLOAD FOR MAC",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 13,
+                          "fontWeight": "500",
+                          "letterSpacing": 0.9
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "qEcYB",
+                      "name": "View on GitHub",
+                      "width": "fill_container",
+                      "cornerRadius": 6,
+                      "stroke": "#FFFCF72E",
+                      "strokeWidth": 1,
+                      "gap": 10,
+                      "padding": [
+                        16,
+                        20
+                      ],
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "icon",
+                          "id": "N3UvM",
+                          "name": "GitHub",
+                          "width": 16,
+                          "height": 16,
+                          "icon": "github-logo",
+                          "library": "phosphor",
+                          "fill": "#FFFCF7"
+                        },
+                        {
+                          "type": "text",
+                          "id": "uBM85",
+                          "name": "Label",
+                          "fill": "#FFFCF7",
+                          "content": "VIEW ON GITHUB",
+                          "fontFamily": "JetBrains Mono",
+                          "fontSize": 13,
+                          "fontWeight": "500",
+                          "letterSpacing": 0.9
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "JAQed",
+                  "name": "Micro",
+                  "fill": "#FFFCF7B3",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "macOS 13+ · 167 MB · unsigned, here's how to open it",
+                  "lineHeight": 1.5,
+                  "textAlign": "center",
+                  "fontFamily": "JetBrains Mono",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "jI2Ek",
+          "x": 16,
+          "y": 690,
+          "name": "App window",
+          "clip": true,
+          "width": 358,
+          "height": 420,
+          "fill": "#242424",
+          "cornerRadius": 8,
+          "effect": [
+            {
+              "type": "shadow",
+              "shadowType": "outer",
+              "color": "#82B09A",
+              "offset": {
+                "x": 4,
+                "y": 4
+              }
+            },
+            {
+              "type": "shadow",
+              "shadowType": "outer",
+              "color": "#82B09A55",
+              "blur": 60
+            }
+          ],
+          "layout": "none",
+          "children": [
+            {
+              "type": "frame",
+              "id": "VVmjH",
+              "x": 0,
+              "y": 0,
+              "name": "Titlebar",
+              "width": 358,
+              "height": 24,
+              "fill": "#242424",
+              "layout": "none",
+              "children": [
+                {
+                  "type": "ellipse",
+                  "id": "EiCA1",
+                  "x": 10,
+                  "y": 7,
+                  "name": "Light",
+                  "fill": "#FF5F57",
+                  "width": 9,
+                  "height": 9
+                },
+                {
+                  "type": "ellipse",
+                  "id": "hcQPK",
+                  "x": 25,
+                  "y": 7,
+                  "name": "Light",
+                  "fill": "#FEBC2E",
+                  "width": 9,
+                  "height": 9
+                },
+                {
+                  "type": "ellipse",
+                  "id": "p29UF",
+                  "x": 40,
+                  "y": 7,
+                  "name": "Light",
+                  "fill": "#28C840",
+                  "width": 9,
+                  "height": 9
+                }
+              ]
+            },
+            {
+              "type": "rectangle",
+              "id": "f8GUZK",
+              "x": 0,
+              "y": 24,
+              "name": "App screenshot",
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "landing-assets/app-guide.png",
+                "mode": "cover"
+              },
+              "width": 358,
+              "height": 268
+            }
+          ]
+        },
+        {
+          "type": "ellipse",
+          "id": "Mm6Jg",
+          "x": 313,
+          "y": 258,
+          "name": "Rec dot on full stop",
+          "fill": "#E3582D",
+          "width": 14,
+          "height": 14
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "cream": {
+      "type": "color",
+      "value": "#FFFCF7"
+    },
+    "graphite": {
+      "type": "color",
+      "value": "#2F2F2F"
+    },
+    "sage": {
+      "type": "color",
+      "value": "#82B09A"
+    },
+    "sage-200": {
+      "type": "color",
+      "value": "#CFE4DA"
+    },
+    "sage-strong": {
+      "type": "color",
+      "value": "#33564A"
+    },
+    "rec": {
+      "type": "color",
+      "value": "#E3582D"
+    },
+    "app-frame": {
+      "type": "color",
+      "value": "#242424"
+    }
+  },
+  "fileToken": "3b0fe278-4422-47d0-a5c1-943afc1cb62e"
+}
