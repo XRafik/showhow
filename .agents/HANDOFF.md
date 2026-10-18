@@ -6,7 +6,7 @@ Updated: 2026-10-17
 
 - **#122 AI guide shipped** (PR #126, merged 2026-10-17 as `500cea16`). Make guide runs an AI pass over the deterministic steps through OpenRouter, with `anthropic/claude-haiku-5.5` as the default model (owner decision 2026-10-17, no bake-off). Plan: "Showhow AI guide Plan" in `PLAN.md`. Evidence: `~/dev/loop-evidence/showhow-122/` (READY.md, PROVE.md, PROVE-CI.md, `live-smoke/run-OKsXUE/`). Lane removed; card Done.
 - **#128 Connect ChatGPT** is published and deferred (`needs-human`, Creating plan/spec). Retain parked lane w6Q; no implementation or auth changes. The installed Codex version lacks the required proven tool/config isolation. Original approved scope remains in: "Showhow Connect ChatGPT Plan" in `PLAN.md`, mock in `design/mocks/2026-10-17-chatgpt-connect/`. It uses the owner's own Codex login (`codex app-server`) for Make guide only. Issue #128 is published. Resume only after owner direction and supported isolation controls.
-- **Move onto upstream v2:** #115 and #116 are done (#116 merged on stable upstream `v2.0.0` via PR #121). #117 is closed: owner merged PR #130 as `371d940d14d7392ae090b9bfc57b2cf311c6de78`; both boards show Done and its clean lane is removed. Evidence: `~/dev/loop-evidence/showhow-117/READY.md`, `PROVE.md` and `SHOWHOW-COORDINATOR-HANDOFF.md`. #118 (size trim) is Ready to implement and undispatched. Owner approved the handoff index at `/Users/mohamedb/dev/loop-evidence/HANDOFF-INDEX.md`; this documentation PR records the close-out.
+- **Move onto upstream v2:** #115 and #116 are done (#116 merged on stable upstream `v2.0.0` via PR #121). #117 is closed: owner merged PR #130 as `371d940d14d7392ae090b9bfc57b2cf311c6de78`; both boards show Done and its clean lane is removed. Evidence: `~/dev/loop-evidence/showhow-117/READY.md`, `PROVE.md` and `SHOWHOW-COORDINATOR-HANDOFF.md`. #118 is closed: owner merged PR #132 as `573d9f2c8fea9855b6f0ab9cdd47aabdb49c8db0`. All four milestone tickets are complete. #118 passed fresh review and all 11 CI checks; its clean lane is removed and evidence remains at `~/dev/loop-evidence/showhow-118/READY.md`. No release tag was created. The authorised handoff index is `/Users/mohamedb/dev/loop-evidence/HANDOFF-INDEX.md`.
 - **Bugs in Todo:** #124 (pressing Stop on the recorder bar becomes a guide step), #125 (a fresh dev-build take would not play in the editor; seen once), #127 (ready-guide view polish: stray "Check what gets sent" link, plain-text Edit/Delete).
 
 ### Earlier context (2026-10-16)
@@ -22,7 +22,7 @@ The move onto upstream v2 is shaped and published: milestone "Move onto upstream
 
 ## Next action
 
-After the owner merges the #117 close-out documentation PR, dispatch #118 from approved Task 4 using the canonical ticket lane procedure. Measure the untrimmed merged build first; preserve #117 transcription behavior and the parked #128 lane.
+Owner reviews the session close-out documentation PR, then chooses the next product ticket or a separate release-readiness review. Keep #128 parked until supported isolation controls and explicit owner direction permit resuming it; do not create a release tag automatically.
 
 ## Open decisions
 
@@ -62,3 +62,7 @@ The previous Next action/final2.1wait is historical and superseded. #115 is clos
 ### #117 close-out verified 2026-10-17
 
 Main is `371d940d14d7392ae090b9bfc57b2cf311c6de78`. Reviewed head `cc318e87676078838e5df95ac1c5af2bbcc7c67e`: Standards PASS, Requirements PASS, all 11 CI checks pass. Local unit 4,626 pass/1 skip; hosted unit 4,625 pass/2 skip; browser 10 pass. No tests rerun for close-out. Unsigned macOS arm64 directory package only; Windows/Linux runtime, signing/installers and macOS13 hardware untested. Broad package audit remains RED on #118 policies (365.36 MiB). Physical Wi-Fi conditions are owner attestations. Second missing-model take preserves valid media and failure marker but effectively silent audio. Failed identity/CI receipts remain retained. Preserve untracked `design/landing-assets/` and `design/landing.pen`; no release tags.
+
+### #118 final proof and close-out — 2026-10-18
+
+Reviewed head `b0e872f3ca8bf9f1d59c13b1e3e817e536770d44`: fresh Standards PASS / Requirements PASS after one failed review and the tray-icon repair. All 11 CI checks pass. Installed arm64 365.37 → 365.77 MiB; DMG 195.44 → 195.61 MiB. Baseline already below budget; final contents audit passes. Unsigned macOS arm64 only; Windows/Linux runtime, signing and owner adoption untested. Protected originals/design unchanged. Evidence and failed receipts retained; clean w6T lane removed. No tests rerun for this documentation-only close-out.
