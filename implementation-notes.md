@@ -694,6 +694,67 @@ The four old-to-current log mappings are: `ci-attempt-01/02-npm-branding:check.t
 - Same six owned paths only; package.json has no incremental repair diff. No Vite, native, i18n scripts/tests, dependency sections or lockfile changes; no symlink-root hardening (review follow-up stays nonblocking). Existing locale/wallpaper/model/fail-open contracts remain. Fresh production/test TypeScript, lint, i18n, branding, schema, renderer and full-unit checks plus final freeze/manifest/finding-to-fix map are retained in external round1-repair. Lead owns fresh packaging, native acceptance and one fresh independent reviewer.
 
 
+## Showhow #134 — landing design Build — 2026-10-18
+
+Task 1 only. Base and HEAD: 7c66c1afa1912aa998d4d0a9021a2d46b63d218f.
+Branch: ticket/134-landing-design. Executor w71:p2 returns to lead w71:p1.
+Design edits have stopped. The lead must save the active ticket Pencil document
+with Cmd+S, then prove its disk state. No native UI was used by the executor.
+
+The design has eleven reusable components, eight landing colour variables,
+three landing font variables, desktop TRpgX, mobile ma1pm, states J82Ol2, and
+component sheet Ro86s. Four scale-1 PNGs and REPORT.md are in design/landing-final/.
+The final check and probe files are external:
+`/Users/mohamedb/dev/loop-evidence/showhow-134/executor/`.
+The verification script exits 0. All five inherited PNG exports are byte-identical
+to the before/ files. The current palette/font walks are green. The only visible
+layout warning is the intended desktop hero image crop.
+
+### Deviations
+
+- The plan says six media slots but names seven placements. The lead followed the
+  explicit list and kept all seven named placements. No section was added.
+- Tighten desktop hero spacing to show the full progress card by y=898.3.
+  Keep the approved copy, including its unverified 167 MB prototype size.
+- Copy the inherited Darkroom shader to grain-darkroom-fade.glsl. Add only a
+  bottom alpha fade. Apply the copied layers at opacity 0.3. The raster contrast
+  check gives at least 5.176:1 for information text over these backgrounds.
+  The original shader and all inherited frames remain unchanged.
+- The initial flat background and duplicate outline-hover label were found in
+  visual checks and repaired. The copied shader is visible in final exports.
+  The outline hover state has a solid landing-bg fill behind its shadow.
+- Store probe PNGs, check scripts, check responses, and failure notes in external
+  evidence. Keep only four final PNGs and REPORT.md in design/landing-final/.
+
+The design asset uses the Pencil checks as its public behaviour seam. No app
+code was built or tested. This work does not prove browser motion, physical
+accessibility, download size, or installed app behaviour. Failed reviews remain 0.
+No reviewer identity or independent verdict exists. The owner must see all three
+final frames before Task 2. No commit, push, PR, merge, tag, or Greptile run occurred.
+
+
+## Showhow #134 — PR #149 branding policy repair — 2026-10-18
+
+Hosted CI rejected the approved FAQ fork attribution at PR head
+`5c3d1ec7f85aa499843781b15e6fe1ff114809ff` (tree prefix `03991db`).
+The failed log remains at
+`/Users/mohamedb/dev/loop-evidence/showhow-134/ci-job-117690407133-failed.txt`.
+Its pen line numbers 5635, 6613, and 7130 are provenance, not policy selectors.
+
+Add one exact-text allowance with maximum count 3 for the required attribution
+in desktop, mobile, and states. No whole-file exemption is added. No design,
+checker, site, or app change is needed.
+
+The existing checker was imported and run against attribution.txt in an explicit
+scratch root only. The prior policy rejected the three CI-derived lines. The
+repair accepts those three lines; a fourth copy, an unrelated reference, and
+changed attribution text remain rejected. The check exits 0. No pen file was
+read, hashed, or changed. The full local branding scan was not run because it
+reads pen files. Hosted policy proof and fresh review remain lead-owned.
+Round 1 PASS is historical. This CI repair is not a failed review; the failed
+review count remains 0. No staging, commit, push, or native UI action occurred.
+
+
 ## Showhow #125 — executor setup, 2026-10-18
 
 - Approved external plan appended verbatim to PLAN.md. Base/head e54cc63e3d2cd72430588906d5550f7a968daf1a; executor w6X:p2, lead w6X:p1, failed-review count 0. Full issue/comments read from external ISSUE.json after role gh returned unauthenticated exit 4; no auth changes.

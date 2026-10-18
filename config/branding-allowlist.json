@@ -91,6 +91,18 @@
 				{
 					"text": "- Manual macOS arm64 smoke test on a packaged build, with screenshots: first launch on a copied `fc50566a` profile (L4); library lists old bundles (L3); a new narrated recording saves a full bundle (L5, R2.3); the bundle opens in the v2 editor (R2.5); old `.showhow` and `.openscreen` projects open (L1, L2); HUD and editor show Showhow theming (R2.6).",
 					"count": 1
+				},
+				{
+					"text": "7. The FAQ states that Showhow is a fork of OpenScreen with a library added.",
+					"count": 1
+				},
+				{
+					"text": "**Interfaces:** Input is the static files. The only outbound links are the repository, the repository releases page for \"How to open\", and OpenScreen's repository in the fork answer.",
+					"count": 1
+				},
+				{
+					"text": "**DONE WHEN:** (a) at 1440x900 and 390x844 `document.documentElement.scrollWidth` equals the viewport width; (b) the seven sections appear in the listed order with the exact headings from the prototype; (c) the primary button text is \"DOWNLOAD EARLY BUILD FOR MAC\" and its href is the repository URL; (d) the \"Coming next\" section has two \"SOON\" pills and two chips with `aria-disabled=\"true\"`; (e) the FAQ holds the six listed items and the fork answer names OpenScreen and Siddharth Vaddem; (f) with `prefers-reduced-motion: reduce` emulated, the hero `video` has no `autoplay` attribute and shows the poster; (g) at 1440x900 with the loop paused at 3.0 s, the progress card top edge is inside the viewport; (h) no `<script src>` points to a host other than the page's own, and the page sets no cookie.",
+					"count": 1
 				}
 			]
 		},
@@ -113,6 +125,16 @@
 		{
 			"file": "config/branding-allowlist.json",
 			"reason": "Contains the literal legacy-brand strings required to define the branding policy"
+		},
+		{
+			"file": "design/landing.pen",
+			"reason": "Reviewed #134 FAQ fork attribution in desktop, mobile and states; exact text only, with at most three occurrences",
+			"lines": [
+				{
+					"text": "\"content\": \"It is a fork of OpenScreen, the open-source screen recorder created by Siddharth Vaddem and now continued by the OpenScreen contributors. Showhow keeps OpenScreen’s recorder and editor and adds a library of your recordings and the step-by-step guides. If you only want a recorder, OpenScreen is excellent on its own. Both are MIT licensed.\"",
+					"count": 3
+				}
+			]
 		},
 		{
 			"file": "design/showhow.pen",
