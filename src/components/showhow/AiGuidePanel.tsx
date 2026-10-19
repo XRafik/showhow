@@ -17,9 +17,12 @@ export function AiGuidePanel({
 	onEntryChange,
 	onStatusChange,
 	actions,
+	tabs,
 }: {
 	entry: RecordingLibraryEntry;
 	actions?: ReactNode;
+	/** Replaces the standalone heading when the guide shares a tab row with the brief. */
+	tabs?: ReactNode;
 	onEntryChange: (entry: RecordingLibraryEntry) => void;
 	onStatusChange?: (
 		bundleDir: string,
@@ -180,9 +183,11 @@ export function AiGuidePanel({
 	return (
 		<section aria-label={t("showhowGuide.panel")} className="my-7 font-ds-body text-ds-ink">
 			<div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-				<h2 className="border-b-2 border-ds-ink pb-2 font-ds-label text-[11px] uppercase tracking-wider">
-					{t("showhowGuide.walkthrough")}
-				</h2>
+				{tabs ?? (
+					<h2 className="border-b-2 border-ds-ink pb-2 font-ds-label text-[11px] uppercase tracking-wider">
+						{t("showhowGuide.walkthrough")}
+					</h2>
+				)}
 				<div className="flex flex-wrap gap-2">
 					<Button
 						type="button"

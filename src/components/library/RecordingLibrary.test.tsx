@@ -165,6 +165,41 @@ describe("RecordingLibrary", () => {
 		expect(await screen.findByText("Path copied")).toBeInTheDocument();
 		expect(screen.getByText(desktopDocEntry.bundleDir)).toBeInTheDocument();
 	});
+	it("shows the guide and agent brief tabs with Copy for agent beside Copy path", async () => {
+		const briefStatus = vi.fn(async () => ({
+			connected: true,
+			model: "fake/model",
+			reviewed: true,
+			alwaysSend: true,
+			options: { transcript: true, frames: true },
+			state: "none" as const,
+		}));
+		const briefCopy = vi.fn();
+		Object.assign(window.electronAPI, {
+			showhowAgentBriefStatus: briefStatus,
+			showhowAgentBriefCopy: briefCopy,
+			showhowOnAgentBriefProgress: () => () => undefined,
+		});
+		mockShowhowListRecordings.mockResolvedValue([desktopDocEntry]);
+		render(<RecordingLibrary />);
+		await screen.findByRole("heading", { level: 1, name: desktopEntry.title });
+		const guideTab = screen.getByRole("tab", { name: "01 / Walkthrough guide" });
+		expect(guideTab).toHaveAttribute("aria-selected", "true");
+		const guide = screen.getByRole("region", { name: "AI guide" });
+		expect(within(guide).getByRole("button", { name: "Copy for agent" })).toBeVisible();
+		expect(screen.getByRole("list")).toBeInTheDocument();
+
+		await userEvent.click(screen.getByRole("tab", { name: "02 / Agent brief" }));
+		const brief = await screen.findByRole("region", { name: "Agent brief" });
+		expect(
+			within(brief).getByRole("heading", { name: "Make a brief for your agent" }),
+		).toBeVisible();
+		expect(screen.queryByRole("button", { name: "Copy for agent" })).not.toBeInTheDocument();
+		await userEvent.click(screen.getByRole("button", { name: "Copy path" }));
+		expect(mockShowhowCopyPath).toHaveBeenCalledWith(desktopDocEntry.bundleDir);
+		expect(briefCopy).not.toHaveBeenCalled();
+		expect(briefStatus).toHaveBeenCalledWith(desktopDocEntry.bundleDir);
+	});
 	it.each([
 		false,
 		"reject",

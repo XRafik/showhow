@@ -87,6 +87,44 @@ contextBridge.exposeInMainWorld("electronAPI", {
 		ipcRenderer.on("showhow:ai-guide-progress", listener);
 		return () => ipcRenderer.removeListener("showhow:ai-guide-progress", listener);
 	},
+	showhowAgentBriefStatus: (bundleDir: string) =>
+		ipcRenderer.invoke("showhow:agent-brief-status", bundleDir) as Promise<
+			import("../src/lib/showhow/agentBrief").AgentBriefStatus
+		>,
+	showhowAgentBriefPreview: (
+		bundleDir: string,
+		options: import("../src/lib/showhow/aiGuide").GuideOptions,
+	) =>
+		ipcRenderer.invoke("showhow:agent-brief-preview", bundleDir, options) as Promise<
+			import("../src/lib/showhow/agentBrief").AgentBriefPreview & { success?: boolean }
+		>,
+	showhowAgentBriefConsent: (bundleDir: string, token: string, alwaysSend: boolean) =>
+		ipcRenderer.invoke("showhow:agent-brief-consent", bundleDir, token, alwaysSend) as Promise<{
+			success: boolean;
+		}>,
+	showhowAgentBriefRun: (bundleDir: string, token: string) =>
+		ipcRenderer.invoke("showhow:agent-brief-run", bundleDir, token) as Promise<
+			import("../src/lib/showhow/agentBrief").AgentBriefRunResult
+		>,
+	showhowAgentBriefCancel: (bundleDir: string) =>
+		ipcRenderer.invoke("showhow:agent-brief-cancel", bundleDir) as Promise<{ success: boolean }>,
+	showhowAgentBriefCopy: (bundleDir: string) =>
+		ipcRenderer.invoke("showhow:agent-brief-copy", bundleDir) as Promise<
+			import("../src/lib/showhow/agentBrief").AgentBriefCopyResult
+		>,
+	showhowOnAgentBriefProgress: (
+		callback: (event: {
+			bundleDir: string;
+			phase: import("../src/lib/showhow/agentBrief").BriefPhase;
+		}) => void,
+	) => {
+		const listener = (
+			_event: unknown,
+			payload: { bundleDir: string; phase: import("../src/lib/showhow/agentBrief").BriefPhase },
+		) => callback(payload);
+		ipcRenderer.on("showhow:agent-brief-progress", listener);
+		return () => ipcRenderer.removeListener("showhow:agent-brief-progress", listener);
+	},
 	showhowGetSystemTheme: () => ipcRenderer.invoke("showhow:get-system-theme") as Promise<boolean>,
 	showhowOnSystemThemeChanged: (callback: (isDark: boolean) => void) => {
 		const listener = (_event: unknown, isDark: boolean) => callback(isDark);

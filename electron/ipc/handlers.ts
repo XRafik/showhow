@@ -154,6 +154,7 @@ import {
 	updateWorkflowDocument,
 } from "../showhow/bundle";
 import { finishShowhowRecording } from "../showhow/finishRecording";
+import { createStructuredModelFactory } from "../showhow/guideModel";
 import { registerImportRecordingHandlers } from "../showhow/importRecording";
 import {
 	listRecordings,
@@ -3873,45 +3874,24 @@ export function registerIpcHandlers(
 		recordingsRoot: SHOWHOW_RECORDINGS_ROOT,
 		preferencesDir: app.getPath("userData"),
 		getStore: () => getAiEditionLlmConfig(),
-		createModel: async (apiKey, model) => {
-			const { createOpenScreenChatModel } = await import("../ai-edition/deep-agent/chat-model");
-			const chat = await createOpenScreenChatModel({ provider: "openrouter", apiKey, model });
-			const { HumanMessage, SystemMessage } = await import("@langchain/core/messages");
-			const structured = chat.withStructuredOutput(
-				{
-					title: "ShowhowGuide",
-					type: "object",
-					properties: {
-						title: { type: "string" },
-						steps: {
-							type: "array",
-							items: {
-								type: "object",
-								properties: {
-									label: { type: "string" },
-									sourceIds: { type: "array", items: { type: "string" } },
-								},
-								required: ["label", "sourceIds"],
-								additionalProperties: false,
-							},
-						},
-					},
-					required: ["title", "steps"],
-					additionalProperties: false,
-				},
-				{ method: "jsonSchema" },
-			);
-			return async (messages) =>
-				JSON.stringify(
-					await structured.invoke(
-						messages.map((message) =>
-							message.role === "system"
-								? new SystemMessage({ content: message.content })
-								: new HumanMessage({ content: message.content }),
-						),
-					),
+		createModel: createStructuredModelFactory({
+			loadChat: async (apiKey, model) => {
+				const { createOpenScreenChatModel } = await import("../ai-edition/deep-agent/chat-model");
+				const chat = await createOpenScreenChatModel({ provider: "openrouter", apiKey, model });
+				return {
+					withStructuredOutput: (schema, options) => chat.withStructuredOutput(schema, options),
+				};
+			},
+			toMessages: async (messages) => {
+				const { HumanMessage, SystemMessage } = await import("@langchain/core/messages");
+				return messages.map((message) =>
+					message.role === "system"
+						? new SystemMessage({ content: message.content })
+						: new HumanMessage({ content: message.content }),
 				);
-		},
+			},
+		}),
+		writeClipboard: (text) => clipboard.writeText(text),
 	});
 
 	ipcMain.handle("showhow:open-recording", async (_, bundleDir: unknown) => {
