@@ -3,6 +3,7 @@ import {
 	clampHudBoundsToWorkArea,
 	clampHudContentToWorkArea,
 	hudDragDestination,
+	hudOwnUiRects,
 	hudResizeBounds,
 	parseHudContentRect,
 } from "./hudWindowBounds";
@@ -236,5 +237,23 @@ describe("hud content rect parsing", () => {
 		expect(parseHudContentRect({ x: 0, y: 0, width: Number.NaN, height: 64 })).toBeNull();
 		expect(parseHudContentRect({ x: 0, y: 0, width: 0, height: 64 })).toBeNull();
 		expect(parseHudContentRect({ x: 0, y: 0, width: 560 })).toBeNull();
+	});
+});
+
+describe("hud own-UI rects (#124)", () => {
+	// computeHudWindowSize-style window: a large transparent reserve above a small bar.
+	const bounds = { x: 616, y: 381, width: 688, height: 694 };
+	const bar = { x: 144, y: 634, width: 400, height: 60 };
+
+	it("is only the drawn bar, never the transparent reserve", () => {
+		expect(hudOwnUiRects({ bounds, content: bar, visible: true, minimized: false })).toEqual([
+			{ x: 760, y: 1015, width: 400, height: 60 },
+		]);
+	});
+
+	it("is empty when the HUD is hidden, minimized or not measured yet", () => {
+		expect(hudOwnUiRects({ bounds, content: bar, visible: false, minimized: false })).toEqual([]);
+		expect(hudOwnUiRects({ bounds, content: bar, visible: true, minimized: true })).toEqual([]);
+		expect(hudOwnUiRects({ bounds, content: null, visible: true, minimized: false })).toEqual([]);
 	});
 });

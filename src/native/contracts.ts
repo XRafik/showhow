@@ -34,6 +34,8 @@ export interface CursorTelemetryPoint {
 export interface CursorRecordingSample extends CursorTelemetryPoint {
 	assetId?: string | null;
 	visible?: boolean;
+	/** Set on a click on Showhow's own recorder controls (the HUD); steps skip it (#124). */
+	ownUi?: boolean;
 	cursorType?: NativeCursorType | null;
 	/** The full interaction contract the sidecar may carry; matches the renderer's
 	 * CursorTelemetryPoint. The old narrow override ("move" | "click" | "mouseup")

@@ -68,6 +68,7 @@ import { LlmConfigStore } from "../ai-edition/llm-config-store";
 import { StylePresetService } from "../ai-edition/style-preset-service";
 import { AppSettingsStore } from "../app-settings";
 import { isDiagnosticModeEnabled, mainLogBuffer } from "../diagnostics/main-log-buffer";
+import { hudOwnUiBounds } from "../hudOwnUi";
 import { mainT } from "../i18n";
 import { getInstallChannel } from "../install-channel";
 import { RECORDINGS_DIR } from "../main";
@@ -1319,6 +1320,8 @@ async function startCursorRecording(recordingId?: number) {
 	pendingCursorRecordingData = null;
 	cursorRecordingSession = createCursorRecordingSession({
 		getDisplayBounds: getSelectedSourceBounds,
+		// The recorder bar is inside a desktop capture; its Stop press must not become a step (#124).
+		getOwnUiBounds: hudOwnUiBounds,
 		maxSamples: MAX_CURSOR_SAMPLES,
 		platform: process.platform,
 		sampleIntervalMs: CURSOR_SAMPLE_INTERVAL_MS,

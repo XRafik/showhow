@@ -7,6 +7,7 @@ import { WindowsNativeRecordingSession } from "./windowsNativeRecordingSession";
 
 interface CreateCursorRecordingSessionOptions {
 	getDisplayBounds: () => Rectangle | null;
+	getOwnUiBounds?: () => Rectangle[];
 	maxSamples: number;
 	platform: NodeJS.Platform;
 	sampleIntervalMs: number;
@@ -30,6 +31,7 @@ export function createCursorRecordingSession(
 	if (options.platform === "darwin") {
 		return new MacNativeCursorRecordingSession({
 			getDisplayBounds: options.getDisplayBounds,
+			getOwnUiBounds: options.getOwnUiBounds,
 			maxSamples: options.maxSamples,
 			sampleIntervalMs: options.sampleIntervalMs,
 			startTimeMs: options.startTimeMs,

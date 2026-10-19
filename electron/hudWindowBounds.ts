@@ -53,6 +53,21 @@ export function hudContentScreenRect(
 }
 
 /**
+ * Where Showhow's own recorder controls are on screen, so a click on them is not a guide
+ * step (#124). Only the drawn stack counts: the window around it is click-through reserve
+ * over the user's apps. Nothing while the HUD is hidden, minimized or not yet measured.
+ */
+export function hudOwnUiRects(hud: {
+	bounds: EditorWindowRect;
+	content: HudContentRect | null;
+	visible: boolean;
+	minimized: boolean;
+}): EditorWindowRect[] {
+	if (!hud.visible || hud.minimized || !hud.content) return [];
+	return [hudContentScreenRect(hud.bounds, hud.content)];
+}
+
+/**
  * Puts the bar inside the work area of the display it is heading for. The
  * window is translated by the same amount and may end up overhanging — that is
  * the reserve, not the content, and it is invisible.

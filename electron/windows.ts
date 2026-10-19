@@ -8,12 +8,14 @@ import {
 	saveEditorWindowState,
 	shouldTrackEditorWindow,
 } from "./editorWindowState";
+import { setHudOwnUiProvider } from "./hudOwnUi";
 import {
 	clampHudBoundsToWorkArea,
 	HUD_WINDOW_MIN,
 	type HudContentRect,
 	hudContentScreenRect,
 	hudDragDestination,
+	hudOwnUiRects,
 	hudResizeBounds,
 	parseHudContentRect,
 	sameRect,
@@ -125,6 +127,20 @@ let hudContentRect: HudContentRect | null = null;
 // an overhanging reserve would swallow clicks on the panels and docks under it. There the
 // content rect is ignored and the whole window stays inside the work area.
 const HUD_CLAMPS_CONTENT = process.platform !== "linux";
+
+/** The HUD's drawn controls on screen, for keeping their clicks out of guide steps (#124). */
+function getHudOwnUiRects(): Electron.Rectangle[] {
+	const win = hudOverlayWindow;
+	if (!win || win.isDestroyed()) return [];
+	return hudOwnUiRects({
+		bounds: win.getBounds(),
+		content: hudContentRect,
+		visible: win.isVisible(),
+		minimized: win.isMinimized(),
+	});
+}
+
+setHudOwnUiProvider(getHudOwnUiRects);
 
 /** Work area of the display the bar is on (or heading for), not the window. */
 function hudWorkAreaFor(bounds: Electron.Rectangle): Electron.Rectangle {

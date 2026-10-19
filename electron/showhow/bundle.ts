@@ -91,6 +91,8 @@ interface ClickSample {
 	 * is excluded from steps.
 	 */
 	visible?: boolean;
+	/** A press on Showhow's own recorder controls (the HUD, e.g. Stop); never a step (#124). */
+	ownUi?: boolean;
 	/** Zero-based occurrence among valid click samples before visibility filtering. */
 	sourceClickIndex?: number;
 }
@@ -424,6 +426,7 @@ function clickSamplesFromTelemetry(raw: string): ClickSample[] {
 				sample !== null &&
 				(sample as ClickSample).interactionType === "click" &&
 				(sample as ClickSample).visible !== false &&
+				(sample as ClickSample).ownUi !== true &&
 				typeof (sample as ClickSample).timeMs === "number" &&
 				typeof (sample as ClickSample).cx === "number" &&
 				typeof (sample as ClickSample).cy === "number",
@@ -860,7 +863,7 @@ function clickSamplesFromTelemetryStrict(raw: string): ClickSample[] {
 			typeof (sample as ClickSample).cy === "number"
 		) {
 			const click = sample as ClickSample;
-			if (click.visible !== false) {
+			if (click.visible !== false && click.ownUi !== true) {
 				clicks.push({ ...click, sourceClickIndex });
 			}
 			sourceClickIndex += 1;
