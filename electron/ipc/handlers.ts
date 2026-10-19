@@ -1318,6 +1318,16 @@ async function startCursorRecording(recordingId?: number) {
 	pendingCursorRecordingData = null;
 	cursorRecordingSession = createCursorRecordingSession({
 		getDisplayBounds: getSelectedSourceBounds,
+		// The recorder bar is inside a desktop capture; its Stop press must not become a step (#124).
+		getOwnUiBounds: () =>
+			BrowserWindow.getAllWindows()
+				.filter(
+					(window) =>
+						!window.isDestroyed() &&
+						window.isVisible() &&
+						window.webContents.getURL().includes("windowType=hud-overlay"),
+				)
+				.map((window) => window.getBounds()),
 		maxSamples: MAX_CURSOR_SAMPLES,
 		platform: process.platform,
 		sampleIntervalMs: CURSOR_SAMPLE_INTERVAL_MS,

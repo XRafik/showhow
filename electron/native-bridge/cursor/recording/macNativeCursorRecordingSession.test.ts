@@ -37,3 +37,36 @@ it("reads an already-installed Showhow-named cursor helper without renaming stab
 	});
 	expect(findMacCursorHelperPath()).toMatch(/\/showhow-macos-cursor-helper$/);
 });
+
+it("tags a click on Showhow's own recorder controls so it never becomes a guide step (#124)", async () => {
+	const { screen } = await import("electron");
+	const { MacNativeCursorRecordingSession } = await import("./macNativeCursorRecordingSession");
+	let cursor = { x: 960, y: 980 };
+	Object.assign(screen, { getCursorScreenPoint: () => cursor });
+	const session = new MacNativeCursorRecordingSession({
+		getDisplayBounds: () => ({ x: 0, y: 0, width: 1920, height: 1080 }),
+		// The HUD bar sits at the bottom centre of the recorded display.
+		getOwnUiBounds: () => [{ x: 760, y: 950, width: 400, height: 60 }],
+		maxSamples: 100,
+		sampleIntervalMs: 33,
+		startTimeMs: 0,
+	});
+	const capture = (
+		session as unknown as {
+			captureSample: (...args: [number, null, null, boolean, boolean, boolean]) => void;
+		}
+	).captureSample.bind(session);
+	capture(28_850, null, null, true, true, false); // Stop press on the HUD
+	cursor = { x: 300, y: 300 };
+	capture(28_900, null, null, false, false, true);
+	capture(29_000, null, null, true, true, false); // an ordinary click elsewhere
+	const samples = (
+		session as unknown as { samples: { interactionType: string; ownUi?: boolean }[] }
+	).samples;
+	const clicks = samples.filter((sample) => sample.interactionType === "click");
+	expect(clicks.map((click) => click.ownUi === true)).toEqual([true, false]);
+	// Moves are untouched so the editor cursor overlay still shows the pointer on the HUD.
+	expect(
+		samples.every((sample) => sample.interactionType === "click" || sample.ownUi === undefined),
+	).toBe(true);
+});

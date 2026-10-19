@@ -25,6 +25,8 @@ interface MacCursorAssetPayload {
 
 interface MacNativeCursorRecordingSessionOptions {
 	getDisplayBounds: () => Rectangle | null;
+	/** Screen bounds of Showhow's own recorder controls (the HUD); clicks there are not steps. */
+	getOwnUiBounds?: () => Rectangle[];
 	maxSamples: number;
 	sampleIntervalMs: number;
 	startTimeMs?: number;
@@ -431,6 +433,17 @@ export class MacNativeCursorRecordingSession implements CursorRecordingSession {
 					? "mouseup"
 					: "move";
 		this.previousLeftButtonDown = leftButtonDown;
+		// Tag rather than hide: the editor overlay still shows the pointer, but a press on the
+		// HUD (e.g. Stop, #124) is not a workflow step.
+		const ownUi =
+			interactionType === "click" &&
+			(this.options.getOwnUiBounds?.() ?? []).some(
+				(rect) =>
+					cursor.x >= rect.x &&
+					cursor.x < rect.x + rect.width &&
+					cursor.y >= rect.y &&
+					cursor.y < rect.y + rect.height,
+			);
 
 		this.samples.push({
 			timeMs: Math.max(0, timestampMs - this.startTimeMs),
@@ -438,6 +451,7 @@ export class MacNativeCursorRecordingSession implements CursorRecordingSession {
 			cy: clamp(normalizedY, 0, 1),
 			visible,
 			interactionType,
+			...(ownUi ? { ownUi: true } : {}),
 			...(assetId ? { assetId } : {}),
 			...(cursorType ? { cursorType } : {}),
 		});

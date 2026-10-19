@@ -1326,6 +1326,72 @@ describe("regenerateDocArtifacts rollback safety (paired writes)", () => {
 	});
 });
 
+describe("own recorder controls (issue #124: Stop on the HUD is not a step)", () => {
+	const telemetry = JSON.stringify({
+		samples: [
+			{ timeMs: 2_000, cx: 0.4, cy: 0.4, interactionType: "click", visible: true },
+			// The Stop press on the HUD, inside the recorded display.
+			{ timeMs: 28_850, cx: 0.53, cy: 0.91, interactionType: "click", visible: true, ownUi: true },
+		],
+	});
+
+	it("initial generation and regeneration both skip clicks on Showhow's own controls", async () => {
+		const work = await mkdtemp(path.join(os.tmpdir(), "showhow-bundle-"));
+		const screenVideoPath = path.join(work, "rec-hud.mp4");
+		await writeFile(screenVideoPath, "fake-mp4");
+		await writeFile(`${screenVideoPath}.cursor.json`, telemetry);
+		const frames: Parameters<FrameExtractor>[0][] = [];
+		const result = await createRecordingBundle({
+			screenVideoPath,
+			createdAt: new Date(2026, 9, 17, 13, 54, 25).getTime(),
+			recordingsRoot: path.join(work, "Recordings"),
+			transcriptContent: "[0:01] open the report\n",
+			extractFrames: async (input) => {
+				frames.push(input);
+			},
+		});
+		expect(frames[0]?.clicks.map((click) => click.timeMs)).toEqual([2_000]);
+		const read = async () =>
+			(
+				JSON.parse(await readFile(path.join(result.bundleDir, "steps.json"), "utf-8")) as Step[]
+			).map((step) => step.ts);
+		expect(await read()).toEqual([2_000]);
+		expect((await regenerateDocArtifacts(result.bundleDir)).success).toBe(true);
+		expect(await read()).toEqual([2_000]);
+	});
+
+	it("a narration-only take ending with Stop has no click steps", async () => {
+		const work = await mkdtemp(path.join(os.tmpdir(), "showhow-bundle-"));
+		const screenVideoPath = path.join(work, "rec-narration.mp4");
+		await writeFile(screenVideoPath, "fake-mp4");
+		await writeFile(
+			`${screenVideoPath}.cursor.json`,
+			JSON.stringify({
+				samples: [
+					{
+						timeMs: 28_850,
+						cx: 0.53,
+						cy: 0.91,
+						interactionType: "click",
+						visible: true,
+						ownUi: true,
+					},
+				],
+			}),
+		);
+		const result = await createRecordingBundle({
+			screenVideoPath,
+			createdAt: new Date(2026, 9, 17, 13, 54, 25).getTime(),
+			recordingsRoot: path.join(work, "Recordings"),
+			transcriptContent: "[0:04] narrated walkthrough\n",
+			extractFrames: async () => undefined,
+		});
+		expect(await readFile(path.join(result.bundleDir, "steps.json"), "utf-8")).toBe("[]\n");
+		const meta = JSON.parse(await readFile(path.join(result.bundleDir, "meta.json"), "utf-8"));
+		expect(meta.stepCapture).toMatchObject({ status: "unavailable", reason: "no-clicks" });
+	});
+});
+
 describe("click visibility filtering (issue #66: exclude outside clicks)", () => {
 	const mixedTelemetry = JSON.stringify({
 		samples: [

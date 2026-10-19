@@ -1,5 +1,14 @@
 # Implementation notes
 
+## 19 October 2026 — Showhow #124 Stop on the recorder bar is not a step
+
+On macOS the cursor session tags a click whose screen point lies inside a visible HUD window
+(`windowType=hud-overlay`) with `ownUi: true` in the cursor telemetry. Initial step generation and
+regeneration skip tagged clicks, as they already skip `visible: false` (#66). The sample stays in
+the telemetry so the editor cursor overlay is unchanged; the editor's reader ignores the new field.
+Older recordings have no tag and keep their existing steps. Windows and Linux sessions are not
+changed (their helpers report points in other coordinate spaces); recorded as a follow-up.
+
 ## 19 October 2026 — Showhow #143 workflow PDF export
 
 Built in a single Claude Code session (Codex weekly limit exhausted), not through the Herdr lane.
