@@ -24,7 +24,6 @@ body {
 	background: var(--color-landing-bg);
 	color: var(--color-landing-text);
 	font: 400 16px/1.55 var(--font-landing-body);
-	overflow-x: hidden;
 	-webkit-font-smoothing: antialiased;
 }
 a {
@@ -55,6 +54,10 @@ h2 {
 .section {
 	padding: 72px 0;
 	position: relative;
+}
+main {
+	/* Clip, not hidden: reveals slide in from the side, and a scroll container here would unstick the nav. */
+	overflow-x: clip;
 }
 .sr-only {
 	position: absolute;

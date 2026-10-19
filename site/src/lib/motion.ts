@@ -39,10 +39,8 @@ function initLoops() {
 /** The hero loop is a muted video; with reduced motion it stays on its poster frame. */
 function initHeroVideo() {
 	const video = document.querySelector<HTMLVideoElement>(".hero__video");
-	if (video && reduced) {
-		video.removeAttribute("autoplay");
-		video.pause();
-	}
+	// The video ships without `autoplay`, so reduced motion never starts it and keeps the poster.
+	if (video && !reduced) void video.play().catch(() => undefined);
 }
 
 function initLenis() {
@@ -55,9 +53,14 @@ function initLenis() {
 
 /** First paint: ten columns lift away like a darkroom shutter, then the hero assembles. */
 function playIntro() {
+	let finished = false;
 	const done = () => {
+		if (finished) return;
+		finished = true;
 		root.dataset.ready = "true";
 		document.querySelector(".intro")?.remove();
+		// Created after the intro so its start values are the revealed ones, not the CSS hidden state.
+		initHeroScrub();
 	};
 	const tl = gsap.timeline({ onComplete: done });
 	tl.to(".intro i", {
@@ -83,15 +86,19 @@ function playIntro() {
 	gsap.delayedCall(4, done);
 }
 
-/** Scroll scenes, one per section. */
-function initScroll() {
-	// Hero hands over to the page: copy lifts and softens, the stage settles back, the shader drifts.
+/** Hero hands over to the page: copy lifts and softens as you scroll away. */
+function initHeroScrub() {
 	gsap.to(".hero__inner > :not(.hero__stage-wrap)", {
 		y: -40,
 		opacity: 0.25,
 		ease: "none",
 		scrollTrigger: { trigger: ".hero", start: "top top", end: "70% top", scrub: true },
 	});
+}
+
+/** Scroll scenes, one per section. */
+function initScroll() {
+	// The stage settles back and the shader drifts.
 	gsap.fromTo(
 		".hero__stage",
 		{ scale: 1, transformOrigin: "50% 0%" },

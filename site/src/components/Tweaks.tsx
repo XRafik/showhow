@@ -88,7 +88,9 @@ export default function Tweaks() {
 					const next = !open;
 					try {
 						localStorage.setItem("showhow-tweaks", next ? "1" : "0");
-					} catch {}
+					} catch {
+						// storage unavailable: the pane still works for this page view
+					}
 					return next;
 				});
 			}

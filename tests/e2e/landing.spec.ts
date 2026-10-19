@@ -158,4 +158,25 @@ test.describe("landing page", () => {
 		await page.goto("/?tweak=0");
 		await expect(page.locator("#tweaks-root")).toHaveCount(0);
 	});
+	test("the nav stays on screen and hero copy survives a scroll round trip", async ({ page }) => {
+		await page.goto("/");
+		await page.waitForSelector("html[data-ready=true]");
+		await page.evaluate(() => window.__lenis?.scrollTo(1400, { immediate: true }));
+		await page.waitForTimeout(500);
+		const navTop = await page.locator("nav.nav").evaluate((el) => el.getBoundingClientRect().top);
+		expect(navTop).toBe(0);
+		await page.evaluate(() => window.__lenis?.scrollTo(0, { immediate: true }));
+		await page.waitForTimeout(500);
+		await expect(page.locator(".hero__sub")).toHaveCSS("opacity", "1");
+	});
+
+	test("content is visible if the motion script never runs", async ({ browser }) => {
+		const context = await browser.newContext();
+		await context.route("**/_astro/*.js", (route) => route.abort());
+		const page = await context.newPage();
+		await page.goto("/");
+		await expect(page.locator("h1")).toBeVisible({ timeout: 10_000 });
+		await expect(page.locator(".hero__sub")).toHaveCSS("opacity", "1", { timeout: 10_000 });
+		await context.close();
+	});
 });

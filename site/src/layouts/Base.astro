@@ -25,6 +25,12 @@ const { title, description } = Astro.props;
 		<script is:inline>
 			if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
 				document.documentElement.classList.add("js-motion");
+				// If the motion script never boots, show everything.
+				setTimeout(() => {
+					if (!document.documentElement.dataset.ready) {
+						document.documentElement.classList.remove("js-motion");
+					}
+				}, 5000);
 			}
 		</script>
 	</head>
