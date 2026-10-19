@@ -22,12 +22,22 @@ function narrationFor(steps: Step[], transcript: string): string[][] {
 	return groups;
 }
 
+/** A bundle-local image, or undefined when the file was deleted. Anything else is refused. */
 async function readScreenshot(bundleDir: string, name: string) {
 	const ext = path.extname(name).toLowerCase() as keyof typeof IMAGE_MIME;
 	if (path.basename(name) !== name || !IMAGE_MIME[ext]) throw new Error("Invalid screenshot");
-	const real = await fs.realpath(path.join(bundleDir, "screenshots", name));
+	const bundle = await fs.realpath(bundleDir);
 	const screenshots = await fs.realpath(path.join(bundleDir, "screenshots"));
-	if (!real.startsWith(screenshots + path.sep)) throw new Error("Screenshot outside bundle");
+	let real: string;
+	try {
+		real = await fs.realpath(path.join(screenshots, name));
+	} catch (error) {
+		if ((error as NodeJS.ErrnoException).code === "ENOENT") return undefined;
+		throw error;
+	}
+	// Both the folder and the file must resolve inside this bundle: no symlink escapes.
+	if (!screenshots.startsWith(bundle + path.sep) || !real.startsWith(screenshots + path.sep))
+		throw new Error("Screenshot outside bundle");
 	return { mime: IMAGE_MIME[ext], base64: (await fs.readFile(real)).toString("base64") };
 }
 
@@ -63,7 +73,8 @@ export async function collectPdfDocument(
 					label: step.label,
 					ts: step.ts,
 					hidden,
-					narration: narration[index] ?? [],
+					// A narration step's label is already the spoken text.
+					narration: step.kind === "narration" ? [] : (narration[index] ?? []),
 					image:
 						options.screenshots && !hidden && step.screenshot !== ""
 							? await readScreenshot(bundleDir, step.screenshot)
@@ -85,10 +96,8 @@ export async function exportPdf(
 ): Promise<{ status: "saved"; path: string } | { status: "cancelled" } | { status: "failed" }> {
 	const destination = await deps.destination();
 	if (!destination) return { status: "cancelled" };
-	const tmp = path.join(
-		path.dirname(destination),
-		`.${path.basename(destination)}.${randomUUID()}.tmp`,
-	);
+	// Short temp name: a long chosen file name must not push it past the filename limit.
+	const tmp = path.join(path.dirname(destination), `.showhow-pdf-${randomUUID()}.tmp`);
 	try {
 		const html = renderPdfHtml(await collectPdfDocument(bundleDir, options), options);
 		const bytes = await deps.render(html);
@@ -116,7 +125,8 @@ export function createPdfRenderer(BrowserWindowClass: typeof BrowserWindow) {
 				sandbox: true,
 				contextIsolation: true,
 				nodeIntegration: false,
-				partition: "showhow-pdf-render",
+				// In-memory session per render: concurrent exports keep their own request filter.
+				partition: `showhow-pdf-render-${randomUUID()}`,
 			},
 		});
 		win.webContents.session.webRequest.onBeforeRequest((details, callback) =>
@@ -193,12 +203,16 @@ export function registerPdfExportHandlers(deps: {
 		}
 	}
 	deps.handle("showhow:pdf-destination", async (event, bundle) => {
-		const resolved = await bundlePath(bundle);
-		return {
-			display: display(
-				chosen.get(`${event.sender.id}:${resolved}`) ?? (await defaultFile(resolved)),
-			),
-		};
+		try {
+			const resolved = await bundlePath(bundle);
+			return {
+				display: display(
+					chosen.get(`${event.sender.id}:${resolved}`) ?? (await defaultFile(resolved)),
+				),
+			};
+		} catch {
+			return { display: display(path.join(deps.downloadsDir, "Showhow guide.pdf")) };
+		}
 	});
 	deps.handle("showhow:pdf-choose-destination", async (event, bundle) => {
 		try {

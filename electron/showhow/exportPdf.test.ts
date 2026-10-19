@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, readdir, readFile, stat, symlink, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readdir, readFile, rm, stat, symlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
@@ -105,6 +105,29 @@ describe("collectPdfDocument", () => {
 		await symlink(path.join(root, "outside.png"), path.join(dir, "screenshots", "link.png"));
 		await expect(collectPdfDocument(dir, all)).rejects.toThrow();
 	});
+
+	it("refuses a screenshots folder symlinked outside the bundle", async () => {
+		const { root, dir } = await bundle([step({})]);
+		await mkdir(path.join(root, "elsewhere"));
+		await writeFile(path.join(root, "elsewhere", "step-01.png"), PNG);
+		await rm(path.join(dir, "screenshots"), { recursive: true });
+		await symlink(path.join(root, "elsewhere"), path.join(dir, "screenshots"));
+		await expect(collectPdfDocument(dir, all)).rejects.toThrow();
+	});
+
+	it("prints a step whose screenshot was deleted without an image", async () => {
+		const { dir } = await bundle([step({}), step({ ts: 9_000, screenshot: "gone.png" })]);
+		const doc = await collectPdfDocument(dir, all);
+		expect(doc.steps[0]!.image).toBeDefined();
+		expect(doc.steps[1]!.image).toBeUndefined();
+	});
+
+	it("does not repeat narration under steps that are themselves narration", async () => {
+		const { dir } = await bundle([
+			step({ kind: "narration", label: "So first I'll go to invoices." }),
+		]);
+		expect((await collectPdfDocument(dir, all)).steps[0]!.narration).toEqual([]);
+	});
 });
 
 describe("exportPdf", () => {
@@ -152,6 +175,17 @@ describe("exportPdf", () => {
 		});
 		expect(await readFile(destination, "utf8")).toBe("previous");
 		expect((await readdir(root)).filter((name) => name.includes(".tmp"))).toEqual([]);
+	});
+
+	it("uses a short temp name next to a long chosen file name", async () => {
+		const { root, dir } = await bundle([step({})]);
+		const destination = path.join(root, `${"x".repeat(240)}.pdf`);
+		expect(
+			await exportPdf(dir, all, {
+				destination: async () => destination,
+				render: async () => Buffer.from("%PDF-1.4"),
+			}),
+		).toEqual({ status: "saved", path: destination });
 	});
 
 	it("reports a write failure and leaves no partial file", async () => {
@@ -229,6 +263,12 @@ describe("registered PDF export IPC", () => {
 		expect(s.reveal).toHaveBeenCalledWith(chosen);
 		expect(await s.call("reveal", "/etc/hosts")).toEqual({ success: false });
 		expect(s.reveal).toHaveBeenCalledTimes(1);
+	});
+
+	it("still offers Downloads when the bundle metadata cannot be read", async () => {
+		const s = await setup();
+		await writeFile(path.join(s.dir, "meta.json"), "{broken");
+		expect(await s.call("destination", s.dir)).toEqual({ display: "~/Downloads" });
 	});
 
 	it("rejects bundles outside the recordings root and malformed options", async () => {

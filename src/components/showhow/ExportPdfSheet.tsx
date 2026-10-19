@@ -1,5 +1,5 @@
 import { Check, CircleCheck, FileText, Folder } from "lucide-react";
-import { type ComponentProps, useEffect, useRef, useState } from "react";
+import { type ComponentProps, useEffect, useId, useRef, useState } from "react";
 import { useScopedT } from "@/contexts/I18nContext";
 import {
 	DEFAULT_PDF_OPTIONS,
@@ -29,14 +29,15 @@ function Toggle({
 	disabled: boolean;
 	onChange: (checked: boolean) => void;
 }) {
+	const labelId = useId();
 	return (
 		<div className="flex items-center justify-between border-t border-ds-line py-3">
-			<span id={`pdf-${label}`}>{label}</span>
+			<span id={labelId}>{label}</span>
 			<button
 				type="button"
 				role="switch"
 				aria-checked={checked}
-				aria-labelledby={`pdf-${label}`}
+				aria-labelledby={labelId}
 				disabled={disabled}
 				onClick={() => onChange(!checked)}
 				className={cn(

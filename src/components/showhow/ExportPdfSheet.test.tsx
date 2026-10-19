@@ -59,6 +59,14 @@ describe("ExportPdfSheet", () => {
 		expect(destination).toHaveBeenCalledWith("/scratch/one");
 	});
 
+	it("names each switch from its visible label", async () => {
+		await open();
+		for (const name of ["Screenshots", "Narration", "Timestamps"]) {
+			const toggle = screen.getByRole("switch", { name });
+			expect(toggle.getAttribute("aria-labelledby")).not.toMatch(/\s/);
+		}
+	});
+
 	it("exports with the chosen parts and shows the saved state with Show in Finder", async () => {
 		await open();
 		await userEvent.click(screen.getByRole("switch", { name: "Narration" }));

@@ -217,7 +217,6 @@
 	"showhowPdf": {
 		"eyebrow": "Guide",
 		"title": "Export PDF",
-		"description": "Choose what the PDF includes and where it is saved.",
 		"include": "Include",
 		"screenshots": "Screenshots",
 		"narration": "Narration",
