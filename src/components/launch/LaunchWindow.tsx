@@ -51,6 +51,7 @@ import {
 	HUD_BAR_BOTTOM,
 	HUD_GROWTH_RESERVE,
 	HUD_POPOVER_GAP,
+	HUD_SHEET_MAX_HEIGHT,
 	HUD_STACK_GAP,
 } from "./hudGeometry";
 import styles from "./LaunchWindow.module.css";
@@ -186,6 +187,13 @@ export function LaunchWindow() {
 	const portalOwnsSource = usePortalOwnsSource();
 
 	const [sheet, setSheet] = useState<HudSheetState | null>(null);
+	// The control that opened the sheet (Record or the source chip): focus goes back to it.
+	const sheetOpenerRef = useRef<HTMLElement | null>(null);
+	const openSheet = useCallback((next: HudSheetState) => {
+		const active = document.activeElement;
+		sheetOpenerRef.current = active instanceof HTMLElement ? active : null;
+		setSheet(next);
+	}, []);
 
 	const isVertical = trayLayout === "vertical";
 	const isPopoverOpen = isLanguageMenuOpen || isDeviceSettingsOpen;
@@ -261,6 +269,16 @@ export function LaunchWindow() {
 			wantedMicrophoneRef.current = { id: microphoneDeviceId, name: microphoneDeviceName };
 		}
 	}, [recordingPrefsLoaded, microphoneDeviceId, microphoneDeviceName]);
+	// A choice made elsewhere (the editor's Record stage) arrives as a new durable snapshot. The
+	// fallback above is never persisted, so a snapshot always names the user's own choice.
+	useEffect(() => {
+		return window.electronAPI?.onRecordingPrefsChanged?.((prefs) => {
+			wantedMicrophoneRef.current = {
+				id: prefs.micDeviceId ?? undefined,
+				name: prefs.micDeviceName ?? undefined,
+			};
+		});
+	}, []);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -431,6 +449,7 @@ export function LaunchWindow() {
 		anchor.style.setProperty("--hud-popover-gap", `${HUD_POPOVER_GAP}px`);
 		anchor.style.setProperty("--hud-stack-gap", `${HUD_STACK_GAP}px`);
 		anchor.style.setProperty("--hud-bar-max-h", hudBarMaxHeightCss());
+		anchor.style.setProperty("--hud-sheet-max-h", `${HUD_SHEET_MAX_HEIGHT}px`);
 	}, []);
 
 	const measureHudSize = useCallback(() => {
@@ -795,8 +814,8 @@ export function LaunchWindow() {
 			console.warn("Failed to read the screen recording permission:", error);
 		}
 		closePopovers();
-		setSheet({ kind: "screen", relaunch });
-	}, [closePopovers]);
+		openSheet({ kind: "screen", relaunch });
+	}, [closePopovers, openSheet]);
 
 	const handleSourceButtonClick = useCallback(() => {
 		void openSourceSelector()
@@ -845,7 +864,7 @@ export function LaunchWindow() {
 			}
 			if (isMicrophoneMissing()) {
 				closePopovers();
-				setSheet({ kind: "microphone", status: null });
+				openSheet({ kind: "microphone", status: null });
 				return;
 			}
 			// Linux never detours through the in-app picker: there is nothing for
@@ -887,6 +906,7 @@ export function LaunchWindow() {
 			closePopovers,
 			hasSelectedSource,
 			isMicrophoneMissing,
+			openSheet,
 			portalOwnsSource,
 			openSourceSelector,
 			recording,
@@ -1077,7 +1097,7 @@ export function LaunchWindow() {
 
 	// --- Recovery sheets ------------------------------------------------------
 	// The bar is inert behind an open sheet (React 18 has no `inert` prop), and focus goes back
-	// to Record when the sheet closes, unless a take is starting from it.
+	// to the control that opened it (else Record) when it closes, unless a take is starting.
 	const returnFocusToRecordRef = useRef(false);
 	const [startAfterSheet, setStartAfterSheet] = useState(0);
 
@@ -1086,7 +1106,13 @@ export function LaunchWindow() {
 		bar?.toggleAttribute("inert", sheet !== null);
 		if (sheet === null && returnFocusToRecordRef.current) {
 			returnFocusToRecordRef.current = false;
-			bar?.querySelector<HTMLButtonElement>("[data-testid='launch-record-button']")?.focus();
+			const opener = sheetOpenerRef.current;
+			sheetOpenerRef.current = null;
+			const target =
+				opener?.isConnected && bar?.contains(opener)
+					? opener
+					: bar?.querySelector<HTMLButtonElement>("[data-testid='launch-record-button']");
+			target?.focus();
 		}
 	}, [sheet]);
 

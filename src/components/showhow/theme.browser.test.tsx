@@ -9,6 +9,7 @@ import {
 	HudLanguageButton,
 	HudMicButton,
 	HudRecordButton,
+	HudSheet,
 	HudSourceButton,
 } from "@/components/launch/HudControls";
 import hudStyles from "@/components/launch/LaunchWindow.module.css";
@@ -492,6 +493,59 @@ it("keeps enabled small foundation text readable in both themes", () => {
 						.soft(textContrast(getComputedStyle(getByText(name)).color, bg), `${theme}: ${name}`)
 						.toBeGreaterThanOrEqual(4.5);
 				}
+			} finally {
+				unmount();
+			}
+		}
+	} finally {
+		if (prior === null) document.documentElement.removeAttribute("data-sh-theme");
+		else document.documentElement.setAttribute("data-sh-theme", prior);
+	}
+});
+
+it("keeps the HUD recovery sheet's text readable in both themes", () => {
+	const prior = document.documentElement.getAttribute("data-sh-theme");
+	const idle = () => undefined;
+	try {
+		for (const theme of ["light", "dark"]) {
+			document.documentElement.setAttribute("data-sh-theme", theme);
+			const { getByRole, getByText, unmount } = render(
+				<HudSheet
+					eyebrow="Sheet eyebrow"
+					title="Sheet title"
+					description="Sheet description"
+					hint="Sheet recovery hint"
+					status="Sheet status"
+					icon={null}
+					closeLabel="Close"
+					cancelLabel="Sheet cancel"
+					primaryLabel="Sheet primary"
+					onCancel={idle}
+					onPrimary={idle}
+				/>,
+			);
+			try {
+				const surface = getComputedStyle(getByRole("dialog")).backgroundColor;
+				for (const name of [
+					"Sheet eyebrow",
+					"Sheet title",
+					"Sheet description",
+					"Sheet recovery hint",
+					"Sheet status",
+					"Sheet cancel",
+				]) {
+					expect
+						.soft(
+							textContrast(getComputedStyle(getByText(name)).color, surface),
+							`${theme}: ${name}`,
+						)
+						.toBeGreaterThanOrEqual(4.5);
+				}
+				const primary = getByRole("button", { name: "Sheet primary" });
+				const primaryStyle = getComputedStyle(primary);
+				expect
+					.soft(textContrast(primaryStyle.color, primaryStyle.backgroundColor), `${theme}: primary`)
+					.toBeGreaterThanOrEqual(4.5);
 			} finally {
 				unmount();
 			}

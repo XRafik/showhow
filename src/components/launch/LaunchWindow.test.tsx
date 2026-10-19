@@ -2369,4 +2369,58 @@ describe("LaunchWindow Final HUD states and recovery sheets", () => {
 		expect(mark).toHaveAttribute("aria-hidden", "true");
 		expect(mark.querySelector("button, [tabindex]")).toBeNull();
 	});
+
+	it("lets Stop through again after 2s when saving never started, so Stop is never lost", async () => {
+		recorderState.value.recording = true;
+		renderLaunchWindow();
+		const stop = await screen.findByTestId("launch-record-button");
+		vi.useFakeTimers();
+		try {
+			fireEvent.click(stop);
+			act(() => {
+				vi.advanceTimersByTime(1999);
+			});
+			fireEvent.click(stop);
+			expect(recorderState.value.toggleRecording).toHaveBeenCalledTimes(1);
+			act(() => {
+				vi.advanceTimersByTime(1);
+			});
+			fireEvent.click(stop);
+			expect(recorderState.value.toggleRecording).toHaveBeenCalledTimes(2);
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
+	it("returns focus to the source chip when the sheet it opened is cancelled", async () => {
+		denyScreenAccess();
+		renderLaunchWindow();
+		const chip = await screen.findByTestId("launch-source-selector-button");
+		act(() => chip.focus());
+		fireEvent.click(chip);
+		const sheet = await screen.findByRole("dialog", { name: "Allow screen recording" });
+
+		fireEvent.click(within(sheet).getByRole("button", { name: "Cancel" }));
+
+		await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+		expect(screen.getByTestId("launch-source-selector-button")).toHaveFocus();
+	});
+
+	it("follows a microphone chosen in another window instead of the one saved at launch", async () => {
+		missingSavedMicrophone();
+		let pushPrefs: ((prefs: Record<string, unknown>) => void) | null = null;
+		window.electronAPI.onRecordingPrefsChanged = vi.fn((callback) => {
+			pushPrefs = callback as unknown as (prefs: Record<string, unknown>) => void;
+			return () => undefined;
+		}) as typeof window.electronAPI.onRecordingPrefsChanged;
+		renderLaunchWindow();
+		await waitForSelectedSource();
+		await waitFor(() => expect(pushPrefs).not.toBeNull());
+
+		act(() => pushPrefs?.({ micDeviceId: "built-in", micDeviceName: "MacBook Microphone" }));
+		fireEvent.click(screen.getByTestId("launch-record-button"));
+
+		await waitFor(() => expect(recorderState.value.toggleRecording).toHaveBeenCalledTimes(1));
+		expect(screen.queryByRole("dialog")).toBeNull();
+	});
 });

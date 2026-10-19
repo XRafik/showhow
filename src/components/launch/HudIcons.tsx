@@ -152,7 +152,8 @@ export function CursorIcon({ off = false, className }: { off?: boolean; classNam
 	);
 }
 
-export function RecordGlyph({ recording, className }: { recording: boolean; className?: string }) {
+/** The Final frames' record mark: a square in every state, coloured by the button. */
+export function RecordGlyph({ className }: { className?: string }) {
 	return (
 		<svg
 			width={ICON_SIZE}
@@ -161,11 +162,7 @@ export function RecordGlyph({ recording, className }: { recording: boolean; clas
 			className={className}
 			aria-hidden="true"
 		>
-			{recording ? (
-				<rect x="6.5" y="6.5" width="11" height="11" rx="2.5" fill="currentColor" />
-			) : (
-				<circle cx="12" cy="12" r="7.5" fill="currentColor" />
-			)}
+			<rect x="6.5" y="6.5" width="11" height="11" rx="2.5" fill="currentColor" />
 		</svg>
 	);
 }

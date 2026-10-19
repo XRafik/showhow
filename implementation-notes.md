@@ -1172,3 +1172,17 @@ Windows/Linux runtime, macOS13 hardware, current packaging/install/signing and r
 - Native runs use the built app with isolated synthetic roots. Faked: capture IPC (start/pause/resume/stop), source listing, selected source, permission reads, Accessibility check, and `permissions:open-settings`/`relaunch` (logged only). No ScreenCaptureKit helper ran and no bundle was written by a real stop; the editor opened on a synthetic fixture video. The main-process amendment is covered by `electron/ipc/openSourceSelectorPermission.test.ts`, not natively (the harness replaces that handler).
 - Capture exclusion is unchanged code and was not observed natively. On this macOS 26 Mac `windows.ts` deliberately leaves the HUD without content protection (observed `isContentProtected() === false`, the documented macOS 26 workaround), and ScreenCaptureKit excludes the HUD by window id inside the real `start-native-mac-recording` handler, which the harness replaces.
 - Owed to the owner: a real recording start/pause/stop/save with the Final HUD (including that the bar and sheets stay out of the video), and HUD-07 on a Mac that uses the app's own picker. Windows and Linux are untested.
+
+### Review round 1 (FAIL on contrast) → fixes
+| Finding | Fix |
+|---|---|
+| 1 Sage focus ring 2.4:1 on cream sheets/picker | Focus outlines on the light sheets and picker use `--ds-ink`; sage stays on the dark bar. |
+| 2 Record and notice hover unreadable in dark theme (`--ds-accent-200` flips) | Hover is `filter: brightness(1.08)` on the sage fill, in both themes. |
+| 3 `--ds-muted` text 3.3:1 on cream | Sheet eyebrow and hint, picker eyebrow, inactive tabs and state text use `--ds-ink-soft`. New browser test checks every sheet text in both themes (RED on the old CSS). |
+| 5 Wanted mic not refreshed from other windows | The HUD follows `onRecordingPrefsChanged` snapshots, which carry only the durable choice (the fallback is never persisted). Test added, RED on the old code. |
+| 7 Focus always returned to Record | Focus returns to the control that opened the sheet, else Record. Test added, RED on the old code. |
+| 8 Stop guard release untested | Fake-timer test pins the 2s release. |
+| 9 Dead `RecordGlyph` prop | Removed. |
+| 10 Sheet height literal | `--hud-sheet-max-h` is set from `HUD_SHEET_MAX_HEIGHT`. |
+
+Carried as follow-ups, not changed: (4) cream STOP on `--ds-rec` is 3.6:1 for 11px capitals, as the approved HUD-04 frame draws it, which needs an owner decision; (6) pressing Record during a countdown with the mic just unplugged opens HUD-08 rather than cancelling, because the recorder does not expose the countdown state to the HUD.

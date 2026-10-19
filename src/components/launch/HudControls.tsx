@@ -412,9 +412,7 @@ export const HudRecordButton = memo(function HudRecordButton({
 				{saving ? (
 					<span className={`${styles.hudSpinner} animate-spin`}>{getIcon("spinner")}</span>
 				) : (
-					// The Final frames draw a square in both states: orange on sage at rest,
-					// cream on orange while recording.
-					<RecordGlyph recording className={styles.hudRecordGlyph} />
+					<RecordGlyph className={styles.hudRecordGlyph} />
 				)}
 				<span className={styles.hudRecordText}>{text}</span>
 			</button>

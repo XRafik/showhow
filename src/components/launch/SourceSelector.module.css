@@ -46,7 +46,7 @@
 
 .eyebrow {
 	font-size: 10px;
-	color: var(--ds-muted);
+	color: var(--ds-ink-soft);
 }
 
 .title {
@@ -103,7 +103,7 @@
 	background: transparent;
 	font-size: 11px;
 	font-weight: 500;
-	color: var(--ds-muted);
+	color: var(--ds-ink-soft);
 	box-shadow: none;
 }
 
@@ -150,7 +150,7 @@
 
 /* Keyboard focus ring for the radio-role source cards (roving tabIndex). */
 .sourceCard:focus-visible {
-	outline: 2px solid var(--ds-accent);
+	outline: 2px solid var(--ds-ink);
 	outline-offset: 2px;
 }
 
@@ -267,7 +267,7 @@
 .sheet .tab:focus-visible,
 .primaryButton:focus-visible,
 .secondaryButton:focus-visible {
-	outline: 2px solid var(--ds-accent);
+	outline: 2px solid var(--ds-ink);
 	outline-offset: 2px;
 }
 
@@ -293,7 +293,7 @@
 	margin: 0;
 	font-size: 13px;
 	line-height: 1.5;
-	color: var(--ds-muted);
+	color: var(--ds-ink-soft);
 }
 
 .spinner {
