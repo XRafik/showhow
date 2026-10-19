@@ -59,19 +59,27 @@
 	},
 	"sourceSelector": {
 		"loading": "Loading screens and windows...",
-		"screens": "Screens ({{count}})",
-		"windows": "Windows ({{count}})",
+		"screens": "Screens · {{count}}",
+		"windows": "Windows · {{count}}",
 		"emptyTitle": "No screens or windows found",
 		"emptyDescription": "If you just granted screen recording permission, reload this picker. On macOS you may need to reopen Showhow.",
 		"loadFailedDescription": "Showhow couldn't load your screens and windows. Reload this picker and try again.",
-		"defaultSourceName": "Screen"
+		"defaultSourceName": "Screen",
+		"eyebrow": "Source",
+		"title": "What should Showhow record?",
+		"close": "Close",
+		"selected": "Selected",
+		"useScreen": "Use this screen",
+		"useWindow": "Use this window"
 	},
 	"recording": {
 		"selectSource": "Choose a screen or window to record",
 		"systemPicker": "Your system will ask what to share",
 		"start": "Start recording",
 		"stop": "Stop and save the recording",
-		"saving": "Saving..."
+		"saving": "Saving...",
+		"record": "Record",
+		"stopShort": "Stop"
 	},
 	"language": "Language",
 	"languageWithName": "Language: {{language}}",
@@ -153,5 +161,26 @@
 			"screenRequired": "Screen recording is needed to record.",
 			"ready": "You're all set."
 		}
+	},
+	"countdown": {
+		"caption": "Recording starts · press Record to cancel"
+	},
+	"sheets": {
+		"eyebrow": "Showhow",
+		"close": "Close",
+		"cancel": "Cancel"
+	},
+	"permissionSheet": {
+		"title": "Allow screen recording",
+		"description": "Showhow needs screen recording permission before it can capture your screen.",
+		"hint": "Allow Showhow in macOS screen recording settings, then return to choose a source.",
+		"relaunchHint": "Screen recording is allowed. Restart Showhow so macOS applies it."
+	},
+	"microphoneSheet": {
+		"title": "No microphone found",
+		"description": "Showhow can't find the selected microphone.",
+		"hint": "Reconnect your microphone, then try again. You can choose a different input in the recorder.",
+		"tryAgain": "Try again",
+		"stillMissing": "Still not found. Check the connection, or choose another input."
 	}
 }

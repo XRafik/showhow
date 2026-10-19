@@ -3,12 +3,15 @@ import "@/index.css";
 import "@/lib/showhow/upstreamTheme.css";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+import { userEvent } from "vitest/browser";
 import editorStyles from "@/components/ai-edition/v4/EditorShellV4.module.css";
 import {
 	HudCursorButton,
 	HudLanguageButton,
 	HudMicButton,
+	HudNotice,
 	HudRecordButton,
+	HudSheet,
 	HudSourceButton,
 } from "@/components/launch/HudControls";
 import hudStyles from "@/components/launch/LaunchWindow.module.css";
@@ -173,9 +176,8 @@ it("renders real HUD labels and editor text in Inter Tight with house HUD surfac
 					recording={false}
 					paused={false}
 					saving={false}
-					elapsedSeconds={0}
 					label="Start recording"
-					savingLabel="Saving"
+					text="Record"
 					onClick={idle}
 				/>
 			</div>
@@ -198,14 +200,21 @@ it("renders real HUD labels and editor text in Inter Tight with house HUD surfac
 		expect(getComputedStyle(libraryControl).borderRadius).toBe("4px");
 		for (const theme of ["light", "dark"]) {
 			document.documentElement.setAttribute("data-sh-theme", theme);
+			expect
+				.soft(
+					getComputedStyle(getByRole("tab", { name: "Editor typography" })).fontFamily,
+					`${theme}: editor tab`,
+				)
+				.toMatch(/^"?Inter Tight"?[,]/);
+			// The Final HUD sets its labels in JetBrains Mono capitals (HUD-03/04).
 			for (const node of [
 				getByText("Synthetic HUD source"),
 				getByText("EN"),
-				getByRole("tab", { name: "Editor typography" }),
+				getByText("Record"),
 			]) {
-				expect
-					.soft(getComputedStyle(node).fontFamily, `${theme}: ${node.textContent}`)
-					.toMatch(/^"?Inter Tight"?[,]/);
+				const style = getComputedStyle(node);
+				expect.soft(style.fontFamily, `${theme}: ${node.textContent}`).toContain("JetBrains Mono");
+				expect.soft(style.textTransform, `${theme}: ${node.textContent}`).toBe("uppercase");
 			}
 			const activeMic = getByRole("button", { name: "HUD microphone enabled" }).querySelector(
 				"svg",
@@ -219,19 +228,26 @@ it("renders real HUD labels and editor text in Inter Tight with house HUD surfac
 			expect(cursorGlyph).not.toBeNull();
 			const cursorColor = getComputedStyle(cursorGlyph as SVGElement).color;
 			const cursorBackground = getComputedStyle(cursor).backgroundColor;
-			expect.soft(cursorBackground, `${theme}: solid cursor background`).toBe("rgb(130, 176, 154)");
-			expect.soft(cursorColor, `${theme}: solid cursor glyph`).toBe("rgb(47, 47, 47)");
+			// Final frames: a pressed toggle is a sage tint behind a sage glyph, like the mic.
+			expect
+				.soft(cursorBackground, `${theme}: pressed cursor background`)
+				.toBe("rgba(130, 176, 154, 0.2)");
+			expect.soft(cursorColor, `${theme}: pressed cursor glyph`).toBe("rgb(130, 176, 154)");
+			const channels = (color: string) => (color.match(/[\d.]+/g) ?? []).map(Number);
+			const panel = channels(getComputedStyle(getByTestId("house-hud")).backgroundColor);
+			const [tr, tg, tb, ta = 1] = channels(cursorBackground);
+			// What the eye sees: the tint laid over the bar's panel.
+			const seenBackground = `rgb(${[tr, tg, tb].map((v, i) => v * ta + panel[i] * (1 - ta)).join(",")})`;
 			const luminance = (color: string) => {
-				const c = (color.match(/[\d.]+/g) ?? [])
+				const c = channels(color)
 					.slice(0, 3)
-					.map(Number)
 					.map((v) => {
 						const x = v / 255;
 						return x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4;
 					});
 				return c[0] * 0.2126 + c[1] * 0.7152 + c[2] * 0.0722;
 			};
-			const l = [luminance(cursorColor), luminance(cursorBackground)].sort((a, b) => a - b);
+			const l = [luminance(cursorColor), luminance(seenBackground)].sort((a, b) => a - b);
 			expect
 				.soft((l[1] + 0.05) / (l[0] + 0.05), `${theme}: active cursor icon contrast`)
 				.toBeGreaterThanOrEqual(3);
@@ -248,13 +264,18 @@ it("renders real HUD labels and editor text in Inter Tight with house HUD surfac
 			expect
 				.soft(getComputedStyle(getByText("Synthetic HUD source")).color, `${theme}: HUD label`)
 				.toBe("rgb(255, 252, 247)");
-			expect.soft(getComputedStyle(bar).borderRadius, `${theme}: HUD panel radius`).toBe("17px");
+			expect.soft(getComputedStyle(bar).borderRadius, `${theme}: HUD panel radius`).toBe("6px");
+			expect
+				.soft(getComputedStyle(bar).boxShadow, `${theme}: signature offset shadow`)
+				.toBe("rgb(130, 176, 154) 4px 4px 0px 0px");
 			expect
 				.soft(getComputedStyle(getByRole("button", { name: "Synthetic HUD source" })).borderRadius)
-				.toBe("10px");
+				.toBe("4px");
+			const record = getByRole("button", { name: "Start recording" });
+			expect.soft(getComputedStyle(record).borderRadius).toBe("4px");
 			expect
-				.soft(getComputedStyle(getByRole("button", { name: "Start recording" })).borderRadius)
-				.toBe("17px");
+				.soft(getComputedStyle(record).backgroundColor, `${theme}: sage Record`)
+				.toBe("rgb(130, 176, 154)");
 		}
 		const cursor = getByRole("button", { name: "Editable HUD cursor" });
 		expect(cursor.getAttribute("aria-pressed")).toBe("true");
@@ -267,12 +288,12 @@ it("renders real HUD labels and editor text in Inter Tight with house HUD surfac
 		fireEvent.click(getByRole("button", { name: "Locked HUD cursor" }));
 		expect(cursorClicks).toBe(2);
 		document.documentElement.style.setProperty("--ds-radius", "10");
-		expect(getComputedStyle(getByTestId("house-hud")).borderRadius).toBe("19px");
+		expect(getComputedStyle(getByTestId("house-hud")).borderRadius).toBe("8px");
 		await expect
 			.poll(
 				() => getComputedStyle(getByRole("button", { name: "Synthetic HUD source" })).borderRadius,
 			)
-			.toBe("12px");
+			.toBe("5px");
 	} finally {
 		document.documentElement.style.removeProperty("--ds-radius");
 		unmount();
@@ -473,6 +494,115 @@ it("keeps enabled small foundation text readable in both themes", () => {
 					expect
 						.soft(textContrast(getComputedStyle(getByText(name)).color, bg), `${theme}: ${name}`)
 						.toBeGreaterThanOrEqual(4.5);
+				}
+			} finally {
+				unmount();
+			}
+		}
+	} finally {
+		if (prior === null) document.documentElement.removeAttribute("data-sh-theme");
+		else document.documentElement.setAttribute("data-sh-theme", prior);
+	}
+});
+
+it("keeps the HUD recovery sheet's text readable in both themes", () => {
+	const prior = document.documentElement.getAttribute("data-sh-theme");
+	const idle = () => undefined;
+	try {
+		for (const theme of ["light", "dark"]) {
+			document.documentElement.setAttribute("data-sh-theme", theme);
+			const { getByRole, getByText, unmount } = render(
+				<HudSheet
+					eyebrow="Sheet eyebrow"
+					title="Sheet title"
+					description="Sheet description"
+					hint="Sheet recovery hint"
+					status="Sheet status"
+					icon={null}
+					closeLabel="Close"
+					cancelLabel="Sheet cancel"
+					primaryLabel="Sheet primary"
+					onCancel={idle}
+					onPrimary={idle}
+				/>,
+			);
+			try {
+				const surface = getComputedStyle(getByRole("dialog")).backgroundColor;
+				for (const name of [
+					"Sheet eyebrow",
+					"Sheet title",
+					"Sheet description",
+					"Sheet recovery hint",
+					"Sheet status",
+					"Sheet cancel",
+				]) {
+					expect
+						.soft(
+							textContrast(getComputedStyle(getByText(name)).color, surface),
+							`${theme}: ${name}`,
+						)
+						.toBeGreaterThanOrEqual(4.5);
+				}
+				const primary = getByRole("button", { name: "Sheet primary" });
+				const primaryStyle = getComputedStyle(primary);
+				expect
+					.soft(textContrast(primaryStyle.color, primaryStyle.backgroundColor), `${theme}: primary`)
+					.toBeGreaterThanOrEqual(4.5);
+			} finally {
+				unmount();
+			}
+		}
+	} finally {
+		if (prior === null) document.documentElement.removeAttribute("data-sh-theme");
+		else document.documentElement.setAttribute("data-sh-theme", prior);
+	}
+});
+
+it("keeps HUD notice and Record buttons sage and readable on real hover in both themes", async () => {
+	const prior = document.documentElement.getAttribute("data-sh-theme");
+	const idle = () => undefined;
+	try {
+		for (const theme of ["light", "dark"]) {
+			document.documentElement.setAttribute("data-sh-theme", theme);
+			const { getByRole, unmount } = render(
+				<TooltipProvider>
+					<div data-tray-layout="horizontal" className={hudStyles.hudBar}>
+						<HudRecordButton
+							recording={false}
+							paused={false}
+							saving={false}
+							label="Hover record"
+							text="Record"
+							onClick={idle}
+						/>
+					</div>
+					<HudNotice
+						title="Notice"
+						description="Notice body"
+						dismissLabel="Notice dismiss"
+						confirmLabel="Notice confirm"
+						onDismiss={idle}
+						onConfirm={idle}
+					/>
+				</TooltipProvider>,
+			);
+			try {
+				for (const name of ["Notice confirm", "Hover record"]) {
+					const button = getByRole("button", { name });
+					await userEvent.hover(button);
+					await expect.poll(() => button.matches(":hover")).toBe(true);
+					// The Final hover brightens the sage fill; it never swaps to another hue. Read after
+					// the transitions (150ms at most) have settled: a poll would pass on the sage start
+					// frame of a hover that is about to fade to another colour.
+					await new Promise((resolve) => setTimeout(resolve, 300));
+					const style = getComputedStyle(button);
+					expect
+						.soft(style.backgroundColor, `${theme}: ${name} hover fill`)
+						.toBe("rgb(130, 176, 154)");
+					expect
+						.soft(textContrast(style.color, style.backgroundColor), `${theme}: ${name} hover text`)
+						.toBeGreaterThanOrEqual(4.5);
+					await userEvent.unhover(button);
 				}
 			} finally {
 				unmount();

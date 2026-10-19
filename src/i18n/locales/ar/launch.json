@@ -54,19 +54,27 @@
 	},
 	"sourceSelector": {
 		"loading": "جاري تحميل المصادر...",
-		"screens": "الشاشات ({{count}})",
-		"windows": "النوافذ ({{count}})",
+		"screens": "الشاشات · {{count}}",
+		"windows": "النوافذ · {{count}}",
 		"emptyTitle": "لم يتم العثور على شاشات أو نوافذ",
 		"emptyDescription": "إذا كنت قد منحت للتو إذن تسجيل الشاشة، أعد تحميل هذه النافذة. قد تحتاج على macOS إلى إعادة فتح Showhow.",
 		"loadFailedDescription": "تعذّر على Showhow تحميل مصادر الالتقاط. أعد تحميل هذه النافذة وحاول مرة أخرى.",
-		"defaultSourceName": "الشاشة"
+		"defaultSourceName": "الشاشة",
+		"eyebrow": "المصدر",
+		"title": "ماذا يجب أن يسجّل Showhow؟",
+		"close": "إغلاق",
+		"selected": "محدد",
+		"useScreen": "استخدام هذه الشاشة",
+		"useWindow": "استخدام هذه النافذة"
 	},
 	"recording": {
 		"selectSource": "يرجى تحديد مصدر للتسجيل",
 		"systemPicker": "سيسألك النظام عمّا تريد مشاركته",
 		"start": "بدء التسجيل",
 		"stop": "إيقاف التسجيل وحفظه",
-		"saving": "جاري الحفظ..."
+		"saving": "جاري الحفظ...",
+		"record": "تسجيل",
+		"stopShort": "إيقاف"
 	},
 	"language": "اللغة",
 	"languageWithName": "اللغة: {{language}}",
@@ -153,5 +161,26 @@
 			"screenRequired": "تسجيل الشاشة مطلوب للتسجيل.",
 			"ready": "كل شيء جاهز."
 		}
+	},
+	"countdown": {
+		"caption": "يبدأ التسجيل · اضغط تسجيل للإلغاء"
+	},
+	"sheets": {
+		"eyebrow": "Showhow",
+		"close": "إغلاق",
+		"cancel": "إلغاء"
+	},
+	"permissionSheet": {
+		"title": "السماح بتسجيل الشاشة",
+		"description": "يحتاج Showhow إلى إذن تسجيل الشاشة قبل أن يتمكن من التقاط شاشتك.",
+		"hint": "اسمح لـ Showhow في إعدادات تسجيل الشاشة في macOS، ثم عُد لاختيار مصدر.",
+		"relaunchHint": "تسجيل الشاشة مسموح. أعد تشغيل Showhow ليطبّق macOS الإذن."
+	},
+	"microphoneSheet": {
+		"title": "لم يتم العثور على ميكروفون",
+		"description": "لا يستطيع Showhow العثور على الميكروفون المحدد.",
+		"hint": "أعد توصيل الميكروفون ثم حاول مرة أخرى. يمكنك اختيار مدخل آخر في المسجّل.",
+		"tryAgain": "حاول مرة أخرى",
+		"stillMissing": "لم يتم العثور عليه بعد. تحقق من التوصيل أو اختر مدخلًا آخر."
 	}
 }

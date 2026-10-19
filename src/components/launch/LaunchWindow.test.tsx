@@ -219,6 +219,28 @@ vi.mock("@/contexts/I18nContext", () => ({
 				"The default GPU encoder failed to start, so OpenScreen fell back to software H.264 encoding. Recording should continue as normal, but CPU usage may be higher.",
 			"softwareEncoderFallback.dismiss": "Got it",
 			"softwareEncoderFallback.dontShowAgain": "Don't show again",
+			"recording.record": "Record",
+			"recording.stopShort": "Stop",
+			"recording.saving": "Saving...",
+			"sheets.eyebrow": "Showhow",
+			"sheets.close": "Close",
+			"sheets.cancel": "Cancel",
+			"permissionSheet.title": "Allow screen recording",
+			"permissionSheet.description":
+				"Showhow needs screen recording permission before it can capture your screen.",
+			"permissionSheet.hint":
+				"Allow Showhow in macOS screen recording settings, then return to choose a source.",
+			"permissionSheet.relaunchHint":
+				"Screen recording is allowed. Restart Showhow so macOS applies it.",
+			"permissions.actions.openSettings": "Open Settings",
+			"permissions.actions.restart": "Restart Showhow",
+			"microphoneSheet.title": "No microphone found",
+			"microphoneSheet.description": "Showhow can't find the selected microphone.",
+			"microphoneSheet.hint":
+				"Reconnect your microphone, then try again. You can choose a different input in the recorder.",
+			"microphoneSheet.tryAgain": "Try again",
+			"microphoneSheet.stillMissing":
+				"Still not found. Check the connection, or choose another input.",
 		};
 		const value = translations[key] ?? key;
 		if (!vars) return value;
@@ -2098,5 +2120,307 @@ describe("LaunchWindow software encoder fallback notice", () => {
 
 		expect(recorderState.value.dismissSoftwareEncoderFallbackNotice).toHaveBeenCalledTimes(1);
 		expect(recorderState.value.dismissSoftwareEncoderFallbackNotice).toHaveBeenCalledWith(true);
+	});
+});
+
+describe("LaunchWindow Final HUD states and recovery sheets", () => {
+	type MicPrefs = { microphoneDeviceId?: string; microphoneDeviceName?: string };
+
+	beforeEach(() => {
+		platformState.value = "darwin";
+		resetLaunchMocks();
+		window.electronAPI = {
+			...window.electronAPI,
+			permissions: {
+				get: vi.fn(async () => ({
+					screen: "denied",
+					screenRequired: true,
+					screenRequiresRelaunch: false,
+				})),
+				request: vi.fn(async () => undefined),
+				openSettings: vi.fn(async () => undefined),
+				relaunch: vi.fn(async () => undefined),
+				close: vi.fn(async () => undefined),
+			},
+		} as unknown as typeof window.electronAPI;
+	});
+
+	afterEach(() => {
+		cleanup();
+		vi.unstubAllGlobals();
+		recorderState.value.recording = false;
+		recorderState.value.saving = false;
+		recorderState.value.paused = false;
+		recorderState.value.elapsedSeconds = 0;
+		recorderState.value.microphoneEnabled = false;
+		(recorderState.value as MicPrefs).microphoneDeviceId = undefined;
+		(recorderState.value as MicPrefs).microphoneDeviceName = undefined;
+	});
+
+	function rerenderLaunchWindow(view: ReturnType<typeof renderLaunchWindow>) {
+		view.rerender(
+			<TooltipProvider>
+				<LaunchWindow />
+			</TooltipProvider>,
+		);
+	}
+
+	function denyScreenAccess() {
+		window.electronAPI.openSourceSelector = vi.fn(async () => ({
+			opened: false,
+			reason: "screen-access-required",
+		})) as typeof window.electronAPI.openSourceSelector;
+	}
+
+	it("shows the permission sheet when Record needs screen access, focused on Open Settings", async () => {
+		denyScreenAccess();
+		renderLaunchWindow();
+		fireEvent.click(await screen.findByTestId("launch-record-button"));
+
+		const sheet = await screen.findByRole("dialog", { name: "Allow screen recording" });
+		await waitFor(() =>
+			expect(within(sheet).getByRole("button", { name: "Open Settings" })).toHaveFocus(),
+		);
+		expect(recorderState.value.toggleRecording).not.toHaveBeenCalled();
+	});
+
+	it("opens macOS screen recording settings through the existing permissions handler", async () => {
+		denyScreenAccess();
+		renderLaunchWindow();
+		fireEvent.click(await screen.findByTestId("launch-record-button"));
+		const sheet = await screen.findByRole("dialog", { name: "Allow screen recording" });
+
+		fireEvent.click(within(sheet).getByRole("button", { name: "Open Settings" }));
+
+		await waitFor(() =>
+			expect(window.electronAPI.permissions.openSettings).toHaveBeenCalledWith("screen"),
+		);
+		await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+	});
+
+	it("offers a restart instead when the grant only needs a relaunch", async () => {
+		denyScreenAccess();
+		window.electronAPI.permissions.get = vi.fn(async () => ({
+			screen: "granted",
+			screenRequired: true,
+			screenRequiresRelaunch: true,
+		})) as unknown as typeof window.electronAPI.permissions.get;
+		renderLaunchWindow();
+		fireEvent.click(await screen.findByTestId("launch-record-button"));
+		const sheet = await screen.findByRole("dialog", { name: "Allow screen recording" });
+
+		fireEvent.click(await within(sheet).findByRole("button", { name: "Restart Showhow" }));
+
+		await waitFor(() => expect(window.electronAPI.permissions.relaunch).toHaveBeenCalledTimes(1));
+		expect(window.electronAPI.permissions.openSettings).not.toHaveBeenCalled();
+	});
+
+	it("closes the permission sheet on Escape and returns focus to Record", async () => {
+		denyScreenAccess();
+		renderLaunchWindow();
+		const record = await screen.findByTestId("launch-record-button");
+		fireEvent.click(record);
+		const sheet = await screen.findByRole("dialog", { name: "Allow screen recording" });
+
+		fireEvent.keyDown(sheet, { key: "Escape" });
+
+		await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+		expect(screen.getByTestId("launch-record-button")).toHaveFocus();
+	});
+
+	it("also shows the sheet when the source button meets a missing grant", async () => {
+		denyScreenAccess();
+		renderLaunchWindow();
+		fireEvent.click(await screen.findByTestId("launch-source-selector-button"));
+		expect(
+			await screen.findByRole("dialog", { name: "Allow screen recording" }),
+		).toBeInTheDocument();
+	});
+
+	it("keeps the bar out of reach while a sheet is open", async () => {
+		denyScreenAccess();
+		renderLaunchWindow();
+		fireEvent.click(await screen.findByTestId("launch-record-button"));
+		await screen.findByRole("dialog", { name: "Allow screen recording" });
+		expect(document.querySelector("[data-tray-layout]")).toHaveAttribute("inert");
+	});
+
+	function missingSavedMicrophone() {
+		recorderState.value.microphoneEnabled = true;
+		(recorderState.value as MicPrefs).microphoneDeviceId = "usb-mic";
+		(recorderState.value as MicPrefs).microphoneDeviceName = "USB Mic";
+		micDevicesState.value = [{ deviceId: "built-in", label: "MacBook Microphone", groupId: "g1" }];
+		stubElectronAPI(vi.fn(async () => displayOneSource));
+	}
+
+	async function waitForSelectedSource() {
+		await waitFor(() =>
+			expect(screen.getByTestId("launch-record-button")).toHaveAccessibleName("Start recording"),
+		);
+	}
+
+	it("stops a take from starting when the selected microphone is missing", async () => {
+		missingSavedMicrophone();
+		renderLaunchWindow();
+		await waitForSelectedSource();
+
+		fireEvent.click(screen.getByTestId("launch-record-button"));
+
+		const sheet = await screen.findByRole("dialog", { name: "No microphone found" });
+		await waitFor(() =>
+			expect(within(sheet).getByRole("button", { name: "Try again" })).toHaveFocus(),
+		);
+		expect(recorderState.value.toggleRecording).not.toHaveBeenCalled();
+		expect(window.electronAPI.openSourceSelector).not.toHaveBeenCalled();
+	});
+
+	it("says so when Try again still can't find the microphone, then Cancel leaves the take unstarted", async () => {
+		missingSavedMicrophone();
+		renderLaunchWindow();
+		await waitForSelectedSource();
+		fireEvent.click(screen.getByTestId("launch-record-button"));
+		const sheet = await screen.findByRole("dialog", { name: "No microphone found" });
+
+		fireEvent.click(within(sheet).getByRole("button", { name: "Try again" }));
+		expect(await within(sheet).findByRole("status")).toHaveTextContent("Still not found");
+
+		fireEvent.click(within(sheet).getByRole("button", { name: "Cancel" }));
+		await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+		expect(recorderState.value.toggleRecording).not.toHaveBeenCalled();
+	});
+
+	it("starts the take once Try again finds the reconnected microphone", async () => {
+		missingSavedMicrophone();
+		const view = renderLaunchWindow();
+		await waitForSelectedSource();
+		fireEvent.click(screen.getByTestId("launch-record-button"));
+		const sheet = await screen.findByRole("dialog", { name: "No microphone found" });
+
+		micDevicesState.value = [
+			{ deviceId: "built-in", label: "MacBook Microphone", groupId: "g1" },
+			{ deviceId: "usb-mic", label: "USB Mic", groupId: "g2" },
+		];
+		rerenderLaunchWindow(view);
+		fireEvent.click(within(sheet).getByRole("button", { name: "Try again" }));
+
+		await waitFor(() => expect(recorderState.value.toggleRecording).toHaveBeenCalledTimes(1));
+		expect(screen.queryByRole("dialog")).toBeNull();
+		expect(recorderState.value.setMicrophoneDeviceId).toHaveBeenCalledWith("usb-mic");
+	});
+
+	it("shows the sheet when the microphone is on and there is no input at all", async () => {
+		recorderState.value.microphoneEnabled = true;
+		micDevicesState.value = [];
+		stubElectronAPI(vi.fn(async () => displayOneSource));
+		renderLaunchWindow();
+		await waitForSelectedSource();
+		fireEvent.click(screen.getByTestId("launch-record-button"));
+		expect(await screen.findByRole("dialog", { name: "No microphone found" })).toBeInTheDocument();
+	});
+
+	it("does not check microphones when the microphone is off", async () => {
+		recorderState.value.microphoneEnabled = false;
+		micDevicesState.value = [];
+		stubElectronAPI(vi.fn(async () => displayOneSource));
+		renderLaunchWindow();
+		await waitForSelectedSource();
+		fireEvent.click(screen.getByTestId("launch-record-button"));
+		await waitFor(() => expect(recorderState.value.toggleRecording).toHaveBeenCalledTimes(1));
+		expect(screen.queryByRole("dialog")).toBeNull();
+	});
+
+	it("stops only once when Stop is pressed twice before the saving state lands", async () => {
+		recorderState.value.recording = true;
+		renderLaunchWindow();
+		const stop = await screen.findByTestId("launch-record-button");
+
+		fireEvent.click(stop);
+		fireEvent.click(stop);
+
+		expect(recorderState.value.toggleRecording).toHaveBeenCalledTimes(1);
+	});
+
+	it("names the idle, recording and saving states in the bar", async () => {
+		const view = renderLaunchWindow();
+		const record = await screen.findByTestId("launch-record-button");
+		expect(record).toHaveTextContent("Record");
+		expect(screen.queryByRole("timer")).toBeNull();
+
+		recorderState.value.recording = true;
+		recorderState.value.elapsedSeconds = 84;
+		rerenderLaunchWindow(view);
+		expect(screen.getByTestId("launch-record-button")).toHaveTextContent("Stop");
+		expect(screen.getByRole("timer")).toHaveTextContent("01:24");
+
+		recorderState.value.saving = true;
+		rerenderLaunchWindow(view);
+		const saving = screen.getByTestId("launch-record-button");
+		expect(saving).toBeDisabled();
+		expect(saving).toHaveTextContent("Saving...");
+		expect(screen.getByRole("timer")).toHaveTextContent("01:24");
+		expect(screen.getByTestId("launch-restart-button")).toBeDisabled();
+		expect(screen.getByTestId("launch-cancel-button")).toBeDisabled();
+	});
+
+	it("shows the decorative logo mark without adding a tab stop", async () => {
+		renderLaunchWindow();
+		await screen.findByTestId("launch-record-button");
+		const mark = screen.getByTestId("hud-logo-mark");
+		expect(mark).toHaveAttribute("aria-hidden", "true");
+		expect(mark.querySelector("button, [tabindex]")).toBeNull();
+	});
+
+	it("lets Stop through again after 2s when saving never started, so Stop is never lost", async () => {
+		recorderState.value.recording = true;
+		renderLaunchWindow();
+		const stop = await screen.findByTestId("launch-record-button");
+		vi.useFakeTimers();
+		try {
+			fireEvent.click(stop);
+			act(() => {
+				vi.advanceTimersByTime(1999);
+			});
+			fireEvent.click(stop);
+			expect(recorderState.value.toggleRecording).toHaveBeenCalledTimes(1);
+			act(() => {
+				vi.advanceTimersByTime(1);
+			});
+			fireEvent.click(stop);
+			expect(recorderState.value.toggleRecording).toHaveBeenCalledTimes(2);
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
+	it("returns focus to the source chip when the sheet it opened is cancelled", async () => {
+		denyScreenAccess();
+		renderLaunchWindow();
+		const chip = await screen.findByTestId("launch-source-selector-button");
+		act(() => chip.focus());
+		fireEvent.click(chip);
+		const sheet = await screen.findByRole("dialog", { name: "Allow screen recording" });
+
+		fireEvent.click(within(sheet).getByRole("button", { name: "Cancel" }));
+
+		await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+		expect(screen.getByTestId("launch-source-selector-button")).toHaveFocus();
+	});
+
+	it("follows a microphone chosen in another window instead of the one saved at launch", async () => {
+		missingSavedMicrophone();
+		let pushPrefs: ((prefs: Record<string, unknown>) => void) | null = null;
+		window.electronAPI.onRecordingPrefsChanged = vi.fn((callback) => {
+			pushPrefs = callback as unknown as (prefs: Record<string, unknown>) => void;
+			return () => undefined;
+		}) as typeof window.electronAPI.onRecordingPrefsChanged;
+		renderLaunchWindow();
+		await waitForSelectedSource();
+		await waitFor(() => expect(pushPrefs).not.toBeNull());
+
+		act(() => pushPrefs?.({ micDeviceId: "built-in", micDeviceName: "MacBook Microphone" }));
+		fireEvent.click(screen.getByTestId("launch-record-button"));
+
+		await waitFor(() => expect(recorderState.value.toggleRecording).toHaveBeenCalledTimes(1));
+		expect(screen.queryByRole("dialog")).toBeNull();
 	});
 });

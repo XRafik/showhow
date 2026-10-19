@@ -33,11 +33,18 @@ export const HUD_STACK_GAP = 10;
 export const HUD_POPOVER_WIDTH = 220;
 /** Width of the top notices (locale suggestion, software-encoder fallback). */
 export const HUD_NOTICE_WIDTH = 360;
+/** Width of the recovery sheets (screen permission, missing microphone): the Final frames' 560. */
+export const HUD_SHEET_WIDTH = 560;
 /**
- * Widest thing that can ever float above the bar. Always reserved, so a popover
- * or a notice appearing never changes the window's width.
+ * Tallest a recovery sheet can be. It stays inside the room already reserved for the
+ * device-settings panel, so opening a sheet never resizes the window either.
  */
-export const HUD_STACK_WIDTH = Math.max(HUD_POPOVER_WIDTH, HUD_NOTICE_WIDTH);
+export const HUD_SHEET_MAX_HEIGHT = 360;
+/**
+ * Widest thing that can ever float above the bar. Always reserved, so a popover,
+ * a notice or a sheet appearing never changes the window's width.
+ */
+export const HUD_STACK_WIDTH = Math.max(HUD_POPOVER_WIDTH, HUD_NOTICE_WIDTH, HUD_SHEET_WIDTH);
 /** Cap on any popover's height; past this it scrolls internally. */
 export const HUD_POPOVER_MAX_HEIGHT = 320;
 /** Floor for the popover cap on very short screens. */

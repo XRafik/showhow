@@ -818,3 +818,17 @@ The #117 manager lifecycle also registers independent initialized bundle-job man
 with the existing shutdownStt boundary. App quit awaits every active helper, and queued
 manager initialization is refused after shutdown starts. This required no main.ts or
 native change; both omissions were reproduced as same-package RED before repair.
+
+## Final HUD and recording sheets (#145, 2026-10-19)
+
+Presentation and geometry only; recorder hooks, capture backends and native helpers are unchanged.
+
+| Path | Change |
+|------|--------|
+| `src/components/launch/HudControls.tsx`, `LaunchWindow.module.css`, `HudIcons.tsx` | The bar's chrome moves from literal colours to the `--ds-*` tokens: dark panel, 4px sage offset shadow, 32px controls, JetBrains Mono labels, sage Record, orange Stop and a separate timer. Radii follow `--ds-radius` (bar `r - 2`, controls `r / 2`). Every inherited control, test id and ARIA contract stays. New: `HudLogoMark` (decoration), `HudRecordingTimer`, `HudSheet`. |
+| `src/components/launch/LaunchWindow.tsx` | HUD-07 and HUD-08 sheets, a pre-record microphone check, a one-shot Stop guard, the logo mark, and the layout toggle moved to the right cluster. |
+| `src/components/launch/hudGeometry.ts` | `HUD_SHEET_WIDTH` (560) joins the reserved stack width; `HUD_SHEET_MAX_HEIGHT` (360) sits inside the existing modal reserve, so a sheet never resizes the overlay. |
+| `src/components/launch/SourceSelector.tsx` / `.module.css` | Final light source sheet in the inherited 680x580 picker window; radio semantics and roving keyboard selection kept. |
+| `src/components/launch/CountdownOverlay.tsx` | Final countdown tile and caption in the inherited 420x260 click-through window. |
+| `src/lib/showhow/upstreamTheme.css` | The `[data-tray-layout]` HUD bridge is removed: the HUD now reads the tokens directly, so the bridge would only override the Final radii. |
+| `electron/ipc/handlers.ts` | Owner-approved bounded amendment: `open-source-selector` no longer opens the permissions window when the HUD asks, because the HUD shows its own sheet. Other callers (the editor's Record stage) still get the window. |

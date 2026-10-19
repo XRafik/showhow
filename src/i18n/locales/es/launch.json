@@ -59,19 +59,27 @@
 	},
 	"sourceSelector": {
 		"loading": "Cargando fuentes...",
-		"screens": "Pantallas ({{count}})",
-		"windows": "Ventanas ({{count}})",
+		"screens": "Pantallas · {{count}}",
+		"windows": "Ventanas · {{count}}",
 		"emptyTitle": "No se encontraron pantallas ni ventanas",
 		"emptyDescription": "Si acabas de conceder permiso de grabación de pantalla, recarga este selector. En macOS puede que debas volver a abrir Showhow.",
 		"loadFailedDescription": "Showhow no pudo cargar las fuentes de captura. Recarga este selector e inténtalo de nuevo.",
-		"defaultSourceName": "Pantalla"
+		"defaultSourceName": "Pantalla",
+		"eyebrow": "Fuente",
+		"title": "¿Qué debe grabar Showhow?",
+		"close": "Cerrar",
+		"selected": "Seleccionado",
+		"useScreen": "Usar esta pantalla",
+		"useWindow": "Usar esta ventana"
 	},
 	"recording": {
 		"selectSource": "Por favor selecciona una fuente para grabar",
 		"systemPicker": "El sistema te preguntará qué compartir",
 		"start": "Iniciar grabación",
 		"stop": "Detener y guardar la grabación",
-		"saving": "Guardando..."
+		"saving": "Guardando...",
+		"record": "Grabar",
+		"stopShort": "Detener"
 	},
 	"language": "Idioma",
 	"languageWithName": "Idioma: {{language}}",
@@ -153,5 +161,26 @@
 			"screenRequired": "Se necesita la grabación de pantalla para grabar.",
 			"ready": "Todo listo."
 		}
+	},
+	"countdown": {
+		"caption": "La grabación empieza · pulsa Grabar para cancelar"
+	},
+	"sheets": {
+		"eyebrow": "Showhow",
+		"close": "Cerrar",
+		"cancel": "Cancelar"
+	},
+	"permissionSheet": {
+		"title": "Permitir la grabación de pantalla",
+		"description": "Showhow necesita permiso de grabación de pantalla para poder capturar tu pantalla.",
+		"hint": "Permite Showhow en los ajustes de grabación de pantalla de macOS y vuelve para elegir una fuente.",
+		"relaunchHint": "La grabación de pantalla está permitida. Reinicia Showhow para que macOS lo aplique."
+	},
+	"microphoneSheet": {
+		"title": "No se encontró ningún micrófono",
+		"description": "Showhow no encuentra el micrófono seleccionado.",
+		"hint": "Vuelve a conectar el micrófono e inténtalo de nuevo. Puedes elegir otra entrada en la grabadora.",
+		"tryAgain": "Reintentar",
+		"stillMissing": "Sigue sin encontrarse. Revisa la conexión o elige otra entrada."
 	}
 }

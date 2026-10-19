@@ -1,44 +1,53 @@
-import { Loader2 } from "lucide-react";
-import { BsPauseCircle, BsPlayCircle } from "react-icons/bs";
-import { FaFolderOpen } from "react-icons/fa6";
-import { FiMinus, FiX } from "react-icons/fi";
-import { MdCancel, MdRestartAlt, MdVideoFile } from "react-icons/md";
-import { RxDragHandleDots2 } from "react-icons/rx";
+import {
+	ChevronDown,
+	ExternalLink,
+	FolderOpen,
+	GripVertical,
+	Loader2,
+	Minus,
+	Pause,
+	Play,
+	RefreshCw,
+	RotateCcw,
+	Trash2,
+	X,
+} from "lucide-react";
 
-export const ICON_SIZE = 20;
+// The Final HUD draws 16px line icons at a 1.75 stroke, like the rest of Showhow's chrome.
+export const ICON_SIZE = 16;
 
 const ICON_CONFIG = {
-	drag: { icon: RxDragHandleDots2, size: ICON_SIZE },
-	pause: { icon: BsPauseCircle, size: ICON_SIZE },
-	resume: { icon: BsPlayCircle, size: ICON_SIZE },
-	restart: { icon: MdRestartAlt, size: ICON_SIZE },
-	cancel: { icon: MdCancel, size: ICON_SIZE },
-	videoFile: { icon: MdVideoFile, size: ICON_SIZE },
-	folder: { icon: FaFolderOpen, size: ICON_SIZE },
-	minimize: { icon: FiMinus, size: ICON_SIZE },
-	close: { icon: FiX, size: ICON_SIZE },
-	spinner: { icon: Loader2, size: ICON_SIZE },
+	drag: GripVertical,
+	pause: Pause,
+	resume: Play,
+	restart: RotateCcw,
+	cancel: Trash2,
+	folder: FolderOpen,
+	minimize: Minus,
+	close: X,
+	spinner: Loader2,
+	chevron: ChevronDown,
+	external: ExternalLink,
+	retry: RefreshCw,
 } as const;
 
 export type IconName = keyof typeof ICON_CONFIG;
 
 /** Renders the configured icon for a HUD control. */
 export function getIcon(name: IconName, className?: string) {
-	const { icon: Icon, size } = ICON_CONFIG[name];
-	return <Icon size={size} className={className} />;
+	const Icon = ICON_CONFIG[name];
+	return <Icon size={ICON_SIZE} strokeWidth={1.75} className={className} aria-hidden="true" />;
 }
 
-// Custom glyphs matching the Claude Design "OpenScreen Recording Widget"
-// spec exactly (source/audio/mic/camera/cursor/record) — these are the
-// controls most visible in the collapsed toolbar, so the design's own paths
-// are used verbatim rather than the closest lucide/react-icons stand-in.
+// The bar's own glyphs (source/audio/mic/camera/cursor/record). They keep the shapes
+// the inherited HUD drew, at the Final frames' size and stroke.
 const HUD_SVG_PROPS = {
 	width: ICON_SIZE,
 	height: ICON_SIZE,
 	viewBox: "0 0 24 24",
 	fill: "none",
 	stroke: "currentColor",
-	strokeWidth: 2.25,
+	strokeWidth: 1.75,
 	strokeLinecap: "round",
 	strokeLinejoin: "round",
 } as const;
@@ -143,7 +152,8 @@ export function CursorIcon({ off = false, className }: { off?: boolean; classNam
 	);
 }
 
-export function RecordGlyph({ recording, className }: { recording: boolean; className?: string }) {
+/** The Final frames' record mark: a square in every state, coloured by the button. */
+export function RecordGlyph({ className }: { className?: string }) {
 	return (
 		<svg
 			width={ICON_SIZE}
@@ -152,11 +162,7 @@ export function RecordGlyph({ recording, className }: { recording: boolean; clas
 			className={className}
 			aria-hidden="true"
 		>
-			{recording ? (
-				<rect x="6.5" y="6.5" width="11" height="11" rx="2.5" fill="currentColor" />
-			) : (
-				<circle cx="12" cy="12" r="7.5" fill="currentColor" />
-			)}
+			<rect x="6.5" y="6.5" width="11" height="11" rx="2.5" fill="currentColor" />
 		</svg>
 	);
 }

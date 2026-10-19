@@ -185,7 +185,9 @@ export const HudDeviceSettings = memo(function HudDeviceSettings({
 									className={`${styles.languageMenuItem} ${isActive ? styles.languageMenuItemActive : ""}`}
 								>
 									<span className="truncate">{device.label}</span>
-									{isActive ? <Check size={14} className="text-white/85" /> : null}
+									{isActive ? (
+										<Check size={14} className="text-[var(--ds-accent)]" aria-hidden="true" />
+									) : null}
 								</button>
 							);
 						})
@@ -218,7 +220,9 @@ export const HudDeviceSettings = memo(function HudDeviceSettings({
 							className={`${styles.languageMenuItem} ${isActive ? styles.languageMenuItemActive : ""}`}
 						>
 							<span className="truncate">{device.label}</span>
-							{isActive ? <Check size={14} className="text-white/85" /> : null}
+							{isActive ? (
+								<Check size={14} className="text-[var(--ds-accent)]" aria-hidden="true" />
+							) : null}
 						</button>
 					);
 				})
@@ -244,7 +248,9 @@ export const HudDeviceSettings = memo(function HudDeviceSettings({
 								className={`${styles.languageMenuItem} ${isActive ? styles.languageMenuItemActive : ""}`}
 							>
 								<span className="truncate">{labels.cameraQualityOptions[quality]}</span>
-								{isActive ? <Check size={11} className="text-white/85" /> : null}
+								{isActive ? (
+									<Check size={11} className="text-[var(--ds-accent)]" aria-hidden="true" />
+								) : null}
 							</button>
 						);
 					})}

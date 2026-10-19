@@ -1,7 +1,7 @@
+import { Check, X } from "lucide-react";
 import type { KeyboardEvent as ReactKeyboardEvent } from "react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useScopedT } from "@/contexts/I18nContext";
-import { Button } from "../ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import styles from "./SourceSelector.module.css";
 
@@ -13,11 +13,19 @@ interface DesktopSource {
 	appIcon: string | null;
 }
 
+type SourceTab = "screens" | "windows";
+
+/**
+ * HUD-01: the Final source sheet. It fills the picker's own transparent window (680x580),
+ * leaving room on the right and bottom for the signature offset shadow.
+ */
 export function SourceSelector() {
 	const t = useScopedT("launch");
 	const tc = useScopedT("common");
+	const titleId = useId();
 	const [sources, setSources] = useState<DesktopSource[]>([]);
 	const [selectedSource, setSelectedSource] = useState<DesktopSource | null>(null);
+	const [tab, setTab] = useState<SourceTab>("screens");
 	const [loading, setLoading] = useState(true);
 	const [loadFailed, setLoadFailed] = useState(false);
 	const cardRefs = useRef(new Map<string, HTMLButtonElement>());
@@ -43,6 +51,7 @@ export function SourceSelector() {
 					appIcon: source.appIcon,
 				})),
 			);
+			setTab(rawSources.some((source) => source.id.startsWith("screen:")) ? "screens" : "windows");
 			setSelectedSource((current) =>
 				current && rawSources.some((source) => source.id === current.id) ? current : null,
 			);
@@ -102,43 +111,23 @@ export function SourceSelector() {
 		if (selectedSource) await window.electronAPI.selectSource(selectedSource);
 	};
 
-	if (loading) {
-		return (
-			<div
-				className={`h-full flex items-center justify-center ${styles.glassContainer}`}
-				style={{ minHeight: "100vh" }}
-			>
-				<div className="text-center">
-					<div className="animate-spin duration-500 rounded-[50%] h-6 w-6 border-2 border-b-transparent border-[#10b981] mx-auto mb-2" />
-					<p className="text-xs text-[#828c99]">{t("sourceSelector.loading")}</p>
-				</div>
-			</div>
-		);
-	}
+	const close = () => window.close();
 
-	if (hasNoSources) {
-		return (
-			<div
-				className={`h-full flex items-center justify-center ${styles.glassContainer}`}
-				style={{ minHeight: "100vh" }}
-			>
-				<div className="max-w-[320px] px-6 text-center">
-					<h2 className="text-sm font-semibold text-[#ffffff]">{t("sourceSelector.emptyTitle")}</h2>
-					<p className="mt-2 text-xs leading-5 text-[#828c99]">
-						{loadFailed
-							? t("sourceSelector.loadFailedDescription")
-							: t("sourceSelector.emptyDescription")}
-					</p>
-					<Button
-						onClick={() => void fetchSources()}
-						className="mt-4 h-9 rounded-[9px] bg-[#10b981] px-5 text-[13px] font-semibold text-[#08090d] transition-transform duration-150 hover:bg-[#10b981]/85 active:scale-95"
-					>
-						{tc("actions.reload")}
-					</Button>
-				</div>
-			</div>
-		);
-	}
+	const handleDialogKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+		if (event.key === "Escape") {
+			event.preventDefault();
+			close();
+		}
+	};
+
+	// The action names what it will record: the chosen card's kind, or the open tab's.
+	const selectedKind = selectedSource
+		? selectedSource.id.startsWith("window:")
+			? "windows"
+			: "screens"
+		: tab;
+	const useLabel =
+		selectedKind === "windows" ? t("sourceSelector.useWindow") : t("sourceSelector.useScreen");
 
 	const renderSourceCard = (source: DesktopSource, index: number, category: DesktopSource[]) => {
 		const isSelected = selectedSource?.id === source.id;
@@ -158,93 +147,132 @@ export function SourceSelector() {
 				onKeyDown={handleCardKeyDown(source, index, category)}
 				data-testid="source-selector-card"
 				data-source-kind={sourceKind}
-				className={`${styles.sourceCard} ${isSelected ? styles.selected : ""} flex flex-col text-left`}
+				className={`${styles.sourceCard} ${isSelected ? styles.selected : ""}`}
 				onClick={(event) => {
 					handleSourceSelect(source);
 					event.currentTarget.focus();
 				}}
 			>
 				<div className={styles.thumb}>
-					<img
-						src={source.thumbnail || ""}
-						alt={source.name}
-						className="w-full h-full object-cover"
-					/>
-				</div>
-				<div className="flex items-center gap-[7px] px-[11px] py-[9px]">
-					{source.appIcon ? (
-						<img src={source.appIcon} alt="" className={styles.icon} />
-					) : (
-						<span className={styles.iconFallback}>
-							<svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor">
-								<circle cx="12" cy="12" r="10" />
-							</svg>
+					{source.thumbnail ? (
+						<img src={source.thumbnail} alt="" className={styles.thumbImage} />
+					) : null}
+					{isSelected ? (
+						<span className={styles.selectedChip}>
+							<Check size={11} strokeWidth={2.25} aria-hidden="true" />
+							{t("sourceSelector.selected")}
 						</span>
-					)}
-					<div className={`${styles.name} truncate`}>{source.name}</div>
+					) : null}
+				</div>
+				<div className={styles.cardFooter}>
+					{source.appIcon ? <img src={source.appIcon} alt="" className={styles.icon} /> : null}
+					<span className={styles.name}>{source.name}</span>
 				</div>
 			</button>
 		);
 	};
 
-	return (
-		<div className={`h-screen flex flex-col ${styles.glassContainer}`}>
-			<Tabs
-				defaultValue={screenSources.length === 0 ? "windows" : "screens"}
-				className="flex-1 flex flex-col min-h-0"
+	const header = (
+		<div className={styles.header}>
+			<div>
+				<div className={styles.eyebrow}>{t("sourceSelector.eyebrow")}</div>
+				<h1 id={titleId} className={styles.title}>
+					{t("sourceSelector.title")}
+				</h1>
+			</div>
+			<button
+				type="button"
+				aria-label={t("sourceSelector.close")}
+				className={styles.closeButton}
+				onClick={close}
 			>
-				<TabsList className="flex items-center gap-1.5 h-auto p-3.5 rounded-none bg-transparent border-b border-[#191d24] flex-shrink-0">
-					<TabsTrigger
-						value="screens"
-						className="flex-1 h-10 rounded-[11px] text-[13.5px] font-medium text-[#828c99] border border-transparent transition-all data-[state=active]:bg-[#232830] data-[state=active]:border-[#333a45] data-[state=active]:text-[#ffffff] data-[state=active]:font-semibold data-[state=active]:shadow-none"
-					>
-						{t("sourceSelector.screens", { count: String(screenSources.length) })}
-					</TabsTrigger>
-					<TabsTrigger
-						value="windows"
-						className="flex-1 h-10 rounded-[11px] text-[13.5px] font-medium text-[#828c99] border border-transparent transition-all data-[state=active]:bg-[#232830] data-[state=active]:border-[#333a45] data-[state=active]:text-[#ffffff] data-[state=active]:font-semibold data-[state=active]:shadow-none"
-					>
-						{t("sourceSelector.windows", { count: String(windowSources.length) })}
-					</TabsTrigger>
-				</TabsList>
-				<div className="flex-1 min-h-0 px-[18px] pt-[18px] pb-1.5">
-					<TabsContent value="screens" className="h-full mt-0">
-						<div
-							role="radiogroup"
-							aria-label={t("sourceSelector.screens", { count: String(screenSources.length) })}
-							className={`grid h-full auto-rows-min grid-cols-2 gap-3.5 overflow-y-auto pr-1.5 ${styles.sourceGridScroll}`}
+				<X size={16} strokeWidth={1.75} aria-hidden="true" />
+			</button>
+		</div>
+	);
+
+	const renderGroup = (value: SourceTab, category: DesktopSource[], label: string) => (
+		<TabsContent value={value} className={styles.tabPanel}>
+			<div
+				role="radiogroup"
+				aria-label={label}
+				className={`${styles.grid} ${styles.sourceGridScroll}`}
+			>
+				{category.map((source, index) => renderSourceCard(source, index, category))}
+			</div>
+		</TabsContent>
+	);
+
+	const screensLabel = t("sourceSelector.screens", { count: String(screenSources.length) });
+	const windowsLabel = t("sourceSelector.windows", { count: String(windowSources.length) });
+
+	return (
+		<div className={styles.frame}>
+			<div
+				role="dialog"
+				aria-labelledby={titleId}
+				className={styles.sheet}
+				onKeyDown={handleDialogKeyDown}
+			>
+				{header}
+				{loading ? (
+					<div className={styles.stateBlock} role="status">
+						<span className={`${styles.spinner} animate-spin`} aria-hidden="true" />
+						<p className={styles.stateText}>{t("sourceSelector.loading")}</p>
+					</div>
+				) : hasNoSources ? (
+					<div className={styles.stateBlock}>
+						<h2 className={styles.stateTitle}>{t("sourceSelector.emptyTitle")}</h2>
+						<p className={styles.stateText}>
+							{loadFailed
+								? t("sourceSelector.loadFailedDescription")
+								: t("sourceSelector.emptyDescription")}
+						</p>
+						<button
+							type="button"
+							className={styles.primaryButton}
+							onClick={() => void fetchSources()}
 						>
-							{screenSources.map((source, index) => renderSourceCard(source, index, screenSources))}
-						</div>
-					</TabsContent>
-					<TabsContent value="windows" className="h-full mt-0">
-						<div
-							role="radiogroup"
-							aria-label={t("sourceSelector.windows", { count: String(windowSources.length) })}
-							className={`grid h-full auto-rows-min grid-cols-2 gap-3.5 overflow-y-auto pr-1.5 ${styles.sourceGridScroll}`}
-						>
-							{windowSources.map((source, index) => renderSourceCard(source, index, windowSources))}
-						</div>
-					</TabsContent>
+							{tc("actions.reload")}
+						</button>
+					</div>
+				) : (
+					<Tabs
+						value={tab}
+						onValueChange={(value) => setTab(value as SourceTab)}
+						className={styles.tabs}
+					>
+						<TabsList className={styles.tabList}>
+							<TabsTrigger value="screens" className={styles.tab}>
+								{screensLabel}
+							</TabsTrigger>
+							<TabsTrigger value="windows" className={styles.tab}>
+								{windowsLabel}
+							</TabsTrigger>
+						</TabsList>
+						{renderGroup("screens", screenSources, screensLabel)}
+						{renderGroup("windows", windowSources, windowsLabel)}
+					</Tabs>
+				)}
+				<div className={styles.footer}>
+					<button
+						type="button"
+						data-testid="source-selector-cancel-button"
+						className={styles.secondaryButton}
+						onClick={close}
+					>
+						{tc("actions.cancel")}
+					</button>
+					<button
+						type="button"
+						data-testid="source-selector-share-button"
+						className={styles.primaryButton}
+						onClick={handleShare}
+						disabled={!selectedSource}
+					>
+						{useLabel}
+					</button>
 				</div>
-			</Tabs>
-			<div className="flex justify-end gap-2.5 border-t border-[#191d24] px-[18px] py-4">
-				<Button
-					data-testid="source-selector-cancel-button"
-					variant="ghost"
-					onClick={() => window.close()}
-					className="h-9 rounded-[9px] border border-[#333a45] px-4 text-[13px] font-medium text-[#f5f7fa] transition-colors duration-150 hover:bg-white/[0.08] hover:text-[#f5f7fa]"
-				>
-					{tc("actions.cancel")}
-				</Button>
-				<Button
-					data-testid="source-selector-share-button"
-					onClick={handleShare}
-					disabled={!selectedSource}
-					className="h-9 rounded-[9px] bg-[#10b981] px-5 text-[13px] font-semibold text-[#08090d] transition-transform duration-150 hover:bg-[#10b981]/85 active:scale-95 disabled:bg-[#232830] disabled:border disabled:border-[#242932] disabled:text-[#565f6b] disabled:opacity-100"
-				>
-					{tc("actions.share")}
-				</Button>
 			</div>
 		</div>
 	);

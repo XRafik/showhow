@@ -59,19 +59,27 @@
 	},
 	"sourceSelector": {
 		"loading": "Quellen werden geladen…",
-		"screens": "Bildschirme ({{count}})",
-		"windows": "Fenster ({{count}})",
+		"screens": "Bildschirme · {{count}}",
+		"windows": "Fenster · {{count}}",
 		"emptyTitle": "Keine Bildschirme oder Fenster gefunden",
 		"emptyDescription": "Wenn du die Berechtigung zur Bildschirmaufnahme gerade erteilt hast, lade diese Auswahl neu. Unter macOS musst du Showhow eventuell neu öffnen.",
 		"loadFailedDescription": "Showhow konnte die Aufnahmequellen nicht laden. Lade diese Auswahl neu und versuche es erneut.",
-		"defaultSourceName": "Bildschirm"
+		"defaultSourceName": "Bildschirm",
+		"eyebrow": "Quelle",
+		"title": "Was soll Showhow aufnehmen?",
+		"close": "Schließen",
+		"selected": "Ausgewählt",
+		"useScreen": "Diesen Bildschirm verwenden",
+		"useWindow": "Dieses Fenster verwenden"
 	},
 	"recording": {
 		"selectSource": "Bitte wähle eine Quelle für die Aufnahme",
 		"systemPicker": "Dein System fragt gleich, was du teilen möchtest",
 		"start": "Aufnahme starten",
 		"stop": "Aufnahme stoppen und speichern",
-		"saving": "Wird gespeichert…"
+		"saving": "Wird gespeichert…",
+		"record": "Aufnehmen",
+		"stopShort": "Stopp"
 	},
 	"language": "Sprache",
 	"languageWithName": "Sprache: {{language}}",
@@ -153,5 +161,26 @@
 			"screenRequired": "Zum Aufnehmen ist die Bildschirmaufnahme erforderlich.",
 			"ready": "Alles bereit."
 		}
+	},
+	"countdown": {
+		"caption": "Aufnahme startet · Aufnehmen drücken zum Abbrechen"
+	},
+	"sheets": {
+		"eyebrow": "Showhow",
+		"close": "Schließen",
+		"cancel": "Abbrechen"
+	},
+	"permissionSheet": {
+		"title": "Bildschirmaufnahme erlauben",
+		"description": "Showhow braucht die Berechtigung zur Bildschirmaufnahme, bevor es deinen Bildschirm aufnehmen kann.",
+		"hint": "Erlaube Showhow in den macOS-Einstellungen zur Bildschirmaufnahme und kehre dann zurück, um eine Quelle zu wählen.",
+		"relaunchHint": "Die Bildschirmaufnahme ist erlaubt. Starte Showhow neu, damit macOS sie übernimmt."
+	},
+	"microphoneSheet": {
+		"title": "Kein Mikrofon gefunden",
+		"description": "Showhow findet das ausgewählte Mikrofon nicht.",
+		"hint": "Schließe dein Mikrofon wieder an und versuche es erneut. Du kannst im Rekorder einen anderen Eingang wählen.",
+		"tryAgain": "Erneut versuchen",
+		"stillMissing": "Immer noch nicht gefunden. Prüfe die Verbindung oder wähle einen anderen Eingang."
 	}
 }
