@@ -162,6 +162,23 @@ describe("Copy for agent", () => {
 		expect(consent).toHaveBeenCalledWith("/scratch/one", "brief-token", false);
 	});
 
+	it("sends the latest reviewed preview when option changes resolve out of order", async () => {
+		current = { ...base, reviewed: false, alwaysSend: false };
+		render(<Harness bundleDir="/scratch/one" />);
+		await userEvent.click(await screen.findByRole("button", { name: "Make brief" }));
+		await screen.findByRole("dialog", { name: "Check what's sent" });
+		let slow!: (value: AgentBriefPreview) => void;
+		preview
+			.mockImplementationOnce(() => new Promise((resolve) => (slow = resolve)))
+			.mockImplementationOnce(async () => ({ ...payload, token: "latest" }));
+		await userEvent.click(screen.getByRole("checkbox", { name: "Send transcript" }));
+		await userEvent.click(screen.getByRole("checkbox", { name: "Send transcript" }));
+		await waitFor(() => expect(screen.getByRole("button", { name: "Make brief" })).toBeEnabled());
+		await act(async () => slow({ ...payload, token: "stale" }));
+		await userEvent.click(screen.getByRole("button", { name: "Make brief" }));
+		await waitFor(() => expect(run).toHaveBeenCalledWith("/scratch/one", "latest"));
+	});
+
 	it("opens the connect sheet when no provider is connected", async () => {
 		current = { ...base, connected: false };
 		render(<Harness bundleDir="/scratch/one" />);

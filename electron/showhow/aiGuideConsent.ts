@@ -3,6 +3,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import type {
 	AgentBriefPreview,
+	AgentBriefRunResult,
 	AgentBriefStatus,
 	BriefPhase,
 } from "../../src/lib/showhow/agentBrief";
@@ -227,7 +228,10 @@ export function registerAiGuideHandlers(deps: {
 			options: GuideOptions;
 		}
 	>();
-	const briefRuns = new Map<string, { controller: AbortController; phase: BriefPhase }>();
+	const briefRuns = new Map<
+		string,
+		{ controller: AbortController; phase: BriefPhase; sender: number }
+	>();
 	const briefFailures = new Map<string, string>();
 	const briefHandle = (name: string, fn: GuideIpcHandler) =>
 		deps.handle(`showhow:agent-brief-${name}`, async (event, ...args) => {
@@ -299,48 +303,56 @@ export function registerAiGuideHandlers(deps: {
 	});
 	briefHandle("run", async (event, bundle, token) => {
 		const found = await briefPreviewFor(event, bundle, token);
-		const key = deps.getStore().getApiKey("openrouter");
-		if (
-			!found ||
-			!key ||
-			!(await readConsent()).openrouterBrief?.reviewedAt ||
-			found.preview.model !== getModel() ||
-			briefRuns.has(found.resolved)
-		)
-			return { success: false };
+		if (!found || briefRuns.has(found.resolved)) return { success: false };
 		const { resolved, preview } = found;
-		if ((await readBriefSources(resolved)).signature !== preview.prepared.signature)
-			return { success: false, error: "changed" };
-		briefPreviews.delete(found.token);
-		const run = { controller: new AbortController(), phase: "reading" as BriefPhase };
+		// Claim the run slot before any await: a repeated run cannot start twice.
+		const run = {
+			controller: new AbortController(),
+			phase: "reading" as BriefPhase,
+			sender: event.sender.id,
+		};
 		briefRuns.set(resolved, run);
-		briefFailures.delete(resolved);
 		try {
-			const result = await runAgentBrief(resolved, {
-				model: async (messages, signal) =>
-					(await deps.createModel(key, preview.model, "brief"))(messages, signal),
-				modelSlug: preview.model,
-				prepared: preview.prepared,
-				signal: run.controller.signal,
-				onPhase: (phase) => {
-					run.phase = phase;
-					event.sender.send("showhow:agent-brief-progress", { bundleDir: resolved, phase });
-				},
-			});
+			const key = deps.getStore().getApiKey("openrouter");
+			if (
+				!key ||
+				!(await readConsent()).openrouterBrief?.reviewedAt ||
+				preview.model !== getModel()
+			)
+				return { success: false };
+			if ((await readBriefSources(resolved)).signature !== preview.prepared.signature)
+				return { success: false, error: "changed" };
+			briefPreviews.delete(found.token);
+			briefFailures.delete(resolved);
+			let result: AgentBriefRunResult;
+			try {
+				result = await runAgentBrief(resolved, {
+					model: async (messages, signal) =>
+						(await deps.createModel(key, preview.model, "brief"))(messages, signal),
+					modelSlug: preview.model,
+					prepared: preview.prepared,
+					signal: run.controller.signal,
+					onPhase: (phase) => {
+						run.phase = phase;
+						event.sender.send("showhow:agent-brief-progress", { bundleDir: resolved, phase });
+					},
+				});
+			} catch {
+				// Only the staged write can throw here; the previous pair was restored.
+				result = { success: false, error: "save" };
+			}
 			if (!result.success && !result.cancelled)
 				briefFailures.set(resolved, result.error ?? "provider");
 			return result;
-		} catch (error) {
-			briefFailures.set(resolved, "save");
-			throw error;
 		} finally {
 			briefRuns.delete(resolved);
 		}
 	});
-	briefHandle("cancel", async (_event, bundle) => {
+	briefHandle("cancel", async (event, bundle) => {
 		const run = briefRuns.get(await bundlePath(bundle));
-		run?.controller.abort();
-		return { success: Boolean(run) };
+		if (!run || run.sender !== event.sender.id) return { success: false };
+		run.controller.abort();
+		return { success: true };
 	});
 	briefHandle("copy", async (_event, bundle) => {
 		const resolved = await bundlePath(bundle);

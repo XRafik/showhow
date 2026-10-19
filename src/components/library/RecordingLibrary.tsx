@@ -504,31 +504,26 @@ function RecordingDetail({
 				</p>
 			)}
 			<Tabs value={tab} onValueChange={setTab}>
-				<TabsContent value="guide" className="mt-0">
-					<AiGuidePanel
-						entry={entry}
-						onEntryChange={onEntryChange}
-						onStatusChange={onGuideStatusChange}
-						tabs={tabList}
-						actions={
-							<>
-								{copyPathButton}
-								<CopyForAgentButton brief={brief} />
-							</>
-						}
-					/>
-					{guideBody}
-				</TabsContent>
-				<TabsContent value="brief" className="mt-0">
-					<div className="my-7 mb-3 flex flex-wrap items-center justify-between gap-3">
-						{tabList}
-						<div className="flex flex-wrap gap-2">
+				{/* One tab row stays mounted across tabs, so arrow keys keep focus on it. */}
+				<AiGuidePanel
+					entry={entry}
+					onEntryChange={onEntryChange}
+					onStatusChange={onGuideStatusChange}
+					tabs={tabList}
+					selected={tab === "guide"}
+					actions={
+						<>
 							{copyPathButton}
-							{brief.state.hasBrief && brief.state.view !== "making" && (
+							{(tab === "guide" || (brief.state.hasBrief && brief.state.view !== "making")) && (
 								<CopyForAgentButton brief={brief} />
 							)}
-						</div>
-					</div>
+						</>
+					}
+				/>
+				<TabsContent value="guide" className="mt-0">
+					{guideBody}
+				</TabsContent>
+				<TabsContent value="brief" className="-mt-4">
 					<AgentBriefPanel brief={brief} />
 				</TabsContent>
 			</Tabs>

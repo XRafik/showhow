@@ -1,4 +1,4 @@
-import { mkdir, mkdtemp, readFile, realpath, symlink, writeFile } from "node:fs/promises";
+import { chmod, mkdir, mkdtemp, readFile, realpath, symlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
@@ -77,7 +77,20 @@ async function setup(key: string | null = "fake-offline-key") {
 		expect(handler, `registered brief ${name}`).toBeTypeOf("function");
 		return (await handler!(event, ...args)) as Record<string, unknown>;
 	};
-	return { dir, root, bundle, call, brief, createModel, model, briefModel, clipboard, event };
+	const handler = (name: string) => handlers.get(name)!;
+	return {
+		dir,
+		root,
+		bundle,
+		call,
+		brief,
+		handler,
+		createModel,
+		model,
+		briefModel,
+		clipboard,
+		event,
+	};
 }
 describe("registered AI guide IPC boundary", () => {
 	it("blocks run with no stored key even with a forged consent/token", async () => {
@@ -346,6 +359,58 @@ describe("agent brief IPC boundary", () => {
 		release();
 		expect(await s.brief("status", s.bundle)).toMatchObject({ state: "none" });
 		await expect(readFile(path.join(s.bundle, "agent-brief.json"))).rejects.toThrow();
+	});
+
+	it("starts one run per reviewed token, even when run is fired twice", async () => {
+		const s = await setup();
+		const preview = await reviewedBrief(s);
+		const [first, second] = await Promise.all([
+			s.brief("run", s.bundle, preview.token),
+			s.brief("run", s.bundle, preview.token),
+		]);
+		expect([first, second]).toContainEqual({ success: true });
+		expect([first, second]).toContainEqual({ success: false });
+		expect(s.briefModel).toHaveBeenCalledTimes(1);
+	});
+
+	it("lets only the renderer that started a run cancel it", async () => {
+		const s = await setup();
+		const preview = await reviewedBrief(s);
+		let answer!: (raw: string) => void;
+		s.briefModel.mockImplementationOnce(() => new Promise((resolve) => (answer = resolve)));
+		const running = s.brief("run", s.bundle, preview.token);
+		await vi.waitFor(() => expect(answer).toBeTypeOf("function"));
+		const other = { sender: { id: 2, send: vi.fn() } };
+		expect(await s.handler("showhow:agent-brief-cancel")(other, s.bundle)).toEqual({
+			success: false,
+		});
+		answer(
+			JSON.stringify({
+				title: "Settings brief",
+				requestedChange: null,
+				observed: { text: "Settings opened", sourceIds: ["1"] },
+				expected: null,
+				actual: null,
+				evidence: [{ sourceId: "1", text: "Opened settings" }],
+				unknowns: [],
+			}),
+		);
+		expect(await running).toEqual({ success: true });
+	});
+
+	it("reports a failed save as save, not as a provider or prepare error", async () => {
+		const s = await setup();
+		const preview = await reviewedBrief(s);
+		await chmod(s.bundle, 0o555);
+		try {
+			expect(await s.brief("run", s.bundle, preview.token)).toMatchObject({
+				success: false,
+				error: "save",
+			});
+		} finally {
+			await chmod(s.bundle, 0o755);
+		}
+		expect(await s.brief("status", s.bundle)).toMatchObject({ state: "failed", error: "save" });
 	});
 
 	it("marks a failed replacement as failed and keeps the previous brief", async () => {

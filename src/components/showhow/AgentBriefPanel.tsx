@@ -45,6 +45,8 @@ export function useAgentBrief(bundleDir: string) {
 	const [settings, setSettings] = useState(false);
 	const active = useRef(true);
 	const copyTimer = useRef<ReturnType<typeof setTimeout>>();
+	// Main keeps one preview token per renderer; only the newest request may be shown or sent.
+	const previewRequest = useRef(0);
 	const invoker = useRef<HTMLElement | null>(null);
 	const api = window.electronAPI;
 
@@ -141,8 +143,9 @@ export function useAgentBrief(bundleDir: string) {
 				dispatch({ type: "connect", copyAfter });
 				return;
 			}
+			const request = ++previewRequest.current;
 			const value = await api.showhowAgentBriefPreview(bundleDir, fresh.options);
-			if (!active.current) return;
+			if (!active.current || request !== previewRequest.current) return;
 			if (value.success === false) throw new Error("Preview failed");
 			if (reviewOnly || !(fresh.reviewed && fresh.alwaysSend)) {
 				setPreview(value);
@@ -162,9 +165,11 @@ export function useAgentBrief(bundleDir: string) {
 	const changeOptions = async (next: GuideOptions) => {
 		setOptions(next);
 		setPreview(undefined);
+		const request = ++previewRequest.current;
 		try {
 			const value = await api.showhowAgentBriefPreview(bundleDir, next);
-			if (active.current && value.success !== false) setPreview(value);
+			if (active.current && request === previewRequest.current && value.success !== false)
+				setPreview(value);
 		} catch {
 			if (active.current) setError("prepare");
 		}

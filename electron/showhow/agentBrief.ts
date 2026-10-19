@@ -277,7 +277,11 @@ async function writeBriefFiles(bundleDir: string, files: [string, string][]) {
 	}
 }
 
-/** Makes the brief pair only; meta, steps and transcript stay untouched. */
+/**
+ * Makes the brief pair only; meta, steps and transcript stay untouched. The bundle lock is held
+ * to read sources and to write, never across the provider call, so guide edits stay usable. An
+ * edit made while the provider works changes the source signature and the result is discarded.
+ */
 export async function runAgentBrief(
 	bundleDir: string,
 	options: {
@@ -289,46 +293,48 @@ export async function runAgentBrief(
 		now?: () => number;
 	},
 ): Promise<AgentBriefRunResult> {
+	const cancelled = { success: false as const, cancelled: true };
+	const source = await serializePerBundle(bundleDir, () => readBriefSources(bundleDir));
+	if (options.prepared && options.prepared.signature !== source.signature)
+		return { success: false, error: "changed" };
+	const steps = options.prepared?.steps ?? source.steps;
+	const request =
+		options.prepared?.request ??
+		buildBriefRequest({
+			steps,
+			segments: source.segments,
+			frames: [],
+			options: { transcript: true, frames: false },
+		});
+	if (!steps.length) return { success: false, error: "invalid" };
+	options.onPhase?.("reading");
+	if (options.signal?.aborted) return cancelled;
+	let raw: string;
+	try {
+		raw = await options.model(request.messages, options.signal);
+	} catch {
+		return options.signal?.aborted ? cancelled : { success: false, error: "provider" };
+	}
+	if (options.signal?.aborted) return cancelled;
+	options.onPhase?.("writing");
+	let parsed: ReturnType<typeof parseBriefResponse>;
+	try {
+		parsed = parseBriefResponse(raw, steps);
+	} catch {
+		return { success: false, error: "invalid" };
+	}
+	options.onPhase?.("evidence");
+	const brief: AgentBrief = {
+		version: AGENT_BRIEF_VERSION,
+		...parsed,
+		provider: "openrouter",
+		model: options.modelSlug,
+		sourceRevision: source.signature,
+		madeAt: (options.now ?? Date.now)(),
+	};
 	return serializePerBundle(bundleDir, async () => {
-		const cancelled = { success: false as const, cancelled: true };
-		const source = await readBriefSources(bundleDir);
-		if (options.prepared && options.prepared.signature !== source.signature)
+		if ((await readBriefSources(bundleDir)).signature !== source.signature)
 			return { success: false, error: "changed" };
-		const steps = options.prepared?.steps ?? source.steps;
-		const request =
-			options.prepared?.request ??
-			buildBriefRequest({
-				steps,
-				segments: source.segments,
-				frames: [],
-				options: { transcript: true, frames: false },
-			});
-		if (!steps.length) return { success: false, error: "invalid" };
-		options.onPhase?.("reading");
-		if (options.signal?.aborted) return cancelled;
-		let raw: string;
-		try {
-			raw = await options.model(request.messages, options.signal);
-		} catch {
-			return options.signal?.aborted ? cancelled : { success: false, error: "provider" };
-		}
-		if (options.signal?.aborted) return cancelled;
-		options.onPhase?.("writing");
-		let parsed: ReturnType<typeof parseBriefResponse>;
-		try {
-			parsed = parseBriefResponse(raw, steps);
-		} catch {
-			return { success: false, error: "invalid" };
-		}
-		options.onPhase?.("evidence");
-		const brief: AgentBrief = {
-			version: AGENT_BRIEF_VERSION,
-			...parsed,
-			provider: "openrouter",
-			model: options.modelSlug,
-			sourceRevision: source.signature,
-			madeAt: (options.now ?? Date.now)(),
-		};
 		if (options.signal?.aborted) return cancelled;
 		// Markdown first: readers trust the pair only once the JSON is promoted too.
 		await writeBriefFiles(bundleDir, [

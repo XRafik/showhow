@@ -200,6 +200,34 @@ describe("RecordingLibrary", () => {
 		expect(briefCopy).not.toHaveBeenCalled();
 		expect(briefStatus).toHaveBeenCalledWith(desktopDocEntry.bundleDir);
 	});
+
+	it("keeps focus on the tab row when arrowing between guide and brief", async () => {
+		Object.assign(window.electronAPI, {
+			showhowAgentBriefStatus: vi.fn(async () => ({
+				connected: true,
+				model: "fake/model",
+				reviewed: true,
+				alwaysSend: true,
+				options: { transcript: true, frames: true },
+				state: "none" as const,
+			})),
+			showhowOnAgentBriefProgress: () => () => undefined,
+		});
+		mockShowhowListRecordings.mockResolvedValue([desktopDocEntry]);
+		render(<RecordingLibrary />);
+		const guideTab = await screen.findByRole("tab", { name: "01 / Walkthrough guide" });
+		expect(screen.getAllByRole("tablist")).toHaveLength(1);
+		guideTab.focus();
+		await userEvent.keyboard("{ArrowRight}");
+		const briefTab = screen.getByRole("tab", { name: "02 / Agent brief" });
+		await waitFor(() => expect(briefTab).toHaveAttribute("aria-selected", "true"));
+		expect(document.activeElement).toBe(briefTab);
+		await userEvent.keyboard("{ArrowLeft}");
+		await waitFor(() => expect(guideTab).toHaveAttribute("aria-selected", "true"));
+		expect(document.activeElement).toBe(
+			screen.getByRole("tab", { name: "01 / Walkthrough guide" }),
+		);
+	});
 	it.each([
 		false,
 		"reject",

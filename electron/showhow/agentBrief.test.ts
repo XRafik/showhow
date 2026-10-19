@@ -1,4 +1,5 @@
-import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
+import { promises as fsPromises } from "node:fs";
+import { mkdir, mkdtemp, readdir, readFile, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
@@ -13,7 +14,12 @@ import {
 	renderBriefMarkdown,
 	runAgentBrief,
 } from "./agentBrief";
-import { renderStepsMarkdown, type Step, serializeStepsJson } from "./bundle";
+import {
+	renderStepsMarkdown,
+	type Step,
+	serializeStepsJson,
+	updateWorkflowDocument,
+} from "./bundle";
 
 const steps: Step[] = [
 	{
@@ -197,6 +203,52 @@ describe("runAgentBrief", () => {
 			error: "changed",
 		});
 		expect(model).not.toHaveBeenCalled();
+	});
+});
+
+describe("runAgentBrief concurrency and atomic replacement", () => {
+	it("does not block guide edits while the provider is working", async () => {
+		const dir = await bundle();
+		let answer!: (raw: string) => void;
+		const running = runAgentBrief(dir, {
+			model: () => new Promise((resolve) => (answer = resolve)),
+			modelSlug: "m",
+		});
+		await vi.waitFor(() => expect(answer).toBeTypeOf("function"));
+		await updateWorkflowDocument(dir, { type: "title", title: "Renamed while briefing" });
+		expect(JSON.parse(await readFile(path.join(dir, "meta.json"), "utf8")).title).toBe(
+			"Renamed while briefing",
+		);
+		answer(JSON.stringify(response));
+		// The recording changed under the provider call: the stale brief is not saved.
+		expect(await running).toEqual({ success: false, error: "changed" });
+		expect(await readAgentBrief(dir)).toBeUndefined();
+	});
+
+	it("restores the previous pair and leaves no temp files when promotion fails", async () => {
+		const dir = await bundle();
+		await runAgentBrief(dir, { model: async () => JSON.stringify(response), modelSlug: "m" });
+		const json = await readFile(path.join(dir, AGENT_BRIEF_JSON), "utf8");
+		const md = await readFile(path.join(dir, AGENT_BRIEF_MD), "utf8");
+		const rename = fsPromises.rename.bind(fsPromises);
+		const spy = vi.spyOn(fsPromises, "rename").mockImplementation(async (from, to) => {
+			if (String(to).endsWith(AGENT_BRIEF_JSON))
+				throw Object.assign(new Error("EIO"), { code: "EIO" });
+			return rename(from, to);
+		});
+		try {
+			await expect(
+				runAgentBrief(dir, {
+					model: async () => JSON.stringify({ ...response, title: "Replacement" }),
+					modelSlug: "m",
+				}),
+			).rejects.toThrow("EIO");
+		} finally {
+			spy.mockRestore();
+		}
+		expect(await readFile(path.join(dir, AGENT_BRIEF_JSON), "utf8")).toBe(json);
+		expect(await readFile(path.join(dir, AGENT_BRIEF_MD), "utf8")).toBe(md);
+		expect((await readdir(dir)).filter((name) => name.endsWith(".tmp"))).toEqual([]);
 	});
 });
 
