@@ -3,7 +3,13 @@ import { useScopedT } from "@/contexts/I18nContext";
 import { DEFAULT_GUIDE_MODEL } from "@/lib/showhow/aiGuide";
 import { nativeBridgeClient } from "@/native/client";
 import { Button } from "./Button";
-export function AiConnections({ onSaved }: { onSaved?: () => void }) {
+export function AiConnections({
+	onSaved,
+	onRemoved,
+}: {
+	onSaved?: () => void;
+	onRemoved?: () => void;
+}) {
 	const t = useScopedT("common");
 	const [model, setModel] = useState(DEFAULT_GUIDE_MODEL);
 	const [key, setKey] = useState("");
@@ -59,6 +65,7 @@ export function AiConnections({ onSaved }: { onSaved?: () => void }) {
 			setConnected(false);
 			setKey("");
 			setMessage(t("showhowGuide.removed"));
+			onRemoved?.();
 		} catch {
 			setMessage(t("showhowGuide.removeError"));
 		} finally {
@@ -67,16 +74,6 @@ export function AiConnections({ onSaved }: { onSaved?: () => void }) {
 	}
 	return (
 		<section aria-label={t("showhowGuide.connections")} className="grid gap-4">
-			<div role="tablist" aria-label={t("showhowGuide.settings")}>
-				<button
-					type="button"
-					role="tab"
-					aria-selected="true"
-					className="border-b-2 border-ds-ink py-2 font-ds-label text-xs uppercase"
-				>
-					{t("showhowGuide.connections")}
-				</button>
-			</div>
 			<h3 className="font-ds-body text-lg font-medium">OpenRouter</h3>
 			<p className="text-sm text-ds-ink-soft">{t("showhowGuide.ownKey")}</p>
 			<p className="text-xs text-ds-ink-soft">

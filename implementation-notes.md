@@ -1,5 +1,28 @@
 # Implementation notes
 
+## 19 October 2026 — Showhow #144 Settings screens
+
+Built in a single Claude Code session (Codex weekly limit exhausted); reviewers were separate fresh
+agents. Settings replaces the Library detail pane; no recording row is selected while it is open.
+
+Frame inventory (working control / truthful exception):
+- Settings-01/02 AI connections: OpenRouter Connected / Not connected comes from the main-process key
+  check; Add API key / Manage key opens the existing key form. OpenRouter keys do not expire, so
+  Settings-02's "Session expired" has no OpenRouter equivalent and is not shown; a status-check
+  failure shows an error instead. ChatGPT is "Coming later" with a disabled sign-in and no account
+  details (#128 parked).
+- Settings-03 Recording: Hide desktop icons saves through the existing recording-preference store
+  and follows changes from other windows. The recordings folder (fixed ~/Showhow/Recordings) and the
+  countdown (fixed 3 s) are shown read-only with an explanation: neither has a preference today.
+- Settings-04 Transcription: names the bundled Whisper model (base q5_1, ~60 MB; a test ties it to
+  the bundle manifest). No "Ready" badge: development builds lack the helper, so it could be false.
+  Names and terms is a disabled field marked "Coming later".
+- Settings-05 Agents: the copy format is the single real format, shown as text rather than a menu;
+  MCP server is a disabled switch marked "Coming later".
+- Settings-06 Appearance: Light / Dark / System use the existing theme store; every window listens
+  to it, so open windows follow.
+The old Settings sheet (AiGuideSettings) is removed, and the key form loses its one-item fake tab bar.
+
 ## 19 October 2026 — Showhow #143 workflow PDF export
 
 Built in a single Claude Code session (Codex weekly limit exhausted), not through the Herdr lane.
