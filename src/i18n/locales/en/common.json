@@ -191,6 +191,7 @@
 		"errorInvalid": "Response couldn't be validated",
 		"errorChanged": "Recording changed. Check what's sent again",
 		"errorPrepare": "Couldn't read the recording folder",
+		"errorSave": "Couldn't save the brief",
 		"tryAgain": "Try again",
 		"safeFailed": "Your recording is safe. Try again or change the AI provider.",
 		"previousKept": "Your previous brief is unchanged.",

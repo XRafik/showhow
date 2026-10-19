@@ -125,6 +125,11 @@ contextBridge.exposeInMainWorld("electronAPI", {
 		ipcRenderer.on("showhow:agent-brief-progress", listener);
 		return () => ipcRenderer.removeListener("showhow:agent-brief-progress", listener);
 	},
+	showhowOnAgentBriefSettled: (callback: (event: { bundleDir: string }) => void) => {
+		const listener = (_event: unknown, payload: { bundleDir: string }) => callback(payload);
+		ipcRenderer.on("showhow:agent-brief-settled", listener);
+		return () => ipcRenderer.removeListener("showhow:agent-brief-settled", listener);
+	},
 	showhowGetSystemTheme: () => ipcRenderer.invoke("showhow:get-system-theme") as Promise<boolean>,
 	showhowOnSystemThemeChanged: (callback: (isDark: boolean) => void) => {
 		const listener = (_event: unknown, isDark: boolean) => callback(isDark);

@@ -162,6 +162,8 @@ interface Window {
 				phase: import("../src/lib/showhow/agentBrief").BriefPhase;
 			}) => void,
 		) => () => void;
+		/** Sent when any brief run ends, so a view that did not start it can refresh. */
+		showhowOnAgentBriefSettled: (callback: (event: { bundleDir: string }) => void) => () => void;
 		showhowOpenRecording: (bundleDir: string) => Promise<{ success: boolean }>;
 		showhowImportRecording: (
 			request: import("../src/lib/showhow/recordingLibrary").ImportRecordingRequest,

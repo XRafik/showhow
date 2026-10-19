@@ -47,6 +47,8 @@ export function useAgentBrief(bundleDir: string) {
 	const copyTimer = useRef<ReturnType<typeof setTimeout>>();
 	// Main keeps one preview token per renderer; only the newest request may be shown or sent.
 	const previewRequest = useRef(0);
+	// True while this view awaits its own run; its result handling owns the outcome.
+	const ownRun = useRef(false);
 	const invoker = useRef<HTMLElement | null>(null);
 	const api = window.electronAPI;
 
@@ -69,10 +71,20 @@ export function useAgentBrief(bundleDir: string) {
 			if (event.bundleDir === bundleDir && active.current)
 				dispatch({ type: "phase", phase: event.phase });
 		});
+		const disposeSettled = window.electronAPI.showhowOnAgentBriefSettled?.((event) => {
+			if (event.bundleDir !== bundleDir || !active.current || ownRun.current) return;
+			void window.electronAPI
+				.showhowAgentBriefStatus(bundleDir)
+				.then((value) => {
+					if (active.current) applyStatus(value);
+				})
+				.catch(() => undefined);
+		});
 		return () => {
 			active.current = false;
 			clearTimeout(copyTimer.current);
 			dispose?.();
+			disposeSettled?.();
 		};
 	}, [bundleDir, applyStatus]);
 
@@ -99,6 +111,7 @@ export function useAgentBrief(bundleDir: string) {
 		}
 	};
 	const run = async (payload: AgentBriefPreview, accept: boolean, copyAfter: boolean) => {
+		ownRun.current = true;
 		setBusy(true);
 		setError(undefined);
 		setPreview(undefined);
@@ -125,6 +138,7 @@ export function useAgentBrief(bundleDir: string) {
 				dispatch({ type: "result", result: { success: false } });
 			}
 		} finally {
+			ownRun.current = false;
 			if (active.current) setBusy(false);
 		}
 	};
@@ -258,9 +272,11 @@ function errorKey(error?: string) {
 		? "showhowBrief.errorInvalid"
 		: error === "changed"
 			? "showhowBrief.errorChanged"
-			: error === "prepare" || error === "save"
-				? "showhowBrief.errorPrepare"
-				: "showhowBrief.errorProvider";
+			: error === "save"
+				? "showhowBrief.errorSave"
+				: error === "prepare"
+					? "showhowBrief.errorPrepare"
+					: "showhowBrief.errorProvider";
 }
 
 function PhaseList({
@@ -396,9 +412,11 @@ export function AgentBriefPanel({ brief }: { brief: AgentBriefController }) {
 	const t = useScopedT("common");
 	const { view, phase, hasBrief } = brief.state;
 	const failedAt: BriefPhase =
-		brief.error === "prepare" || brief.error === "changed" || brief.error === "save"
-			? "reading"
-			: "writing";
+		brief.error === "save"
+			? "evidence"
+			: brief.error === "prepare" || brief.error === "changed"
+				? "reading"
+				: "writing";
 	return (
 		<section aria-label={t("showhowBrief.panel")} className="font-ds-body text-ds-ink">
 			<button

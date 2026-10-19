@@ -314,12 +314,8 @@ export function registerAiGuideHandlers(deps: {
 		briefRuns.set(resolved, run);
 		try {
 			const key = deps.getStore().getApiKey("openrouter");
-			if (
-				!key ||
-				!(await readConsent()).openrouterBrief?.reviewedAt ||
-				preview.model !== getModel()
-			)
-				return { success: false };
+			if (!key || !(await readConsent()).openrouterBrief?.reviewedAt) return { success: false };
+			if (preview.model !== getModel()) return { success: false, error: "changed" };
 			if ((await readBriefSources(resolved)).signature !== preview.prepared.signature)
 				return { success: false, error: "changed" };
 			briefPreviews.delete(found.token);
@@ -346,6 +342,8 @@ export function registerAiGuideHandlers(deps: {
 			return result;
 		} finally {
 			briefRuns.delete(resolved);
+			// A Library view remounted mid-run did not start it and needs this to leave Making.
+			event.sender.send("showhow:agent-brief-settled", { bundleDir: resolved });
 		}
 	});
 	briefHandle("cancel", async (event, bundle) => {

@@ -73,6 +73,7 @@ const run = vi.fn<(bundleDir: string, token: string) => Promise<AgentBriefRunRes
 const cancel = vi.fn();
 const copy = vi.fn();
 let current: AgentBriefStatus = base;
+let settled: ((event: { bundleDir: string }) => void) | undefined;
 
 beforeEach(() => {
 	vi.clearAllMocks();
@@ -110,6 +111,10 @@ beforeEach(() => {
 			showhowAgentBriefCancel: cancel,
 			showhowAgentBriefCopy: copy,
 			showhowOnAgentBriefProgress: () => () => undefined,
+			showhowOnAgentBriefSettled: (callback: (event: { bundleDir: string }) => void) => {
+				settled = callback;
+				return () => undefined;
+			},
 		},
 	});
 });
@@ -273,6 +278,26 @@ describe("Agent brief states", () => {
 				"Copy includes the brief and the local bundle path. Give your agent access to that folder.",
 			),
 		).toBeVisible();
+	});
+
+	it("settles a run that finished while this recording's view was away", async () => {
+		current = { ...base, state: "making", phase: "writing" };
+		render(<Harness bundleDir="/scratch/one" />);
+		await screen.findByRole("heading", { name: "Making your brief" });
+		current = { ...base, state: "ready", brief: saved };
+		await act(async () => settled?.({ bundleDir: "/scratch/two" }));
+		expect(screen.getByRole("heading", { name: "Making your brief" })).toBeVisible();
+		await act(async () => settled?.({ bundleDir: "/scratch/one" }));
+		expect(await screen.findByText("Clicking Publish leaves status at Draft")).toBeVisible();
+		expect(screen.queryByRole("heading", { name: "Making your brief" })).not.toBeInTheDocument();
+	});
+
+	it("reports a failed save at the evidence step with its own message", async () => {
+		run.mockResolvedValueOnce({ success: false, error: "save" });
+		render(<Harness bundleDir="/scratch/one" />);
+		await userEvent.click(await screen.findByRole("button", { name: "Make brief" }));
+		expect(await screen.findByText("Couldn't save the brief")).toBeVisible();
+		expect(screen.queryByText("Couldn't read the recording folder")).not.toBeInTheDocument();
 	});
 
 	it("shows a run already making in main as making", async () => {

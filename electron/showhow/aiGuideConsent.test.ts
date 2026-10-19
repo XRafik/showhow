@@ -78,6 +78,9 @@ async function setup(key: string | null = "fake-offline-key") {
 		return (await handler!(event, ...args)) as Record<string, unknown>;
 	};
 	const handler = (name: string) => handlers.get(name)!;
+	const setModel = (model: string) => {
+		config = { provider: "openrouter", model };
+	};
 	return {
 		dir,
 		root,
@@ -85,6 +88,7 @@ async function setup(key: string | null = "fake-offline-key") {
 		call,
 		brief,
 		handler,
+		setModel,
 		createModel,
 		model,
 		briefModel,
@@ -371,6 +375,20 @@ describe("agent brief IPC boundary", () => {
 		expect([first, second]).toContainEqual({ success: true });
 		expect([first, second]).toContainEqual({ success: false });
 		expect(s.briefModel).toHaveBeenCalledTimes(1);
+	});
+
+	it("reports a model changed after review as changed and tells the renderer the run settled", async () => {
+		const s = await setup();
+		const preview = await reviewedBrief(s);
+		s.setModel("other/model");
+		expect(await s.brief("run", s.bundle, preview.token)).toEqual({
+			success: false,
+			error: "changed",
+		});
+		expect(s.briefModel).not.toHaveBeenCalled();
+		expect(s.event.sender.send).toHaveBeenCalledWith("showhow:agent-brief-settled", {
+			bundleDir: await realpath(s.bundle),
+		});
 	});
 
 	it("lets only the renderer that started a run cancel it", async () => {
