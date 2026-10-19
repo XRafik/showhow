@@ -8,10 +8,12 @@ Updated: 2026-10-19
 - **#128 Connect ChatGPT** is published and deferred (`needs-human`, Creating plan/spec). Retain parked lane w6Q; no implementation or auth changes. The installed Codex version lacks the required proven tool/config isolation. Original approved scope remains in: "Showhow Connect ChatGPT Plan" in `PLAN.md`, mock in `design/mocks/2026-10-17-chatgpt-connect/`. It uses the owner's own Codex login (`codex app-server`) for Make guide only. Issue #128 is published. Resume only after owner direction and supported isolation controls.
 - **Move onto upstream v2:** #115 and #116 are done (#116 merged on stable upstream `v2.0.0` via PR #121). #117 is closed: owner merged PR #130 as `371d940d14d7392ae090b9bfc57b2cf311c6de78`; both boards show Done and its clean lane is removed. Evidence: `~/dev/loop-evidence/showhow-117/READY.md`, `PROVE.md` and `SHOWHOW-COORDINATOR-HANDOFF.md`. #118 is closed: owner merged PR #132 as `573d9f2c8fea9855b6f0ab9cdd47aabdb49c8db0`. All four milestone tickets are complete. #118 passed fresh review and all 11 CI checks; its clean lane is removed and evidence remains at `~/dev/loop-evidence/showhow-118/READY.md`. No release tag was created. The authorised handoff index is `/Users/mohamedb/dev/loop-evidence/HANDOFF-INDEX.md`.
 - **#125 Done:** owner merged PR #150 as `27494aa34f2467cc107adfb586db308157ccc372`; issue closed and card Done. Reviewed head `a2873cf`: fresh Standards PASS / Requirements PASS and all 10 CI checks passed. Evidence: `~/dev/loop-evidence/showhow-125/READY.md`. No active #125 source work.
-- **Final designs: 5/10 Done, 1 PR open.** Milestone 13 implements the approved Library, HUD, Editor and Settings frames through #139-#148. Merged: #139 (PR #151), #140 (PR #152), #141 (PR #153), #142 agent brief and Copy for agent (PR #155, `d6a076de`) with its review hardening (PR #156, `24ae675b`), and #143 workflow PDF export (PR #158, `a4fc6008`). **#144 Settings is PR #159**, open and review-ready: two fresh reviews, final Standards/Requirements PASS. #145 HUD, #146 Editor shell, #147 Editor assistant/export and #148 integrated acceptance remain Ready. Evidence: `~/dev/loop-evidence/showhow-{142,143,144}/` (PR-BODY.md, red/, checks/, native/, CLOSEOUT.md for merged tickets).
-- **Bug #124 is PR #160**, open and review-ready: on macOS, clicks on the HUD's drawn bar are tagged `ownUi` in cursor telemetry and skipped by step generation. Two fresh reviews, final PASS. A real recording smoke test (Stop on the HUD gives no step) is still owed and needs the owner's permissions. Windows/Linux are follow-ups. #127 is closed as superseded by #140.
-- **How 2026-10-19 work ran:** the Codex weekly limit ran out (resets 24 Oct 22:45), so #142, #143, #144 and #124 were built in a single Claude Code session per the owner's instruction, not in Herdr ticket lanes. Each had its own worktree, test-first work, fresh independent subagent reviews, a native Electron proof on synthetic data and one PR. The owner authorised merges in chat per PR. #158 merged before CI finished because `--auto` merges immediately without required checks; all 10 checks then passed on that head.
-- **`main` is now protected** (owner request 2026-10-19): the 10 CI checks are required, with no required reviews, no strict up-to-date rule and admins not enforced. Auto-merge now waits for green. PR #157 (landing page, not from this session) is blocked by a failing "Typecheck (tests)".
+- **Final designs: 6/10 Done.** Milestone 13 implements the approved Library, HUD, Editor and Settings frames through #139-#148. Merged: #139 (PR #151), #140 (PR #152), #141 (PR #153), #142 agent brief and Copy for agent (PR #155, `d6a076de`) with its review hardening (PR #156, `24ae675b`), #143 workflow PDF export (PR #158, `a4fc6008`) and #144 Settings (PR #159, `7d0c21e7`). Issues closed and cards Done. **Next: #145 HUD and recording sheets**, then #146 Editor shell, #147 Editor assistant/export and #148 integrated acceptance; all Ready and undispatched. Evidence: `~/dev/loop-evidence/showhow-{142,143,144}/` (PR-BODY.md, CLOSEOUT.md, red/, checks/, native/).
+- **Bug #124 fixed** (PR #160, `b72c6324`): on macOS, clicks on the HUD's drawn bar (not its transparent reserve) are tagged `ownUi` in cursor telemetry and skipped by step generation. Owed: a real recording smoke test, since Stop on the HUD should give no step and that needs the owner's permissions. Windows/Linux are follow-ups. Evidence: `~/dev/loop-evidence/showhow-124/`.
+- **Phase 6 closed** (PR #162, `986cf494`): milestone 6 is closed, #55 (recoverable recording deletion) moved to the backlog without a milestone, and #54 closed as not planned.
+- **Open PR not from this session:** #157 (landing page, branch `ticket/135-landing-build`, worktree `showhow-ticket-135-landing-build`) is blocked by a failing "Typecheck (tests)" required check. Leave it to its owner session.
+- **How 2026-10-19 work ran:** the Codex weekly limit ran out (resets 24 Oct 22:45), so #142, #143, #144 and #124 were built in a single Claude Code session per the owner's instruction, not in Herdr ticket lanes. Each had its own worktree, test-first work, fresh independent subagent reviews, a native Electron proof on synthetic data and one PR. The owner authorised each merge in chat. #158 merged before CI finished because repo auto-merge is disabled, so `gh pr merge --auto` merges at once; all 10 checks then passed on that head. Since then, merges wait for green and then run `gh pr merge --match-head-commit`.
+- **`main` is protected** (owner request 2026-10-19): the 10 CI checks are required, with no required reviews, no strict up-to-date rule and admins not enforced. The repo setting "Allow auto-merge" is off; only the owner should change it.
 
 ### Earlier context (2026-10-16)
 The move onto upstream v2 is shaped and published: milestone "Move onto upstream v2" with #115 → #116 → #117 → #118, all in Ready to implement, none priority. The plan is the "Showhow move onto upstream v2 Plan" section of `PLAN.md`; decisions are in `.agents/decisions.md` (2026-10-16). The design phase is merged (#109). The app size ticket (#110, PR #113) and the Copilot controller retirement (#108, PR #112) shipped on 2026-10-16.
@@ -26,7 +28,7 @@ The move onto upstream v2 is shaped and published: milestone "Move onto upstream
 
 ## Next action
 
-Owner reviews and merges PR #159 (#144 Settings) and PR #160 (#124). Then dispatch #145 HUD, followed by #146, #147 and #148 in order, one ticket/PR at a time. Use the Herdr Codex lane again after the limit resets on 24 Oct, or this single-session route if the owner asks. Keep #128 parked and the #134 worktree intact for pen.dev cache safety. Owed native checks: Stop on the HUD during a real macOS recording, and a live OpenRouter key run for guide and brief.
+Dispatch #145 (HUD and recording sheets), then #146, #147 and #148 in order, one ticket/PR at a time. Use the Herdr Codex lane after the limit resets on 24 Oct, or the single-session route if the owner asks. Keep #128 parked and the #134 worktree intact for pen.dev cache safety. Owed native checks: Stop on the HUD during a real macOS recording (#124), and a live OpenRouter key run for guide and brief.
 
 ## Open decisions
 
@@ -49,12 +51,36 @@ Owner reviews and merges PR #159 (#144 Settings) and PR #160 (#124). Then dispat
 
 ## Test state
 
-#122 historical evidence at `500cea16` (PR #126): all 10 CI checks passed (lint, type check, test typecheck, unit 4616 pass / 2 skip, browser 10, build, Rust and Swift jobs). The #122 real-key macOS 26.6.2 arm64 smoke passed C1–C7 on the owner's narrated recordings. Windows and Linux untested; new non-English strings fall back to English. Earlier: #110 packaged macOS smoke passed at `fc50566a`.
+2026-10-19 merged heads, each with all 10 required CI checks green on GitHub:
+- **#142:** `c7a3e9fe`, unit 4734 pass / 2 skip.
+- **#156:** `f7129d91`.
+- **#143:** `3251bb41`, unit 4780 / 2.
+- **#144:** `6dd3e8a1`, unit 4796 / 2.
+- **#124:** reviewed code `a8bc0e28`, merged as `1c72f58f` after a notes-only conflict merge; unit 4787 / 2.
+- **#162:** `6d0f6936`, docs only.
+
+Browser tests passed 19/19 on each code head. Native proofs ran the built app with isolated synthetic roots on macOS 26 arm64, with harness fakes for safeStorage, the OpenRouter HTTP endpoint, clipboard writes, the save panel and Finder reveal.
+
+Not tested:
+- The real clipboard, save panel and Finder.
+- A live OpenRouter key.
+- Packaged or installed builds.
+- Windows and Linux.
+- A real recording for #124.
+- HUD System-theme following (the harness window had no preload).
+
+No tests were rerun for this handoff. Historical: the #122 real-key macOS smoke passed C1–C7 at `500cea16`, and the #110 packaged smoke passed at `fc50566a`.
 
 ## Cloud blockers
 
 None. Native macOS acceptance stays manual.
 
+
+### Session close-out: design delivery and bug #124 - 2026-10-19
+
+- Main is `986cf494`. Merged today: #155, #156, #158, #159, #160, #161 and #162. No release tag.
+- Ticket worktrees for #142, #143, #144 and #124 are removed; their evidence is under `~/dev/loop-evidence/showhow-{142,143,144,124}/`. Retained: #128 (parked), #134 (pen.dev cache), the historical #141 lane, the 2026-10-18 close-out docs worktree, and the `confident-noyce-988ce8` worktree of the merged #156 session (safe to remove when the owner archives that session).
+- The main checkout is clean on `main` at `c258f118`, behind origin.
 
 ## History: owner stable retarget correction — 2026-10-17 Europe/London
 
