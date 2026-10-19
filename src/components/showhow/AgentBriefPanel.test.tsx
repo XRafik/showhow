@@ -74,6 +74,7 @@ const cancel = vi.fn();
 const copy = vi.fn();
 let current: AgentBriefStatus = base;
 let settled: ((event: { bundleDir: string }) => void) | undefined;
+let progress: ((event: { bundleDir: string; phase: "reading" }) => void) | undefined;
 
 beforeEach(() => {
 	vi.clearAllMocks();
@@ -110,7 +111,12 @@ beforeEach(() => {
 			showhowAgentBriefRun: run,
 			showhowAgentBriefCancel: cancel,
 			showhowAgentBriefCopy: copy,
-			showhowOnAgentBriefProgress: () => () => undefined,
+			showhowOnAgentBriefProgress: (
+				callback: (event: { bundleDir: string; phase: "reading" }) => void,
+			) => {
+				progress = callback;
+				return () => undefined;
+			},
 			showhowOnAgentBriefSettled: (callback: (event: { bundleDir: string }) => void) => {
 				settled = callback;
 				return () => undefined;
@@ -234,6 +240,73 @@ describe("Copy for agent", () => {
 		expect(copy).not.toHaveBeenCalled();
 	});
 
+	it("keeps a cancel pressed while consent is saving and never starts the run", async () => {
+		current = { ...base, reviewed: false, alwaysSend: false };
+		let saved!: (value: { success: boolean }) => void;
+		consent.mockImplementationOnce(() => new Promise((resolve) => (saved = resolve)));
+		render(<Harness bundleDir="/scratch/one" />);
+		await userEvent.click(await screen.findByRole("button", { name: "Make brief" }));
+		await screen.findByRole("dialog", { name: "Check what's sent" });
+		await userEvent.click(screen.getByRole("button", { name: "Make brief" }));
+		await screen.findByRole("heading", { name: "Making your brief" });
+		await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
+		await act(async () => saved({ success: true }));
+		expect(
+			await screen.findByRole("heading", { name: "Make a brief for your agent" }),
+		).toBeVisible();
+		expect(run).not.toHaveBeenCalled();
+	});
+
+	it("resends a cancel main refused because the run had not reached it yet", async () => {
+		let finish!: (result: AgentBriefRunResult) => void;
+		run.mockImplementationOnce(() => new Promise((resolve) => (finish = resolve)));
+		cancel.mockResolvedValueOnce({ success: false });
+		render(<Harness bundleDir="/scratch/one" />);
+		await userEvent.click(await screen.findByRole("button", { name: "Make brief" }));
+		await screen.findByRole("heading", { name: "Making your brief" });
+		await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
+		await waitFor(() => expect(cancel).toHaveBeenCalledTimes(1));
+		await act(async () => progress?.({ bundleDir: "/scratch/one", phase: "reading" }));
+		expect(cancel).toHaveBeenCalledTimes(2);
+		await act(async () => progress?.({ bundleDir: "/scratch/one", phase: "reading" }));
+		expect(cancel).toHaveBeenCalledTimes(2);
+		await act(async () => finish({ success: false, cancelled: true }));
+		expect(
+			await screen.findByRole("heading", { name: "Make a brief for your agent" }),
+		).toBeVisible();
+	});
+
+	it("copies exactly once when main reports the run settled while this view awaits it", async () => {
+		let finish!: (result: AgentBriefRunResult) => void;
+		run.mockImplementationOnce(() => new Promise((resolve) => (finish = resolve)));
+		render(<Harness bundleDir="/scratch/one" />);
+		await userEvent.click(await screen.findByRole("button", { name: "Copy for agent" }));
+		await screen.findByRole("heading", { name: "Making your brief" });
+		current = { ...base, state: "ready", brief: saved };
+		await act(async () => settled?.({ bundleDir: "/scratch/one" }));
+		expect(copyButton()).toHaveAccessibleName("Making brief…");
+		await act(async () => finish({ success: true }));
+		await screen.findByRole("button", { name: "Copied ✓" });
+		expect(copy).toHaveBeenCalledTimes(1);
+	});
+
+	it("shows a failed re-preview in the review sheet and retries it", async () => {
+		current = { ...base, reviewed: false, alwaysSend: false };
+		render(<Harness bundleDir="/scratch/one" />);
+		await userEvent.click(await screen.findByRole("button", { name: "Make brief" }));
+		const dialog = await screen.findByRole("dialog", { name: "Check what's sent" });
+		preview.mockRejectedValueOnce(new Error("busy"));
+		await userEvent.click(screen.getByRole("checkbox", { name: "Send transcript" }));
+		expect(await screen.findByText("Couldn't read the recording folder")).toBeVisible();
+		const make = () =>
+			Array.from(dialog.querySelectorAll("button")).find((b) => b.textContent === "Make brief")!;
+		expect(make()).toBeDisabled();
+		await userEvent.click(screen.getByRole("button", { name: "Try again" }));
+		await waitFor(() => expect(make()).toBeEnabled());
+		expect(preview).toHaveBeenLastCalledWith("/scratch/one", { transcript: false, frames: true });
+		expect(screen.queryByText("Couldn't read the recording folder")).not.toBeInTheDocument();
+	});
+
 	it("ignores a result that lands after another recording is selected", async () => {
 		let finish!: (result: AgentBriefRunResult) => void;
 		run.mockImplementationOnce(() => new Promise((resolve) => (finish = resolve)));
@@ -289,6 +362,17 @@ describe("Agent brief states", () => {
 		expect(screen.getByRole("heading", { name: "Making your brief" })).toBeVisible();
 		await act(async () => settled?.({ bundleDir: "/scratch/one" }));
 		expect(await screen.findByText("Clicking Publish leaves status at Draft")).toBeVisible();
+		expect(screen.queryByRole("heading", { name: "Making your brief" })).not.toBeInTheDocument();
+	});
+
+	it("keeps the settled state when the first status reply arrives late", async () => {
+		let first!: (value: AgentBriefStatus) => void;
+		status.mockImplementationOnce(() => new Promise((resolve) => (first = resolve)));
+		render(<Harness bundleDir="/scratch/one" />);
+		current = { ...base, state: "ready", brief: saved };
+		await act(async () => settled?.({ bundleDir: "/scratch/one" }));
+		expect(await screen.findByText("Clicking Publish leaves status at Draft")).toBeVisible();
+		await act(async () => first({ ...base, state: "making", phase: "writing" }));
 		expect(screen.queryByRole("heading", { name: "Making your brief" })).not.toBeInTheDocument();
 	});
 

@@ -226,6 +226,8 @@ export function registerAiGuideHandlers(deps: {
 			prepared: PreparedBrief;
 			model: string;
 			options: GuideOptions;
+			// Set once this exact payload was reviewed and accepted in the consent handler.
+			consented?: boolean;
 		}
 	>();
 	const briefRuns = new Map<
@@ -299,6 +301,7 @@ export function registerAiGuideHandlers(deps: {
 			...consent,
 			openrouterBrief: { reviewedAt: Date.now(), alwaysSend, options: found.preview.options },
 		});
+		found.preview.consented = true;
 		return { success: true };
 	});
 	briefHandle("run", async (event, bundle, token) => {
@@ -312,15 +315,28 @@ export function registerAiGuideHandlers(deps: {
 			sender: event.sender.id,
 		};
 		briefRuns.set(resolved, run);
+		let result: AgentBriefRunResult = { success: false };
 		try {
 			const key = deps.getStore().getApiKey("openrouter");
-			if (!key || !(await readConsent()).openrouterBrief?.reviewedAt) return { success: false };
-			if (preview.model !== getModel()) return { success: false, error: "changed" };
-			if ((await readBriefSources(resolved)).signature !== preview.prepared.signature)
-				return { success: false, error: "changed" };
+			const consent = (await readConsent()).openrouterBrief;
+			// A payload not reviewed in this run is only sent under a stored "send without asking"
+			// for exactly these options.
+			if (
+				!key ||
+				!consent?.reviewedAt ||
+				(!preview.consented &&
+					!(consent.alwaysSend && sameOptions(consent.options, preview.options)))
+			)
+				return result;
+			if (
+				preview.model !== getModel() ||
+				(await readBriefSources(resolved)).signature !== preview.prepared.signature
+			) {
+				result = { success: false, error: "changed" };
+				return result;
+			}
 			briefPreviews.delete(found.token);
 			briefFailures.delete(resolved);
-			let result: AgentBriefRunResult;
 			try {
 				result = await runAgentBrief(resolved, {
 					model: async (messages, signal) =>
@@ -337,10 +353,11 @@ export function registerAiGuideHandlers(deps: {
 				// Only the staged write can throw here; the previous pair was restored.
 				result = { success: false, error: "save" };
 			}
-			if (!result.success && !result.cancelled)
-				briefFailures.set(resolved, result.error ?? "provider");
+			if (!result.success && !result.cancelled && !result.error) result.error = "provider";
 			return result;
 		} finally {
+			// A remounted view did not see this result; it reads the failure from status.
+			if (!result.success && result.error) briefFailures.set(resolved, result.error);
 			briefRuns.delete(resolved);
 			// A Library view remounted mid-run did not start it and needs this to leave Making.
 			event.sender.send("showhow:agent-brief-settled", { bundleDir: resolved });
@@ -364,6 +381,9 @@ export function registerAiGuideHandlers(deps: {
 		}
 		return { success: true };
 	});
+}
+function sameOptions(a: GuideOptions | undefined, b: GuideOptions) {
+	return a?.transcript === b.transcript && a.frames === b.frames;
 }
 function isOptions(value: unknown): value is GuideOptions {
 	return (
