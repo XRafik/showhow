@@ -70,6 +70,7 @@ import {
 } from "./permissions";
 import { setDisplaySleepBlocked } from "./recording/displaySleepBlocker";
 import { fetchShowhowMedia, SHOWHOW_MEDIA_SCHEME } from "./showhow/mediaProtocol";
+import { registerOpenLibraryHandler } from "./showhow/openLibrary";
 import { acquireStableInstanceLock } from "./showhow/singleInstanceLock";
 import { offersStarPrompt, REPO_URL, storeReviewUrl } from "./star-prompt";
 import { registerSttIpc, shutdownStt } from "./stt";
@@ -1397,6 +1398,23 @@ appReady?.then(async () => {
 		}
 		mainWindow = createHudOverlayWindow();
 	}
+
+	// The editor's Library link. Its renderer has already asked about unsaved changes, so the
+	// editor is force-closed like the HUD swap above rather than asked again.
+	registerOpenLibraryHandler({
+		ipcMain,
+		getMainWindow: () => mainWindow,
+		showLibrary: () => {
+			if (mainWindow) {
+				isForceClosing = true;
+				mainWindow.close();
+				isForceClosing = false;
+				mainWindow = null;
+			}
+			editorHasUnsavedChanges = false;
+			createWindow();
+		},
+	});
 
 	registerIpcHandlers(
 		createEditorWindowWrapper,

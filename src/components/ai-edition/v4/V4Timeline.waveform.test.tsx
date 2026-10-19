@@ -140,8 +140,6 @@ function renderBars(atGainDb: number): string[] {
 				tl={tl as unknown as ReturnType<typeof useTimeline>}
 				videoSources={[{ id: "a1", src: "file:///tmp/rec.mp4", label: "rec" }]}
 				setCurrentTime={vi.fn()}
-				playing={false}
-				onTogglePlay={vi.fn()}
 				onEditClip={vi.fn()}
 				onAddVoiceover={vi.fn()}
 			/>

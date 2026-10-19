@@ -102,9 +102,6 @@ function renderPane() {
 						projectTitle="Project"
 						dirty={false}
 						canExport={false}
-						canUndo={false}
-						canRedo={false}
-						chatOpen={false}
 						actions={{
 							openProject: noop,
 							newProject: noop,
@@ -112,12 +109,11 @@ function renderPane() {
 							export: noop,
 							openSettings: noop,
 							renameProject: noop,
-							toggleChat: noop,
 							openProviderSettings: noop,
 							showAbout: noop,
 							checkForUpdates: noop,
-							undo: noop,
-							redo: noop,
+							openLibrary: noop,
+							newRecording: noop,
 						}}
 					/>
 				</TooltipProvider>

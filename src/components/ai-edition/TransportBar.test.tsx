@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom";
-import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -150,5 +150,72 @@ describe("TransportBar play button", () => {
 		const tooltip = await openTooltip(screen.getByRole("button", { name: "Pause" }));
 		expect(tooltip?.querySelector("kbd")).toHaveTextContent("K");
 		expect(tooltip?.querySelector("kbd")).not.toHaveTextContent("Space");
+	});
+});
+
+describe("TransportBar seek bar under the preview (Editor-01)", () => {
+	beforeEach(() => {
+		vi.stubGlobal("ResizeObserver", StubResizeObserver);
+		useProjectStore.setState({ currentTimeSec: 12 });
+	});
+
+	afterEach(() => {
+		cleanup();
+		vi.unstubAllGlobals();
+	});
+
+	function renderSeekable() {
+		const onSeek = vi.fn();
+		render(
+			providers(
+				<TransportBar
+					playing={false}
+					overrideTimeSec={null}
+					clips={clips}
+					onTogglePlay={noop}
+					onSeek={onSeek}
+				/>,
+			),
+		);
+		return { onSeek, slider: screen.getByRole("slider", { name: "Seek" }) };
+	}
+
+	it("exposes the playhead as a slider over the timeline's length", () => {
+		const { slider } = renderSeekable();
+		expect(slider).toHaveAttribute("aria-valuemin", "0");
+		expect(slider).toHaveAttribute("aria-valuemax", "30");
+		expect(slider).toHaveAttribute("aria-valuenow", "12");
+		expect(slider).toHaveAttribute("tabindex", "0");
+	});
+
+	it("steps a second with the arrows and jumps to the ends with Home and End", () => {
+		const { slider, onSeek } = renderSeekable();
+		fireEvent.keyDown(slider, { key: "ArrowRight" });
+		fireEvent.keyDown(slider, { key: "ArrowLeft" });
+		fireEvent.keyDown(slider, { key: "Home" });
+		fireEvent.keyDown(slider, { key: "End" });
+		expect(onSeek.mock.calls.map(([sec]) => sec)).toEqual([13, 11, 0, 30]);
+	});
+
+	it("seeks to where the bar is pressed", () => {
+		const { slider, onSeek } = renderSeekable();
+		slider.getBoundingClientRect = () =>
+			({ left: 100, width: 400, top: 0, height: 4, right: 500, bottom: 4 }) as DOMRect;
+		fireEvent.pointerDown(slider, { clientX: 300, pointerId: 1 });
+		expect(onSeek).toHaveBeenCalledWith(15);
+	});
+
+	it("shows the total length beside the bar", () => {
+		renderSeekable();
+		expect(screen.getByTestId("transport-total")).toHaveTextContent("0:30");
+	});
+
+	it("leaves the seek bar out where no seek handler is given", () => {
+		render(
+			providers(
+				<TransportBar playing={false} overrideTimeSec={null} clips={clips} onTogglePlay={noop} />,
+			),
+		);
+		expect(screen.queryByRole("slider")).toBeNull();
 	});
 });

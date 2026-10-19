@@ -104,7 +104,12 @@
 			"media": "Medien",
 			"edit": "Schnitt",
 			"rec": "Aufnahme"
-		}
+		},
+		"navigation": "Editor-Navigation",
+		"library": "Bibliothek",
+		"newRecording": "Neue Aufnahme",
+		"open": "Öffnen",
+		"editorTitle": "Showhow · Editor"
 	},
 	"rec": {
 		"source": "Quelle",
@@ -223,7 +228,9 @@
 		"cropDescription": "Rahme die Aufnahme neu — wähle ein Seitenverhältnis und zoome auf den Bereich, den du behalten willst.",
 		"openCrop": "Zuschneiden öffnen…",
 		"deleteRegion": "Bereich löschen",
-		"freehandRendersAsBox": "Im Export wird eine Freihandform von ihrem umschließenden Rechteck abgedeckt — eher zu viel als zu wenig."
+		"freehandRendersAsBox": "Im Export wird eine Freihandform von ihrem umschließenden Rechteck abgedeckt — eher zu viel als zu wenig.",
+		"label": "Inspektor",
+		"aiChat": "KI-Chat"
 	},
 	"chat": {
 		"changeProvider": "Anbieter wechseln",
@@ -350,7 +357,8 @@
 		"playbackControls": "Wiedergabesteuerung",
 		"play": "Wiedergabe",
 		"pause": "Pause",
-		"loop": "Wiederholen"
+		"loop": "Wiederholen",
+		"seek": "Springen"
 	},
 	"shell": {
 		"aiEditor": "KI-Editor",
@@ -432,5 +440,25 @@
 	"cpuCompositor": {
 		"notice": "Läuft ohne kompatible GPU — das Rendering erfolgt auf der CPU, die Wiedergabe ist daher langsamer.",
 		"exportWarning": "Keine kompatible GPU: Dieser Export läuft auf der CPU und dauert deutlich länger als üblich."
+	},
+	"lanes": {
+		"zoom": "Zoom",
+		"trim": "Schnitt",
+		"text": "Text",
+		"speed": "Tempo",
+		"camera": "Kamera",
+		"audio": "Audio"
+	},
+	"noProjectOpen": {
+		"eyebrow": "Showhow · Editor",
+		"title": "Kein Projekt geöffnet",
+		"body": "Öffne eine Aufnahme aus der Bibliothek, um sie zu kürzen, Zooms hinzuzufügen und zu exportieren.",
+		"openLibrary": "Bibliothek öffnen",
+		"openFile": "Datei öffnen…",
+		"importVideo": "Video importieren",
+		"record": "Bildschirm aufnehmen",
+		"recent": "Zuletzt",
+		"today": "Heute",
+		"yesterday": "Gestern"
 	}
 }

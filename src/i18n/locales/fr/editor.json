@@ -104,7 +104,12 @@
 			"media": "Médias",
 			"edit": "Édition",
 			"rec": "Enregistrement"
-		}
+		},
+		"navigation": "Navigation de l'éditeur",
+		"library": "Bibliothèque",
+		"newRecording": "Nouvel enregistrement",
+		"open": "Ouvrir",
+		"editorTitle": "Showhow · Éditeur"
 	},
 	"rec": {
 		"source": "Source",
@@ -223,7 +228,9 @@
 		"cropDescription": "Recadrer l'enregistrement — choisissez un format et zoomez sur la région à conserver.",
 		"openCrop": "Ouvrir le recadrage…",
 		"deleteRegion": "Supprimer la zone",
-		"freehandRendersAsBox": "À l'export, un tracé libre est couvert par sa boîte englobante — on couvre trop, jamais trop peu."
+		"freehandRendersAsBox": "À l'export, un tracé libre est couvert par sa boîte englobante — on couvre trop, jamais trop peu.",
+		"label": "Inspecteur",
+		"aiChat": "Chat IA"
 	},
 	"chat": {
 		"changeProvider": "Changer de fournisseur",
@@ -350,7 +357,8 @@
 		"playbackControls": "Contrôles de lecture",
 		"play": "Lecture",
 		"pause": "Pause",
-		"loop": "Boucle"
+		"loop": "Boucle",
+		"seek": "Positionner"
 	},
 	"shell": {
 		"aiEditor": "Éditeur IA",
@@ -432,5 +440,25 @@
 	"cpuCompositor": {
 		"notice": "Aucun GPU compatible — rendu sur CPU, la lecture est donc plus lente.",
 		"exportWarning": "Aucun GPU compatible : cet export tourne sur CPU et sera beaucoup plus long que d'habitude."
+	},
+	"lanes": {
+		"zoom": "Zoom",
+		"trim": "Coupe",
+		"text": "Texte",
+		"speed": "Vitesse",
+		"camera": "Caméra",
+		"audio": "Audio"
+	},
+	"noProjectOpen": {
+		"eyebrow": "Showhow · Éditeur",
+		"title": "Aucun projet ouvert",
+		"body": "Ouvrez un enregistrement de la bibliothèque pour le couper, ajouter des zooms et l'exporter.",
+		"openLibrary": "Ouvrir la bibliothèque",
+		"openFile": "Ouvrir un fichier…",
+		"importVideo": "Importer une vidéo",
+		"record": "Enregistrer votre écran",
+		"recent": "Récents",
+		"today": "Aujourd'hui",
+		"yesterday": "Hier"
 	}
 }

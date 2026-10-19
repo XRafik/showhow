@@ -60,9 +60,6 @@ function TopBar({ mode }: { mode: EditorMode }) {
 			projectTitle="Demo Project"
 			dirty={false}
 			canExport={false}
-			canUndo={false}
-			canRedo={false}
-			chatOpen={false}
 			actions={{
 				openProject: noop,
 				newProject: noop,
@@ -70,12 +67,11 @@ function TopBar({ mode }: { mode: EditorMode }) {
 				export: noop,
 				openSettings: noop,
 				renameProject: noop,
-				toggleChat: noop,
 				openProviderSettings: () => openDialog("providers"),
 				showAbout: noop,
 				checkForUpdates: noop,
-				undo: noop,
-				redo: noop,
+				openLibrary: noop,
+				newRecording: noop,
 			}}
 		/>
 	);

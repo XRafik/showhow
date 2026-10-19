@@ -1190,3 +1190,29 @@ Carried as follow-ups, not changed: (4) cream STOP on `--ds-rec` is 3.6:1 for 11
 ### Review round 2 (FAIL: notice hover) → owner-approved fix and third review
 - Round 2 confirmed every round-1 fix. Its one blocker: the HUD notice's primary `<Button>` kept the shared variant's `hover:bg-[var(--brand-lo)]`, a token this theme does not map, once the round-1 hover rule became filter-only. A real-hover browser test (RED: settled fill `rgba(0, 0, 0, 0)`, text 1.6:1) now pins both the notice button and Record to the sage fill with ≥4.5:1 text in both themes. The notice hovers are scoped under `.hudNotice` so they outrank the shared button.
 - Also from round 2: the hover filter now eases with the other transitions, and the focus-restore ref is renamed `restoreFocusOnCloseRef`. Not changed: if a HUD mic pick fails to persist, a later unrelated snapshot can restore the old wanted mic (non-blocking).
+
+## 19 October 2026 — Showhow #146 Final editor shell, inspector and timeline
+
+### Owner decisions (asked before building)
+- Library link: a bounded `showhow:open-library` IPC (main/preload/types, outside the listed files). The renderer runs its close-unsaved prompt first, then main force-closes the editor and opens the Library. Refused for any sender but the main editor window.
+- Tools the frames do not show: MEDIA | EDIT tabs; LIBRARY · NEW RECORDING (the Record mode) · OPEN in the top bar; Undo/Redo in the timeline toolbar; the AI chat as the inspector rail's last entry, shown inside the inspector panel (the seam #147 fills).
+
+### Deviations from those decisions, and why
+- **Presets stay in the top bar**, as a mono PRESETS link, not in the Showhow menu. `StylePresetsMenu` is a self-contained Radix popover with its own trigger; the Showhow menu closes on any outside mousedown, which would unmount the presets popover mid-use. Moving it would mean rewriting that component, outside this ticket.
+- **`EditorEmptyState.tsx` was edited** (outside the listed files). Editor-06 is its no-project branch: keeping its import, open-file (legacy `.openscreen` migration into a new document, the original untouched) and drag-and-drop handling avoided duplicating them in the shell. Its "project without media" branch is unchanged apart from removing two branches that could no longer run.
+
+### Frame to evidence
+| Frame | Status | Evidence (`~/dev/loop-evidence/showhow-146/native/`) |
+|---|---|---|
+| Editor-01 shell | Adapted | `after-editor/shots/*` light, dark, 800×600; `journey/shots/*`. The inspector panes keep their inherited headings ("Composition") and controls; Editor-01's "CANVAS / Background" layout of that pane is a pane redesign, not this shell ticket. Extra tools placed as decided above. Lanes: Editor-01 shows ZOOM/TRIM/TEXT/AUDIO; SPEED and CAMERA lanes are kept and labelled too. |
+| Editor-06 no project | Match, plus kept entry points | `after-empty/shots/*`. Import a video, Record and the drop zone are kept under the frame's two buttons. Recent rows show title and date (the store's summary has no duration). |
+
+### Other adaptations
+- The trim/cut pill is the deeper orange (`--ds-rec-ink`, 5.5:1 with cream text) rather than `--ds-rec` (3.6:1), so its 10px label passes AA. The playhead is `--ds-rec`.
+- The stage transport has no fullscreen button: the editor has no fullscreen preview to open.
+- At windows ≤960px the inspector is 260px (320px above), and the timeline's scroll hints hide under a 620px toolbar, so every control stays reachable at 800×600 (checked natively: no clipped button in the top bar or any toolbar, with the fullest timeline toolbar).
+
+### Proof and limits
+- Native (built app, isolated roots, only the committed synthetic `sample.webm`, no fakes in the editor path): playback from the stage transport (0 → 1.2 s), keyboard seek (Home → 0, → → 1 s), add zoom → undo → redo from the timeline toolbar (0 → 1 → 0 → 1 pills), Save, reopen from Open (zoom still there), Library link (editor window gone, Library shown).
+- **GIF verification recipe not run**: its doctor accepts only Codex 0.160.0/0.162.1 and this machine has 0.163.0; the recipe forbids changing tools to pass. The export pipeline is unchanged; the Export button keeps its accessible name. Owed: two isolated recipe runs once the pinned Codex is available.
+- Page screenshots show the DOM; the native compositor's video texture is outside them (the wallpaper visible is the canvas background).

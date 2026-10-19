@@ -19,13 +19,14 @@ import {
 	Pencil,
 	Scissors,
 	SlidersHorizontal,
+	Sparkles,
 	Trash2,
 	Type,
 	Undo2,
 	X,
 	ZoomIn,
 } from "lucide-react";
-import type { ComponentProps } from "react";
+import type { ComponentProps, ReactNode } from "react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { TOOLTIP_GAP_PX, Tooltip } from "@/components/ui/tooltip";
@@ -120,6 +121,11 @@ interface FloatingInspectorProps {
 	 * selected. Clicking elsewhere on the timeline clears the selection
 	 * (see V4Timeline's empty-area click handler) which closes this pane. */
 	tl: TimelineApi;
+	/** The AI chat is the inspector's last rail entry (Editor-01's right-inspector seam, which
+	 *  T9 fills in): while open it takes the panel, the way a selection does. */
+	chatOpen?: boolean;
+	onToggleChat?: () => void;
+	chatPanel?: ReactNode;
 }
 
 export function FloatingInspector({
@@ -131,6 +137,9 @@ export function FloatingInspector({
 	onEditClip,
 	transcriptProps,
 	tl,
+	chatOpen = false,
+	onToggleChat,
+	chatPanel,
 }: FloatingInspectorProps) {
 	const ts = useScopedT("settings");
 	const te = useScopedT("editor");
@@ -165,15 +174,19 @@ export function FloatingInspector({
 	// An imported audio track is selected (issue #350) — like a region selection it
 	// takes over the inspector body with its own pane (see AudioTrackPane).
 	const audioTrackSelected = Boolean(tl.selectedAudioTrackId);
-	const effectiveOpen = open || selection !== null || audioTrackSelected;
+	// A selection still takes over first; then the chat; then the chosen facet.
+	const showingChat = chatOpen && chatPanel !== undefined && !selection && !audioTrackSelected;
+	const effectiveOpen = open || selection !== null || audioTrackSelected || showingChat;
 	return (
-		<div className={styles.inspectorWrap}>
+		<aside className={styles.inspectorWrap} aria-label={te("inspector.label")}>
 			{effectiveOpen ? (
 				<div className={styles.inspector}>
 					{selection ? (
 						<SelectionPane tl={tl} onClose={() => tl.clearSelection()} />
 					) : audioTrackSelected ? (
 						<AudioTrackPane tl={tl} onClose={() => tl.clearSelection()} />
+					) : showingChat ? (
+						<div className={styles.inspectorChat}>{chatPanel}</div>
 					) : (
 						<FacetBody facet={facet} onCollapse={onToggleOpen} transcriptProps={transcriptProps} />
 					)}
@@ -187,11 +200,19 @@ export function FloatingInspector({
 						<button
 							type="button"
 							aria-label={ts(labelKey)}
-							aria-pressed={!selection && !audioTrackSelected && open && facet === id}
+							aria-pressed={
+								!selection && !audioTrackSelected && !showingChat && open && facet === id
+							}
 							onClick={() => {
 								// Switching facets while an element is selected should show
 								// the facet, not leave the selection pane on top of it.
 								if (selection || audioTrackSelected) tl.clearSelection();
+								// Picking a facet is leaving the chat for it.
+								if (showingChat) {
+									onToggleChat?.();
+									onFacetChange(id);
+									return;
+								}
 								if (facet === id && open) {
 									onToggleOpen();
 								} else {
@@ -292,8 +313,26 @@ export function FloatingInspector({
 						</div>
 					) : null}
 				</div>
+				{onToggleChat ? (
+					<Tooltip content={te("inspector.aiChat")} {...RAIL_TOOLTIP}>
+						<button
+							type="button"
+							className={styles.railAi}
+							aria-label={te("inspector.aiChat")}
+							aria-pressed={showingChat}
+							onClick={() => {
+								if (selection || audioTrackSelected) tl.clearSelection();
+								// With a selection on top, the chat is open but hidden: show it, don't close it.
+								if (chatOpen && !showingChat) return;
+								onToggleChat();
+							}}
+						>
+							<Sparkles size={17} />
+						</button>
+					</Tooltip>
+				) : null}
 			</div>
-		</div>
+		</aside>
 	);
 }
 

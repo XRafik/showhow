@@ -104,7 +104,12 @@
 			"media": "Medya",
 			"edit": "Düzenle",
 			"rec": "Kayıt"
-		}
+		},
+		"navigation": "Düzenleyici gezinmesi",
+		"library": "Kitaplık",
+		"newRecording": "Yeni kayıt",
+		"open": "Aç",
+		"editorTitle": "Showhow · Düzenleyici"
 	},
 	"rec": {
 		"source": "Kaynak",
@@ -223,7 +228,9 @@
 		"cropDescription": "Kaydı yeniden çerçeveleyin — bir en boy oranı seçin ve saklamak istediğiniz bölgeye yakınlaşın.",
 		"openCrop": "Kırpmayı aç…",
 		"deleteRegion": "Bölgeyi sil",
-		"freehandRendersAsBox": "Dışa aktarmada serbest çizim, sınırlayıcı dikdörtgeniyle kapatılır — eksik değil, fazla kapatır."
+		"freehandRendersAsBox": "Dışa aktarmada serbest çizim, sınırlayıcı dikdörtgeniyle kapatılır — eksik değil, fazla kapatır.",
+		"label": "Denetçi",
+		"aiChat": "Yapay zekâ sohbeti"
 	},
 	"chat": {
 		"changeProvider": "Sağlayıcıyı değiştir",
@@ -350,7 +357,8 @@
 		"playbackControls": "Oynatma denetimleri",
 		"play": "Oynat",
 		"pause": "Duraklat",
-		"loop": "Döngü"
+		"loop": "Döngü",
+		"seek": "Konum"
 	},
 	"shell": {
 		"aiEditor": "Yapay zekâ düzenleyici",
@@ -432,5 +440,25 @@
 	"cpuCompositor": {
 		"notice": "Uyumlu GPU yok — işleme CPU üzerinde yapılıyor, bu yüzden oynatma daha yavaş.",
 		"exportWarning": "Uyumlu GPU yok: bu dışa aktarma CPU üzerinde çalışır ve normalden çok daha uzun sürer."
+	},
+	"lanes": {
+		"zoom": "Yakınlaştırma",
+		"trim": "Kırpma",
+		"text": "Metin",
+		"speed": "Hız",
+		"camera": "Kamera",
+		"audio": "Ses"
+	},
+	"noProjectOpen": {
+		"eyebrow": "Showhow · Düzenleyici",
+		"title": "Açık proje yok",
+		"body": "Kırpmak, yakınlaştırma eklemek ve dışa aktarmak için kitaplıktan bir kayıt açın.",
+		"openLibrary": "Kitaplığı aç",
+		"openFile": "Dosya aç…",
+		"importVideo": "Video içe aktar",
+		"record": "Ekranını kaydet",
+		"recent": "Son",
+		"today": "Bugün",
+		"yesterday": "Dün"
 	}
 }

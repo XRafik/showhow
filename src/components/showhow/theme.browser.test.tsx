@@ -81,31 +81,36 @@ describe("Showhow design tokens in a browser", () => {
 
 it("keeps the real stable selected Edit tab readable in both house themes", () => {
 	const prior = document.documentElement.getAttribute("data-sh-theme");
-	const { getByRole, unmount } = render(
-		<div className={editorStyles.modeSwitch}>
-			<button type="button" role="tab" aria-selected="true">
-				Selected Edit contrast
-			</button>
-		</div>,
+	// The Final switch lives on the dark top bar (#146), so the selected tab's translucent wash
+	// is read as it is seen: laid over the bar's panel.
+	const { getByRole, getByTestId, unmount } = render(
+		<header className={editorStyles.topbar} data-testid="final-topbar">
+			<div className={editorStyles.modeSwitch}>
+				<button type="button" role="tab" aria-selected="true">
+					Selected Edit contrast
+				</button>
+			</div>
+		</header>,
 	);
 	const selected = getByRole("tab", { name: "Selected Edit contrast" });
+	const channels = (color: string) => (color.match(/[\d.]+/g) ?? []).map(Number);
 	const luminance = (color: string) => {
-		const channels = (color.match(/[\d.]+/g) ?? [])
+		const values = channels(color)
 			.slice(0, 3)
-			.map(Number)
 			.map((value) => {
 				const channel = value / 255;
 				return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
 			});
-		return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+		return values[0] * 0.2126 + values[1] * 0.7152 + values[2] * 0.0722;
 	};
 	try {
 		for (const theme of ["light", "dark"]) {
 			document.documentElement.setAttribute("data-sh-theme", theme);
 			const computed = getComputedStyle(selected);
-			const values = [luminance(computed.color), luminance(computed.backgroundColor)].sort(
-				(a, b) => a - b,
-			);
+			const bar = channels(getComputedStyle(getByTestId("final-topbar")).backgroundColor);
+			const [r, g, b, a = 1] = channels(computed.backgroundColor);
+			const seen = `rgb(${[r, g, b].map((v, i) => v * a + bar[i] * (1 - a)).join(",")})`;
+			const values = [luminance(computed.color), luminance(seen)].sort((x, y) => x - y);
 			expect(
 				(values[1] + 0.05) / (values[0] + 0.05),
 				`${theme}: ${computed.color} on ${computed.backgroundColor}`,
@@ -182,9 +187,10 @@ it("renders real HUD labels and editor text in Inter Tight with house HUD surfac
 				/>
 			</div>
 			<div className={editorStyles.app}>
+				<span>Editor typography</span>
 				<div className={editorStyles.modeSwitch}>
 					<button type="button" role="tab" aria-selected="true">
-						Editor typography
+						Editor mode tab
 					</button>
 				</div>
 			</div>
@@ -201,11 +207,12 @@ it("renders real HUD labels and editor text in Inter Tight with house HUD surfac
 		for (const theme of ["light", "dark"]) {
 			document.documentElement.setAttribute("data-sh-theme", theme);
 			expect
-				.soft(
-					getComputedStyle(getByRole("tab", { name: "Editor typography" })).fontFamily,
-					`${theme}: editor tab`,
-				)
+				.soft(getComputedStyle(getByText("Editor typography")).fontFamily, `${theme}: editor text`)
 				.toMatch(/^"?Inter Tight"?[,]/);
+			// The Final editor's top bar labels, the mode tabs among them, are mono capitals (#146).
+			const modeTab = getComputedStyle(getByRole("tab", { name: "Editor mode tab" }));
+			expect.soft(modeTab.fontFamily, `${theme}: editor mode tab`).toContain("JetBrains Mono");
+			expect.soft(modeTab.textTransform, `${theme}: editor mode tab`).toBe("uppercase");
 			// The Final HUD sets its labels in JetBrains Mono capitals (HUD-03/04).
 			for (const node of [
 				getByText("Synthetic HUD source"),

@@ -9,9 +9,11 @@ import {
 	Mic,
 	Music,
 	Pencil,
+	Redo2,
 	Scissors,
 	Sparkles,
 	Trash2,
+	Undo2,
 	Wand2,
 	ZoomIn,
 } from "lucide-react";
@@ -67,9 +69,8 @@ import {
 	resolveTimelineSpanToTrim,
 	ventilateTimelineSpanToTrims,
 } from "@/lib/ai-edition/timeline/trim-mapping";
-import { formatBinding } from "@/lib/shortcuts";
+import { formatBinding, formatFirstFixedBinding } from "@/lib/shortcuts";
 import { nativeBridgeClient } from "@/native/client";
-import { TransportBar } from "../TransportBar";
 import type { VideoSource } from "../VirtualPreview";
 import styles from "./EditorShellV4.module.css";
 
@@ -604,26 +605,34 @@ export function V4Timeline({
 	variant = "edit",
 	onDropAsset,
 	videoSources = [],
-	playing,
-	onTogglePlay,
 	onEditClip,
 	onAddVoiceover,
+	canUndo = false,
+	canRedo = false,
+	onUndo,
+	onRedo,
 }: {
 	tl: TimelineApi;
 	setCurrentTime: (sec: number) => void;
 	variant?: "edit" | "media";
 	onDropAsset?: (assetId: string) => Promise<void>;
 	videoSources?: VideoSource[];
-	playing: boolean;
-	onTogglePlay: () => void;
 	/** Opens the (now single, shell-level) EditClipModal for this clip —
 	 * trim in/out and crop both live there per-clip. */
 	onEditClip: (clip: AxcutClip) => void;
 	/** Opens the voiceover recorder. Shell-level like the clip editor: the
 	 *  dialog owns the microphone and the shell owns the transport. */
 	onAddVoiceover: () => void;
+	/** History lives with the timeline tools in the Final design (Editor-01). The same
+	 *  handlers as Ctrl+Z / Ctrl+Shift+Z; absent, the buttons are not drawn. */
+	canUndo?: boolean;
+	canRedo?: boolean;
+	onUndo?: () => void;
+	onRedo?: () => void;
 }) {
 	const t = useScopedT("timeline");
+	const te = useScopedT("editor");
+	const tShortcuts = useScopedT("shortcuts");
 	// The live bindings, not the defaults: these keys are remappable, and a menu
 	// that taught the wrong one would be worse than teaching none.
 	const { shortcuts, isMac } = useShortcuts();
@@ -1727,6 +1736,20 @@ export function V4Timeline({
 		);
 	};
 
+	// The lane's name, drawn in the gutter just left of the VISIBLE window: like the empty-lane
+	// hint, it is placed at nav.start of the zoomed canvas, so it stays put while the timeline is
+	// zoomed or panned. Decoration for the eye; each pill and hint already names its own lane.
+	const laneLabel = (label: string) => (
+		<span
+			data-lane-label
+			aria-hidden="true"
+			className={styles.laneLabel}
+			style={{ left: `${nav.start * 100}%` }}
+		>
+			{label}
+		</span>
+	);
+
 	const renderPills = (pills: LanePill[], emptyLabel: string) => {
 		const effectivePills = pills.map((p) => {
 			if (activePillDrag && activePillDrag.id === p.id) {
@@ -2043,6 +2066,42 @@ export function V4Timeline({
 									</Tooltip>
 								</>
 							) : null}
+							{onUndo && onRedo ? (
+								<>
+									<span className={styles.tlToolSep} aria-hidden />
+									{/* `aria-disabled`, not `disabled`: a natively disabled button takes no
+									    pointer events, so its tooltip could never open. The click does
+									    nothing while it is set. */}
+									<Tooltip
+										content={tShortcuts("fixedActions.undo")}
+										shortcut={formatFirstFixedBinding("undo", isMac)}
+									>
+										<button
+											type="button"
+											className={styles.tlToolBtn}
+											aria-label={tShortcuts("fixedActions.undo")}
+											aria-disabled={!canUndo || undefined}
+											onClick={canUndo ? onUndo : undefined}
+										>
+											<Undo2 size={16} />
+										</button>
+									</Tooltip>
+									<Tooltip
+										content={tShortcuts("fixedActions.redo")}
+										shortcut={formatFirstFixedBinding("redo", isMac)}
+									>
+										<button
+											type="button"
+											className={styles.tlToolBtn}
+											aria-label={tShortcuts("fixedActions.redo")}
+											aria-disabled={!canRedo || undefined}
+											onClick={canRedo ? onRedo : undefined}
+										>
+											<Redo2 size={16} />
+										</button>
+									</Tooltip>
+								</>
+							) : null}
 						</div>
 					</TooltipProvider>
 				) : (
@@ -2069,15 +2128,8 @@ export function V4Timeline({
 				)}
 				{showLanes ? (
 					<>
-						{/* Its own provider, like the tool strip above: TransportBar has a tooltip too. */}
-						<TooltipProvider>
-							<TransportBar
-								playing={playing}
-								overrideTimeSec={scrubbingTimeSec}
-								clips={clips}
-								onTogglePlay={onTogglePlay}
-							/>
-						</TooltipProvider>
+						{/* Play/pause and the timecode sit under the preview now (Editor-01); the
+						    timeline header keeps the tools and the scroll hints. */}
 						<div className={styles.tlHints}>
 							<span className={styles.tlHint}>
 								<span className={styles.tlKbd}>Shift+Scroll</span> {t("labels.pan")}
@@ -2129,7 +2181,24 @@ export function V4Timeline({
 								    strings the pre-v4 timeline used, so the keys stay translated. The key
 								    is the live binding, formatted like the toolbar tooltip's chip, so a
 								    rebind in the shortcuts dialog moves the hint with it (#966). */}
+								{/* Final order (Editor-01): zoom, trim, text, then the lanes the frame has no
+								    room for. Each lane is named in the gutter left of the visible window. */}
 								<div className={styles.tlLane}>
+									{laneLabel(te("lanes.zoom"))}
+									{renderPills(
+										zoomPills,
+										t("hints.pressZoom", { key: formatBinding(shortcuts.addZoom, isMac) }),
+									)}
+								</div>
+								<div className={styles.tlLane}>
+									{laneLabel(te("lanes.trim"))}
+									{renderPills(
+										trimPills,
+										t("hints.pressTrim", { key: formatBinding(shortcuts.addTrim, isMac) }),
+									)}
+								</div>
+								<div className={styles.tlLane}>
+									{laneLabel(te("lanes.text"))}
 									{renderPills(
 										annPills,
 										t("hints.pressAnnotation", {
@@ -2138,24 +2207,14 @@ export function V4Timeline({
 									)}
 								</div>
 								<div className={styles.tlLane}>
+									{laneLabel(te("lanes.speed"))}
 									{renderPills(
 										speedPills,
 										t("hints.pressSpeed", { key: formatBinding(shortcuts.addSpeed, isMac) }),
 									)}
 								</div>
 								<div className={styles.tlLane}>
-									{renderPills(
-										trimPills,
-										t("hints.pressTrim", { key: formatBinding(shortcuts.addTrim, isMac) }),
-									)}
-								</div>
-								<div className={styles.tlLane}>
-									{renderPills(
-										zoomPills,
-										t("hints.pressZoom", { key: formatBinding(shortcuts.addZoom, isMac) }),
-									)}
-								</div>
-								<div className={styles.tlLane}>
+									{laneLabel(te("lanes.camera"))}
 									{/* Advertising "Press C" on a project with no webcam invites a keystroke
 									    that `addCameraFullscreen` now refuses (#353). The toolbar button is
 									    already disabled; this keeps the lane from contradicting it. */}
@@ -2184,6 +2243,7 @@ export function V4Timeline({
 											AUDIO_LANE_PAD_PX * 2,
 									}}
 								>
+									{laneLabel(te("lanes.audio"))}
 									{tl.audioTracks.length === 0 ? (
 										<span
 											className={styles.laneEmpty}

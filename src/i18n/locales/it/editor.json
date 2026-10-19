@@ -104,7 +104,12 @@
 			"media": "Media",
 			"edit": "Modifica",
 			"rec": "Registra"
-		}
+		},
+		"navigation": "Navigazione dell'editor",
+		"library": "Libreria",
+		"newRecording": "Nuova registrazione",
+		"open": "Apri",
+		"editorTitle": "Showhow · Editor"
 	},
 	"rec": {
 		"source": "Sorgente",
@@ -223,7 +228,9 @@
 		"cropDescription": "Reinquadra la registrazione — scegli un rapporto d'aspetto e ingrandisci l'area da mantenere.",
 		"openCrop": "Apri ritaglio…",
 		"deleteRegion": "Elimina regione",
-		"freehandRendersAsBox": "Nell'esportazione, una forma libera è coperta dal suo rettangolo di delimitazione: copre di più, mai di meno."
+		"freehandRendersAsBox": "Nell'esportazione, una forma libera è coperta dal suo rettangolo di delimitazione: copre di più, mai di meno.",
+		"label": "Ispettore",
+		"aiChat": "Chat IA"
 	},
 	"chat": {
 		"changeProvider": "Cambia provider",
@@ -350,7 +357,8 @@
 		"playbackControls": "Controlli di riproduzione",
 		"play": "Riproduci",
 		"pause": "Pausa",
-		"loop": "Ripeti"
+		"loop": "Ripeti",
+		"seek": "Posizione"
 	},
 	"shell": {
 		"aiEditor": "Editor IA",
@@ -432,5 +440,25 @@
 	"cpuCompositor": {
 		"notice": "Nessuna GPU compatibile: il rendering avviene sulla CPU, quindi la riproduzione è più lenta.",
 		"exportWarning": "Nessuna GPU compatibile: questa esportazione viene eseguita sulla CPU e richiederà molto più tempo del solito."
+	},
+	"lanes": {
+		"zoom": "Zoom",
+		"trim": "Taglio",
+		"text": "Testo",
+		"speed": "Velocità",
+		"camera": "Fotocamera",
+		"audio": "Audio"
+	},
+	"noProjectOpen": {
+		"eyebrow": "Showhow · Editor",
+		"title": "Nessun progetto aperto",
+		"body": "Apri una registrazione dalla libreria per tagliarla, aggiungere zoom ed esportarla.",
+		"openLibrary": "Apri libreria",
+		"openFile": "Apri file…",
+		"importVideo": "Importa un video",
+		"record": "Registra lo schermo",
+		"recent": "Recenti",
+		"today": "Oggi",
+		"yesterday": "Ieri"
 	}
 }

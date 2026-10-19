@@ -59,6 +59,7 @@ import { nativeBridgeClient } from "@/native";
 import type { AiEditionProjectSummary } from "@/native/contracts";
 import { resolveVisibleClips } from "@/native/sceneDescription";
 import { useNativePlaybackSync } from "@/native/useNativePlaybackSync";
+import { EditorEmptyState } from "./EditorEmptyState";
 import { ExportDialog } from "./ExportDialog";
 import { insertionsEnabled } from "./insertionsEnabled";
 import { ChatStripPanel } from "./LeftPanel";
@@ -72,6 +73,7 @@ import {
 } from "./Modals";
 import { Preview } from "./Preview";
 import { importPendingRecording, maybeSaveFreshRecordingAutoZooms } from "./recordingImport";
+import { TransportBar } from "./TransportBar";
 import { AddAudioLayerDialog } from "./v4/AddAudioLayerDialog";
 import v4 from "./v4/EditorShellV4.module.css";
 import { type EditorMode, EditorTopBar } from "./v4/EditorTopBar";
@@ -212,8 +214,8 @@ export function NewEditorShell() {
 
 	const [seekTarget, setSeekTarget] = useState<SeekTarget | null>(null);
 	const [videoElement, setVideoElement] = useState<HTMLVideoElement | null>(null);
-	// v4 shell: three modes (Media / Edit / Rec), a collapsible agent (chat)
-	// column, and a floating facet inspector over the stage.
+	// Final shell (Editor-01): three modes (Media / Edit / Rec), a dark stage over the
+	// timeline, and a docked inspector on the right whose rail also opens the AI chat.
 	const [mode, setMode] = useState<EditorMode>("edit");
 	const [chatOpen, setChatOpen] = useState(false);
 	const pendingChatPrompt = useChatPromptBus((s) => s.pending);
@@ -222,9 +224,6 @@ export function NewEditorShell() {
 			setChatOpen(true);
 		}
 	}, [pendingChatPrompt, chatOpen]);
-	const [chatWidthPx, setChatWidthPx] = useState(
-		() => Number(localStorage.getItem("os-editor-chat-width")) || 392,
-	);
 	const [timelineBaseHeightPx, setTimelineBaseHeightPx] = useState(() => {
 		const raw = localStorage.getItem("os-editor-timeline-height");
 		// One-time migration: if legacy 308px default exists without the migration marker,
@@ -367,9 +366,11 @@ export function NewEditorShell() {
 			}
 		: null;
 
-	// refresh project list when the Open Project modal is open
+	// Refresh the project list while the Open Project modal is open, and while no project is,
+	// for Editor-06's Recent list.
+	const noProjectOpen = !document;
 	useEffect(() => {
-		if (!openProjectOpen) return;
+		if (!openProjectOpen && !noProjectOpen) return;
 		void (async () => {
 			try {
 				const next = await nativeBridgeClient.aiEdition.listProjects();
@@ -378,7 +379,7 @@ export function NewEditorShell() {
 				// ponytail: silent
 			}
 		})();
-	}, [openProjectOpen]);
+	}, [openProjectOpen, noProjectOpen]);
 
 	// Auto-load project recording session on mount
 	useEffect(() => {
@@ -977,6 +978,18 @@ export function NewEditorShell() {
 		}
 	}, [promptUnsaved]);
 
+	// The Library link (Editor-01/06). The editor window is traded for the Library, so unsaved
+	// work gets the same prompt as closing the window, then main makes the swap.
+	const handleOpenLibrary = useCallback(async () => {
+		const choice = await promptUnsaved("close");
+		if (choice === "cancel") return;
+		try {
+			await window.electronAPI?.showhowOpenLibrary?.();
+		} catch (err) {
+			console.warn("[editor] failed to open the library:", err);
+		}
+	}, [promptUnsaved]);
+
 	const handleExport = useCallback(() => {
 		if (!hasAsset) {
 			toast.info("Add a video to the project before exporting.");
@@ -1446,37 +1459,15 @@ export function NewEditorShell() {
 		handleSeek,
 	]);
 
-	const showTimeline = mode !== "rec";
+	const showTimeline = mode !== "rec" && !(mode === "edit" && noProjectOpen);
 	const timelineRow = mode === "media" ? "188px" : `${timelineHeightPx}px`;
-	const bodyColumns = mode === "edit" && chatOpen ? `${chatWidthPx}px 1fr` : "1fr";
+	// The inspector is an Edit-mode column. With no project it only appears to hold the chat.
+	const showInspector = mode === "edit" && (!noProjectOpen || chatOpen);
 
-	// Drag the chat/stage divider (col-resize) or the timeline's top edge
-	// (row-resize) to resize. Pointer-driven like V4Timeline's pill/nav/clip
-	// drags — pointerdown arms a window-level pointermove/pointerup pair, no
-	// drag library. Persisted to localStorage (a UI layout preference, not
-	// project content, so it doesn't belong in the document/useEditorSettings
-	// round-trip).
-	const startChatResize = useCallback(
-		(e: React.PointerEvent) => {
-			e.preventDefault();
-			const startX = e.clientX;
-			const startWidth = chatWidthPx;
-			let latest = startWidth;
-			const move = (ev: PointerEvent) => {
-				latest = Math.min(560, Math.max(280, startWidth + (ev.clientX - startX)));
-				setChatWidthPx(latest);
-			};
-			const up = () => {
-				window.removeEventListener("pointermove", move);
-				window.removeEventListener("pointerup", up);
-				localStorage.setItem("os-editor-chat-width", String(latest));
-			};
-			window.addEventListener("pointermove", move);
-			window.addEventListener("pointerup", up);
-		},
-		[chatWidthPx],
-	);
-
+	// Drag the timeline's top edge (row-resize) to resize. Pointer-driven like V4Timeline's
+	// pill/nav/clip drags — pointerdown arms a window-level pointermove/pointerup pair, no
+	// drag library. Persisted to localStorage (a UI layout preference, not project content,
+	// so it doesn't belong in the document/useEditorSettings round-trip).
 	const startTimelineResize = useCallback(
 		(e: React.PointerEvent) => {
 			e.preventDefault();
@@ -1528,10 +1519,19 @@ export function NewEditorShell() {
 				: undefined,
 	};
 
+	// The stacks are plain arrays, not state; every push or pop comes with a document
+	// write, which re-renders this shell, so reading them here is never stale.
+	const canUndo = undoStack.length > 0;
+	const canRedo = redoStack.length > 0;
+
 	return (
 		<div
 			className={v4.app}
-			style={{ gridTemplateRows: `58px 1fr ${showTimeline ? timelineRow : "0px"}` }}
+			data-mode={mode}
+			style={{
+				gridTemplateRows: `44px minmax(0, 1fr) ${showTimeline ? timelineRow : "0px"}`,
+				gridTemplateColumns: showInspector ? "minmax(0, 1fr) auto" : "minmax(0, 1fr)",
+			}}
 		>
 			<NativePlaybackSync visibleClips={visibleClips} clips={clips} />
 			<EditorTopBar
@@ -1540,11 +1540,6 @@ export function NewEditorShell() {
 				projectTitle={project?.title ?? null}
 				dirty={dirty}
 				canExport={hasAsset}
-				// The stacks are plain arrays, not state; every push or pop comes with a document
-				// write, which re-renders this shell, so reading them here is never stale.
-				canUndo={undoStack.length > 0}
-				canRedo={redoStack.length > 0}
-				chatOpen={chatOpen}
 				actions={{
 					openProject: () => setOpenProjectOpen(true),
 					newProject: () => setNewProjectOpen(true),
@@ -1552,144 +1547,131 @@ export function NewEditorShell() {
 					export: handleExport,
 					openSettings: handleOpenSettings,
 					renameProject: handleRenameProject,
-					toggleChat: () => setChatOpen((v) => !v),
 					openProviderSettings: () => openDialog("providers"),
 					showAbout: handleShowAbout,
 					checkForUpdates: handleCheckForUpdates,
-					undo: runUndo,
-					redo: runRedo,
+					openLibrary: () => void handleOpenLibrary(),
+					newRecording: () => setMode("rec"),
 				}}
 			/>
 
-			<div className={v4.body} style={{ gridTemplateColumns: bodyColumns }}>
-				{mode === "edit" && chatOpen ? (
-					<>
-						<aside className={v4.agent} aria-label={te("shell.aiEditor")}>
-							<ChatStripPanel />
-						</aside>
-						<div
-							className={v4.chatResizeHandle}
-							style={{ left: chatWidthPx }}
-							role="separator"
-							aria-orientation="vertical"
-							aria-label={te("shell.resizeChatPanel")}
-							onPointerDown={startChatResize}
-						/>
-					</>
-				) : null}
-
-				<section className={v4.stage} aria-label={te("shell.previewStage")}>
-					{mode === "edit" ? (
-						<>
-							<div
-								style={{
-									position: "absolute",
-									inset: 0,
-									// Right padding reserves just enough room for the floating
-									// inspector (facet rail ~74px, or the full panel ~320px when
-									// open) so the video resizes into the remaining space instead
-									// of sitting underneath it. Nothing floats over the other
-									// edges — playback transport lives in the timeline header
-									// (TransportBar, rendered from V4Timeline) instead of
-									// overlaying the preview — so top/bottom/left only need a
-									// thin margin off the stage's rounded corners, not a large
-									// fixed chunk that dwarfs the card on smaller windows.
-									//
-									// Native compositor: the D3D overlay is an opaque, always-on-top
-									// design lets the translucent panel float over the video, but the
-									// preview is now a plain in-DOM <canvas> (no OS window/airspace
-									// issue) — still reserve the inspector's real footprint (right:20 +
-									// rail:50 + gap:10 + panel ≈ 80 + panel, +a small gap) so it doesn't
-									// draw its own translucent panel flush against the canvas edge. The
-									// panel's width is `--inspector-w` (see .stage), so the room follows it.
-									padding: `16px ${inspectorOpen ? "calc(var(--inspector-w, 300px) + 100px)" : "74px"} 16px 16px`,
-									boxSizing: "border-box",
-								}}
-							>
-								<Preview
-									hasProject={hasProject}
-									onRecord={() => setMode("rec")}
-									hasAsset={hasAsset}
-									videoSources={videoSources}
-									// While the timeline is empty the preview mounts this asset rather
-									// than whichever one sorts first, so the clip `handleLoadedMetadata`
-									// seeds comes from the video it is sized against.
-									primaryAssetId={document?.project.primaryAssetId}
-									// Imported audio tracks (issue #350). `videoSources` already
-									// resolves a URL for every asset (audio included), so it doubles as
-									// the audio source list; VirtualPreview looks each track up by assetId.
-									// Nothing already on the timeline plays while a take is being
-									// recorded. On speakers it bleeds straight into the microphone
-									// and lands in the new take; even on headphones, narrating over
-									// an earlier voiceover is not what the button offers. The video
-									// itself keeps playing — that is what the user is narrating to.
-									audioTracks={voiceoverRecording ? NO_AUDIO_TRACKS : tl.audioTracks}
-									audioSources={videoSources}
-									clips={clips}
-									zoomRegions={tl.zoomRegions}
-									speedRegions={tl.speedRegions}
-									cameraFullscreenRegions={tl.cameraFullscreenRegions}
-									trimRanges={tl.trimRanges}
-									selectedZoomRegionId={tl.selection?.kind === "zoom" ? tl.selection.id : null}
-									onZoomFocusChange={tl.updateZoomFocusLive}
-									onZoomFocusCommit={() => void tl.commitZoomFocus()}
-									annotationRegions={tl.annotationRegions}
-									selectedAnnotationId={
-										tl.selection?.kind === "annotation" ? tl.selection.id : null
-									}
-									onSelectAnnotation={(id) => tl.selectRegion("annotation", id)}
-									// Live seulement : appelé à chaque mouvement de souris pour que le
-									// compositeur natif suive le geste. L'écriture disque se fait une fois,
-									// au relâchement, via `onAnnotationCommit`.
-									onAnnotationChange={tl.updateAnnotationLive}
-									onAnnotationBlurDataChange={(id, blurData) =>
-										tl.updateAnnotationLive(id, { blurData })
-									}
-									onAnnotationCommit={() => void tl.commitAnnotationChange()}
-									seekTarget={seekTarget}
-									onTimeChange={handleTimeChange}
-									onSeek={handleSeek}
-									onLoadedMetadata={handleLoadedMetadata}
-									onVideoElement={setVideoElement}
-									playing={playing}
-								/>
-							</div>
-							<FloatingInspector
-								facet={facet}
-								open={inspectorOpen}
-								tl={tl}
-								onFacetChange={(f) => {
-									setFacet(f);
-									setInspectorOpen(true);
-								}}
-								onToggleOpen={() => setInspectorOpen((v) => !v)}
-								clips={tl.clips}
-								onEditClip={setEditClipTarget}
-								transcriptProps={transcriptProps}
+			{mode === "edit" && noProjectOpen ? (
+				// Editor-06: no stage, inspector facets or timeline to show, so the page has the
+				// whole body. Its entry points are the empty state's own (import, open, drop).
+				<div className={v4.noProjectBody}>
+					<EditorEmptyState
+						hasProject={false}
+						onRecord={() => setMode("rec")}
+						onOpenLibrary={() => void handleOpenLibrary()}
+						recentProjects={projectSummaries}
+						onOpenRecent={(id) => void handleSelectProject(id)}
+					/>
+				</div>
+			) : (
+				<div className={v4.body}>
+					<section className={v4.stage} aria-label={te("shell.previewStage")}>
+						{mode === "edit" ? (
+							<>
+								<div className={v4.stagePreview}>
+									<Preview
+										hasProject={hasProject}
+										onRecord={() => setMode("rec")}
+										hasAsset={hasAsset}
+										videoSources={videoSources}
+										// While the timeline is empty the preview mounts this asset rather
+										// than whichever one sorts first, so the clip `handleLoadedMetadata`
+										// seeds comes from the video it is sized against.
+										primaryAssetId={document?.project.primaryAssetId}
+										// Imported audio tracks (issue #350). `videoSources` already
+										// resolves a URL for every asset (audio included), so it doubles as
+										// the audio source list; VirtualPreview looks each track up by assetId.
+										// Nothing already on the timeline plays while a take is being
+										// recorded. On speakers it bleeds straight into the microphone
+										// and lands in the new take; even on headphones, narrating over
+										// an earlier voiceover is not what the button offers. The video
+										// itself keeps playing — that is what the user is narrating to.
+										audioTracks={voiceoverRecording ? NO_AUDIO_TRACKS : tl.audioTracks}
+										audioSources={videoSources}
+										clips={clips}
+										zoomRegions={tl.zoomRegions}
+										speedRegions={tl.speedRegions}
+										cameraFullscreenRegions={tl.cameraFullscreenRegions}
+										trimRanges={tl.trimRanges}
+										selectedZoomRegionId={tl.selection?.kind === "zoom" ? tl.selection.id : null}
+										onZoomFocusChange={tl.updateZoomFocusLive}
+										onZoomFocusCommit={() => void tl.commitZoomFocus()}
+										annotationRegions={tl.annotationRegions}
+										selectedAnnotationId={
+											tl.selection?.kind === "annotation" ? tl.selection.id : null
+										}
+										onSelectAnnotation={(id) => tl.selectRegion("annotation", id)}
+										// Live seulement : appelé à chaque mouvement de souris pour que le
+										// compositeur natif suive le geste. L'écriture disque se fait une fois,
+										// au relâchement, via `onAnnotationCommit`.
+										onAnnotationChange={tl.updateAnnotationLive}
+										onAnnotationBlurDataChange={(id, blurData) =>
+											tl.updateAnnotationLive(id, { blurData })
+										}
+										onAnnotationCommit={() => void tl.commitAnnotationChange()}
+										seekTarget={seekTarget}
+										onTimeChange={handleTimeChange}
+										onSeek={handleSeek}
+										onLoadedMetadata={handleLoadedMetadata}
+										onVideoElement={setVideoElement}
+										playing={playing}
+									/>
+								</div>
+								{/* Editor-01: play, the timecode and a seek bar under the video. */}
+								{hasAsset ? (
+									<div className={v4.stageTransport}>
+										<TransportBar
+											playing={playing}
+											overrideTimeSec={null}
+											clips={clips}
+											onTogglePlay={togglePlay}
+											onSeek={handleSeek}
+										/>
+									</div>
+								) : null}
+							</>
+						) : mode === "media" ? (
+							<MediaStage onAddToTimeline={handleDropAsset} />
+						) : (
+							<RecStage
+								onStartRecording={() => void handleNewRecording()}
+								onClose={() => setMode("edit")}
 							/>
-						</>
-					) : mode === "media" ? (
-						<MediaStage onAddToTimeline={handleDropAsset} />
-					) : (
-						<RecStage
-							onStartRecording={() => void handleNewRecording()}
-							onClose={() => setMode("edit")}
-						/>
-					)}
-				</section>
-			</div>
+						)}
+					</section>
+				</div>
+			)}
 
-			{/* Timeline footer (hidden in Rec mode) — rebuilt from the v4 design. */}
-			{showTimeline ? (
-				<div
-					style={{
-						position: "relative",
-						gridRow: 3,
-						minHeight: 0,
-						background: "var(--surface)",
-						borderTop: "1px solid var(--shell-rule)",
+			{showInspector ? (
+				<FloatingInspector
+					facet={facet}
+					open={inspectorOpen && !noProjectOpen}
+					tl={tl}
+					onFacetChange={(f) => {
+						setFacet(f);
+						setInspectorOpen(true);
 					}}
-				>
+					onToggleOpen={() => setInspectorOpen((v) => !v)}
+					clips={tl.clips}
+					onEditClip={setEditClipTarget}
+					transcriptProps={transcriptProps}
+					chatOpen={chatOpen}
+					onToggleChat={() => setChatOpen((v) => !v)}
+					chatPanel={
+						<section className={v4.agent} aria-label={te("shell.aiEditor")}>
+							<ChatStripPanel />
+						</section>
+					}
+				/>
+			) : null}
+
+			{/* Timeline footer (hidden in Rec mode and with no project) — rebuilt from the v4 design. */}
+			{showTimeline ? (
+				<div className={v4.timelineFooter}>
 					{mode !== "media" ? (
 						<div
 							className={v4.timelineResizeHandle}
@@ -1705,10 +1687,12 @@ export function NewEditorShell() {
 						variant={mode === "media" ? "media" : "edit"}
 						onDropAsset={handleDropAsset}
 						videoSources={videoSources}
-						playing={playing}
-						onTogglePlay={togglePlay}
 						onAddVoiceover={openVoiceoverFlow}
 						onEditClip={setEditClipTarget}
+						canUndo={canUndo}
+						canRedo={canRedo}
+						onUndo={runUndo}
+						onRedo={runRedo}
 					/>
 				</div>
 			) : null}

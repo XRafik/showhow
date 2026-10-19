@@ -104,7 +104,12 @@
 			"media": "Media",
 			"edit": "Chỉnh sửa",
 			"rec": "Ghi hình"
-		}
+		},
+		"navigation": "Điều hướng trình chỉnh sửa",
+		"library": "Thư viện",
+		"newRecording": "Bản ghi mới",
+		"open": "Mở",
+		"editorTitle": "Showhow · Trình chỉnh sửa"
 	},
 	"rec": {
 		"source": "Nguồn",
@@ -223,7 +228,9 @@
 		"cropDescription": "Đóng khung lại bản ghi — chọn tỷ lệ khung hình và phóng to vào vùng bạn muốn giữ lại.",
 		"openCrop": "Mở cắt…",
 		"deleteRegion": "Xóa vùng",
-		"freehandRendersAsBox": "Khi xuất, hình vẽ tay được che bằng khung bao của nó — che dư, không bao giờ che thiếu."
+		"freehandRendersAsBox": "Khi xuất, hình vẽ tay được che bằng khung bao của nó — che dư, không bao giờ che thiếu.",
+		"label": "Trình kiểm tra",
+		"aiChat": "Trò chuyện AI"
 	},
 	"chat": {
 		"changeProvider": "Đổi nhà cung cấp",
@@ -350,7 +357,8 @@
 		"playbackControls": "Điều khiển phát lại",
 		"play": "Phát",
 		"pause": "Tạm dừng",
-		"loop": "Lặp lại"
+		"loop": "Lặp lại",
+		"seek": "Tua"
 	},
 	"shell": {
 		"aiEditor": "Trình biên tập AI",
@@ -432,5 +440,25 @@
 	"cpuCompositor": {
 		"notice": "Không có GPU tương thích — kết xuất trên CPU nên phát lại chậm hơn.",
 		"exportWarning": "Không có GPU tương thích: lần xuất này chạy trên CPU và sẽ lâu hơn bình thường rất nhiều."
+	},
+	"lanes": {
+		"zoom": "Thu phóng",
+		"trim": "Cắt",
+		"text": "Văn bản",
+		"speed": "Tốc độ",
+		"camera": "Camera",
+		"audio": "Âm thanh"
+	},
+	"noProjectOpen": {
+		"eyebrow": "Showhow · Trình chỉnh sửa",
+		"title": "Chưa mở dự án nào",
+		"body": "Mở một bản ghi từ thư viện để cắt, thêm thu phóng và xuất.",
+		"openLibrary": "Mở thư viện",
+		"openFile": "Mở tệp…",
+		"importVideo": "Nhập video",
+		"record": "Ghi màn hình",
+		"recent": "Gần đây",
+		"today": "Hôm nay",
+		"yesterday": "Hôm qua"
 	}
 }

@@ -574,3 +574,80 @@ describe("AnnotationSizeControl", () => {
 		);
 	});
 });
+
+describe("Final docked inspector and its AI seam (Editor-01)", () => {
+	beforeEach(() => {
+		vi.stubGlobal("ResizeObserver", StubResizeObserver);
+	});
+	afterEach(() => {
+		vi.unstubAllGlobals();
+	});
+
+	function props(
+		overrides: Partial<React.ComponentProps<typeof FloatingInspector>> = {},
+	): React.ComponentProps<typeof FloatingInspector> {
+		return {
+			facet: "effects",
+			open: true,
+			onFacetChange: vi.fn(),
+			onToggleOpen: vi.fn(),
+			clips: [],
+			onEditClip: vi.fn(),
+			transcriptProps: {} as unknown as React.ComponentProps<
+				typeof FloatingInspector
+			>["transcriptProps"],
+			tl: {
+				selection: null,
+				clearSelection: vi.fn(),
+				selectedAudioTrackId: null,
+				selectAudioTrack: vi.fn(),
+			} as unknown as React.ComponentProps<typeof FloatingInspector>["tl"],
+			chatOpen: false,
+			onToggleChat: vi.fn(),
+			chatPanel: <div data-testid="chat-panel">chat</div>,
+			...overrides,
+		};
+	}
+
+	it("is a labelled complementary region docked beside the stage", () => {
+		render(<FloatingInspector {...props()} />);
+		expect(
+			screen.getByRole("complementary", { name: "editor.inspector.label" }),
+		).toBeInTheDocument();
+	});
+
+	it("offers the AI chat as a rail button, pressed while the chat is open", () => {
+		const onToggleChat = vi.fn();
+		const { rerender } = render(<FloatingInspector {...props({ onToggleChat })} />);
+		const ai = screen.getByRole("button", { name: "editor.inspector.aiChat" });
+		expect(ai).toHaveAttribute("aria-pressed", "false");
+		fireEvent.click(ai);
+		expect(onToggleChat).toHaveBeenCalledTimes(1);
+
+		rerender(<FloatingInspector {...props({ chatOpen: true })} />);
+		expect(screen.getByRole("button", { name: "editor.inspector.aiChat" })).toHaveAttribute(
+			"aria-pressed",
+			"true",
+		);
+	});
+
+	it("shows the chat inside the inspector instead of the facet while it is open", () => {
+		render(<FloatingInspector {...props({ chatOpen: true })} />);
+		expect(screen.getByTestId("chat-panel")).toBeInTheDocument();
+		expect(screen.queryByTestId("effects-pane")).toBeNull();
+		// No facet reads as the one showing.
+		expect(screen.getByRole("button", { name: "settings.effects.title" })).toHaveAttribute(
+			"aria-pressed",
+			"false",
+		);
+	});
+
+	it("goes back to the facet when a facet is picked while the chat is open", () => {
+		const onToggleChat = vi.fn();
+		const onFacetChange = vi.fn();
+		render(<FloatingInspector {...props({ chatOpen: true, onToggleChat, onFacetChange })} />);
+		fireEvent.click(screen.getByRole("button", { name: "settings.layout.title" }));
+		expect(onToggleChat).toHaveBeenCalledTimes(1);
+		expect(onFacetChange).toHaveBeenCalledWith("layout");
+	});
+});

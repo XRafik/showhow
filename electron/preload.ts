@@ -54,6 +54,9 @@ sharedTexture?.setSharedTextureReceiver(async ({ importedSharedTexture }, meta) 
 
 contextBridge.exposeInMainWorld("electronAPI", {
 	assetBaseUrl,
+	/** The editor's Library link: swaps the editor window for the Library (#146). */
+	showhowOpenLibrary: () =>
+		ipcRenderer.invoke("showhow:open-library") as Promise<{ opened: boolean }>,
 	showhowAiGuideStatus: (bundleDir?: string) =>
 		ipcRenderer.invoke("showhow:ai-guide-status", bundleDir) as Promise<
 			import("../src/lib/showhow/aiGuide").GuideStatus

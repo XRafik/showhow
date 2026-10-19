@@ -2,7 +2,7 @@
 import "@testing-library/jest-dom";
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
@@ -41,7 +41,7 @@ const noop = () => {};
 
 function renderTopBar(
 	projectTitle: string | null,
-	history: { canUndo?: boolean; canRedo?: boolean } = {},
+	options: { mode?: "media" | "edit" | "rec"; dirty?: boolean } = {},
 ) {
 	const onRename = vi.fn();
 	const onShowAbout = vi.fn();
@@ -51,19 +51,17 @@ function renderTopBar(
 	const onNewProject = vi.fn();
 	const onOpenProject = vi.fn();
 	const onSave = vi.fn();
-	const onUndo = vi.fn();
-	const onRedo = vi.fn();
+	const onOpenLibrary = vi.fn();
+	const onNewRecording = vi.fn();
+	const onModeChange = vi.fn();
 	render(
 		<TooltipProvider>
 			<EditorTopBar
-				mode="edit"
-				onModeChange={noop}
+				mode={options.mode ?? "edit"}
+				onModeChange={onModeChange}
 				projectTitle={projectTitle}
-				dirty={false}
+				dirty={options.dirty ?? false}
 				canExport={false}
-				canUndo={history.canUndo ?? false}
-				canRedo={history.canRedo ?? false}
-				chatOpen={false}
 				actions={{
 					openProject: onOpenProject,
 					newProject: onNewProject,
@@ -71,12 +69,11 @@ function renderTopBar(
 					export: noop,
 					openSettings: onOpenSettings,
 					renameProject: onRename,
-					toggleChat: noop,
 					openProviderSettings: onOpenProviderSettings,
 					showAbout: onShowAbout,
 					checkForUpdates: onCheckForUpdates,
-					undo: onUndo,
-					redo: onRedo,
+					openLibrary: onOpenLibrary,
+					newRecording: onNewRecording,
 				}}
 			/>
 		</TooltipProvider>,
@@ -90,8 +87,9 @@ function renderTopBar(
 		onNewProject,
 		onOpenProject,
 		onSave,
-		onUndo,
-		onRedo,
+		onOpenLibrary,
+		onNewRecording,
+		onModeChange,
 	};
 }
 
@@ -120,7 +118,7 @@ describe("ProjectNameField (issue #180)", () => {
 		renderTopBar(null);
 		const button = screen.getByRole("button", { name: "topbar.renameProject" });
 		expect(button).toBeDisabled();
-		expect(button).toHaveTextContent("topbar.noProject");
+		expect(button).toHaveTextContent("topbar.editorTitle");
 	});
 
 	it("swaps to an input pre-filled with the title on click and selects it", () => {
@@ -354,34 +352,52 @@ describe("EditorTopBar responsive affordances and tooltips", () => {
 		expect(exportBtn).not.toHaveAttribute("title");
 	});
 
-	it("gives the mode tabs no tooltip: their text is the label", () => {
+	it("gives the mode tabs no tooltip, and offers Media and Edit only: Record is New recording", () => {
 		renderTopBar("Demo Project");
 		const tabs = screen.getAllByRole("tab");
-		expect(tabs).toHaveLength(3);
+		expect(tabs.map((tab) => tab.textContent)).toEqual(["topbar.modes.media", "topbar.modes.edit"]);
 		for (const tab of tabs) expect(tab).not.toHaveAttribute("title");
 	});
 
 	it("says the saved state beside the project name, to the eye and to a screen reader", () => {
 		renderTopBar("Demo Project");
-		const savedIndicator = screen.getByTitle("topbar.saved");
-		expect(savedIndicator).toBeInTheDocument();
-		expect(savedIndicator).toHaveTextContent("topbar.saved");
+		const saved = screen.getByTestId("topbar-save-state");
+		expect(saved).toHaveTextContent("topbar.saved");
+		expect(saved).toBeVisible();
 	});
 
-	it("steps through history from the bar, and says when there is nothing to step to", () => {
-		const { onUndo, onRedo } = renderTopBar("Demo Project", { canUndo: true, canRedo: false });
-		fireEvent.click(screen.getByRole("button", { name: "fixedActions.undo" }));
-		expect(onUndo).toHaveBeenCalledTimes(1);
-		const redo = screen.getByRole("button", { name: "fixedActions.redo" });
-		// `aria-disabled`, not `disabled`: a natively disabled button takes no pointer events, so
-		// its tooltip could never open. It stays reachable, and doing nothing.
-		expect(redo).toHaveAttribute("aria-disabled", "true");
-		expect(redo).not.toBeDisabled();
-		fireEvent.click(redo);
-		expect(onRedo).not.toHaveBeenCalled();
-		expect(screen.getByRole("button", { name: "fixedActions.undo" })).not.toHaveAttribute(
-			"aria-disabled",
+	it("says Unsaved while the project has changes", () => {
+		renderTopBar("Demo Project", { dirty: true });
+		expect(screen.getByTestId("topbar-save-state")).toHaveTextContent("topbar.unsaved");
+	});
+
+	it("navigates to the Library, a new recording and a project from the Final bar", () => {
+		const { onOpenLibrary, onNewRecording, onOpenProject } = renderTopBar("Demo Project");
+		const nav = screen.getByRole("navigation", { name: "topbar.navigation" });
+		fireEvent.click(within(nav).getByRole("button", { name: "topbar.library" }));
+		fireEvent.click(within(nav).getByRole("button", { name: "topbar.newRecording" }));
+		fireEvent.click(within(nav).getByRole("button", { name: "topbar.open" }));
+		expect(onOpenLibrary).toHaveBeenCalledTimes(1);
+		expect(onNewRecording).toHaveBeenCalledTimes(1);
+		expect(onOpenProject).toHaveBeenCalledTimes(1);
+	});
+
+	it("marks New recording as the current place while recording", () => {
+		renderTopBar("Demo Project", { mode: "rec" });
+		expect(screen.getByRole("button", { name: "topbar.newRecording" })).toHaveAttribute(
+			"aria-current",
+			"page",
 		);
+		for (const tab of screen.getAllByRole("tab")) {
+			expect(tab).toHaveAttribute("aria-selected", "false");
+		}
+	});
+
+	it("leaves history and the chat toggle out of the bar: the timeline and the rail carry them", () => {
+		renderTopBar("Demo Project");
+		for (const name of ["fixedActions.undo", "fixedActions.redo", "topbar.toggleChatPanel"]) {
+			expect(screen.queryByRole("button", { name })).not.toBeInTheDocument();
+		}
 	});
 
 	it("keeps the brand trigger named by its label, with no title repeating it", () => {
@@ -398,50 +414,9 @@ describe("EditorTopBar responsive affordances and tooltips", () => {
 			"title",
 			"Demo Project",
 		);
-		// The icon-only controls use the shared tooltip instead.
-		for (const name of ["topbar.toggleChatPanel", "fixedActions.undo", "fixedActions.redo"]) {
+		for (const name of ["topbar.library", "topbar.newRecording", "topbar.open"]) {
 			expect(screen.getByRole("button", { name })).not.toHaveAttribute("title");
 		}
-	});
-
-	// Every icon-only control names itself in a tooltip; undo and redo also show the key.
-	async function tooltipOn(name: string) {
-		const control = screen.getByRole("button", { name });
-		act(() => control.focus());
-		const tooltip = await screen.findByRole("tooltip");
-		const visible = document.querySelector('[data-slot="tooltip-content"]');
-		const result = { text: tooltip.textContent, chip: visible?.querySelector("kbd")?.textContent };
-		act(() => control.blur());
-		await waitFor(() => expect(screen.queryByRole("tooltip")).toBeNull());
-		return result;
-	}
-
-	it("shows the live shortcut as a chip on undo and redo, with ⌘ on macOS", async () => {
-		renderTopBar("Demo Project", { canUndo: true, canRedo: true });
-		expect((await tooltipOn("fixedActions.undo")).chip).toBe("Ctrl + Z");
-		// One chip, the first binding: redo is also on Ctrl + Y.
-		expect((await tooltipOn("fixedActions.redo")).chip).toBe("Ctrl + Shift + Z");
-	});
-
-	it("reads ⌘ and ⇧ from the platform", async () => {
-		platform.isMac = true;
-		renderTopBar("Demo Project", { canUndo: true, canRedo: true });
-		expect((await tooltipOn("fixedActions.undo")).chip).toBe("⌘ + Z");
-		expect((await tooltipOn("fixedActions.redo")).chip).toBe("⌘ + ⇧ + Z");
-	});
-
-	it("still opens the undo tooltip when there is nothing to undo", async () => {
-		renderTopBar("Demo Project", { canUndo: false, canRedo: false });
-		const undo = await tooltipOn("fixedActions.undo");
-		expect(undo.text).toContain("fixedActions.undo");
-		expect(undo.chip).toBe("Ctrl + Z");
-	});
-
-	it("names the chat panel toggle with a noun and no chip", async () => {
-		renderTopBar("Demo Project");
-		const toggle = await tooltipOn("topbar.toggleChatPanel");
-		expect(toggle.text).toBe("topbar.toggleChatPanel");
-		expect(toggle.chip).toBeUndefined();
 	});
 
 	it("leaves the language to the menu, out of the bar", () => {
