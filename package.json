@@ -88,6 +88,7 @@
 		"build-vite": "tsc && vite build",
 		"cli": "electron .",
 		"test:e2e": "playwright test",
+		"test:landing": "playwright test --project=landing",
 		"test:e2e:windows-native-checklist": "playwright test tests/e2e/windows-native-checklist.spec.ts",
 		"prepare": "husky",
 		"fetch:ffmpeg": "node scripts/fetch-ffmpeg.mjs",

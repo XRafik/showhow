@@ -1,0 +1,14 @@
+---
+interface Props {
+	text: string;
+	/** Text appended inside the last word's mask, e.g. the orange full stop. */
+	tail?: string;
+}
+const { text, tail } = Astro.props;
+const words = text.split(" ");
+---
+{words.map((word, i) => (
+	<>
+		<span class="word"><span>{word}{i === words.length - 1 && tail ? <span class="hero__dot">{tail}</span> : null}</span></span>{i < words.length - 1 ? " " : ""}
+	</>
+))}

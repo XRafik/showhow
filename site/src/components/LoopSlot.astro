@@ -1,0 +1,54 @@
+---
+interface Props {
+	kind: "rec" | "rows" | "open" | "still";
+	image?: string;
+	size: string;
+	pos: string;
+	seconds?: number;
+	label?: string;
+}
+const { kind, image, size, pos, seconds = 4, label } = Astro.props;
+const live = kind !== "still";
+const style = [
+	image ? `--slot-image:url('${image}')` : "",
+	`--slot-size:${size}`,
+	`--slot-pos:${pos}`,
+	`--slot-d:${seconds}s`,
+]
+	.filter(Boolean)
+	.join(";");
+---
+<div
+	class:list={["loop-slot", live ? "loop-slot--live" : "loop-slot--still"]}
+	data-loop={live ? "" : undefined}
+	data-develop
+	tabindex={live ? 0 : undefined}
+	role="img"
+	aria-label={label ?? "Placeholder loop"}
+	style={style}
+>
+	<span class="loop-slot__placeholder mono">Placeholder</span>
+	{live ? <span class="loop-slot__replay mono">Replay</span> : null}
+	{kind === "rec" ? (
+		<div class="loop-slot__fx">
+			<span class="loop-slot__hudchip mono"><i></i>01:24</span>
+			<span class="fx-playhead"></span>
+		</div>
+	) : null}
+	{kind === "rows" ? (
+		<div class="loop-slot__fx">
+			<div class="fx-row fx-row--1"><b>01</b>Click “Invoices” in the sidebar</div>
+			<div class="fx-row fx-row--2"><b>02</b>Click the invoice for Acme Co</div>
+			<div class="fx-row fx-row--3"><b>03</b>Point at the total field</div>
+		</div>
+	) : null}
+	{kind === "open" ? (
+		<div class="loop-slot__fx">
+			<div class="fx-open">
+				<div class="fx-open__1"><b>1</b>Drag Showhow to Applications</div>
+				<div class="fx-open__2"><b>2</b>Open it, dismiss the warning</div>
+				<div class="fx-open__3"><b>3</b>Privacy &amp; Security → Open Anyway</div>
+			</div>
+		</div>
+	) : null}
+</div>

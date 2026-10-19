@@ -553,6 +553,76 @@
 		{
 			"file": "docs/research/2026-10-16-openscreen-v2.0.0-seam-assessment.md",
 			"reason": "Pinned upstream source research and untrusted-evidence record; not application copy"
+		},
+		{
+			"file": "site/src/lib/faq.tsx",
+			"reason": "Reviewed attribution: the fork FAQ answer names OpenScreen and its creator; line-level only",
+			"lines": [
+				{
+					"text": "import { OPENSCREEN_URL } from \"./site\";",
+					"count": 1
+				},
+				{
+					"text": "It is a fork of <a href={OPENSCREEN_URL}>OpenScreen</a>, the open-source screen recorder",
+					"count": 1
+				},
+				{
+					"text": "created by Siddharth Vaddem and now continued by the OpenScreen contributors. Showhow keeps",
+					"count": 1
+				},
+				{
+					"text": "OpenScreen’s recorder and editor and adds a library of your recordings and the step-by-step",
+					"count": 1
+				},
+				{
+					"text": "guides. If you only want a recorder, OpenScreen is excellent on its own. Both are MIT",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "site/src/lib/site.ts",
+			"reason": "Reviewed attribution: URL of the OpenScreen repository linked from the fork FAQ answer",
+			"lines": [
+				{
+					"text": "export const OPENSCREEN_URL = \"https://github.com/getopenscreen/openscreen\";",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "tests/e2e/landing.spec.ts",
+			"reason": "Reviewed attribution: test asserts the fork FAQ answer credits OpenScreen",
+			"lines": [
+				{
+					"text": "test(\"FAQ holds six items and the fork answer credits OpenScreen\", async ({ page }) => {",
+					"count": 1
+				},
+				{
+					"text": "await expect(answer).toContainText(\"OpenScreen\");",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "design/landing-prototype/landing-proto-motion.html",
+			"reason": "Reviewed attribution: approved prototype copy of the fork FAQ answer; line-level only",
+			"lines": [
+				{
+					"text": "<details><summary>Is Showhow a new app or a fork?</summary><p>It is a fork of OpenScreen, the open-source screen recorder created by Siddharth Vaddem and now continued by the OpenScreen contributors. Showhow keeps OpenScreen&rsquo;s recorder and editor and adds a library of your recordings and the step-by-step guides. If you only want a recorder, OpenScreen is excellent on its own. Both are MIT licensed.</p></details>",
+					"count": 1
+				}
+			]
+		},
+		{
+			"file": "design/landing-prototype/landing-proto.html",
+			"reason": "Reviewed attribution: approved prototype copy of the fork FAQ answer; line-level only",
+			"lines": [
+				{
+					"text": "<details><summary>Is Showhow a new app or a fork?</summary><p>It is a fork of OpenScreen, the open-source screen recorder created by Siddharth Vaddem and now continued by the OpenScreen contributors. Showhow keeps OpenScreen&rsquo;s recorder and editor and adds a library of your recordings and the step-by-step guides. If you only want a recorder, OpenScreen is excellent on its own. Both are MIT licensed.</p></details>",
+					"count": 1
+				}
+			]
 		}
 	]
 }
