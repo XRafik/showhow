@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Showhow landing, motion (PROTOTYPE)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@700&family=Inter:wght@400&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#161616;--s:#1E1E1E;--s2:#242424;--hair:#FFFCF72E;--t:#FFFCF7;--td:#FFFCF7B3;--tf:#FFFCF78C;--sage:#82B09A;--rec:#E3582D;--ease:cubic-bezier(0.23,1,0.32,1)}
+*{box-sizing:border-box;margin:0}
+html{scroll-behavior:smooth;scroll-padding-top:90px}
+html{overflow-x:hidden}body{background:var(--bg);color:var(--t);font:400 16px/1.55 Inter,sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+.grain{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:100;opacity:.12}
+.mono,.label{font:500 12px/1.4 "JetBrains Mono",monospace;text-transform:uppercase;letter-spacing:.08em}
+h1,h2,h3,h4{font-family:"Inter Tight",sans-serif;font-weight:700;letter-spacing:-.036em}
+.wrap{max-width:1440px;margin:0 auto;padding:0 20px}
+@media(min-width:900px){.wrap{padding:0 64px}}
+section{padding:72px 0}
+@media(min-width:900px){section{padding:128px 0}}
+.label{color:var(--sage);display:block;margin-bottom:20px}
+a{color:inherit}
+/* proto badge */
+.proto{position:fixed;right:8px;top:0;z-index:101;background:var(--rec);color:#fff;padding:2px 8px;border-radius:0 0 4px 4px;font:500 9px/14px "JetBrains Mono",monospace;letter-spacing:.08em}
+/* nav */
+nav{position:sticky;top:0;z-index:50;height:80px;transition:background-color .2s,border-color .2s;border-bottom:1px solid transparent}
+nav.stuck{background:#161616E6;backdrop-filter:blur(10px);border-color:var(--hair)}
+nav .wrap{height:80px;display:flex;align-items:center;gap:32px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;font:700 20px "Inter Tight";letter-spacing:-.036em}
+.brand img{width:34px;height:34px;border-radius:8px}
+.links{display:none;margin-left:auto;gap:32px}
+@media(min-width:900px){.links{display:flex}}
+.links a{text-decoration:none;color:var(--td);position:relative;padding:6px 0}
+.links a::after{content:"";position:absolute;left:0;right:0;bottom:0;height:1px;background:var(--t);transform:scaleX(0);transform-origin:left;transition:transform .2s var(--ease)}
+nav .btn{margin-left:auto}
+@media(min-width:900px){nav .btn{margin-left:0}}
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:44px;padding:0 20px;border-radius:6px;border:1px solid var(--hair);background:transparent;color:var(--t);text-decoration:none;cursor:pointer;font:500 12px/1 "JetBrains Mono",monospace;text-transform:uppercase;letter-spacing:.08em;transition-property:transform,box-shadow,background-color;transition-duration:.15s;transition-timing-function:var(--ease)}
+.btn.primary{background:var(--t);color:#2F2F2F;border-color:var(--t)}
+.btn svg{width:16px;height:16px;fill:currentColor;flex:none}
+.btn:focus-visible,summary:focus-visible,a:focus-visible,.loop:focus-visible{outline:2px solid var(--sage);outline-offset:3px}
+.btn:active{transform:translateY(0)!important}
+@media(hover:hover) and (pointer:fine){
+.panel .btn:hover{transform:none;box-shadow:none}
+.btn:hover{transform:translateY(-1px);box-shadow:4px 4px 0 var(--sage)}
+.links a:hover::after{transform:scaleX(1)}
+.links a:hover{color:var(--t)}
+summary:hover{background:var(--s2)}
+.loop:hover .replay{opacity:1}
+}
+/* hero */
+.hero{padding:56px 0 0;position:relative;text-align:center;overflow-x:clip}
+@media(min-width:900px){.hero{padding-top:56px}}
+.stagewrap{position:relative;margin-top:64px}@media(max-width:899px){.stagewrap{margin-top:48px}}.glow{position:absolute;left:50%;top:-140px;width:700px;height:700px;transform:translateX(-50%);background:radial-gradient(closest-side,#82B09A33,transparent);pointer-events:none;max-width:100vw}
+.pill{display:inline-flex;align-items:center;gap:10px;padding:7px 14px;border:1px solid var(--hair);border-radius:999px;background:var(--s)}
+.pill i{width:7px;height:7px;border-radius:50%;background:var(--sage)}
+h1{font-size:52px;line-height:.95;margin:24px auto 24px;max-width:1100px}
+@media(min-width:900px){h1{font-size:116px}}
+h1 b{color:var(--rec);font-weight:inherit}
+.sub{font-size:19px;max-width:640px;margin:0 auto 32px;color:var(--td);line-height:1.5}
+.ctas{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.micro{margin-top:24px;color:var(--td);text-transform:none;letter-spacing:.02em;font-size:12px}
+.micro a{color:var(--sage)}
+.rise{opacity:0;transform:translateY(12px);animation:rise .5s var(--ease) forwards;animation-delay:calc(var(--i)*60ms)}
+@keyframes rise{to{opacity:1;transform:none}}
+.stage{position:relative;margin:0 auto;max-width:1040px;height:460px;overflow:hidden;text-align:left}
+@media(max-width:899px){.stage{height:340px}}
+.win{background:var(--s);border-radius:10px;border:1px solid var(--hair);box-shadow:6px 6px 0 var(--sage);overflow:hidden;margin:0 6px 0 0;position:relative}
+.tb{height:30px;background:var(--s2);display:flex;align-items:center;gap:7px;padding:0 12px;border-bottom:1px solid var(--hair)}
+.tb i{width:10px;height:10px;border-radius:50%}
+.win img.shot,.win video{display:block;width:100%;height:auto;margin-top:-56px}
+.tb{position:relative;z-index:2}
+.phtag{position:absolute;left:16px;bottom:14px;z-index:4;font-size:10px;color:#FFFCF78C;border:1px solid var(--hair);border-radius:999px;padding:3px 10px;background:#161616B3}
+.soon{font:500 10px/1 "JetBrains Mono",monospace;text-transform:uppercase;letter-spacing:.08em;color:var(--sage);border:1px solid #82B09A66;border-radius:4px;padding:3px 6px;display:inline-block;vertical-align:middle;margin-left:8px;position:relative;top:-2px}
+.panel{position:relative}.trow{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:24px}.trow h3{margin:0!important}.trow .soon{margin:0;top:0}
+.panel .btn{opacity:.55;cursor:default}
+.loop.still{cursor:default}.sub2{font-size:17px;color:var(--td);margin-top:16px}
+.hud{position:absolute;top:44px;right:16px;display:flex;align-items:center;gap:12px;background:#161616F0;border:1px solid var(--hair);border-radius:999px;padding:6px 8px 6px 14px}
+.hud .dot{width:9px;height:9px;border-radius:50%;background:var(--rec);animation:blink 1.4s infinite}
+.hud .stop{background:var(--rec);color:#fff;border-radius:999px;padding:4px 10px;font-size:11px}
+@keyframes blink{50%{opacity:.35}}
+.toast{z-index:3;position:absolute;right:28px;bottom:120px;background:var(--s);border:1px solid var(--hair);border-radius:6px;padding:10px 14px;box-shadow:6px 6px 0 var(--sage);color:var(--sage)}
+@media(max-width:899px){.toast{right:14px;bottom:110px;box-shadow:4px 4px 0 var(--sage)}}
+.fade{position:absolute;left:-1px;right:-1px;bottom:-1px;height:160px;pointer-events:none}
+.fade.g{background:linear-gradient(to bottom,transparent 0%,#161616B3 55%,#161616 100%)}
+.fade.b{backdrop-filter:blur(6px);-webkit-mask-image:linear-gradient(to bottom,transparent 0%,#000 100%);mask-image:linear-gradient(to bottom,transparent 0%,#000 100%)}
+@media(max-width:899px){.fade{height:100px}}
+#how{padding-top:24px}
+/* loops */
+.loop{position:relative;aspect-ratio:16/10;border-radius:10px;border:1px solid var(--hair);background-color:var(--s);background-image:url(landing-assets/app-guide.png);background-repeat:no-repeat;overflow:hidden;cursor:pointer;display:block;width:100%}
+.loop::before{content:"";position:absolute;inset:0;background:#1616161F}
+.hudchip{position:absolute;top:10px;right:10px;display:flex;align-items:center;gap:7px;background:#161616E6;border:1px solid var(--hair);border-radius:999px;padding:3px 10px;font-size:10px}.hudchip i{width:7px;height:7px;border-radius:50%;background:var(--rec)}
+.loop .tag{z-index:3;position:absolute;top:10px;left:10px;display:flex;align-items:center;gap:8px;background:#161616CC;padding:4px 8px;border-radius:4px;font-size:10px;color:var(--td)}
+.loop .tag i{width:6px;height:6px;border-radius:50%;background:var(--sage);animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.3;transform:scale(.7)}}
+.ring{position:absolute;width:34px;height:34px;margin:-17px 0 0 -17px;border:2px solid var(--rec);border-radius:50%;left:15%;top:70%;animation:ring var(--d,4s) linear infinite}
+@keyframes ring{0%{left:15%;top:70%;transform:scale(1);opacity:0}10%{opacity:1}55%{left:60%;top:40%;transform:scale(1);opacity:1}65%{transform:scale(.6)}80%{transform:scale(1.5);opacity:0}100%{left:60%;top:40%;opacity:0}}
+.bar{position:absolute;left:0;bottom:0;height:3px;background:var(--sage);width:100%;transform-origin:left;animation:bar var(--d,4s) linear infinite}
+@keyframes bar{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.replay{position:absolute;right:10px;bottom:12px;z-index:3;background:var(--t);color:#2F2F2F;padding:4px 8px;border-radius:4px;font-size:10px;opacity:0;transition:opacity .15s}
+.loop.re .ring,.loop.re .bar{animation:none}
+.steps{display:grid;gap:40px;margin-top:56px}
+@media(min-width:900px){.steps{grid-template-columns:repeat(3,1fr);gap:32px}}
+h2{font-size:40px;line-height:1.02}
+@media(min-width:900px){h2{font-size:56px}}
+.step .n{color:var(--sage);display:block;margin:20px 0 8px}
+.step h3{font-size:26px;margin-bottom:8px}
+.step p{color:var(--td)}
+/* handoffs */
+.two{display:grid;gap:24px;margin-top:56px}
+@media(min-width:900px){.two{grid-template-columns:1fr 1fr}}
+.panel{background:var(--s);border:1px solid var(--hair);border-radius:10px;padding:20px}
+.panel .btn{margin:24px 0 14px;min-height:36px;background:var(--s2)}
+.panel p{color:var(--td)}
+.out{margin-top:20px;background:var(--bg);border:1px solid var(--hair);border-radius:6px;padding:14px;font:500 12px/1.7 "JetBrains Mono",monospace;color:var(--td);overflow-wrap:anywhere}
+.out em{color:var(--sage);font-style:normal}
+.pdf{margin-top:20px;background:#fff;border-radius:4px;padding:16px;color:#2F2F2F;width:200px;aspect-ratio:3/4;display:flex;flex-direction:column;gap:10px;box-shadow:4px 4px 0 var(--sage)}
+.pdf b{font:700 10px "Inter Tight";letter-spacing:0}
+.pdf div{display:flex;gap:8px;align-items:center}
+.pdf div i{width:44px;height:30px;background:#D9D9D6;border-radius:2px;flex:none}
+.pdf div span{height:4px;background:#BDBDBA;flex:1;border-radius:2px}
+/* open */
+.open{display:grid;gap:40px;margin-top:0}
+@media(min-width:900px){.open{grid-template-columns:1fr 1fr;gap:64px;align-items:center}}
+h3.big{font-size:36px;line-height:1.05;margin-bottom:32px}
+@media(min-width:900px){h3.big{font-size:44px}}
+ol{list-style:none;padding:0;border-top:1px solid var(--hair)}
+ol li{display:flex;gap:20px;padding:20px 0;border-bottom:1px solid var(--hair);font-size:18px}
+ol li span{color:var(--sage);padding-top:4px}
+/* faq */
+.faq{max-width:860px}
+details{border-bottom:1px solid var(--hair)}
+details:first-of-type{border-top:1px solid var(--hair)}
+summary{list-style:none;cursor:pointer;padding:22px 8px;font:700 22px "Inter Tight";letter-spacing:-.02em;display:flex;justify-content:space-between;gap:16px;transition:background-color .15s;border-radius:6px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font:500 20px "JetBrains Mono";color:var(--sage);transition:transform .2s var(--ease)}
+details[open] summary::after{transform:rotate(45deg)}
+details[open] summary{color:var(--sage)}
+details p{padding:0 8px 24px;color:var(--td);max-width:620px}
+/* cta */
+.cta{text-align:center;border-top:1px solid var(--hair)}
+.cta h2{max-width:900px;margin:0 auto 36px}
+footer{border-top:1px solid var(--hair);padding:32px 0 80px}
+footer .wrap{display:flex;flex-wrap:wrap;gap:16px 40px;align-items:center;justify-content:space-between;color:var(--td)}
+footer b{font:700 20px "Inter Tight";color:var(--t);letter-spacing:-.036em}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.rise{opacity:1;transform:none}}
+
+/* ===== MOTION ===== */
+:root{--ease-out:cubic-bezier(0.23,1,0.32,1);--ease-io:cubic-bezier(0.77,0,0.175,1)}
+.rise{animation-timing-function:var(--ease-out)}
+.per{display:inline-block;transform-origin:50% 80%;animation:per .3s var(--ease-out) .4s backwards}
+@keyframes per{from{transform:scale(.6)}to{transform:scale(1)}}
+.btn{transition-duration:140ms;transition-timing-function:var(--ease-out)}
+.btn:active{transition-duration:80ms}
+.hud .dot{animation:blink2 1s ease-in-out infinite}
+@keyframes blink2{0%,100%{opacity:1}50%{opacity:.35}}
+.hud .stop{position:relative}
+.hring{position:absolute;left:50%;top:50%;width:54px;height:54px;margin:-27px 0 0 -27px;border:3px solid var(--rec);border-radius:50%;opacity:0;pointer-events:none;animation:hring 6s var(--ease-out) infinite}
+@keyframes hring{0%,25%{opacity:0;transform:scale(.4)}25.1%{opacity:1;transform:scale(.4)}31%{opacity:0;transform:scale(1.2)}100%{opacity:0}}
+.toast{opacity:0;animation:toast 6s infinite}
+@keyframes toast{0%,26.6%{opacity:0;transform:translateY(14px);animation-timing-function:var(--ease-out)}31.6%,70%{opacity:1;transform:none}75%,100%{opacity:0;transform:translateY(14px)}}
+.cue{position:absolute;left:64px;top:50px;animation:bob 1.6s var(--ease-io) infinite;transition:opacity .2s}
+@media(max-width:899px){.cue{left:20px}}
+.cue.gone{opacity:0}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
+#how .wrap{position:relative}
+.rv{opacity:0;transform:translateY(16px);transition:opacity .45s var(--ease-out),transform .45s var(--ease-out)}
+.rv.in{opacity:1;transform:none}
+details{overflow:hidden}
+/* loop fakes */
+.loop .ring,.loop .bar{display:none}
+.loop.paused *{animation-play-state:paused!important}
+.loop.re *{animation:none!important}
+.fx{position:absolute;inset:0;z-index:2;pointer-events:none}
+.ph{position:absolute;top:27%;height:11%;width:2px;background:var(--t);box-shadow:0 0 0 1px #16161680;animation:ph 4s linear infinite}
+@keyframes ph{from{left:6%}to{left:90%}}
+.hudchip i{animation:blink2 1s ease-in-out infinite}
+.row{position:absolute;left:6%;right:6%;background:#161616EB;border:1px solid var(--hair);border-left:3px solid var(--sage);border-radius:6px;padding:7px 10px;font:500 10px/1.3 "JetBrains Mono",monospace;text-transform:uppercase;letter-spacing:.06em;opacity:0}
+.row b{color:var(--sage);margin-right:8px;font-weight:500}
+.r1{top:46%;animation:ra 4s var(--ease-out) infinite}.r2{top:62%;animation:rb 4s var(--ease-out) infinite}.r3{top:78%;animation:rc 4s var(--ease-out) infinite}
+@keyframes ra{0%{opacity:0;transform:translateY(8px)}8.75%,92%{opacity:1;transform:none}100%{opacity:0}}
+@keyframes rb{0%,6.25%{opacity:0;transform:translateY(8px)}15%,92%{opacity:1;transform:none}100%{opacity:0}}
+@keyframes rc{0%,12.5%{opacity:0;transform:translateY(8px)}21.25%,92%{opacity:1;transform:none}100%{opacity:0}}
+.cur{position:absolute;width:16px;height:16px;left:15%;top:75%;animation:cur 4s var(--ease-io) infinite}
+@keyframes cur{0%{left:15%;top:75%}40%,100%{left:85.1%;top:24.7%}}
+.cring{position:absolute;left:85.1%;top:24.7%;width:34px;height:34px;margin:-17px 0 0 -17px;border:2px solid var(--rec);border-radius:50%;opacity:0;animation:cring 4s var(--ease-out) infinite}
+@keyframes cring{0%,40%{opacity:0;transform:scale(.4)}41%{opacity:1;transform:scale(.4)}52%{opacity:0;transform:scale(1.3)}100%{opacity:0}}
+.ctoast{position:absolute;right:6%;bottom:14%;background:var(--s);border:1px solid var(--hair);box-shadow:4px 4px 0 var(--sage);color:var(--sage);border-radius:6px;padding:7px 10px;font:500 10px "JetBrains Mono",monospace;letter-spacing:.08em;opacity:0;animation:ct 4s var(--ease-out) infinite}
+@keyframes ct{0%,44%{opacity:0;transform:translateY(10px)}52%,90%{opacity:1;transform:none}100%{opacity:0}}
+.term{position:absolute;left:5%;right:5%;bottom:8%;background:#161616F2;border:1px solid var(--hair);border-radius:6px;padding:10px 12px;font:500 10px/1.8 "JetBrains Mono",monospace;color:var(--td);animation:tfade 4s linear infinite}
+@keyframes tfade{0%,94%{opacity:1}100%{opacity:0}}
+.term span{display:block;overflow:hidden;white-space:nowrap;width:0}
+.t1{animation:t1 4s infinite}.t2{animation:t2 4s infinite}
+@keyframes t1{0%{width:0;animation-timing-function:steps(45,end)}30%,100%{width:45ch}}
+@keyframes t2{0%,32%{width:0;animation-timing-function:steps(44,end)}62%,100%{width:44ch}}
+.t3{color:var(--sage);width:auto!important;opacity:0;animation:t3 4s infinite}
+@keyframes t3{0%,68%{opacity:0}70%,100%{opacity:1}}
+.pg{position:absolute;top:14%;width:26%;aspect-ratio:3/4;background:#fff;border-radius:3px;padding:7px;box-shadow:3px 3px 0 var(--sage);opacity:0}
+.pg i{display:block;height:20%;background:#D9D9D6;border-radius:2px;margin-bottom:6px}.pg u{display:block;height:3px;background:#BDBDBA;margin-bottom:4px;border-radius:2px}
+.p1{left:9%;animation:pa 4s var(--ease-out) infinite}.p2{left:37%;animation:pb 4s var(--ease-out) infinite}.p3{left:65%;animation:pc 4s var(--ease-out) infinite}
+@keyframes pa{0%{opacity:0;transform:translateX(40px)}12%,92%{opacity:1;transform:none}100%{opacity:0}}
+@keyframes pb{0%,10%{opacity:0;transform:translateX(40px)}22%,92%{opacity:1;transform:none}100%{opacity:0}}
+@keyframes pc{0%,20%{opacity:0;transform:translateX(40px)}32%,92%{opacity:1;transform:none}100%{opacity:0}}
+.opn{position:absolute;left:8%;right:8%;top:50%;transform:translateY(-50%);background:#161616F0;border:1px solid var(--hair);border-radius:8px;padding:6px}
+.opn div{display:flex;gap:10px;padding:9px 10px;border-radius:5px;font:500 11px "JetBrains Mono",monospace;text-transform:uppercase;letter-spacing:.06em;color:var(--tf)}
+.opn div b{color:var(--sage);font-weight:500}
+.o1{animation:o1 6s linear infinite}.o2{animation:o2 6s linear infinite}.o3{animation:o3 6s linear infinite}
+@keyframes o1{0%,21.6%{background:var(--sage);color:#161616}21.7%,100%{background:transparent}}
+@keyframes o2{0%,21.6%{background:transparent}21.7%,43.3%{background:var(--sage);color:#161616}43.4%,100%{background:transparent}}
+@keyframes o3{0%,43.3%{background:transparent}43.4%,65%{background:var(--sage);color:#161616}65.1%,100%{background:transparent}}
+
+@media(max-width:899px){.term{font-size:9px}}
+@media(prefers-reduced-motion:reduce){.rv{opacity:1;transform:none}.toast{opacity:1}.hring{display:none}.cue{display:none}.t1{width:45ch}.t2{width:44ch}.t3{opacity:1}.row,.pg{opacity:1}.cring{display:none}.ctoast{opacity:1}.o1{background:var(--sage);color:#161616}}
+</style>
+</head>
+<body>
+<svg class="grain" width="100%" height="100%" aria-hidden="true"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="3" stitchTiles="stitch"/><feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  2.4 0 0 0 -0.95"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>
+<div class="proto mono">PROTOTYPE</div>
+
+<nav id="nav"><div class="wrap">
+<a class="brand" href="#top"><img src="landing-assets/logo.png" alt="">Showhow</a>
+<div class="links mono"><a href="#how">How it works</a><a href="#open">How to open</a><a href="#faq">FAQ</a><a href="#gh">GitHub</a></div>
+<a class="btn" href="#">Download</a>
+</div></nav>
+
+<header class="hero" id="top"><div class="wrap">
+<span class="pill mono rise" style="--i:0"><i></i>Free · Open source · For macOS</span>
+<h1 class="rise" style="--i:1">Show how it’s done<b class="per">.</b></h1>
+<p class="sub rise" style="--i:2">A client messages. Three agents are waiting. Record your screen once, press one button, and Showhow turns it into a step-by-step guide you can hand to an agent or send to a client.</p>
+<div class="ctas rise" style="--i:3">
+<a class="btn primary" href="#"><svg viewBox="0 0 24 24"><path d="M16.4 12.7c0-2.5 2-3.7 2.1-3.8-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9-.8 0-1.9-.9-3.2-.8-1.6 0-3.1 1-4 2.4-1.7 3-.4 7.400 1.200 9.800.8 1.200 1.800 2.500 3 2.400 1.200 0 1.700-.8 3.100-.8s1.900.8 3.200.8c1.300 0 2.100-1.200 2.900-2.300.9-1.300 1.300-2.600 1.300-2.700-.1 0-2.400-.9-2.400-3.900zM14 5.400c.7-.8 1.100-1.900 1-3-1 0-2.100.7-2.800 1.500-.6.700-1.100 1.800-1 2.900 1.100.1 2.100-.5 2.800-1.400z"/></svg>Download early build for Mac</a>
+<a class="btn" href="#gh">View on GitHub</a></div>
+<p class="micro mono rise" style="--i:4">macOS 13+ · Universal, 167 MB · Early build: recording and guides work, more coming<br><a href="#open">Unsigned build — here’s how to open it</a></p>
+<div class="stagewrap rise" style="--i:5"><div class="glow"></div><div class="stage">
+<div class="win"><div class="tb"><i style="background:#FF5F57"></i><i style="background:#FEBC2E"></i><i style="background:#28C840"></i></div>
+<video autoplay muted loop playsinline preload="auto" poster="landing-assets/hero-make-guide-poster.png"><source src="landing-assets/hero-make-guide.webm" type="video/webm"><source src="landing-assets/hero-make-guide.mp4" type="video/mp4"></video></div>
+<span class="phtag mono">PLACEHOLDER · DESIGN LOOP</span>
+<div class="fade g"></div><div class="fade b"></div>
+</div></div>
+</div></header>
+
+<section id="how"><div class="wrap"><svg class="cue" id="cue" width="12" height="6" viewBox="0 0 12 6" aria-hidden="true"><path d="M1 1l5 4 5-4" fill="none" stroke="#82B09A" stroke-width="1.5"/></svg>
+<span class="label">01 · How it works</span>
+<h2>Record once. Get the guide.</h2>
+<div class="steps">
+<div class="step"><a class="loop" tabindex="0" style="background-size:129.31%;background-position:100% 0" data-kind="rec"><span class="tag mono"><i></i>Loop · 4s</span><span class="hudchip mono"><i></i>01:24</span><span class="replay mono">Replay</span><span class="ring"></span><span class="bar"></span></a><span class="n mono">01</span><h3>Record</h3><p>Capture your screen. Your clicks and cursor are tracked.</p></div>
+<div class="step"><a class="loop" tabindex="0" style="background-size:129.31%;background-position:100% 71.875%" data-kind="rows"><span class="tag mono"><i></i>Loop · 4s</span><span class="replay mono">Replay</span><span class="ring"></span><span class="bar"></span></a><span class="n mono">02</span><h3>Press one button</h3><p>Make guide turns it into steps with screenshots and timestamps.</p></div>
+<div class="step"><div class="loop still" style="background-size:137.3%;background-position:100% 36.7%" data-kind="still"></div><span class="n mono">03</span><h3>Hand it off<span class="soon">Soon</span></h3><p>Send the guide to an agent or a client. Handoffs are coming soon.</p></div>
+</div></div></section>
+
+<section><div class="wrap">
+<span class="label">02 · Coming next</span>
+<h2>One guide. Two handoffs.</h2>
+<p class="sub2">Guides work today. These two handoffs ship next.</p>
+<div class="two">
+<div class="panel"><div class="loop still" style="background-image:url(landing-assets/handoff-agent-brief.png);background-size:146.6%;background-position:85.58% 93.5%" data-kind="still"></div>
+<div class="trow"><h3 style="font-size:28px;margin-top:24px">For your agent</h3><span class="soon">Soon</span></div><span class="btn mono" aria-disabled="true">Copy for agent</span><p>A detailed brief plus the recording folder path, pasted straight into Claude Code or Codex.</p></div>
+<div class="panel"><div class="loop still" style="background-image:url(landing-assets/handoff-pdf-saved.png);background-size:173.4%;background-position:50.7% 18.67%" data-kind="still"></div>
+<div class="trow"><h3 style="font-size:28px;margin-top:24px">For your client</h3><span class="soon">Soon</span></div><span class="btn mono" aria-disabled="true">Export PDF</span><p>A clean walkthrough with screenshots they can read without a call.</p></div>
+</div></div></section>
+
+<section id="open"><div class="wrap"><div class="open">
+<div><span class="label">03 · How to open</span>
+<h3 class="big">It’s an unsigned build. Here’s the 30-second fix.</h3>
+<ol><li><span class="mono">01</span>Drag Showhow to Applications.</li><li><span class="mono">02</span>Try to open it, then dismiss the warning.</li><li><span class="mono">03</span>System Settings → Privacy &amp; Security → Open Anyway.</li></ol></div>
+<a class="loop" tabindex="0" style="--d:6s;background-size:contain;background-position:center" data-kind="open"><span class="tag mono"><i></i>Loop · 6s</span><span class="replay mono">Replay</span><span class="ring"></span><span class="bar"></span></a>
+</div></div></section>
+
+<section id="faq"><div class="wrap"><div class="faq">
+<span class="label">04 · FAQ</span>
+<details open><summary>Is it really free?</summary><p>Yes. Free and open source, no paywall or account.</p></details>
+<details><summary>Is Showhow a new app or a fork?</summary><p>It is a fork of OpenScreen, the open-source screen recorder created by Siddharth Vaddem and now continued by the OpenScreen contributors. Showhow keeps OpenScreen&rsquo;s recorder and editor and adds a library of your recordings and the step-by-step guides. If you only want a recorder, OpenScreen is excellent on its own. Both are MIT licensed.</p></details>
+<details><summary>Does it upload my recordings?</summary><p>No. Recording happens on your Mac. AI only runs when you connect your own OpenRouter key, and only for the guide step.</p></details>
+<details><summary>What if the AI step fails?</summary><p>The recording always saves. A failed guide never loses a take.</p></details>
+<details><summary>Windows or Linux?</summary><p>Not yet. macOS only for now.</p></details>
+<details><summary>Which agents does it work with?</summary><p>Anything that reads text and a folder path, including Claude Code and Codex.</p></details>
+</div></div></section>
+
+<section class="cta"><div class="wrap">
+<h2>Next time a client messages, record it.</h2>
+<a class="btn primary" href="#"><svg viewBox="0 0 24 24"><path d="M16.4 12.7c0-2.5 2-3.7 2.1-3.8-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9-.8 0-1.9-.9-3.200-.8-1.600 0-3.100 1-4 2.400-1.700 3-.4 7.400 1.200 9.800.8 1.200 1.800 2.500 3 2.400 1.200 0 1.700-.8 3.100-.8s1.900.8 3.200.8c1.300 0 2.100-1.200 2.900-2.300.9-1.300 1.300-2.600 1.300-2.700-.1 0-2.400-.9-2.400-3.900zM14 5.400c.7-.8 1.100-1.900 1-3-1 0-2.100.7-2.800 1.500-.6.700-1.100 1.800-1 2.900 1.100.1 2.100-.5 2.800-1.400z"/></svg>Download early build for Mac</a>
+</div></section>
+<footer><div class="wrap"><b>Showhow</b><a class="mono" id="gh" href="#gh">GitHub</a><span>Free forever · Open source</span><span class="mono">© Bedar Studios</span></div></footer>
+
+<script>
+const nav=document.getElementById('nav');
+const f=()=>nav.classList.toggle('stuck',scrollY>8);f();addEventListener('scroll',f,{passive:true});
+document.querySelectorAll('.loop:not(.still)').forEach(l=>{
+  const replay=()=>{l.classList.add('re');void l.offsetWidth;l.classList.remove('re')};
+  l.addEventListener('mouseenter',replay);l.addEventListener('focus',replay);
+});
+</script>
+<script>
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const cue=document.getElementById('cue');
+addEventListener('scroll',()=>cue.classList.toggle('gone',scrollY>80),{passive:true});
+const hv=document.querySelector('.win video');
+if(RM&&hv){hv.removeAttribute('autoplay');hv.pause()}
+/* fake loop content */
+const arrow='<svg class="cur" viewBox="0 0 16 16"><path d="M2 1l11 6-5 1.500L6 14z" fill="#FFFCF7" stroke="#161616"/></svg>';
+const FX={
+ rec:'<span class="ph"></span>',
+ rows:'<div class="row r1"><b>01</b>Click “Invoices” in the sidebar</div><div class="row r2"><b>02</b>Click the invoice for Acme Co</div><div class="row r3"><b>03</b>Point at the total field</div>',
+ copy:arrow+'<span class="cring"></span><span class="ctoast">COPIED FOR AGENT</span>',
+ brief:'<div class="term"><span class="t1">Brief: Checkout button does nothing on Safari</span><span class="t2">Steps: 7 · ~/Showhow/2026-10-18-checkout-bug</span><span class="t3">[copied]</span></div>',
+ pdf:[1,2,3].map(i=>'<div class="pg p'+i+'"><i></i><u></u><u></u><u></u></div>').join(''),
+ open:'<div class="opn"><div class="o1"><b>1</b>Drag Showhow to Applications</div><div class="o2"><b>2</b>Open it, dismiss the warning</div><div class="o3"><b>3</b>Privacy &amp; Security → Open Anyway</div></div>'
+};
+const loops=[...document.querySelectorAll('.loop:not(.still)')];
+loops.forEach(l=>{
+  const fx=document.createElement('div');fx.className='fx';fx.innerHTML=FX[l.dataset.kind];l.appendChild(fx);
+  if(!RM)l.classList.add('paused');
+  const replay=()=>{l.classList.add('re');void l.offsetWidth;l.classList.remove('re')};
+  l.addEventListener('mouseenter',replay);l.addEventListener('focus',replay);
+});
+const lio=new IntersectionObserver(es=>es.forEach(e=>e.target.classList.toggle('paused',!e.isIntersecting||RM)),{threshold:.2});
+loops.forEach(l=>lio.observe(l));
+/* reveals */
+const secs=[...document.querySelectorAll('#how .wrap,section:not(#how) .wrap')];
+const targets=new Map();
+secs.forEach(w=>{
+  const items=[...w.querySelectorAll(':scope > .label, :scope > h2, :scope > .sub2, :scope > h3, :scope > .steps > .step, :scope > .two > .panel, :scope > .open > *, :scope > .faq > *')];
+  items.forEach((el,i)=>{el.classList.add('rv');el.style.transitionDelay=(i*70)+'ms'});
+});
+const rio=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');rio.unobserve(e.target)}}),{threshold:.1});
+document.querySelectorAll('.rv').forEach(el=>{RM?el.classList.add('in'):rio.observe(el)});
+/* faq height animation */
+document.querySelectorAll('details').forEach(d=>{
+  const sm=d.querySelector('summary');
+  sm.addEventListener('click',e=>{
+    if(RM)return;e.preventDefault();
+    if(d.anim)d.anim.cancel();
+    const closed=sm.offsetHeight+'px';
+    if(!d.open){d.open=true;const full=d.scrollHeight+'px';d.anim=d.animate({height:[closed,full]},{duration:220,easing:'cubic-bezier(0.23,1,0.32,1)'});d.anim.onfinish=()=>d.anim=null}
+    else{const full=d.offsetHeight+'px';d.anim=d.animate({height:[full,closed]},{duration:220,easing:'cubic-bezier(0.23,1,0.32,1)'});d.anim.onfinish=()=>{d.open=false;d.anim=null}}
+  });
+});
+/* test hook for stills */
+window.__hero=t=>{document.getAnimations().forEach(a=>{a.pause();a.currentTime=t*1000});if(hv){hv.pause();hv.currentTime=t}};
+window.__loops=t=>{document.querySelectorAll('.loop:not(.still)').forEach(l=>l.classList.remove('paused'));document.getAnimations().forEach(a=>{if(a.effect.target&&a.effect.target.closest&&a.effect.target.closest('.loop:not(.still)')){a.pause();a.currentTime=t*1000}})};
+</script>
+
+</body>
+</html>

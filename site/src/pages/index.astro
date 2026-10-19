@@ -1,0 +1,158 @@
+---
+import Cta from "../components/Cta";
+import Faq from "../components/Faq";
+import HeroShader from "../components/HeroShader";
+import LoopSlot from "../components/LoopSlot.astro";
+import Nav from "../components/Nav";
+import Split from "../components/Split.astro";
+import Layout from "../layouts/Base.astro";
+import { PRIMARY_CTA, RELEASES_URL, REPO_URL } from "../lib/site";
+---
+<Layout
+	title="Showhow — Show how it’s done"
+	description="Record your screen once, press one button, and Showhow turns it into a step-by-step guide. Free, local-first, for macOS."
+>
+	<Nav client:load />
+
+	<header class="hero" id="top">
+		<div class="hero__shader" aria-hidden="true"><HeroShader client:load /></div>
+		<div class="wrap hero__inner">
+			<span class="eyebrow mono" data-hero="eyebrow"><i></i>Free · Open source · For macOS</span>
+			<h1 class="hero__title" data-split="hero"><Split text="Show how it’s done" tail="." /></h1>
+			<p class="hero__sub" data-hero="sub">
+				A client messages. Three agents are waiting. Record your screen once, press one button, and Showhow turns it into a step-by-step guide you can hand to an agent or send to a client.
+			</p>
+			<div class="hero__ctas" data-hero="ctas">
+				<Cta client:load variant="primary" icon="apple" href={REPO_URL} label={PRIMARY_CTA.toUpperCase()} />
+				<Cta client:load icon="github" href={REPO_URL} label="View on GitHub" />
+			</div>
+			<p class="hero__micro mono" data-hero="micro">
+				macOS 13+ · Universal, 167 MB · Early build: recording and guides work, more coming<br />
+				<a href="#open">Unsigned build — here’s how to open it</a>
+			</p>
+			<div class="hero__stage-wrap" data-hero="stage">
+				<div class="hero__stage">
+					<div class="hero__window">
+						<video
+							class="hero__video"
+							muted
+							loop
+							playsinline
+							preload="auto"
+							poster="/assets/hero-make-guide-poster.png"
+							aria-label="Placeholder loop: pressing Make guide and watching the guide get built"
+						>
+							<source src="/assets/hero-make-guide.webm" type="video/webm" />
+							<source src="/assets/hero-make-guide.mp4" type="video/mp4" />
+						</video>
+					</div>
+					<span class="placeholder-tag mono">Placeholder</span>
+					<div class="hero__fade hero__fade--tint"></div>
+					<div class="hero__fade hero__fade--blur"></div>
+				</div>
+				<svg class="hero__cue" width="12" height="6" viewBox="0 0 12 6" aria-hidden="true"><path d="M1 1l5 4 5-4" fill="none" stroke="#82B09A" stroke-width="1.5"></path></svg>
+			</div>
+		</div>
+	</header>
+
+	<main>
+		<section class="section" id="how">
+			<div class="wrap">
+				<span class="section-label mono" data-reveal>01 · How it works</span>
+				<h2 data-split><Split text="Record once. Get the guide." /></h2>
+				<div class="steps">
+					<div class="step-card" data-reveal>
+						<LoopSlot kind="rec" size="129.31%" pos="100% 0" label="Placeholder loop: recording a screen" />
+						<span class="step-card__number mono">01</span>
+						<h3 class="step-card__title">Record</h3>
+						<p class="step-card__text">Capture your screen. Your clicks and cursor are tracked.</p>
+					</div>
+					<div class="step-card" data-reveal data-delay="0.08">
+						<LoopSlot kind="rows" size="129.31%" pos="100% 71.875%" label="Placeholder loop: Make guide writing steps" />
+						<span class="step-card__number mono">02</span>
+						<h3 class="step-card__title">Press one button</h3>
+						<p class="step-card__text">Make guide turns it into steps with screenshots and timestamps.</p>
+					</div>
+					<div class="step-card" data-reveal data-delay="0.16">
+						<LoopSlot kind="still" size="137.3%" pos="100% 36.7%" label="Placeholder still: a finished guide" />
+						<span class="step-card__number mono">03</span>
+						<h3 class="step-card__title">Hand it off<span class="soon-pill">Soon</span></h3>
+						<p class="step-card__text">Send the guide to an agent or a client. Handoffs are coming soon.</p>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="section" id="next">
+			<span class="section__rule" aria-hidden="true"></span>
+			<div class="wrap">
+				<span class="section-label mono" data-reveal>02 · Coming next</span>
+				<h2 data-split><Split text="One guide. Two handoffs." /></h2>
+				<p class="section__sub" data-reveal>Guides work today. These two handoffs ship next.</p>
+				<div class="handoffs">
+					<div class="handoff-panel" data-reveal data-x="-40">
+						<LoopSlot kind="still" image="/assets/handoff-agent-brief.png" size="146.6%" pos="85.58% 93.5%" label="Placeholder still: an agent brief" />
+						<div class="handoff-panel__head">
+							<h3 class="handoff-panel__title">For your agent</h3>
+							<span class="soon-pill">Soon</span>
+						</div>
+						<button type="button" class="button mono" aria-disabled="true" disabled>Copy for agent</button>
+						<p class="handoff-panel__text">A detailed brief plus the recording folder path, pasted straight into Claude Code or Codex.</p>
+					</div>
+					<div class="handoff-panel" data-reveal data-x="40" data-delay="0.08">
+						<LoopSlot kind="still" image="/assets/handoff-pdf-saved.png" size="173.4%" pos="50.7% 18.67%" label="Placeholder still: an exported PDF" />
+						<div class="handoff-panel__head">
+							<h3 class="handoff-panel__title">For your client</h3>
+							<span class="soon-pill">Soon</span>
+						</div>
+						<button type="button" class="button mono" aria-disabled="true" disabled>Export PDF</button>
+						<p class="handoff-panel__text">A clean walkthrough with screenshots they can read without a call.</p>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="section" id="open">
+			<span class="section__rule" aria-hidden="true"></span>
+			<div class="wrap">
+				<div class="open">
+					<div>
+						<span class="section-label mono" data-reveal>03 · How to open</span>
+						<h3 class="open__title" data-split><Split text="It’s an unsigned build. Here’s the 30-second fix." /></h3>
+						<ol class="open__list">
+							<li data-reveal><span class="mono">01</span>Drag Showhow to Applications.</li>
+							<li data-reveal data-delay="0.06"><span class="mono">02</span>Try to open it, then dismiss the warning.</li>
+							<li data-reveal data-delay="0.12"><span class="mono">03</span>System Settings → Privacy &amp; Security → Open Anyway.</li>
+						</ol>
+						<a class="open__more mono" href={RELEASES_URL} data-reveal>Releases</a>
+					</div>
+					<LoopSlot kind="open" size="contain" pos="center" seconds={6} label="Placeholder loop: opening an unsigned app" image="/assets/app-guide.png" />
+				</div>
+			</div>
+		</section>
+
+		<section class="section" id="faq">
+			<span class="section__rule" aria-hidden="true"></span>
+			<div class="wrap">
+				<span class="section-label mono" data-reveal>04 · FAQ</span>
+				<Faq client:visible />
+			</div>
+		</section>
+
+		<section class="section footer-cta">
+			<div class="wrap">
+				<h2 data-footer-title>Next time a client messages, record it.</h2>
+				<Cta client:visible variant="primary" icon="apple" href={REPO_URL} label={PRIMARY_CTA.toUpperCase()} />
+			</div>
+		</section>
+	</main>
+
+	<footer class="footer">
+		<div class="wrap footer__inner">
+			<b class="footer__brand">Showhow</b>
+			<a class="mono" href={REPO_URL}>GitHub</a>
+			<span>Free forever · Open source</span>
+			<span class="mono">© Bedar Studios</span>
+		</div>
+	</footer>
+</Layout>

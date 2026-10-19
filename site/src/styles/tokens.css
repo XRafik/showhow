@@ -1,0 +1,24 @@
+/* Names match the colour and font variables in design/landing.pen. */
+:root {
+	--color-landing-bg: #161616;
+	--color-landing-surface: #1e1e1e;
+	--color-landing-hairline: #fffcf72e;
+	--color-landing-text: #fffcf7;
+	--color-landing-text-dim: #fffcf7b3;
+	--color-landing-text-faint: #fffcf78c;
+	--color-landing-accent: #82b09a;
+	--color-landing-record: #e3582d;
+	/* Not a pen variable: the raised surface used by the approved prototype. */
+	--color-landing-surface-2: #242424;
+	--color-landing-ink: #2f2f2f;
+
+	--font-landing-heading: "Inter Tight Variable", "Inter Tight", system-ui, sans-serif;
+	--font-landing-body: "Inter Variable", Inter, system-ui, sans-serif;
+	--font-landing-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, monospace;
+
+	--ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+	--ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+
+	/* Hero shader strength. The design uses 0.3 to protect text contrast. */
+	--landing-shader-opacity: 0.3;
+}

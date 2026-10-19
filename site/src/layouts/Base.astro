@@ -1,0 +1,45 @@
+---
+import "@fontsource-variable/inter";
+import "@fontsource-variable/inter-tight";
+import "@fontsource-variable/jetbrains-mono";
+import "../styles/tokens.css";
+import "../styles/base.css";
+import "../styles/components.css";
+import "../styles/loops.css";
+
+interface Props {
+	title: string;
+	description: string;
+}
+const { title, description } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1" />
+		<title>{title}</title>
+		<meta name="description" content={description} />
+		<meta name="theme-color" content="#161616" />
+		<link rel="icon" href="/assets/logo.png" />
+		<script is:inline>
+			if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+				document.documentElement.classList.add("js-motion");
+				// If the motion script never boots, show everything.
+				setTimeout(() => {
+					if (!document.documentElement.dataset.ready) {
+						document.documentElement.classList.remove("js-motion");
+					}
+				}, 5000);
+			}
+		</script>
+	</head>
+	<body>
+		<svg class="grain" width="100%" height="100%" aria-hidden="true"><filter id="grain-noise"><feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="3" stitchTiles="stitch"></feTurbulence><feColorMatrix type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  2.4 0 0 0 -0.95"></feColorMatrix></filter><rect width="100%" height="100%" filter="url(#grain-noise)"></rect></svg>
+		<div class="intro" aria-hidden="true">{Array.from({ length: 10 }, () => <i />)}</div>
+		<slot />
+		<script>
+			import "../lib/motion";
+		</script>
+	</body>
+</html>

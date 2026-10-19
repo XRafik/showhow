@@ -80,3 +80,4 @@ private/
 
 # Generated licence bundle; reproducible from locked inputs by licenses:generate.
 /build-licenses/
+site/.astro/
