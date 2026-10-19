@@ -71,6 +71,7 @@ result-*
 /caption-assets/
 .bedar/previews/
 /.vitest-cache/
+/.vitest-attachments/
 
 # Owner-only notes; never commit
 private/

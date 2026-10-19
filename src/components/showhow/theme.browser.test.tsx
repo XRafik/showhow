@@ -591,8 +591,9 @@ it("keeps HUD notice and Record buttons sage and readable on real hover in both 
 					const button = getByRole("button", { name });
 					await userEvent.hover(button);
 					await expect.poll(() => button.matches(":hover")).toBe(true);
-					// The Final hover brightens the sage fill; it never swaps to another hue. Read once
-					// any colour transition has settled.
+					// The Final hover brightens the sage fill; it never swaps to another hue. Read after
+					// the transitions (150ms at most) have settled: a poll would pass on the sage start
+					// frame of a hover that is about to fade to another colour.
 					await new Promise((resolve) => setTimeout(resolve, 300));
 					const style = getComputedStyle(button);
 					expect
