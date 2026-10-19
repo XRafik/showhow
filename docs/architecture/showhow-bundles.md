@@ -216,6 +216,27 @@ being sent or is resent on the run's first progress event. Copy for agent with n
 after the brief validates and saves. Main writes the saved Markdown plus the exact resolved bundle
 path; renderer copy feedback appears only after that write succeeds. Copy path stays independent.
 
+## Workflow PDF export (#143)
+
+Export PDF on the Library guide tab saves the persisted guide as a PDF. It is a derived output: the
+bundle is only read. `electron/showhow/exportPdf.ts` reads `meta.json` title/source/duration, the
+ordered `steps.json` (validated with the guide's step check), `transcript.txt` and bundle-local
+screenshots; `pdfDocument.ts` turns that into escaped HTML with a `default-src 'none'` CSP and inline
+`data:` images only. Screenshots must be plain file names resolving inside the bundle's
+`screenshots/` folder. Main prints the HTML with `printToPDF` in a hidden, script-disabled window on
+its own session partition that may load only its temp file and `data:` URLs.
+
+The include switches (screenshots, narration, timestamps) are honoured exactly. Narration quotes are
+the transcript lines that lead into each step; lines after the last step stay with it. A step whose
+persisted redaction has no explicit `includeRevealedText` prints as "Sensitive text hidden" with no
+image and no narration. Revealing a step only in the current view does not change the export.
+
+Destinations stay in main. The default is the Downloads folder with a unique name ("Title.pdf",
+"Title 2.pdf"); Change opens the save panel, and a cancelled panel keeps the previous destination and
+writes nothing. Bytes reach the destination only after rendering succeeds, through a temp file and
+rename, so a failure keeps any existing file and reports an error. Show in Finder takes an opaque id
+for a file this session saved; the renderer never supplies a path.
+
 ### #117 verification boundary
 
 The #116 renderer-tiny statements above describe historical proof only. #117 source

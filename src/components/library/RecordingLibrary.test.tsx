@@ -201,6 +201,31 @@ describe("RecordingLibrary", () => {
 		expect(briefStatus).toHaveBeenCalledWith(desktopDocEntry.bundleDir);
 	});
 
+	it("opens Export PDF from the guide actions only when the guide has steps", async () => {
+		Object.assign(window.electronAPI, {
+			showhowPdfDestination: vi.fn(async () => ({ display: "~/Downloads" })),
+		});
+		mockShowhowListRecordings.mockResolvedValue([desktopDocEntry, browserEntry]);
+		render(<RecordingLibrary />);
+		await screen.findByRole("heading", { level: 1, name: desktopEntry.title });
+		const guide = screen.getByRole("region", { name: "AI guide" });
+		const actions = within(guide)
+			.getAllByRole("button")
+			.map((button) => button.textContent);
+		expect(actions.indexOf("Export PDF")).toBeLessThan(actions.indexOf("Copy path"));
+		await userEvent.click(within(guide).getByRole("button", { name: "Export PDF" }));
+		expect(await screen.findByRole("dialog", { name: "Export PDF" })).toBeVisible();
+		expect(await screen.findByText("~/Downloads")).toBeVisible();
+		await userEvent.keyboard("{Escape}");
+		await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+		expect(within(guide).getByRole("button", { name: "Export PDF" })).toHaveFocus();
+
+		await userEvent.click(screen.getByRole("tab", { name: "02 / Agent brief" }));
+		expect(screen.queryByRole("button", { name: "Export PDF" })).not.toBeInTheDocument();
+		await userEvent.click(screen.getByText(browserEntry.title));
+		expect(screen.queryByRole("button", { name: "Export PDF" })).not.toBeInTheDocument();
+	});
+
 	it("keeps focus on the tab row when arrowing between guide and brief", async () => {
 		Object.assign(window.electronAPI, {
 			showhowAgentBriefStatus: vi.fn(async () => ({

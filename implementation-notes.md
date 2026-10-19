@@ -1,5 +1,18 @@
 # Implementation notes
 
+## 19 October 2026 — Showhow #143 workflow PDF export
+
+Built in a single Claude Code session (Codex weekly limit exhausted), not through the Herdr lane.
+Reviewers were separate fresh agents.
+
+Deviations and adaptations:
+- Library-12's preview is a schematic (real title, step count and duration; placeholder rows per
+  included part), not a rendered page.
+- The modal eyebrow is "Guide" in both states; Library-25 shows "Showhow" on the saved state.
+- Steps have no narration field, so Narration quotes the persisted transcript lines leading into
+  each step. Hidden sensitive steps drop their narration as well as their text and image.
+- The PDF uses the system font stack; the app's bundled web fonts are not embedded.
+
 ## 19 October 2026 — Showhow #142 agent brief and Copy for agent
 
 Built in a single Claude Code session at the owner's direction (Codex weekly limit exhausted), not

@@ -213,5 +213,31 @@
 		"reviewBody": "Sent to OpenRouter only when you continue. The brief is saved in this recording's folder.",
 		"always": "Send briefs without asking next time",
 		"makeAndCopy": "Make brief and copy"
+	},
+	"showhowPdf": {
+		"eyebrow": "Guide",
+		"title": "Export PDF",
+		"description": "Choose what the PDF includes and where it is saved.",
+		"include": "Include",
+		"screenshots": "Screenshots",
+		"narration": "Narration",
+		"timestamps": "Timestamps",
+		"stepsOnly": "Steps only",
+		"steps": "{{count}} steps",
+		"oneStep": "1 step",
+		"saveTo": "Save to",
+		"change": "Change",
+		"chooseFailed": "Couldn't open the save panel. Try again.",
+		"cancel": "Cancel",
+		"export": "Export PDF",
+		"exporting": "Exporting…",
+		"failed": "Couldn't export the PDF. Your recording is unchanged. Try again.",
+		"saved": "PDF saved",
+		"showInFinder": "Show in Finder",
+		"revealFailed": "Couldn't show the PDF in Finder.",
+		"savedTo": "Saved to {{folder}}",
+		"done": "Done",
+		"preview": "Preview of the PDF",
+		"list": "{{items}} and {{last}}"
 	}
 }

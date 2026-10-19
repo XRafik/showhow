@@ -1,4 +1,4 @@
-import { CircleDot, Folder, Scissors, Search, Upload } from "lucide-react";
+import { CircleDot, FileText, Folder, Scissors, Search, Upload } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
 	AgentBriefPanel,
@@ -10,6 +10,7 @@ import { AiGuidePanel } from "@/components/showhow/AiGuidePanel";
 import { AiGuideSettings } from "@/components/showhow/AiGuideSettings";
 import { Button } from "@/components/showhow/Button";
 import { EmptyState } from "@/components/showhow/EmptyState";
+import { ExportPdfSheet } from "@/components/showhow/ExportPdfSheet";
 import { Field } from "@/components/showhow/Field";
 import { GuideStep, Mosaic } from "@/components/showhow/GuideStep";
 import { ImportVideoSheet } from "@/components/showhow/ImportVideoSheet";
@@ -113,6 +114,8 @@ function RecordingDetail({
 	const [revealedSteps, setRevealedSteps] = useState<Set<number>>(() => new Set());
 	const [docStatus, setDocStatus] = useState<"idle" | "generating" | "failure">("idle");
 	const [tab, setTab] = useState("guide");
+	const [pdfOpen, setPdfOpen] = useState(false);
+	const pdfButton = useRef<HTMLButtonElement>(null);
 	const brief = useAgentBrief(entry.bundleDir);
 	const isMountedRef = useRef(true);
 	useEffect(() => {
@@ -513,6 +516,17 @@ function RecordingDetail({
 					selected={tab === "guide"}
 					actions={
 						<>
+							{tab === "guide" && entry.steps && entry.steps.length > 0 && (
+								<Button
+									ref={pdfButton}
+									type="button"
+									variant="secondary"
+									icon={FileText}
+									onClick={() => setPdfOpen(true)}
+								>
+									{t("showhowPdf.export")}
+								</Button>
+							)}
 							{copyPathButton}
 							{(tab === "guide" || (brief.state.hasBrief && brief.state.view !== "making")) && (
 								<CopyForAgentButton brief={brief} />
@@ -528,6 +542,15 @@ function RecordingDetail({
 				</TabsContent>
 			</Tabs>
 			<AgentBriefSheets brief={brief} />
+			<ExportPdfSheet
+				entry={entry}
+				open={pdfOpen}
+				onOpenChange={setPdfOpen}
+				onCloseAutoFocus={(event) => {
+					event.preventDefault();
+					pdfButton.current?.focus();
+				}}
+			/>
 			{copyStatus !== "idle" && (
 				<p role="status" className="mt-2 text-sm text-ds-ink-soft">
 					{copyStatus === "copying"

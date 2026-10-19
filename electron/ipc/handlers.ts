@@ -153,6 +153,7 @@ import {
 	SHOWHOW_RECORDINGS_ROOT,
 	updateWorkflowDocument,
 } from "../showhow/bundle";
+import { createPdfRenderer, registerPdfExportHandlers } from "../showhow/exportPdf";
 import { finishShowhowRecording } from "../showhow/finishRecording";
 import { createStructuredModelFactory } from "../showhow/guideModel";
 import { registerImportRecordingHandlers } from "../showhow/importRecording";
@@ -3919,6 +3920,22 @@ export function registerIpcHandlers(
 			console.error("Showhow recording could not open:", error);
 			return { success: false };
 		}
+	});
+
+	registerPdfExportHandlers({
+		handle: (channel, handler) => ipcMain.handle(channel, handler),
+		recordingsRoot: SHOWHOW_RECORDINGS_ROOT,
+		downloadsDir: app.getPath("downloads"),
+		homeDir: app.getPath("home"),
+		chooseSaveFile: async (defaultPath) => {
+			const result = await showSaveDialogOver(BrowserWindow.getFocusedWindow(), {
+				defaultPath,
+				filters: [{ name: "PDF", extensions: ["pdf"] }],
+			});
+			return result.canceled ? null : (result.filePath ?? null);
+		},
+		render: createPdfRenderer(BrowserWindow),
+		reveal: (file) => shell.showItemInFolder(file),
 	});
 
 	registerImportRecordingHandlers({
