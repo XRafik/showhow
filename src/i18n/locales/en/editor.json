@@ -206,7 +206,18 @@
 		"exportFailed": "Export failed",
 		"failedToWriteFile": "Failed to write file",
 		"qualityUpscaleWarning": "Upscale",
-		"nothingToExport": "Nothing to export — the timeline is empty."
+		"nothingToExport": "Nothing to export — the timeline is empty.",
+		"eyebrow": "Share",
+		"closePanel": "Close export",
+		"summaryLabel": "Export summary",
+		"summaryFormat": "Format",
+		"summaryLength": "Length",
+		"destinationChoose": "You choose where",
+		"sheetRendering": "Rendering your video",
+		"sheetSettings": "Export · {{format}} · {{quality}} · {{fps}} fps",
+		"cancelExport": "Cancel export",
+		"mp4CannotCancel": "An MP4 export can't be stopped once it starts.",
+		"done": "Done"
 	},
 	"inspector": {
 		"resetFocusPoint": "Reset focus point",
@@ -222,7 +233,9 @@
 		"deleteRegion": "Delete region",
 		"freehandRendersAsBox": "In the export, the blur fills the rectangle around your freehand shape, so it may hide a little more than you drew.",
 		"label": "Inspector",
-		"aiChat": "AI chat"
+		"aiChat": "AI chat",
+		"export": "Export",
+		"exportTip": "Export: MP4 or GIF"
 	},
 	"chat": {
 		"changeProvider": "Change provider",
@@ -294,7 +307,16 @@
 			"subtitle": "Switch or create sessions",
 			"empty": "No conversations yet.",
 			"msgsCount": "{{count}} msgs · {{date}}"
-		}
+		},
+		"editWithAi": "Edit with AI",
+		"providerConnected": "Connected · {{provider}}",
+		"providerNotConnected": "Not connected",
+		"composerLabel": "Message the AI editor",
+		"undoTurn": "Undo",
+		"turnUndone": "Undone. The project is back to how it was before this turn.",
+		"turnUndoStale": "Can't undo: the project has changed since. Use Undo on the timeline instead.",
+		"appliedTitleOne": "Applied · 1 change",
+		"appliedTitleMany": "Applied · {{count}} changes"
 	},
 	"newProjectDialog": {
 		"title": "New project",

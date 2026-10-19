@@ -72,7 +72,10 @@
 			"notSavedYet": "현재 프로젝트가 아직 디스크에 저장되지 않았습니다.",
 			"discard": "취소",
 			"saveAndContinue": "저장 후 계속",
-			"saving": "저장 중…"
+			"saving": "저장 중…",
+			"eyebrow": "저장되지 않은 변경 사항",
+			"originalSafe": "어느 쪽을 선택해도 원본 녹화는 안전합니다.",
+			"save": "저장"
 		}
 	},
 	"fileDialogs": {
@@ -88,5 +91,9 @@
 		"audioFiles": "오디오 파일",
 		"allFiles": "모든 파일",
 		"showhowProject": "Showhow 프로젝트"
+	},
+	"shortcuts": {
+		"eyebrow": "도움말",
+		"openHint": "편집기에서 ?를 누르면 이 목록이 열립니다."
 	}
 }

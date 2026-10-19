@@ -206,7 +206,18 @@
 		"exportFailed": "Export fehlgeschlagen",
 		"failedToWriteFile": "Datei konnte nicht geschrieben werden",
 		"qualityUpscaleWarning": "Hochskalierung",
-		"nothingToExport": "Nichts zu exportieren — die Timeline ist leer."
+		"nothingToExport": "Nichts zu exportieren — die Timeline ist leer.",
+		"eyebrow": "Teilen",
+		"closePanel": "Export schließen",
+		"summaryLabel": "Export-Übersicht",
+		"summaryFormat": "Format",
+		"summaryLength": "Länge",
+		"destinationChoose": "Du wählst den Ort",
+		"sheetRendering": "Dein Video wird gerendert",
+		"sheetSettings": "Export · {{format}} · {{quality}} · {{fps}} fps",
+		"cancelExport": "Export abbrechen",
+		"mp4CannotCancel": "Ein MP4-Export lässt sich nach dem Start nicht anhalten.",
+		"done": "Fertig"
 	},
 	"inspector": {
 		"resetFocusPoint": "Fokuspunkt zurücksetzen",
@@ -222,7 +233,9 @@
 		"deleteRegion": "Bereich löschen",
 		"freehandRendersAsBox": "Im Export wird eine Freihandform von ihrem umschließenden Rechteck abgedeckt — eher zu viel als zu wenig.",
 		"label": "Inspektor",
-		"aiChat": "KI-Chat"
+		"aiChat": "KI-Chat",
+		"export": "Exportieren",
+		"exportTip": "Exportieren: MP4 oder GIF"
 	},
 	"chat": {
 		"changeProvider": "Anbieter wechseln",
@@ -294,7 +307,16 @@
 			"subtitle": "Sitzungen wechseln oder anlegen",
 			"empty": "Noch keine Unterhaltungen.",
 			"msgsCount": "{{count}} Nachr. · {{date}}"
-		}
+		},
+		"editWithAi": "Mit KI bearbeiten",
+		"providerConnected": "Verbunden · {{provider}}",
+		"providerNotConnected": "Nicht verbunden",
+		"composerLabel": "Nachricht an den KI-Editor",
+		"undoTurn": "Rückgängig",
+		"turnUndone": "Rückgängig gemacht. Das Projekt ist wieder so wie vor diesem Schritt.",
+		"turnUndoStale": "Rückgängig nicht möglich: Das Projekt hat sich seitdem geändert. Nutze stattdessen Rückgängig in der Zeitleiste.",
+		"appliedTitleOne": "Angewendet · 1 Änderung",
+		"appliedTitleMany": "Angewendet · {{count}} Änderungen"
 	},
 	"newProjectDialog": {
 		"title": "Neues Projekt",

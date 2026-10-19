@@ -1,9 +1,11 @@
-import { AlertTriangle, Crop, FolderOpen, FolderPlus, Pencil, Plus, Trash2, X } from "lucide-react";
+import { Crop, FolderOpen, FolderPlus, Pencil, Plus, Trash2, X } from "lucide-react";
 import {
 	type KeyboardEvent as ReactKeyboardEvent,
 	type ReactNode,
 	type PointerEvent as ReactPointerEvent,
+	type RefObject,
 	useEffect,
+	useId,
 	useRef,
 	useState,
 } from "react";
@@ -27,9 +29,36 @@ function useEscape(open: boolean, onClose: () => void) {
 		const onKey = (e: KeyboardEvent) => {
 			if (e.key === "Escape") onClose();
 		};
-		document.addEventListener("keydown", onKey);
-		return () => document.removeEventListener("keydown", onKey);
+		// On window, not document: a key sent to the window itself never reaches a document
+		// listener, while one sent anywhere in the page bubbles up to the window.
+		window.addEventListener("keydown", onKey);
+		return () => window.removeEventListener("keydown", onKey);
 	}, [open, onClose]);
+}
+
+const FOCUSABLE =
+	'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+/** Tab and Shift+Tab wrap inside the dialog: past its last control is its first, and back. */
+function trapTab(e: ReactKeyboardEvent<HTMLElement>) {
+	if (e.key !== "Tab") return;
+	const items = [...e.currentTarget.querySelectorAll<HTMLElement>(FOCUSABLE)].filter(
+		(el) => !el.closest("[hidden]"),
+	);
+	if (items.length === 0) {
+		e.preventDefault();
+		return;
+	}
+	const first = items[0];
+	const last = items[items.length - 1];
+	const active = document.activeElement;
+	if (e.shiftKey && (active === first || active === e.currentTarget)) {
+		e.preventDefault();
+		last.focus();
+	} else if (!e.shiftKey && active === last) {
+		e.preventDefault();
+		first.focus();
+	}
 }
 
 export function ModalShell({
@@ -38,18 +67,32 @@ export function ModalShell({
 	closeOnEscape = true,
 	title,
 	subtitle,
+	eyebrow,
 	wide,
+	final,
+	dismissible = true,
+	initialFocusRef,
 	children,
 }: BaseModalProps & {
 	title: string;
 	subtitle?: string;
+	/** The Final look's mono label above the title (Editor-05/07). */
+	eyebrow?: string;
 	wide?: boolean;
+	/** The Final sheet: ink border, offset sage shadow, mono eyebrow, Inter Tight title. */
+	final?: boolean;
+	/** Off for a sheet whose own buttons are the only way out (a render in flight): no close
+	 *  button and no backdrop click. Escape still follows `closeOnEscape`. */
+	dismissible?: boolean;
+	/** Where focus lands as the dialog opens, instead of the dialog itself. */
+	initialFocusRef?: RefObject<HTMLElement | null>;
 	/** Off for a dialog that handles Escape itself — two listeners both fire for one
 	 *  keypress, and this one's `onClose` wins whatever order they registered in. */
 	closeOnEscape?: boolean;
 	children: ReactNode;
 }) {
 	const tc = useScopedT("common");
+	const titleId = useId();
 	const dialogRef = useRef<HTMLDivElement | null>(null);
 	useEscape(open && closeOnEscape, onClose);
 	// Move focus into the dialog as it opens, and hand it back to whatever had it when the
@@ -63,11 +106,11 @@ export function ModalShell({
 		// the dialog mounts), in which case restoring is a no-op; the panel's gear is still
 		// there, and gets it back.
 		const opener = document.activeElement;
-		dialogRef.current?.focus();
+		(initialFocusRef?.current ?? dialogRef.current)?.focus();
 		return () => {
 			if (opener instanceof HTMLElement && opener.isConnected) opener.focus();
 		};
-	}, [open]);
+	}, [open, initialFocusRef]);
 	if (!open) return null;
 	return (
 		<div
@@ -76,24 +119,34 @@ export function ModalShell({
 			className={`${styles.modal} ${open ? styles.isOpen : ""}`}
 			role="dialog"
 			aria-modal="true"
-			aria-labelledby="modal-title"
+			aria-labelledby={titleId}
+			onKeyDown={trapTab}
 		>
-			<div className={styles.modalBackdrop} aria-hidden onClick={onClose} />
-			<div className={`${styles.modalCard} ${wide ? styles.wide : ""}`}>
+			<div
+				className={styles.modalBackdrop}
+				aria-hidden
+				onClick={dismissible ? onClose : undefined}
+			/>
+			<div
+				className={`${styles.modalCard} ${wide ? styles.wide : ""} ${final ? styles.finalSheet : ""}`}
+			>
 				<header className={styles.modalHead}>
 					<div>
-						<h2 id="modal-title">{title}</h2>
+						{eyebrow ? <span className={styles.sheetEyebrow}>{eyebrow}</span> : null}
+						<h2 id={titleId}>{title}</h2>
 						{subtitle ? <p>{subtitle}</p> : null}
 					</div>
-					<button
-						type="button"
-						className={styles.closeBtn}
-						onClick={onClose}
-						title={tc("actions.close")}
-						aria-label={tc("actions.close")}
-					>
-						<X size={18} />
-					</button>
+					{dismissible ? (
+						<button
+							type="button"
+							className={styles.closeBtn}
+							onClick={onClose}
+							title={tc("actions.close")}
+							aria-label={tc("actions.close")}
+						>
+							<X size={18} />
+						</button>
+					) : null}
 				</header>
 				<div className={styles.modalBody}>{children}</div>
 			</div>
@@ -1167,76 +1220,57 @@ export function UnsavedChangesModal({
 }: UnsavedChangesModalProps) {
 	const td = useScopedT("dialogs");
 	const tc = useScopedT("common");
+	// Save is where focus starts: Enter on a fresh sheet keeps the work, never throws it away.
+	const saveRef = useRef<HTMLButtonElement | null>(null);
 	const titleKeys: Record<UnsavedChangesModalProps["action"], string> = {
 		close: "unsavedChanges.modal.closeTitle",
 		new: "unsavedChanges.modal.newTitle",
 		open: "unsavedChanges.modal.openTitle",
 		record: "unsavedChanges.modal.recordTitle",
 	};
-	const copy = {
-		title: td(titleKeys[action]),
-		body:
-			action === "close"
-				? td("unsavedChanges.modal.closeBody")
-				: td("unsavedChanges.modal.sharedBody"),
-	};
+	const body =
+		action === "close"
+			? td("unsavedChanges.modal.closeBody")
+			: td("unsavedChanges.modal.sharedBody");
 	return (
-		<ModalShell open={open} onClose={onClose} title={copy.title} subtitle={copy.body}>
-			<div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-				<span
-					style={{
-						display: "grid",
-						placeItems: "center",
-						width: 32,
-						height: 32,
-						borderRadius: 8,
-						background: "var(--warn-soft)",
-						color: "var(--warn)",
-					}}
-				>
-					<AlertTriangle size={16} />
-				</span>
-				<div
-					style={{
-						font: "500 12px var(--font-body)",
-						color: "var(--fg-2)",
-					}}
-				>
-					{td("unsavedChanges.modal.notSavedYet")}
-				</div>
-			</div>
-			<div
-				style={{
-					display: "flex",
-					justifyContent: "flex-end",
-					gap: 8,
-					paddingTop: 12,
-					borderTop: "1px solid var(--border-soft)",
-				}}
-			>
+		<ModalShell
+			open={open}
+			onClose={onClose}
+			final
+			eyebrow={td("unsavedChanges.modal.eyebrow")}
+			title={td(titleKeys[action])}
+			initialFocusRef={saveRef}
+		>
+			<p className={styles.sheetText}>
+				{body} {td("unsavedChanges.modal.originalSafe")}
+			</p>
+			<div className={styles.sheetFoot}>
+				{/* Apart from the other two, on the far side: the one choice that loses work. */}
 				<button
 					type="button"
-					className={`${styles.btn} ${styles.btnSecondary}`}
+					className={styles.sheetDanger}
+					onClick={() => onChoose("discard")}
+					disabled={busy}
+				>
+					{td("unsavedChanges.modal.discard")}
+				</button>
+				<span className={styles.sheetFootGap} />
+				<button
+					type="button"
+					className={styles.sheetSecondary}
 					onClick={() => onChoose("cancel")}
 					disabled={busy}
 				>
 					{tc("actions.cancel")}
 				</button>
 				<button
+					ref={saveRef}
 					type="button"
-					className={`${styles.btn} ${styles.btnSecondary}`}
-					onClick={() => onChoose("discard")}
-					disabled={busy}
-				>
-					{td("unsavedChanges.modal.discard")}
-				</button>
-				<button
-					type="button"
-					className={`${styles.btn} ${styles.btnPrimary}`}
+					className={styles.sheetPrimary}
 					onClick={() => onChoose("save")}
 					disabled={busy}
 				>
-					{busy ? td("unsavedChanges.modal.saving") : td("unsavedChanges.modal.saveAndContinue")}
+					{busy ? td("unsavedChanges.modal.saving") : td("unsavedChanges.modal.save")}
 				</button>
 			</div>
 		</ModalShell>

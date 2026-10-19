@@ -995,6 +995,8 @@ export function NewEditorShell() {
 			toast.info("Add a video to the project before exporting.");
 			return;
 		}
+		// Export is the inspector's share panel (Editor-04), an Edit-mode column.
+		setMode("edit");
 		setExportOpen(true);
 	}, [hasAsset]);
 
@@ -1666,6 +1668,11 @@ export function NewEditorShell() {
 							<ChatStripPanel />
 						</section>
 					}
+					exportOpen={exportOpen && hasAsset}
+					onToggleExport={() => (exportOpen ? setExportOpen(false) : handleExport())}
+					exportPanel={
+						<ExportDialog open onClose={() => setExportOpen(false)} document={document} />
+					}
 				/>
 			) : null}
 
@@ -1750,7 +1757,6 @@ export function NewEditorShell() {
 				action={unsavedPrompt?.action ?? "new"}
 				onChoose={handleConfirmUnsaved}
 			/>
-			<ExportDialog open={exportOpen} onClose={() => setExportOpen(false)} document={document} />
 			<AddAudioLayerDialog
 				open={voiceoverFlow !== null}
 				maxDurationSec={voiceoverFlow?.maxDurationSec ?? 0}

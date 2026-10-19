@@ -2875,3 +2875,403 @@ textarea.control {
 	font: 400 12px var(--ds-font-body), Inter, system-ui, sans-serif;
 	color: var(--ds-ink-soft);
 }
+
+/* ─── Final sheet (Editor-05/07) ──────────────────────────────────── */
+/* The HUD sheets' look (#145): ink border, offset sage shadow, a mono eyebrow over an Inter
+   Tight title, mono uppercase buttons. ModalShell's `final` puts a dialog in it. */
+.modalCard.finalSheet {
+	width: min(460px, calc(100vw - 32px));
+	margin-top: 14vh;
+	border: 1px solid var(--ds-ink);
+	border-radius: calc(var(--ds-radius, 8) * 1px);
+	background: var(--ds-surface);
+	color: var(--ds-ink);
+	box-shadow: 4px 4px 0 var(--ds-accent);
+}
+.finalSheet .modalHead {
+	padding: 18px 20px 6px;
+}
+.finalSheet .modalHead h2 {
+	margin-top: 4px;
+	font: 600 20px/1.25 var(--ds-font-display), "Inter Tight", Inter, system-ui, sans-serif;
+	letter-spacing: -0.01em;
+	color: var(--ds-ink);
+}
+.finalSheet .modalHead p {
+	color: var(--ds-ink-soft);
+}
+.finalSheet .modalHead .closeBtn {
+	width: 28px;
+	height: 28px;
+	border-radius: calc(var(--ds-radius, 8) * 0.5px);
+	color: var(--ds-ink-soft);
+}
+.finalSheet .modalHead .closeBtn:hover {
+	background: var(--ds-chip);
+	color: var(--ds-ink);
+}
+.finalSheet .modalBody {
+	padding: 6px 20px 18px;
+	gap: 16px;
+}
+.sheetEyebrow {
+	display: block;
+	font: 500 10px var(--ds-font-label), "JetBrains Mono", ui-monospace, monospace;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--ds-ink-soft);
+}
+.sheetText {
+	margin: 0;
+	font: 400 14px/1.5 var(--ds-font-body), Inter, system-ui, sans-serif;
+	color: var(--ds-ink-soft);
+}
+.sheetFoot {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding-top: 14px;
+	border-top: 1px solid var(--ds-line);
+}
+.sheetFootGap {
+	flex: 1;
+}
+.sheetPrimary,
+.sheetSecondary,
+.sheetDanger {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	height: 32px;
+	padding: 0 14px;
+	border-radius: calc(var(--ds-radius, 8) * 0.5px);
+	font: 500 11px var(--ds-font-label), "JetBrains Mono", ui-monospace, monospace;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	cursor: pointer;
+}
+.sheetPrimary {
+	border: 1px solid var(--ds-ink);
+	background: var(--ds-ink);
+	color: var(--ds-surface);
+}
+.sheetPrimary:hover:not(:disabled) {
+	opacity: 0.88;
+}
+.sheetSecondary {
+	border: 1px solid var(--ds-line);
+	background: var(--ds-surface);
+	color: var(--ds-ink);
+}
+.sheetSecondary:hover:not(:disabled) {
+	background: var(--ds-chip);
+}
+/* Rec-ink, not rec: #E3582D text is under 3:1 on the light surface. */
+.sheetDanger {
+	border: 1px solid transparent;
+	background: transparent;
+	color: var(--ds-rec-ink);
+}
+.sheetDanger:hover:not(:disabled) {
+	background: var(--ds-rec-wash);
+}
+.sheetPrimary:disabled,
+.sheetSecondary:disabled,
+.sheetDanger:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+.sheetPrimary:focus-visible,
+.sheetSecondary:focus-visible,
+.sheetDanger:focus-visible {
+	outline: 2px solid var(--ds-ink);
+	outline-offset: 2px;
+}
+.sheetNote {
+	margin: 0;
+	font: 400 12px/1.45 var(--ds-font-body), Inter, system-ui, sans-serif;
+	color: var(--ds-ink-soft);
+}
+
+/* ─── Export panel and rendering sheet (Editor-04/05) ─────────────── */
+.exportPanel {
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	height: 100%;
+	color: var(--ds-ink);
+}
+.exportHead {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 16px var(--sp-4) 12px;
+	border-bottom: 1px solid var(--ds-line);
+}
+.exportTitle {
+	margin: 4px 0 0;
+	font: 600 16px/1.2 var(--ds-font-display), "Inter Tight", Inter, system-ui, sans-serif;
+	letter-spacing: -0.01em;
+}
+.exportClose {
+	display: grid;
+	place-items: center;
+	width: 28px;
+	height: 28px;
+	border: 0;
+	border-radius: calc(var(--ds-radius, 8) * 0.5px);
+	background: transparent;
+	color: var(--ds-ink-soft);
+	cursor: pointer;
+}
+.exportClose:hover:not(:disabled) {
+	background: var(--ds-chip);
+	color: var(--ds-ink);
+}
+.exportBody {
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	padding: 14px var(--sp-4);
+}
+.exportLabel {
+	margin-bottom: 6px;
+	font: 500 10px var(--ds-font-label), "JetBrains Mono", ui-monospace, monospace;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	color: var(--ds-ink-soft);
+}
+.exportChoices2,
+.exportChoices3,
+.exportChoices4 {
+	display: grid;
+	gap: 6px;
+}
+.exportChoices2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.exportChoices3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.exportChoices4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.exportChoice {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 3px;
+	min-height: 32px;
+	padding: 6px 8px;
+	border: 1px solid var(--ds-line);
+	border-radius: calc(var(--ds-radius, 8) * 0.5px);
+	background: var(--ds-surface);
+	color: var(--ds-ink);
+	font: 500 12px var(--ds-font-label), "JetBrains Mono", ui-monospace, monospace;
+	font-variant-numeric: tabular-nums;
+	cursor: pointer;
+}
+.exportChoice:hover:not(:disabled) {
+	border-color: var(--ds-ink);
+}
+.exportChoice[aria-pressed="true"] {
+	border-color: var(--ds-ink);
+	background: var(--ds-accent-wash);
+	box-shadow: inset 0 0 0 1px var(--ds-ink);
+}
+.exportChoice:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+.exportChoice:focus-visible {
+	outline: 2px solid var(--ds-ink);
+	outline-offset: 2px;
+}
+.exportFormat {
+	flex-direction: row;
+	gap: 8px;
+	min-height: 38px;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+.exportChoiceName {
+	font-weight: 600;
+}
+.exportChoiceMeta {
+	font-size: 10px;
+	color: var(--ds-ink-soft);
+}
+.exportChoiceMeta[data-warn] {
+	color: var(--ds-rec-ink);
+}
+.exportSummary {
+	margin: 0;
+	padding: 10px 12px;
+	list-style: none;
+	border: 1px solid var(--ds-line);
+	border-radius: calc(var(--ds-radius, 8) * 0.5px);
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+.exportSummary li {
+	display: flex;
+	justify-content: space-between;
+	gap: 12px;
+	font: 400 12px/1.4 var(--ds-font-body), Inter, system-ui, sans-serif;
+}
+.exportSummary li > span:first-child {
+	font: 500 10px/1.6 var(--ds-font-label), "JetBrains Mono", ui-monospace, monospace;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--ds-ink-soft);
+}
+.exportSummary li > span:last-child {
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+}
+.exportWarning {
+	margin: 0;
+	padding: 10px 12px;
+	border-radius: calc(var(--ds-radius, 8) * 0.5px);
+	background: var(--warn-soft);
+	font: 400 12px/1.4 var(--ds-font-body), Inter, system-ui, sans-serif;
+	color: var(--ds-ink);
+}
+.exportFoot {
+	display: flex;
+	flex-direction: column;
+	padding: 12px var(--sp-4) 16px;
+	border-top: 1px solid var(--ds-line);
+}
+.exportFoot .sheetPrimary {
+	height: 36px;
+}
+.exportPath {
+	font-family: var(--ds-font-label), "JetBrains Mono", ui-monospace, monospace;
+	word-break: break-all;
+	color: var(--ds-ink);
+}
+.exportError {
+	margin: 0;
+	padding: 10px 12px;
+	border: 1px solid var(--ds-rec-ink);
+	border-radius: calc(var(--ds-radius, 8) * 0.5px);
+	background: var(--ds-rec-wash);
+	font: 400 13px/1.45 var(--ds-font-body), Inter, system-ui, sans-serif;
+	color: var(--ds-rec-ink);
+}
+.renderHead {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 12px;
+}
+.renderPct {
+	font: 600 32px/1 var(--ds-font-display), "Inter Tight", Inter, system-ui, sans-serif;
+	font-variant-numeric: tabular-nums;
+	letter-spacing: -0.02em;
+}
+.renderBar {
+	position: relative;
+	height: 6px;
+	border: 1px solid var(--ds-ink);
+	border-radius: 999px;
+	overflow: hidden;
+	background: var(--ds-surface);
+}
+.renderFill {
+	position: absolute;
+	inset: 0 auto 0 0;
+	background: var(--ds-accent);
+	transition: width 200ms var(--ease);
+}
+
+/* ─── Edit with AI, Final (Editor-03) ─────────────────────────────── */
+.chatTitleRow {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	padding: 14px var(--sp-4) 8px;
+}
+.chatTitle {
+	margin: 0;
+	font: 600 16px/1.2 var(--ds-font-display), "Inter Tight", Inter, system-ui, sans-serif;
+	letter-spacing: -0.01em;
+	color: var(--ds-ink);
+}
+.chatProvider {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font: 500 10px var(--ds-font-label), "JetBrains Mono", ui-monospace, monospace;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--ds-ink-soft);
+}
+.chatProviderDot {
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: var(--ds-line);
+}
+.chatProvider[data-connected="true"] .chatProviderDot {
+	background: var(--ds-accent);
+}
+.appliedCard {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding: 10px 12px;
+	border: 1px solid var(--ds-ink);
+	border-radius: calc(var(--ds-radius, 8) * 1px);
+	background: var(--ds-surface);
+	box-shadow: 3px 3px 0 var(--ds-accent);
+}
+.appliedCard .msgBubble {
+	padding: 0;
+	background: transparent;
+}
+.appliedHead {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+}
+.appliedTitle {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font: 500 10px var(--ds-font-label), "JetBrains Mono", ui-monospace, monospace;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--ds-accent-strong);
+}
+.appliedUndo {
+	height: 24px;
+	padding: 0 10px;
+	border: 1px solid var(--ds-line);
+	border-radius: calc(var(--ds-radius, 8) * 0.5px);
+	background: var(--ds-surface);
+	color: var(--ds-ink);
+	font: 500 10px var(--ds-font-label), "JetBrains Mono", ui-monospace, monospace;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	cursor: pointer;
+}
+.appliedUndo:hover:not(:disabled) {
+	background: var(--ds-chip);
+}
+.appliedUndo:disabled {
+	opacity: 0.5;
+	cursor: wait;
+}
+.appliedUndo:focus-visible {
+	outline: 2px solid var(--ds-ink);
+	outline-offset: 2px;
+}
+.appliedNote {
+	margin: 0;
+	font: 400 12px/1.45 var(--ds-font-body), Inter, system-ui, sans-serif;
+	color: var(--ds-ink-soft);
+}

@@ -72,7 +72,10 @@
 			"notSavedYet": "O projeto atual ainda não foi salvo no disco.",
 			"discard": "Descartar",
 			"saveAndContinue": "Salvar e continuar",
-			"saving": "Salvando…"
+			"saving": "Salvando…",
+			"eyebrow": "Alterações não salvas",
+			"originalSafe": "Sua gravação original fica segura em qualquer caso.",
+			"save": "Salvar"
 		}
 	},
 	"fileDialogs": {
@@ -88,5 +91,9 @@
 		"audioFiles": "Arquivos de áudio",
 		"allFiles": "Todos os Arquivos",
 		"showhowProject": "Projeto Showhow"
+	},
+	"shortcuts": {
+		"eyebrow": "Ajuda",
+		"openHint": "Pressione ? no editor para abrir esta lista."
 	}
 }

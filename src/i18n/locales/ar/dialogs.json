@@ -72,7 +72,10 @@
 			"notSavedYet": "لم يتم حفظ المشروع الحالي على القرص بعد.",
 			"discard": "تجاهل",
 			"saveAndContinue": "حفظ ومتابعة",
-			"saving": "جارٍ الحفظ…"
+			"saving": "جارٍ الحفظ…",
+			"eyebrow": "تغييرات غير محفوظة",
+			"originalSafe": "تسجيلك الأصلي آمن في الحالتين.",
+			"save": "حفظ"
 		}
 	},
 	"fileDialogs": {
@@ -88,5 +91,9 @@
 		"audioFiles": "ملفات الصوت",
 		"allFiles": "جميع الملفات",
 		"showhowProject": "مشروع Showhow"
+	},
+	"shortcuts": {
+		"eyebrow": "مساعدة",
+		"openHint": "اضغط ? في المحرر لفتح هذه القائمة."
 	}
 }

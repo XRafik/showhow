@@ -72,7 +72,10 @@
 			"notSavedYet": "Dự án hiện tại chưa được lưu vào ổ đĩa.",
 			"discard": "Hủy bỏ",
 			"saveAndContinue": "Lưu và tiếp tục",
-			"saving": "Đang lưu…"
+			"saving": "Đang lưu…",
+			"eyebrow": "Thay đổi chưa lưu",
+			"originalSafe": "Bản ghi gốc của bạn vẫn an toàn trong mọi trường hợp.",
+			"save": "Lưu"
 		}
 	},
 	"fileDialogs": {
@@ -88,5 +91,9 @@
 		"audioFiles": "Tệp âm thanh",
 		"allFiles": "Tất cả các tệp",
 		"showhowProject": "Dự án Showhow"
+	},
+	"shortcuts": {
+		"eyebrow": "Trợ giúp",
+		"openHint": "Nhấn ? trong trình chỉnh sửa để mở danh sách này."
 	}
 }

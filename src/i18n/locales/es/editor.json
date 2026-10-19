@@ -206,7 +206,18 @@
 		"failedToWriteFile": "No se pudo escribir el archivo",
 		"qualityUpscaleWarning": "Upscaling",
 		"exportedVideoOf": "de vídeo exportado en",
-		"nothingToExport": "Nada que exportar: la línea de tiempo está vacía."
+		"nothingToExport": "Nada que exportar: la línea de tiempo está vacía.",
+		"eyebrow": "Compartir",
+		"closePanel": "Cerrar exportación",
+		"summaryLabel": "Resumen de la exportación",
+		"summaryFormat": "Formato",
+		"summaryLength": "Duración",
+		"destinationChoose": "Tú eliges dónde",
+		"sheetRendering": "Renderizando tu vídeo",
+		"sheetSettings": "Exportar · {{format}} · {{quality}} · {{fps}} fps",
+		"cancelExport": "Cancelar exportación",
+		"mp4CannotCancel": "Una exportación MP4 no se puede detener una vez iniciada.",
+		"done": "Listo"
 	},
 	"inspector": {
 		"resetFocusPoint": "Restablecer punto de enfoque",
@@ -222,7 +233,9 @@
 		"deleteRegion": "Eliminar región",
 		"freehandRendersAsBox": "En la exportación, una forma libre se cubre con su caja contenedora: cubre de más, nunca de menos.",
 		"label": "Inspector",
-		"aiChat": "Chat con IA"
+		"aiChat": "Chat con IA",
+		"export": "Exportar",
+		"exportTip": "Exportar: MP4 o GIF"
 	},
 	"chat": {
 		"changeProvider": "Cambiar proveedor",
@@ -294,7 +307,16 @@
 			"subtitle": "Cambia o crea sesiones",
 			"empty": "Aún no hay conversaciones.",
 			"msgsCount": "{{count}} mensajes · {{date}}"
-		}
+		},
+		"editWithAi": "Editar con IA",
+		"providerConnected": "Conectado · {{provider}}",
+		"providerNotConnected": "Sin conexión",
+		"composerLabel": "Escribe al editor de IA",
+		"undoTurn": "Deshacer",
+		"turnUndone": "Deshecho. El proyecto vuelve a estar como antes de este turno.",
+		"turnUndoStale": "No se puede deshacer: el proyecto ha cambiado desde entonces. Usa Deshacer en la línea de tiempo.",
+		"appliedTitleOne": "Aplicado · 1 cambio",
+		"appliedTitleMany": "Aplicado · {{count}} cambios"
 	},
 	"newProjectDialog": {
 		"title": "Nuevo proyecto",

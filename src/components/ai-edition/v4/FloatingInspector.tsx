@@ -18,6 +18,7 @@ import {
 	MousePointer2,
 	Pencil,
 	Scissors,
+	Share2,
 	SlidersHorizontal,
 	Sparkles,
 	Trash2,
@@ -126,6 +127,11 @@ interface FloatingInspectorProps {
 	chatOpen?: boolean;
 	onToggleChat?: () => void;
 	chatPanel?: ReactNode;
+	/** Export is the rail's share entry (Editor-04): while open its panel takes the inspector,
+	 *  ahead of the chat, which stays mounted underneath so a turn in flight survives. */
+	exportOpen?: boolean;
+	onToggleExport?: () => void;
+	exportPanel?: ReactNode;
 }
 
 export function FloatingInspector({
@@ -140,6 +146,9 @@ export function FloatingInspector({
 	chatOpen = false,
 	onToggleChat,
 	chatPanel,
+	exportOpen = false,
+	onToggleExport,
+	exportPanel,
 }: FloatingInspectorProps) {
 	const ts = useScopedT("settings");
 	const te = useScopedT("editor");
@@ -174,9 +183,11 @@ export function FloatingInspector({
 	// An imported audio track is selected (issue #350) — like a region selection it
 	// takes over the inspector body with its own pane (see AudioTrackPane).
 	const audioTrackSelected = Boolean(tl.selectedAudioTrackId);
-	// A selection still takes over first; then the chat; then the chosen facet.
-	const showingChat = chatOpen && chatPanel !== undefined && !selection && !audioTrackSelected;
-	const effectiveOpen = open || selection !== null || audioTrackSelected || showingChat;
+	// A selection still takes over first; then export; then the chat; then the chosen facet.
+	const covered = selection !== null || audioTrackSelected;
+	const showingExport = exportOpen && exportPanel !== undefined && !covered;
+	const showingChat = chatOpen && chatPanel !== undefined && !covered && !showingExport;
+	const effectiveOpen = open || covered || showingChat || showingExport;
 	return (
 		<aside className={styles.inspectorWrap} aria-label={te("inspector.label")}>
 			{effectiveOpen ? (
@@ -185,7 +196,7 @@ export function FloatingInspector({
 						<SelectionPane tl={tl} onClose={() => tl.clearSelection()} />
 					) : audioTrackSelected ? (
 						<AudioTrackPane tl={tl} onClose={() => tl.clearSelection()} />
-					) : showingChat ? null : (
+					) : showingChat || showingExport ? null : (
 						<FacetBody facet={facet} onCollapse={onToggleOpen} transcriptProps={transcriptProps} />
 					)}
 					{/* Mounted for as long as the chat is open, and only hidden under a selection: its
@@ -194,6 +205,13 @@ export function FloatingInspector({
 					{chatOpen && chatPanel !== undefined ? (
 						<div className={styles.inspectorChat} hidden={!showingChat}>
 							{chatPanel}
+						</div>
+					) : null}
+					{/* Kept mounted under a selection for the same reason: a render in flight owns
+					    its sheet, and unmounting would orphan the native job's progress. */}
+					{exportOpen && exportPanel !== undefined ? (
+						<div className={styles.inspectorChat} hidden={!showingExport}>
+							{exportPanel}
 						</div>
 					) : null}
 				</div>
@@ -206,16 +224,15 @@ export function FloatingInspector({
 						<button
 							type="button"
 							aria-label={ts(labelKey)}
-							aria-pressed={
-								!selection && !audioTrackSelected && !showingChat && open && facet === id
-							}
+							aria-pressed={!covered && !showingChat && !showingExport && open && facet === id}
 							onClick={() => {
 								// Switching facets while an element is selected should show
 								// the facet, not leave the selection pane on top of it.
 								if (selection || audioTrackSelected) tl.clearSelection();
-								// Picking a facet is leaving the chat for it.
-								if (showingChat) {
-									onToggleChat?.();
+								// Picking a facet is leaving the chat or export for it.
+								if (showingChat || showingExport) {
+									if (showingExport) onToggleExport?.();
+									else onToggleChat?.();
 									onFacetChange(id);
 									return;
 								}
@@ -319,6 +336,22 @@ export function FloatingInspector({
 						</div>
 					) : null}
 				</div>
+				{onToggleExport ? (
+					<Tooltip content={te("inspector.exportTip")} {...RAIL_TOOLTIP}>
+						<button
+							type="button"
+							aria-label={te("inspector.export")}
+							aria-pressed={showingExport}
+							onClick={() => {
+								if (covered) tl.clearSelection();
+								if (exportOpen && !showingExport) return;
+								onToggleExport();
+							}}
+						>
+							<Share2 size={17} />
+						</button>
+					</Tooltip>
+				) : null}
 				{onToggleChat ? (
 					<Tooltip content={te("inspector.aiChat")} {...RAIL_TOOLTIP}>
 						<button
@@ -328,6 +361,12 @@ export function FloatingInspector({
 							aria-pressed={showingChat}
 							onClick={() => {
 								if (selection || audioTrackSelected) tl.clearSelection();
+								// Export is on top: leaving it shows the chat, opening it if it was closed.
+								if (showingExport) {
+									onToggleExport?.();
+									if (!chatOpen) onToggleChat();
+									return;
+								}
 								// With a selection on top, the chat is open but hidden: show it, don't close it.
 								if (chatOpen && !showingChat) return;
 								onToggleChat();

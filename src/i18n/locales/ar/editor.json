@@ -206,7 +206,18 @@
 		"failedToWriteFile": "فشلت كتابة الملف",
 		"qualityUpscaleWarning": "تكبير الدقة",
 		"exportedVideoOf": "من الفيديو تم تصديره في",
-		"nothingToExport": "لا يوجد شيء للتصدير — المخطط الزمني فارغ."
+		"nothingToExport": "لا يوجد شيء للتصدير — المخطط الزمني فارغ.",
+		"eyebrow": "مشاركة",
+		"closePanel": "إغلاق التصدير",
+		"summaryLabel": "ملخص التصدير",
+		"summaryFormat": "التنسيق",
+		"summaryLength": "المدة",
+		"destinationChoose": "أنت تختار المكان",
+		"sheetRendering": "جارٍ تصيير الفيديو",
+		"sheetSettings": "تصدير · {{format}} · {{quality}} · {{fps}} إطار/ث",
+		"cancelExport": "إلغاء التصدير",
+		"mp4CannotCancel": "لا يمكن إيقاف تصدير MP4 بعد بدئه.",
+		"done": "تم"
 	},
 	"inspector": {
 		"resetFocusPoint": "إعادة تعيين نقطة التركيز",
@@ -222,7 +233,9 @@
 		"deleteRegion": "حذف المنطقة",
 		"freehandRendersAsBox": "الشكل الحر يُغطى بمستطيله المحيط في التصدير — تغطية زائدة، وليست ناقصة.",
 		"label": "المفتش",
-		"aiChat": "دردشة الذكاء الاصطناعي"
+		"aiChat": "دردشة الذكاء الاصطناعي",
+		"export": "تصدير",
+		"exportTip": "تصدير: MP4 أو GIF"
 	},
 	"chat": {
 		"changeProvider": "تغيير المزوّد",
@@ -294,7 +307,16 @@
 			"subtitle": "التبديل بين الجلسات أو إنشاء جلسة جديدة",
 			"empty": "لا توجد محادثات بعد.",
 			"msgsCount": "{{count}} رسالة · {{date}}"
-		}
+		},
+		"editWithAi": "التعديل بالذكاء الاصطناعي",
+		"providerConnected": "متصل · {{provider}}",
+		"providerNotConnected": "غير متصل",
+		"composerLabel": "راسل محرر الذكاء الاصطناعي",
+		"undoTurn": "تراجع",
+		"turnUndone": "تم التراجع. عاد المشروع إلى ما كان عليه قبل هذا الدور.",
+		"turnUndoStale": "تعذّر التراجع: تغيّر المشروع منذ ذلك الحين. استخدم التراجع في الخط الزمني بدلًا من ذلك.",
+		"appliedTitleOne": "تم التطبيق · عدد التغييرات: 1",
+		"appliedTitleMany": "تم التطبيق · عدد التغييرات: {{count}}"
 	},
 	"newProjectDialog": {
 		"title": "مشروع جديد",

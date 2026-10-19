@@ -72,7 +72,10 @@
 			"notSavedYet": "目前專案尚未儲存到磁碟。",
 			"discard": "捨棄",
 			"saveAndContinue": "儲存並繼續",
-			"saving": "正在儲存…"
+			"saving": "正在儲存…",
+			"eyebrow": "未儲存的變更",
+			"originalSafe": "無論如何選擇，原始錄製都不會受影響。",
+			"save": "儲存"
 		}
 	},
 	"fileDialogs": {
@@ -88,5 +91,9 @@
 		"audioFiles": "音訊檔案",
 		"allFiles": "所有檔案",
 		"showhowProject": "Showhow 專案"
+	},
+	"shortcuts": {
+		"eyebrow": "說明",
+		"openHint": "在編輯器中按 ? 開啟此清單。"
 	}
 }

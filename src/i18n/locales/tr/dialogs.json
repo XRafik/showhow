@@ -72,7 +72,10 @@
 			"notSavedYet": "Geçerli proje henüz diske kaydedilmedi.",
 			"discard": "At",
 			"saveAndContinue": "Kaydet ve devam et",
-			"saving": "Kaydediliyor…"
+			"saving": "Kaydediliyor…",
+			"eyebrow": "Kaydedilmemiş değişiklikler",
+			"originalSafe": "Özgün kaydınız her durumda güvende.",
+			"save": "Kaydet"
 		}
 	},
 	"fileDialogs": {
@@ -88,5 +91,9 @@
 		"audioFiles": "Ses dosyaları",
 		"allFiles": "Tüm Dosyalar",
 		"showhowProject": "Showhow Projesi"
+	},
+	"shortcuts": {
+		"eyebrow": "Yardım",
+		"openHint": "Bu listeyi açmak için düzenleyicide ? tuşuna basın."
 	}
 }
