@@ -24,7 +24,7 @@ TypeScript in strict mode, Electron, React 18, Vite and Pixi.js v8. Node 22.22.1
 - New projects use `.showhow`; preserve readable `.openscreen` projects and legacy data. Keep the `<video path>.cursor.json` convention.
 - Native capture requires smoke tests on the target OS; Linux checks cannot prove macOS or Windows behavior.
 - Planned doc-engine, library, bridge and polish features require current code and acceptance evidence before being called complete.
-- Phases 6 and 10 are parked in `.bedar/project-plan.yml`; keep their modes unchanged.
+- Phase 6 is closed (2026-10-19, superseded by milestone 13). Phase 10 is parked in `.bedar/project-plan.yml`; keep its mode unchanged.
 
 ## Head office
 
