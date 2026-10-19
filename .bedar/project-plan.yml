@@ -263,6 +263,9 @@ phases:
   github_number: 5
 - id: showhow-p6-studio-workflow-ux
   title: Showhow Phase 6 — Studio workflow UX
+  # Closed 2026-10-19: Studio became the Library and milestone 13 superseded this phase.
+  # Milestone 6 is closed; #55 (recording deletion) moved to the backlog, #54 closed as not planned.
+  mode: closed
   goal: Make Studio a complete control surface for recording and workflow management.
   source: PLAN.md#showhow-studio-workflow-completion-implementation-plan
   issues: []
