@@ -4,6 +4,8 @@ import { act, cleanup, fireEvent, render, screen } from "@testing-library/react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { EditorDialogsProvider } from "@/contexts/EditorDialogsContext";
+import { createEmptyDocument } from "@/lib/ai-edition/schema";
+import { useProjectStore } from "@/lib/ai-edition/store/projectStore";
 import { useChatPromptBus } from "@/lib/ai-edition/store/useChatPromptBus";
 
 vi.mock("@/contexts/ShortcutsContext", async () => {
@@ -47,7 +49,9 @@ vi.mock("./LeftPanel", () => ({
 
 import { NewEditorShell } from "./NewEditorShell";
 
+// With a project open the inspector's rail, which carries the AI chat entry, is always there.
 function renderShell() {
+	useProjectStore.setState({ document: createEmptyDocument({ projectId: "p", title: "t" }) });
 	return render(
 		<TooltipProvider>
 			<EditorDialogsProvider>
@@ -87,6 +91,7 @@ describe("NewEditorShell chatOpen behavior with useChatPromptBus", () => {
 	afterEach(() => {
 		cleanup();
 		useChatPromptBus.setState({ pending: null });
+		useProjectStore.setState({ document: null });
 		(window as unknown as { electronAPI?: unknown }).electronAPI = undefined;
 	});
 
@@ -94,10 +99,8 @@ describe("NewEditorShell chatOpen behavior with useChatPromptBus", () => {
 		renderShell();
 
 		// Initially closed
-		expect(
-			screen.queryByRole("complementary", { name: "editor.shell.aiEditor" }),
-		).not.toBeInTheDocument();
-		const toggleBtn = screen.getByRole("button", { name: "editor.topbar.toggleChatPanel" });
+		expect(screen.queryByRole("region", { name: "editor.shell.aiEditor" })).not.toBeInTheDocument();
+		const toggleBtn = screen.getByRole("button", { name: "editor.inspector.aiChat" });
 		expect(toggleBtn).toHaveAttribute("aria-pressed", "false");
 
 		// Submit a prompt via the bus
@@ -106,24 +109,20 @@ describe("NewEditorShell chatOpen behavior with useChatPromptBus", () => {
 		});
 
 		// Now open
-		expect(
-			screen.getByRole("complementary", { name: "editor.shell.aiEditor" }),
-		).toBeInTheDocument();
+		expect(screen.getByRole("region", { name: "editor.shell.aiEditor" })).toBeInTheDocument();
 		expect(toggleBtn).toHaveAttribute("aria-pressed", "true");
 	});
 
 	it("supports the prompt flow: submit prompt -> opens -> consume -> close -> submit reopens", () => {
 		renderShell();
 
-		const toggleBtn = screen.getByRole("button", { name: "editor.topbar.toggleChatPanel" });
+		const toggleBtn = screen.getByRole("button", { name: "editor.inspector.aiChat" });
 
 		// 1. Submit prompt opens the chat panel
 		act(() => {
 			useChatPromptBus.getState().submit("first prompt");
 		});
-		expect(
-			screen.getByRole("complementary", { name: "editor.shell.aiEditor" }),
-		).toBeInTheDocument();
+		expect(screen.getByRole("region", { name: "editor.shell.aiEditor" })).toBeInTheDocument();
 		expect(useChatPromptBus.getState().pending).toBe("first prompt");
 
 		// 2. Consume prompt via send
@@ -138,18 +137,14 @@ describe("NewEditorShell chatOpen behavior with useChatPromptBus", () => {
 		act(() => {
 			fireEvent.click(toggleBtn);
 		});
-		expect(
-			screen.queryByRole("complementary", { name: "editor.shell.aiEditor" }),
-		).not.toBeInTheDocument();
+		expect(screen.queryByRole("region", { name: "editor.shell.aiEditor" })).not.toBeInTheDocument();
 		expect(toggleBtn).toHaveAttribute("aria-pressed", "false");
 
 		// 4. A newly delivered prompt re-opens the chat panel
 		act(() => {
 			useChatPromptBus.getState().submit("second prompt");
 		});
-		expect(
-			screen.getByRole("complementary", { name: "editor.shell.aiEditor" }),
-		).toBeInTheDocument();
+		expect(screen.getByRole("region", { name: "editor.shell.aiEditor" })).toBeInTheDocument();
 		expect(toggleBtn).toHaveAttribute("aria-pressed", "true");
 	});
 });

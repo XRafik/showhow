@@ -55,14 +55,9 @@
 	"loadingVideo": "Chargement de la vidéo...",
 	"loadingEditor": "Chargement de l'éditeur...",
 	"emptyState": {
-		"title": "Aucun projet ouvert",
-		"description": "Créez un nouveau projet ou ouvrez-en un existant.",
 		"titleHasAsset": "Ajoutez une vidéo pour commencer",
 		"descriptionHasAsset": "Importez un enregistrement pour commencer à éditer.",
-		"recordButton": "Enregistrer votre écran",
-		"newProjectButton": "Nouveau projet + importer une vidéo",
 		"importVideoButton": "Importer une vidéo",
-		"loadProjectButton": "Ouvrir un projet",
 		"supportedFormats": "Formats pris en charge : MP4, MOV, WebM, MKV, AVI, M4V, WMV",
 		"dragDropHint": "ou glissez-déposez un fichier .showhow, .openscreen ici",
 		"dropOverlay": "Déposez le fichier de projet pour l'ouvrir",
@@ -86,7 +81,6 @@
 		}
 	},
 	"topbar": {
-		"toggleChatPanel": "Panneau de discussion",
 		"openProject": "Ouvrir un projet",
 		"newProject": "Nouveau projet",
 		"saveProject": "Enregistrer le projet",
@@ -97,14 +91,17 @@
 		"toggleTheme": "Changer de thème",
 		"export": "Exporter",
 		"renameProject": "Renommer le projet",
-		"noProject": "Aucun projet",
 		"changeLanguage": "Changer de langue",
 		"editorMode": "Mode de l'éditeur",
 		"modes": {
 			"media": "Médias",
-			"edit": "Édition",
-			"rec": "Enregistrement"
-		}
+			"edit": "Édition"
+		},
+		"navigation": "Navigation de l'éditeur",
+		"library": "Bibliothèque",
+		"newRecording": "Nouvel enregistrement",
+		"open": "Ouvrir",
+		"editorTitle": "Showhow · Éditeur"
 	},
 	"rec": {
 		"source": "Source",
@@ -223,7 +220,9 @@
 		"cropDescription": "Recadrer l'enregistrement — choisissez un format et zoomez sur la région à conserver.",
 		"openCrop": "Ouvrir le recadrage…",
 		"deleteRegion": "Supprimer la zone",
-		"freehandRendersAsBox": "À l'export, un tracé libre est couvert par sa boîte englobante — on couvre trop, jamais trop peu."
+		"freehandRendersAsBox": "À l'export, un tracé libre est couvert par sa boîte englobante — on couvre trop, jamais trop peu.",
+		"label": "Inspecteur",
+		"aiChat": "Chat IA"
 	},
 	"chat": {
 		"changeProvider": "Changer de fournisseur",
@@ -350,11 +349,11 @@
 		"playbackControls": "Contrôles de lecture",
 		"play": "Lecture",
 		"pause": "Pause",
-		"loop": "Boucle"
+		"loop": "Boucle",
+		"seek": "Positionner"
 	},
 	"shell": {
 		"aiEditor": "Éditeur IA",
-		"resizeChatPanel": "Redimensionner le panneau de discussion",
 		"previewStage": "Zone d'aperçu",
 		"resizeTimeline": "Redimensionner la timeline"
 	},
@@ -432,5 +431,26 @@
 	"cpuCompositor": {
 		"notice": "Aucun GPU compatible — rendu sur CPU, la lecture est donc plus lente.",
 		"exportWarning": "Aucun GPU compatible : cet export tourne sur CPU et sera beaucoup plus long que d'habitude."
+	},
+	"lanes": {
+		"zoom": "Zoom",
+		"trim": "Coupe",
+		"text": "Texte",
+		"speed": "Vitesse",
+		"camera": "Caméra",
+		"audio": "Audio",
+		"video": "Vidéo"
+	},
+	"noProjectOpen": {
+		"eyebrow": "Showhow · Éditeur",
+		"title": "Aucun projet ouvert",
+		"body": "Ouvrez un enregistrement de la bibliothèque pour le couper, ajouter des zooms et l'exporter.",
+		"openLibrary": "Ouvrir la bibliothèque",
+		"openFile": "Ouvrir un fichier…",
+		"importVideo": "Importer une vidéo",
+		"record": "Enregistrer votre écran",
+		"recent": "Récents",
+		"today": "Aujourd'hui",
+		"yesterday": "Hier"
 	}
 }

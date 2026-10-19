@@ -55,14 +55,9 @@
 		"selectSource": "يرجى تحديد مصدر للتسجيل"
 	},
 	"emptyState": {
-		"title": "لا يوجد مشروع مفتوح",
-		"description": "أنشئ مشروعًا جديدًا أو افتح مشروعًا موجودًا.",
 		"titleHasAsset": "أضف فيديو للبدء",
 		"descriptionHasAsset": "استورد تسجيلاً لبدء التحرير.",
-		"recordButton": "سجّل شاشتك",
-		"newProjectButton": "مشروع جديد + استيراد فيديو",
 		"importVideoButton": "استيراد فيديو",
-		"loadProjectButton": "فتح مشروع",
 		"supportedFormats": "الصيغ المدعومة: MP4، MOV، WebM، MKV، AVI، M4V، WMV",
 		"dragDropHint": "أو اسحب وأفلت ملف مشروع .showhow, .openscreen هنا",
 		"dropOverlay": "أفلت ملف المشروع لفتحه",
@@ -86,7 +81,6 @@
 		}
 	},
 	"topbar": {
-		"toggleChatPanel": "لوحة الدردشة",
 		"openProject": "فتح مشروع",
 		"newProject": "مشروع جديد",
 		"saveProject": "حفظ المشروع",
@@ -97,14 +91,17 @@
 		"toggleTheme": "تبديل المظهر",
 		"export": "تصدير",
 		"renameProject": "إعادة تسمية المشروع",
-		"noProject": "لا يوجد مشروع",
 		"changeLanguage": "تغيير اللغة",
 		"editorMode": "وضع المحرر",
 		"modes": {
 			"media": "الوسائط",
-			"edit": "تحرير",
-			"rec": "تسجيل"
-		}
+			"edit": "تحرير"
+		},
+		"navigation": "تنقل المحرر",
+		"library": "المكتبة",
+		"newRecording": "تسجيل جديد",
+		"open": "فتح",
+		"editorTitle": "Showhow · المحرر"
 	},
 	"rec": {
 		"source": "المصدر",
@@ -223,7 +220,9 @@
 		"cropDescription": "أعد تأطير التسجيل — اختر نسبة العرض إلى الارتفاع وقم بالتكبير على المنطقة التي تريد الاحتفاظ بها.",
 		"openCrop": "فتح القص…",
 		"deleteRegion": "حذف المنطقة",
-		"freehandRendersAsBox": "الشكل الحر يُغطى بمستطيله المحيط في التصدير — تغطية زائدة، وليست ناقصة."
+		"freehandRendersAsBox": "الشكل الحر يُغطى بمستطيله المحيط في التصدير — تغطية زائدة، وليست ناقصة.",
+		"label": "المفتش",
+		"aiChat": "دردشة الذكاء الاصطناعي"
 	},
 	"chat": {
 		"changeProvider": "تغيير المزوّد",
@@ -350,11 +349,11 @@
 		"playbackControls": "عناصر التحكم في التشغيل",
 		"play": "تشغيل",
 		"pause": "إيقاف مؤقت",
-		"loop": "تكرار"
+		"loop": "تكرار",
+		"seek": "تقديم/ترجيع"
 	},
 	"shell": {
 		"aiEditor": "محرّر الذكاء الاصطناعي",
-		"resizeChatPanel": "تغيير حجم لوحة المحادثة",
 		"previewStage": "منطقة المعاينة",
 		"resizeTimeline": "تغيير حجم المخطط الزمني"
 	},
@@ -432,5 +431,26 @@
 	"cpuCompositor": {
 		"notice": "لا توجد بطاقة رسومات متوافقة — تتم المعالجة على المعالج، لذا يكون التشغيل أبطأ.",
 		"exportWarning": "لا توجد بطاقة رسومات متوافقة: يتم هذا التصدير على المعالج وسيستغرق وقتًا أطول بكثير من المعتاد."
+	},
+	"lanes": {
+		"zoom": "تكبير",
+		"trim": "قص",
+		"text": "نص",
+		"speed": "سرعة",
+		"camera": "الكاميرا",
+		"audio": "الصوت",
+		"video": "الفيديو"
+	},
+	"noProjectOpen": {
+		"eyebrow": "Showhow · المحرر",
+		"title": "لا يوجد مشروع مفتوح",
+		"body": "افتح تسجيلًا من المكتبة لقصّه وإضافة التكبير والتصدير.",
+		"openLibrary": "فتح المكتبة",
+		"openFile": "فتح ملف…",
+		"importVideo": "استيراد فيديو",
+		"record": "سجّل شاشتك",
+		"recent": "الأخيرة",
+		"today": "اليوم",
+		"yesterday": "أمس"
 	}
 }

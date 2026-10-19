@@ -55,14 +55,9 @@
 		"confirm": "Confirmar"
 	},
 	"emptyState": {
-		"title": "No hay proyecto abierto",
-		"description": "Crea un nuevo proyecto o abre uno existente.",
 		"titleHasAsset": "Añade un vídeo para empezar",
 		"descriptionHasAsset": "Importa una grabación para empezar a editar.",
-		"recordButton": "Graba tu pantalla",
-		"newProjectButton": "Nuevo proyecto + importar vídeo",
 		"importVideoButton": "Importar vídeo",
-		"loadProjectButton": "Abrir proyecto",
 		"supportedFormats": "Formatos compatibles: MP4, MOV, WebM, MKV, AVI, M4V, WMV",
 		"dragDropHint": "o arrastra y suelta un archivo .showhow, .openscreen aquí",
 		"dropOverlay": "Suelta el archivo de proyecto para abrirlo",
@@ -86,7 +81,6 @@
 		}
 	},
 	"topbar": {
-		"toggleChatPanel": "Panel de chat",
 		"openProject": "Abrir proyecto",
 		"newProject": "Nuevo proyecto",
 		"saveProject": "Guardar proyecto",
@@ -97,14 +91,17 @@
 		"toggleTheme": "Alternar tema",
 		"export": "Exportar",
 		"renameProject": "Renombrar proyecto",
-		"noProject": "Sin proyecto",
 		"changeLanguage": "Cambiar idioma",
 		"editorMode": "Modo del editor",
 		"modes": {
 			"media": "Multimedia",
-			"edit": "Editar",
-			"rec": "Grabar"
-		}
+			"edit": "Editar"
+		},
+		"navigation": "Navegación del editor",
+		"library": "Biblioteca",
+		"newRecording": "Nueva grabación",
+		"open": "Abrir",
+		"editorTitle": "Showhow · Editor"
 	},
 	"rec": {
 		"source": "Fuente",
@@ -223,7 +220,9 @@
 		"cropDescription": "Reencuadra la grabación: elige una relación de aspecto y haz zoom en la región que deseas conservar.",
 		"openCrop": "Abrir recorte…",
 		"deleteRegion": "Eliminar región",
-		"freehandRendersAsBox": "En la exportación, una forma libre se cubre con su caja contenedora: cubre de más, nunca de menos."
+		"freehandRendersAsBox": "En la exportación, una forma libre se cubre con su caja contenedora: cubre de más, nunca de menos.",
+		"label": "Inspector",
+		"aiChat": "Chat con IA"
 	},
 	"chat": {
 		"changeProvider": "Cambiar proveedor",
@@ -350,11 +349,11 @@
 		"playbackControls": "Controles de reproducción",
 		"play": "Reproducir",
 		"pause": "Pausar",
-		"loop": "Bucle"
+		"loop": "Bucle",
+		"seek": "Buscar"
 	},
 	"shell": {
 		"aiEditor": "Editor de IA",
-		"resizeChatPanel": "Redimensionar el panel de chat",
 		"previewStage": "Área de vista previa",
 		"resizeTimeline": "Redimensionar la línea de tiempo"
 	},
@@ -432,5 +431,26 @@
 	"cpuCompositor": {
 		"notice": "Sin GPU compatible: el renderizado se hace en la CPU, por lo que la reproducción es más lenta.",
 		"exportWarning": "Sin GPU compatible: esta exportación se ejecuta en la CPU y tardará mucho más de lo normal."
+	},
+	"lanes": {
+		"zoom": "Zoom",
+		"trim": "Recorte",
+		"text": "Texto",
+		"speed": "Velocidad",
+		"camera": "Cámara",
+		"audio": "Audio",
+		"video": "Vídeo"
+	},
+	"noProjectOpen": {
+		"eyebrow": "Showhow · Editor",
+		"title": "No hay ningún proyecto abierto",
+		"body": "Abre una grabación de la biblioteca para recortarla, añadir zooms y exportarla.",
+		"openLibrary": "Abrir biblioteca",
+		"openFile": "Abrir archivo…",
+		"importVideo": "Importar un vídeo",
+		"record": "Grabar tu pantalla",
+		"recent": "Recientes",
+		"today": "Hoy",
+		"yesterday": "Ayer"
 	}
 }

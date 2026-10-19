@@ -55,14 +55,9 @@
 		"selectSource": "녹화할 소스를 선택해 주세요"
 	},
 	"emptyState": {
-		"title": "열린 프로젝트 없음",
-		"description": "새 프로젝트를 만들거나 기존 프로젝트를 여세요.",
 		"titleHasAsset": "시작하려면 동영상을 추가하세요",
 		"descriptionHasAsset": "녹화 파일을 가져와서 편집을 시작하세요.",
-		"recordButton": "화면 녹화하기",
-		"newProjectButton": "새 프로젝트 + 동영상 가져오기",
 		"importVideoButton": "동영상 가져오기",
-		"loadProjectButton": "프로젝트 열기",
 		"supportedFormats": "지원 형식: MP4, MOV, WebM, MKV, AVI, M4V, WMV",
 		"dragDropHint": ".showhow, .openscreen 프로젝트 파일을 여기에 드래그 앤 드롭",
 		"dropOverlay": "프로젝트 파일을 드롭하여 열기",
@@ -86,7 +81,6 @@
 		}
 	},
 	"topbar": {
-		"toggleChatPanel": "채팅 패널",
 		"openProject": "프로젝트 열기",
 		"newProject": "새 프로젝트",
 		"saveProject": "프로젝트 저장",
@@ -97,14 +91,17 @@
 		"toggleTheme": "테마 전환",
 		"export": "내보내기",
 		"renameProject": "프로젝트 이름 변경",
-		"noProject": "프로젝트 없음",
 		"changeLanguage": "언어 변경",
 		"editorMode": "편집기 모드",
 		"modes": {
 			"media": "미디어",
-			"edit": "편집",
-			"rec": "녹화"
-		}
+			"edit": "편집"
+		},
+		"navigation": "편집기 탐색",
+		"library": "라이브러리",
+		"newRecording": "새 녹화",
+		"open": "열기",
+		"editorTitle": "Showhow · 편집기"
 	},
 	"rec": {
 		"source": "소스",
@@ -223,7 +220,9 @@
 		"cropDescription": "녹화 화면을 다시 프레이밍 — 화면 비율을 선택하고 유지할 영역으로 확대합니다.",
 		"openCrop": "자르기 열기…",
 		"deleteRegion": "구간 삭제",
-		"freehandRendersAsBox": "내보내기에서 자유형 도형은 외곽 사각형으로 덮입니다. 더 많이 덮되, 부족하게 덮지는 않습니다."
+		"freehandRendersAsBox": "내보내기에서 자유형 도형은 외곽 사각형으로 덮입니다. 더 많이 덮되, 부족하게 덮지는 않습니다.",
+		"label": "인스펙터",
+		"aiChat": "AI 채팅"
 	},
 	"chat": {
 		"changeProvider": "제공업체 변경",
@@ -350,11 +349,11 @@
 		"playbackControls": "재생 컨트롤",
 		"play": "재생",
 		"pause": "일시정지",
-		"loop": "반복"
+		"loop": "반복",
+		"seek": "탐색"
 	},
 	"shell": {
 		"aiEditor": "AI 편집기",
-		"resizeChatPanel": "채팅 패널 크기 조절",
 		"previewStage": "미리보기 영역",
 		"resizeTimeline": "타임라인 크기 조절"
 	},
@@ -432,5 +431,26 @@
 	"cpuCompositor": {
 		"notice": "호환되는 GPU가 없어 CPU로 렌더링합니다. 재생이 느려집니다.",
 		"exportWarning": "호환되는 GPU가 없습니다. 이 내보내기는 CPU에서 실행되며 평소보다 훨씬 오래 걸립니다."
+	},
+	"lanes": {
+		"zoom": "확대",
+		"trim": "자르기",
+		"text": "텍스트",
+		"speed": "속도",
+		"camera": "카메라",
+		"audio": "오디오",
+		"video": "비디오"
+	},
+	"noProjectOpen": {
+		"eyebrow": "Showhow · 편집기",
+		"title": "열린 프로젝트 없음",
+		"body": "라이브러리에서 녹화를 열어 자르고, 확대를 추가하고, 내보내세요.",
+		"openLibrary": "라이브러리 열기",
+		"openFile": "파일 열기…",
+		"importVideo": "비디오 가져오기",
+		"record": "화면 녹화",
+		"recent": "최근",
+		"today": "오늘",
+		"yesterday": "어제"
 	}
 }

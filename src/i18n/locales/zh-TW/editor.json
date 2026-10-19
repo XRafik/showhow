@@ -55,14 +55,9 @@
 		"selectSource": "請選擇要錄製的來源"
 	},
 	"emptyState": {
-		"title": "未開啟任何專案",
-		"description": "建立新專案或開啟現有專案。",
 		"titleHasAsset": "新增影片以開始",
 		"descriptionHasAsset": "匯入錄製內容以開始編輯。",
-		"recordButton": "錄製螢幕",
-		"newProjectButton": "新專案＋匯入影片",
 		"importVideoButton": "匯入影片",
-		"loadProjectButton": "開啟專案",
 		"supportedFormats": "支援的格式：MP4、MOV、WebM、MKV、AVI、M4V、WMV",
 		"dragDropHint": "或將 .showhow, .openscreen 專案檔案拖放至此",
 		"dropOverlay": "將專案檔案拖放至此以開啟",
@@ -86,7 +81,6 @@
 		}
 	},
 	"topbar": {
-		"toggleChatPanel": "聊天面板",
 		"openProject": "開啟專案",
 		"newProject": "新專案",
 		"saveProject": "儲存專案",
@@ -97,14 +91,17 @@
 		"toggleTheme": "切換主題",
 		"export": "匯出",
 		"renameProject": "重新命名專案",
-		"noProject": "無專案",
 		"changeLanguage": "切換語言",
 		"editorMode": "編輯器模式",
 		"modes": {
 			"media": "媒體",
-			"edit": "編輯",
-			"rec": "錄製"
-		}
+			"edit": "編輯"
+		},
+		"navigation": "編輯器導覽",
+		"library": "資料庫",
+		"newRecording": "新錄製",
+		"open": "開啟",
+		"editorTitle": "Showhow · 編輯器"
 	},
 	"rec": {
 		"source": "來源",
@@ -223,7 +220,9 @@
 		"cropDescription": "重新構圖錄製內容 — 選擇長寬比並縮放至想保留的區域。",
 		"openCrop": "開啟裁切…",
 		"deleteRegion": "刪除區間",
-		"freehandRendersAsBox": "匯出時，手繪形狀會以其外接矩形遮蔽——寧可多遮，絕不少遮。"
+		"freehandRendersAsBox": "匯出時，手繪形狀會以其外接矩形遮蔽——寧可多遮，絕不少遮。",
+		"label": "檢查器",
+		"aiChat": "AI 聊天"
 	},
 	"chat": {
 		"changeProvider": "更換提供者",
@@ -350,11 +349,11 @@
 		"playbackControls": "播放控制項",
 		"play": "播放",
 		"pause": "暫停",
-		"loop": "循環"
+		"loop": "循環",
+		"seek": "跳轉"
 	},
 	"shell": {
 		"aiEditor": "AI 編輯器",
-		"resizeChatPanel": "調整聊天面板大小",
 		"previewStage": "預覽區域",
 		"resizeTimeline": "調整時間軸大小"
 	},
@@ -432,5 +431,26 @@
 	"cpuCompositor": {
 		"notice": "沒有相容的 GPU，正在使用 CPU 算繪，因此播放較慢。",
 		"exportWarning": "沒有相容的 GPU：這次匯出將在 CPU 上執行，耗時會比平常長很多。"
+	},
+	"lanes": {
+		"zoom": "縮放",
+		"trim": "剪輯",
+		"text": "文字",
+		"speed": "速度",
+		"camera": "相機",
+		"audio": "音訊",
+		"video": "影片"
+	},
+	"noProjectOpen": {
+		"eyebrow": "Showhow · 編輯器",
+		"title": "未開啟專案",
+		"body": "從資料庫開啟錄製內容，進行剪輯、加入縮放並匯出。",
+		"openLibrary": "開啟資料庫",
+		"openFile": "開啟檔案…",
+		"importVideo": "匯入影片",
+		"record": "錄製螢幕",
+		"recent": "最近",
+		"today": "今天",
+		"yesterday": "昨天"
 	}
 }

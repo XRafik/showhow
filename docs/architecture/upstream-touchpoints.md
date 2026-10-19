@@ -832,3 +832,18 @@ Presentation and geometry only; recorder hooks, capture backends and native help
 | `src/components/launch/CountdownOverlay.tsx` | Final countdown tile and caption in the inherited 420x260 click-through window. |
 | `src/lib/showhow/upstreamTheme.css` | The `[data-tray-layout]` HUD bridge is removed: the HUD now reads the tokens directly, so the bridge would only override the Final radii. |
 | `electron/ipc/handlers.ts` | Owner-approved bounded amendment: `open-source-selector` no longer opens the permissions window when the HUD asks, because the HUD shows its own sheet. Other callers (the editor's Record stage) still get the window. |
+
+## Final editor shell, inspector and timeline (#146, 2026-10-19)
+
+Presentation and layout over the existing stores; no decoder, compositor, project store or timeline algorithm changes.
+
+| Path | Change |
+|------|--------|
+| `src/components/ai-edition/NewEditorShell.tsx` | Editor-01 grid: dark stage over the timeline, the docked inspector down the right. The AI chat moves from its own left column into the inspector (rail button). Transport sits under the preview. With no project, Editor-06 takes the body. `handleOpenLibrary` reuses the close-unsaved prompt. |
+| `src/components/ai-edition/v4/EditorTopBar.tsx` | Dark Final bar: cursor tile + Showhow menu, project name and `· SAVED`, MEDIA/EDIT tabs, LIBRARY · NEW RECORDING · OPEN, Presets, Export. Record mode is reached as New recording; Undo/Redo move to the timeline toolbar. |
+| `src/components/ai-edition/v4/FloatingInspector.tsx` | Docked `aside` instead of a floating card; AI chat rail entry and chat seam (`chatOpen`, `onToggleChat`, `chatPanel`). |
+| `src/components/ai-edition/v4/V4Timeline.tsx` | Undo/Redo in the toolbar; transport removed; lanes reordered (zoom, trim, text, speed, camera, audio) and labelled in a 76px gutter; `playing`/`onTogglePlay` props removed. |
+| `src/components/ai-edition/TransportBar.tsx` | Optional `onSeek` adds a keyboard/pointer seek slider and the length (stage layout). |
+| `src/components/ai-edition/v4/EditorShellV4.module.css`, `NewEditorShell.module.css` | Final tokens, grid placement, timeline gutter and colours, stage transport, Editor-06 page. |
+| `src/components/ai-edition/EditorEmptyState.tsx` | Bounded amendment (outside the listed files): its no-project branch is Editor-06, keeping its import, open-file (with legacy migration) and drop handling rather than duplicating them. |
+| `electron/showhow/openLibrary.ts`, `electron/main.ts`, `electron/preload.ts`, `electron/electron-env.d.ts` | Owner-approved bounded amendment: `showhow:open-library` swaps the editor window for the Library; refused for any other sender. |

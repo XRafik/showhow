@@ -55,14 +55,9 @@
 		"confirm": "Onayla"
 	},
 	"emptyState": {
-		"title": "Açık proje yok",
-		"description": "Yeni bir proje oluşturun veya mevcut birini açın.",
 		"titleHasAsset": "Başlamak için bir video ekleyin",
 		"descriptionHasAsset": "Düzenlemeye başlamak için bir kayıt içe aktarın.",
-		"recordButton": "Ekranını kaydet",
-		"newProjectButton": "Yeni proje + video içe aktar",
 		"importVideoButton": "Video içe aktar",
-		"loadProjectButton": "Proje aç",
 		"supportedFormats": "Desteklenen formatlar: MP4, MOV, WebM, MKV, AVI, M4V, WMV",
 		"dragDropHint": "veya bir .showhow, .openscreen proje dosyasını buraya sürükleyip bırakın",
 		"dropOverlay": "Açmak için proje dosyasını bırakın",
@@ -86,7 +81,6 @@
 		}
 	},
 	"topbar": {
-		"toggleChatPanel": "Sohbet paneli",
 		"openProject": "Proje aç",
 		"newProject": "Yeni proje",
 		"saveProject": "Projeyi kaydet",
@@ -97,14 +91,17 @@
 		"toggleTheme": "Temayı değiştir",
 		"export": "Dışa aktar",
 		"renameProject": "Projeyi yeniden adlandır",
-		"noProject": "Proje yok",
 		"changeLanguage": "Dili değiştir",
 		"editorMode": "Düzenleyici modu",
 		"modes": {
 			"media": "Medya",
-			"edit": "Düzenle",
-			"rec": "Kayıt"
-		}
+			"edit": "Düzenle"
+		},
+		"navigation": "Düzenleyici gezinmesi",
+		"library": "Kitaplık",
+		"newRecording": "Yeni kayıt",
+		"open": "Aç",
+		"editorTitle": "Showhow · Düzenleyici"
 	},
 	"rec": {
 		"source": "Kaynak",
@@ -223,7 +220,9 @@
 		"cropDescription": "Kaydı yeniden çerçeveleyin — bir en boy oranı seçin ve saklamak istediğiniz bölgeye yakınlaşın.",
 		"openCrop": "Kırpmayı aç…",
 		"deleteRegion": "Bölgeyi sil",
-		"freehandRendersAsBox": "Dışa aktarmada serbest çizim, sınırlayıcı dikdörtgeniyle kapatılır — eksik değil, fazla kapatır."
+		"freehandRendersAsBox": "Dışa aktarmada serbest çizim, sınırlayıcı dikdörtgeniyle kapatılır — eksik değil, fazla kapatır.",
+		"label": "Denetçi",
+		"aiChat": "Yapay zekâ sohbeti"
 	},
 	"chat": {
 		"changeProvider": "Sağlayıcıyı değiştir",
@@ -350,11 +349,11 @@
 		"playbackControls": "Oynatma denetimleri",
 		"play": "Oynat",
 		"pause": "Duraklat",
-		"loop": "Döngü"
+		"loop": "Döngü",
+		"seek": "Konum"
 	},
 	"shell": {
 		"aiEditor": "Yapay zekâ düzenleyici",
-		"resizeChatPanel": "Sohbet panelini yeniden boyutlandır",
 		"previewStage": "Önizleme alanı",
 		"resizeTimeline": "Zaman çizelgesini yeniden boyutlandır"
 	},
@@ -432,5 +431,26 @@
 	"cpuCompositor": {
 		"notice": "Uyumlu GPU yok — işleme CPU üzerinde yapılıyor, bu yüzden oynatma daha yavaş.",
 		"exportWarning": "Uyumlu GPU yok: bu dışa aktarma CPU üzerinde çalışır ve normalden çok daha uzun sürer."
+	},
+	"lanes": {
+		"zoom": "Yakınlaştırma",
+		"trim": "Kırpma",
+		"text": "Metin",
+		"speed": "Hız",
+		"camera": "Kamera",
+		"audio": "Ses",
+		"video": "Video"
+	},
+	"noProjectOpen": {
+		"eyebrow": "Showhow · Düzenleyici",
+		"title": "Açık proje yok",
+		"body": "Kırpmak, yakınlaştırma eklemek ve dışa aktarmak için kitaplıktan bir kayıt açın.",
+		"openLibrary": "Kitaplığı aç",
+		"openFile": "Dosya aç…",
+		"importVideo": "Video içe aktar",
+		"record": "Ekranını kaydet",
+		"recent": "Son",
+		"today": "Bugün",
+		"yesterday": "Dün"
 	}
 }

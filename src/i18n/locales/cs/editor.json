@@ -55,14 +55,9 @@
 		"selectSource": "Vyberte prosím zdroj pro nahrávání"
 	},
 	"emptyState": {
-		"title": "Žádný projekt není otevřen",
-		"description": "Vytvořte nový projekt nebo otevřete existující.",
 		"titleHasAsset": "Přidejte video pro začátek",
 		"descriptionHasAsset": "Importujte nahrávku pro zahájení úprav.",
-		"recordButton": "Nahrát obrazovku",
-		"newProjectButton": "Nový projekt + importovat video",
 		"importVideoButton": "Importovat video",
-		"loadProjectButton": "Otevřít projekt",
 		"supportedFormats": "Podporované formáty: MP4, MOV, WebM, MKV, AVI, M4V, WMV",
 		"dragDropHint": "nebo přetáhněte soubor projektu .showhow, .openscreen sem",
 		"dropOverlay": "Přetáhněte soubor projektu pro otevření",
@@ -86,7 +81,6 @@
 		}
 	},
 	"topbar": {
-		"toggleChatPanel": "Panel chatu",
 		"openProject": "Otevřít projekt",
 		"newProject": "Nový projekt",
 		"saveProject": "Uložit projekt",
@@ -97,14 +91,17 @@
 		"toggleTheme": "Přepnout motiv",
 		"export": "Exportovat",
 		"renameProject": "Přejmenovat projekt",
-		"noProject": "Žádný projekt",
 		"changeLanguage": "Změnit jazyk",
 		"editorMode": "Režim editoru",
 		"modes": {
 			"media": "Média",
-			"edit": "Upravit",
-			"rec": "Nahrávání"
-		}
+			"edit": "Upravit"
+		},
+		"navigation": "Navigace editoru",
+		"library": "Knihovna",
+		"newRecording": "Nový záznam",
+		"open": "Otevřít",
+		"editorTitle": "Showhow · Editor"
 	},
 	"rec": {
 		"source": "Zdroj",
@@ -223,7 +220,9 @@
 		"cropDescription": "Přeformátujte nahrávku: vyberte poměr stran a přibližte oblast, kterou chcete zachovat.",
 		"openCrop": "Otevřít oříznutí…",
 		"deleteRegion": "Smazat oblast",
-		"freehandRendersAsBox": "Při exportu je volně kreslený tvar pokryt svým ohraničujícím rámečkem: vždy překrytý, nikdy nepokrytý."
+		"freehandRendersAsBox": "Při exportu je volně kreslený tvar pokryt svým ohraničujícím rámečkem: vždy překrytý, nikdy nepokrytý.",
+		"label": "Inspektor",
+		"aiChat": "AI chat"
 	},
 	"chat": {
 		"changeProvider": "Změnit poskytovatele",
@@ -350,11 +349,11 @@
 		"playbackControls": "Ovládání přehrávání",
 		"play": "Přehrát",
 		"pause": "Pozastavit",
-		"loop": "Opakovat"
+		"loop": "Opakovat",
+		"seek": "Posun"
 	},
 	"shell": {
 		"aiEditor": "AI editor",
-		"resizeChatPanel": "Změnit velikost panelu chatu",
 		"previewStage": "Plocha náhledu",
 		"resizeTimeline": "Změnit velikost časové osy"
 	},
@@ -432,5 +431,26 @@
 	"cpuCompositor": {
 		"notice": "Běží bez kompatibilního GPU, takže renderování probíhá na CPU a přehrávání je pomalejší.",
 		"exportWarning": "Žádné kompatibilní GPU: tento export běží na CPU a bude trvat mnohem déle než obvykle."
+	},
+	"lanes": {
+		"zoom": "Přiblížení",
+		"trim": "Střih",
+		"text": "Text",
+		"speed": "Rychlost",
+		"camera": "Kamera",
+		"audio": "Zvuk",
+		"video": "Video"
+	},
+	"noProjectOpen": {
+		"eyebrow": "Showhow · Editor",
+		"title": "Žádný otevřený projekt",
+		"body": "Otevřete záznam z knihovny, ořízněte ho, přidejte přiblížení a exportujte.",
+		"openLibrary": "Otevřít knihovnu",
+		"openFile": "Otevřít soubor…",
+		"importVideo": "Importovat video",
+		"record": "Nahrát obrazovku",
+		"recent": "Nedávné",
+		"today": "Dnes",
+		"yesterday": "Včera"
 	}
 }

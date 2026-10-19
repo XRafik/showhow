@@ -55,14 +55,9 @@
 		"selectSource": "Choose a screen or window to record"
 	},
 	"emptyState": {
-		"title": "Start with a recording",
-		"description": "Record your screen or import a video to start editing.",
 		"titleHasAsset": "Add a video to get started",
 		"descriptionHasAsset": "Import a recording to begin editing.",
-		"recordButton": "Record your screen",
-		"newProjectButton": "Import a video",
 		"importVideoButton": "Import video",
-		"loadProjectButton": "Open project",
 		"supportedFormats": "Supported formats: MP4, MOV, WebM, MKV, AVI, M4V, WMV",
 		"dragDropHint": "or drop a .showhow or .openscreen project here",
 		"dropOverlay": "Drop project file to open",
@@ -86,7 +81,6 @@
 		}
 	},
 	"topbar": {
-		"toggleChatPanel": "Chat panel",
 		"openProject": "Open project",
 		"newProject": "New project",
 		"saveProject": "Save project",
@@ -97,14 +91,17 @@
 		"toggleTheme": "Toggle theme",
 		"export": "Export",
 		"renameProject": "Rename project",
-		"noProject": "No project",
 		"changeLanguage": "Change language",
 		"editorMode": "Editor mode",
 		"modes": {
 			"media": "Media",
-			"edit": "Edit",
-			"rec": "Record"
-		}
+			"edit": "Edit"
+		},
+		"navigation": "Editor navigation",
+		"library": "Library",
+		"newRecording": "New recording",
+		"open": "Open",
+		"editorTitle": "Showhow · Editor"
 	},
 	"rec": {
 		"source": "Source",
@@ -223,7 +220,9 @@
 		"cropDescription": "Reframe the recording — pick an aspect ratio and zoom into the region you want to keep.",
 		"openCrop": "Open crop…",
 		"deleteRegion": "Delete region",
-		"freehandRendersAsBox": "In the export, the blur fills the rectangle around your freehand shape, so it may hide a little more than you drew."
+		"freehandRendersAsBox": "In the export, the blur fills the rectangle around your freehand shape, so it may hide a little more than you drew.",
+		"label": "Inspector",
+		"aiChat": "AI chat"
 	},
 	"chat": {
 		"changeProvider": "Change provider",
@@ -350,11 +349,11 @@
 		"playbackControls": "Playback controls",
 		"play": "Play",
 		"pause": "Pause",
-		"loop": "Loop"
+		"loop": "Loop",
+		"seek": "Seek"
 	},
 	"shell": {
 		"aiEditor": "AI editor",
-		"resizeChatPanel": "Resize chat panel",
 		"previewStage": "Preview stage",
 		"resizeTimeline": "Resize timeline"
 	},
@@ -432,5 +431,26 @@
 	"cpuCompositor": {
 		"notice": "Running without a compatible GPU — rendering on CPU, so playback is slower.",
 		"exportWarning": "No compatible GPU: this export runs on CPU and will take much longer than usual."
+	},
+	"lanes": {
+		"zoom": "Zoom",
+		"trim": "Trim",
+		"text": "Text",
+		"speed": "Speed",
+		"camera": "Camera",
+		"audio": "Audio",
+		"video": "Video"
+	},
+	"noProjectOpen": {
+		"eyebrow": "Showhow · Editor",
+		"title": "No project open",
+		"body": "Open a recording from the library to trim it, add zooms and export.",
+		"openLibrary": "Open library",
+		"openFile": "Open file…",
+		"importVideo": "Import a video",
+		"record": "Record your screen",
+		"recent": "Recent",
+		"today": "Today",
+		"yesterday": "Yesterday"
 	}
 }

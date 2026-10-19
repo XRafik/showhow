@@ -31,33 +31,35 @@
 }
 
 /* ─── TOP BAR ──────────────────────────────────────────────────────── */
-/* Every slot on the left half is width-STABLE by construction: the chat toggle
-   reserves its box even in the modes that don't have one, the project name and
-   the save state are fixed-size regardless of the string inside them. Without
-   that, hiding a button, renaming a project or simply typing (saved → unsaved)
-   re-flowed the whole bar and slid the mode switch sideways. */
+/* Final (Editor-01/06): a dark 44px panel spanning the window, the cream cursor tile, the
+   project name in mono capitals with its saved state, then the modes, the Library / New
+   recording / Open links, Presets and a sage Export. Every slot on the left is width-stable:
+   the name slot keeps its width whatever the name or the save state, so typing (saved →
+   unsaved) never slides the controls to its right. */
 .topbar {
 	grid-row: 1;
+	grid-column: 1 / -1;
 	display: flex;
 	align-items: center;
 	gap: var(--topbar-gap);
 	--topbar-gap: 14px;
-	--topbar-icon: 32px;
-	--topbar-project-w: 180px;
+	--topbar-icon: 28px;
+	--topbar-project-w: 340px;
 	/* The topbar doubles as the window titlebar, so it keeps clear of the native
 	   window controls: the macOS traffic lights (--titlebar-inset-left, injected
 	   per-platform by the main process) on the left, and the Windows/Linux Window
 	   Controls Overlay on the right. `titlebar-area-width` is 100vw minus the
-	   overlay; without an overlay both terms fall back to a plain 18px gutter. */
-	padding-left: calc(18px + var(--titlebar-inset-left, 0px));
-	padding-right: calc(
-		18px + 100vw - env(titlebar-area-width, 100vw) - env(titlebar-area-x, 0px)
-	);
-	background: transparent;
-	border-bottom: 1px solid var(--shell-rule-soft);
+	   overlay; without an overlay both terms fall back to a plain 16px gutter. */
+	padding-left: calc(16px + var(--titlebar-inset-left, 0px));
+	padding-right: calc(16px + 100vw - env(titlebar-area-width, 100vw) - env(titlebar-area-x, 0px));
+	background: var(--ds-panel);
+	color: var(--ds-on-panel);
+	border-bottom: 1px solid var(--ds-on-panel-line);
 	min-width: 0;
 	-webkit-app-region: drag;
 	app-region: drag;
+	/* The panel is dark in both themes, so the focus ring is the bar's own sage. */
+	--accent-ring-on-panel: var(--ds-accent);
 }
 .topbar button,
 .topbar input,
@@ -65,66 +67,62 @@
 	-webkit-app-region: no-drag;
 	app-region: no-drag;
 }
-.sep {
-	width: 1px;
-	height: 18px;
-	background: var(--border);
-	flex-shrink: 0;
+.topbar :focus-visible {
+	outline-color: var(--ds-accent);
 }
-/* Reserved box for the chat toggle and its rule. The toggle only exists in Edit
-   mode (the left panel doesn't render in Media/Rec), so without a slot holding
-   the space every mode change shoved the rest of the bar sideways. Width =
-   button + gap + rule, i.e. exactly what it holds when it is there. */
-.topbarLead {
-	display: inline-flex;
-	align-items: center;
-	gap: var(--topbar-gap);
-	width: calc(var(--topbar-icon) + var(--topbar-gap) + 1px);
-	flex-shrink: 0;
+.topbarMono,
+.navLink,
+.modeSwitch button,
+.exportBtn,
+.topbar .ghostBtn,
+.projectNameBtn,
+.saveState {
+	font-family: var(--ds-font-label), "JetBrains Mono", ui-monospace, monospace;
+	font-size: 11px;
+	font-weight: 500;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
 }
-.brand {
-	display: inline-flex;
-	align-items: center;
-	gap: 9px;
-	flex-shrink: 0;
+.topbarSpacer {
+	flex: 1;
+	min-width: 0;
 }
-/* Transparent aperture mark: no plate behind it, so it needs a touch more box
-   than a filled tile would to hold the same optical weight next to the wordmark. */
-.brand img {
-	width: 24px;
-	height: 24px;
-	object-fit: contain;
-	display: block;
-	flex-shrink: 0;
-	user-select: none;
-}
-.brand .name {
-	font-size: 15px;
-	font-weight: 600;
-	letter-spacing: -0.015em;
-	color: var(--fg-emphasis);
-}
-/* The brand doubles as the app-menu trigger, so it has to read as a button on hover without
-   gaining any width: .modeSwitch is the only flex-shrink:1 element in the bar, so every pixel
-   a new control costs is paid out of the mode labels in the most verbose of 13 locales. The
-   negative margin lets the hover plate bleed past the logo without moving it. */
+/* The brand doubles as the app-menu trigger: the cursor tile and a chevron. The negative
+   margin lets the hover plate bleed past the tile without moving it. */
 .brandBtn {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	flex-shrink: 0;
 	border: 0;
 	background: transparent;
+	color: var(--ds-on-panel-muted);
 	cursor: pointer;
-	padding: 4px 7px;
-	margin: 0 -7px;
-	border-radius: 9px;
+	padding: 4px 6px;
+	margin: 0 -6px;
+	border-radius: calc(var(--ds-radius, 8) * 0.5px);
 	transition: background var(--motion-fast) var(--ease);
 }
 .brandBtn:hover,
 .brandBtn[aria-expanded="true"] {
-	background: var(--surface-2);
+	background: var(--ds-on-panel-hover);
+	color: var(--ds-on-panel);
+}
+/* The Final mark: cream tile, ink cursor, hard sage offset shadow (the HUD's own). */
+.brandMark {
+	display: grid;
+	place-items: center;
+	width: 22px;
+	height: 22px;
+	margin-right: 3px;
+	border-radius: 2px;
+	background: var(--ds-on-panel);
+	color: var(--ds-panel);
+	box-shadow: 3px 3px 0 var(--ds-accent);
 }
 /* Rotates to point up while the menu is open, the standard disclosure affordance. Hidden from
    assistive tech: aria-expanded on the button already carries the state. */
 .brandChevron {
-	color: var(--muted);
 	transition: transform var(--motion-fast) var(--ease);
 }
 .brandBtn[aria-expanded="true"] .brandChevron {
@@ -150,14 +148,15 @@
 	width: max-content;
 	min-width: 232px;
 	max-width: calc(100vw - 24px);
-	/* The trigger sits 13px from the top of a 58px bar, so the menu's first 7px overlap the
-	   titlebar's drag region. Only `.topbar button` is opted out of dragging, and that strip is
-	   the menu's padding, not a row — without this a mousedown on it drags the window out from
-	   under the open menu. Belt and braces: it also covers any future row that is not a button. */
+	/* The trigger sits inside the 44px titlebar, so the menu's first pixels overlap its drag
+	   region. Only `.topbar button` is opted out of dragging, and that strip is the menu's
+	   padding, not a row — without this a mousedown on it drags the window out from under the
+	   open menu. Belt and braces: it also covers any future row that is not a button. */
 	-webkit-app-region: no-drag;
 	app-region: no-drag;
 	padding: 5px;
 	background: var(--surface);
+	color: var(--fg);
 	border: 1px solid var(--border);
 	border-radius: var(--r-md);
 	box-shadow: var(--elev-pop);
@@ -230,8 +229,8 @@
 	background: var(--border);
 }
 .iconBtn {
-	width: var(--topbar-icon);
-	height: var(--topbar-icon);
+	width: var(--topbar-icon, 32px);
+	height: var(--topbar-icon, 32px);
 	display: grid;
 	place-items: center;
 	border-radius: 9px;
@@ -279,24 +278,42 @@
 	opacity: 0.45;
 	cursor: not-allowed;
 }
+/* In the dark bar the ghost buttons (the project name, Presets) are panel text. */
+.topbar .ghostBtn {
+	height: var(--topbar-icon);
+	padding: 0 8px;
+	border-radius: calc(var(--ds-radius, 8) * 0.5px);
+	color: var(--ds-on-panel-muted);
+}
+.topbar .ghostBtn:hover:not(:disabled) {
+	background: var(--ds-on-panel-hover);
+	border-color: transparent;
+	color: var(--ds-on-panel);
+}
 /* The project name keeps one width whatever it is called — and the read view and
    the edit input keep the SAME width, so clicking to rename doesn't nudge the
-   bar either. A long title truncates rather than pushing its neighbours. */
-/* The name and its saved dot share one fixed-width slot: the dot follows a short name instead
-   of waiting at the far end, and the slot keeps the bar still when the name or its state changes. */
+   bar either. A long title truncates rather than pushing its neighbours. The
+   saved state follows a short name instead of waiting at the far end. */
 .projectSlot {
 	display: inline-flex;
 	align-items: center;
-	gap: 4px;
+	gap: 8px;
 	width: var(--topbar-project-w);
 	min-width: 0;
-	flex-shrink: 0;
+	flex-shrink: 1;
 }
-.projectNameBtn {
-	/* Room for the 7px dot and the slot's gap. */
-	max-width: calc(100% - 11px);
+.topbar .projectNameBtn {
+	min-width: 0;
+	max-width: 100%;
 	justify-content: flex-start;
 	box-sizing: border-box;
+	color: var(--ds-on-panel);
+	font-weight: 600;
+}
+/* No project (Editor-06 "SHOWHOW · EDITOR"): the name is a label, not a control. */
+.topbar .projectNameBtn:disabled {
+	opacity: 1;
+	cursor: default;
 }
 .projectNameLabel {
 	min-width: 0;
@@ -305,70 +322,60 @@
 	white-space: nowrap;
 }
 .projectNameInput {
-	height: 30px;
+	height: var(--topbar-icon);
 	width: 100%;
 	box-sizing: border-box;
 	padding: 0 10px;
-	border-radius: 9px;
-	border: 1px solid var(--accent);
-	background: var(--surface);
-	color: var(--fg);
-	font: 500 13px var(--font-display);
+	border-radius: calc(var(--ds-radius, 8) * 0.5px);
+	border: 1px solid var(--ds-accent);
+	background: var(--ds-panel-deep);
+	color: var(--ds-on-panel);
+	font: 500 12px var(--ds-font-label), "JetBrains Mono", ui-monospace, monospace;
 	outline: none;
 }
-/* The saved state, one dot beside the project name (EditorTopBar). Mint when the file on
-   disk matches the screen, amber when it does not; visibility, not display, with no project,
-   so loading one moves nothing in the bar. */
-.saveDot {
-	width: 7px;
-	height: 7px;
-	border-radius: 50%;
+/* "· SAVED" in sage, "· UNSAVED" in the panel's soft text. Visibility, not display, with no
+   project, so loading one moves nothing in the bar. */
+.saveState {
 	flex-shrink: 0;
-	background: var(--accent);
-	box-shadow: 0 0 0 3px var(--accent-soft);
+	white-space: nowrap;
+	color: var(--ds-accent);
+	font-size: 10px;
 }
-.saveDot[data-dirty="true"] {
-	background: var(--warn);
-	box-shadow: 0 0 0 3px var(--warn-soft);
+.saveState::before {
+	content: "· ";
 }
-.saveDot[data-hidden="true"] {
+.saveState[data-dirty="true"] {
+	color: var(--ds-on-panel-soft);
+}
+.saveState[data-hidden="true"] {
 	visibility: hidden;
 }
 
-/* mode switch (Media / Edit / Rec) */
-/* Three EQUAL columns, not three content-sized buttons. `1fr` tracks in an
-   intrinsically-sized grid all take the width of the widest one, so the trio
-   stays symmetrical in every locale — English "Rec" next to "Media", French
-   "Enregistrement" next to "Médias" — and the hover/selected plate is the same
-   box on all three. */
+/* Mode switch (Media / Edit). Two EQUAL columns, so the pair stays symmetrical in every
+   locale and the selected plate is the same box on both. */
 .modeSwitch {
-	margin: 0 auto;
 	display: inline-grid;
-	grid-template-columns: repeat(3, minmax(0, 1fr));
+	grid-template-columns: repeat(2, minmax(0, 1fr));
 	align-items: center;
 	gap: 2px;
-	padding: 3px;
-	background: var(--surface-1);
-	border: 1px solid var(--border);
-	border-radius: 12px;
-	flex-shrink: 0;
-	min-width: fit-content;
+	padding: 2px;
+	border: 1px solid var(--ds-on-panel-line);
+	border-radius: calc(var(--ds-radius, 8) * 0.5px + 2px);
+	flex-shrink: 1;
+	min-width: 0;
 }
 .modeSwitch button {
-	padding: 5px 16px;
+	height: 24px;
+	padding: 0 12px;
 	white-space: nowrap;
 	border: 0;
-	border-radius: 9px;
+	border-radius: calc(var(--ds-radius, 8) * 0.5px);
 	background: transparent;
-	color: var(--muted);
-	font-size: 13px;
-	font-weight: 500;
+	color: var(--ds-on-panel-muted);
 	cursor: pointer;
 	transition: background var(--motion-fast) var(--ease), color var(--motion-fast) var(--ease);
-	/* Label and a hidden BOLD copy of it share one cell. Selecting a tab switches
-	   the label to 600, which is wider than the 500 it was — enough to resize the
-	   widest column and shift the whole control. Reserving the bold width up front
-	   makes each button the same size selected, hovered or idle. */
+	/* Label and a hidden copy of it share one cell, so each button keeps its size selected,
+	   hovered or idle. */
 	display: grid;
 	grid-template-areas: "label";
 	/* minmax(0,…) so the cell can be narrower than the text: without it the inner
@@ -383,7 +390,6 @@
 .modeSwitch button::before {
 	content: attr(data-label);
 	grid-area: label;
-	font-weight: 600;
 	visibility: hidden;
 	max-width: 100%;
 	overflow: hidden;
@@ -397,107 +403,112 @@
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
+.modeSwitch button:hover {
+	color: var(--ds-on-panel);
+}
 .modeSwitch button[aria-selected="true"] {
-	background: var(--surface-3);
-	color: var(--fg-emphasis);
-	font-weight: 600;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+	background: var(--ds-on-panel-wash);
+	color: var(--ds-on-panel);
+}
+.topbarNav {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	flex-shrink: 0;
+}
+.navLink {
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+	height: var(--topbar-icon);
+	padding: 0 8px;
+	border: 0;
+	border-radius: calc(var(--ds-radius, 8) * 0.5px);
+	background: transparent;
+	color: var(--ds-on-panel-muted);
+	cursor: pointer;
+	white-space: nowrap;
+	transition: background var(--motion-fast) var(--ease), color var(--motion-fast) var(--ease);
+}
+.navLink:hover {
+	background: var(--ds-on-panel-hover);
+	color: var(--ds-on-panel);
+}
+.navLink[aria-current="page"] {
+	color: var(--ds-on-panel);
+	background: var(--ds-on-panel-wash);
 }
 .exportBtn {
 	display: inline-flex;
 	align-items: center;
 	gap: 7px;
 	height: var(--topbar-icon);
-	padding: 0 14px;
-	border-radius: 10px;
-	background: var(--accent);
-	color: var(--accent-on);
-	border: 1px solid var(--accent);
-	font-size: 13px;
+	padding: 0 12px;
+	border-radius: calc(var(--ds-radius, 8) * 0.5px);
+	background: var(--ds-accent);
+	color: var(--ds-on-accent);
+	border: 0;
 	font-weight: 600;
 	cursor: pointer;
 	flex-shrink: 0;
-	box-shadow: 0 4px 14px -4px var(--brand-glow);
-	transition: background var(--motion-fast) var(--ease);
+	transition: filter var(--motion-fast) var(--ease);
 }
-.exportBtn:hover {
-	background: var(--brand-lo);
+.exportBtn:hover:not(:disabled) {
+	filter: brightness(1.08);
 }
 .exportBtn:disabled {
-	opacity: 0.5;
+	opacity: 0.45;
 	cursor: not-allowed;
 }
 
 /* ─── Responsive topbar rules ─── */
+/* Down to the 800px minimum window every control stays reachable: the name gives way first,
+   then the links and Export drop their words (their aria names stay), never a control. */
 @media (max-width: 1240px) {
 	.topbar {
 		--topbar-gap: 10px;
-		--topbar-project-w: 130px;
-	}
-	.modeSwitch button {
-		padding: 4px 10px;
+		--topbar-project-w: 240px;
 	}
 }
 
 @media (max-width: 1080px) {
 	.topbar {
 		--topbar-gap: 8px;
-		--topbar-icon: 30px;
-		--topbar-project-w: 100px;
+		--topbar-project-w: 170px;
 		padding-left: calc(12px + var(--titlebar-inset-left, 0px));
-		padding-right: calc(
-			12px + 100vw - env(titlebar-area-width, 100vw) - env(titlebar-area-x, 0px)
-		);
+		padding-right: calc(12px + 100vw - env(titlebar-area-width, 100vw) - env(titlebar-area-x, 0px));
 	}
-	.brand .name {
-		display: none;
+	.navLabel {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+		white-space: nowrap;
 	}
-	.brandBtn {
-		margin: 0;
-		padding: 4px;
-	}
-	.modeSwitch button {
-		padding: 4px 8px;
-		font-size: 12px;
-		max-width: 90px;
-	}
-	.exportBtn {
-		padding: 0 10px;
-		gap: 5px;
-		font-size: 12px;
+	.navLink {
+		padding: 0 7px;
 	}
 }
 
-@media (max-width: 960px) {
+@media (max-width: 900px) {
 	.topbar {
 		--topbar-gap: 6px;
-		--topbar-project-w: 80px;
+		--topbar-project-w: 120px;
 		padding-left: calc(8px + var(--titlebar-inset-left, 0px));
-		padding-right: calc(
-			8px + 100vw - env(titlebar-area-width, 100vw) - env(titlebar-area-x, 0px)
-		);
-	}
-	.sep {
-		display: none;
-	}
-	.topbarLead {
-		width: var(--topbar-icon);
-		gap: 0;
-	}
-}
-
-@media (max-width: 850px) {
-	.topbar {
-		--topbar-gap: 4px;
-		--topbar-project-w: 70px;
+		padding-right: calc(8px + 100vw - env(titlebar-area-width, 100vw) - env(titlebar-area-x, 0px));
 	}
 	.modeSwitch button {
-		padding: 3px 6px;
-		font-size: 11px;
-		max-width: 70px;
+		padding: 0 8px;
+		max-width: 80px;
 	}
 	.exportLabel {
-		display: none;
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+		white-space: nowrap;
 	}
 	.exportBtn {
 		padding: 0;
@@ -507,28 +518,27 @@
 }
 
 /* ─── BODY ─────────────────────────────────────────────────────────── */
+/* Editor-01's grid: the stage over the timeline in the first column, the docked inspector
+   (and its rail) down the whole height of the second. Columns are set inline per mode. */
 .body {
 	position: relative;
 	grid-row: 2;
+	grid-column: 1;
 	display: grid;
+	grid-template-columns: minmax(0, 1fr);
 	min-height: 0;
 	min-width: 0;
 }
-/* ─── RESIZE HANDLES (chat panel width, timeline height) ───────────── */
-.chatResizeHandle {
-	position: absolute;
-	top: 0;
-	bottom: 0;
-	width: 8px;
-	margin-left: -4px;
-	cursor: col-resize;
-	z-index: 30;
-	background: transparent;
-	touch-action: none;
+/* Editor-06 takes the stage AND timeline rows: there is nothing for either to show. */
+.noProjectBody {
+	grid-row: 2 / 4;
+	grid-column: 1;
+	min-height: 0;
+	min-width: 0;
+	overflow: auto;
+	background: var(--ds-surface);
 }
-.chatResizeHandle:hover {
-	background: var(--accent-soft);
-}
+/* ─── RESIZE HANDLE (timeline height) ──────────────────────────────── */
 .timelineResizeHandle {
 	position: absolute;
 	top: 0;
@@ -544,108 +554,134 @@
 .timelineResizeHandle:hover {
 	background: var(--accent-soft);
 }
+/* The AI chat, shown inside the inspector panel (FloatingInspector's chat seam). */
 .agent {
 	display: flex;
 	flex-direction: column;
+	flex: 1;
 	min-height: 0;
 	min-width: 0;
 	background: var(--surface);
-	border-right: 1px solid var(--border);
 	overflow: hidden;
 }
+/* The dark preview stage (Editor-01): the panel colour in both themes, so the video reads as
+   the subject and the warm chrome around it as the tools. */
 .stage {
 	position: relative;
+	display: flex;
+	flex-direction: column;
 	min-width: 0;
 	min-height: 0;
 	overflow: hidden;
-	/* The inspector takes a little more of a wide stage and never less than 300px, which is what
-	   its rows are laid out for. One value for the panel and for the room the preview leaves it. */
-	container-type: inline-size;
-	--inspector-w: clamp(300px, 22cqw, 380px);
-	background: radial-gradient(ellipse 68% 54% at 52% 32%, var(--surface-1) 0%, var(--bg) 66%);
+	background: var(--ds-panel);
+	color: var(--ds-on-panel);
+}
+.stagePreview {
+	position: relative;
+	flex: 1;
+	min-height: 0;
+	padding: 24px 32px 12px;
+	box-sizing: border-box;
+}
+/* The transport sits under the video, as wide as the stage's content box. */
+.stageTransport {
+	flex-shrink: 0;
+	padding: 4px 32px 18px;
 }
 
-/* ─── FLOATING INSPECTOR + FACET RAIL ──────────────────────────────── */
-/* Playback transport lives in the timeline header now (TransportBar, via
-   V4Timeline), not over the stage, so every facet gets the same tight
-   margin down to just above the timeline. */
+/* ─── DOCKED INSPECTOR + FACET RAIL ────────────────────────────────── */
+.app {
+	/* One width for the panel and the room the grid gives it (Editor-01: 320px). */
+	--inspector-w: 320px;
+}
+/* Toward the 800px minimum window the inspector gives the stage and the timeline toolbar the
+   room every tool needs; its rows are laid out from 260px. */
+@media (max-width: 960px) {
+	.app {
+		--inspector-w: 260px;
+	}
+}
 .inspectorWrap {
-	position: absolute;
-	top: 20px;
-	right: 20px;
-	bottom: 20px;
+	grid-row: 2 / 4;
+	grid-column: 2;
 	display: flex;
-	align-items: flex-start;
-	gap: 10px;
-	z-index: 20;
-	pointer-events: none;
+	min-height: 0;
+	background: var(--ds-surface);
+	border-left: 1px solid var(--ds-line);
 }
 .inspector {
-	pointer-events: auto;
-	width: var(--inspector-w, 300px);
-	max-height: 100%;
+	width: var(--inspector-w);
 	display: flex;
 	flex-direction: column;
-	background: var(--surface-1);
-	border: 1px solid var(--border);
-	border-radius: 16px;
-	box-shadow: var(--elev-pop);
+	min-height: 0;
+	background: var(--ds-surface);
+	border-right: 1px solid var(--ds-line);
 	overflow: hidden;
-	backdrop-filter: blur(18px);
-	-webkit-backdrop-filter: blur(18px);
 }
 .inspector :global(.pane) {
 	display: flex;
 	flex-direction: column;
 	min-height: 0;
 }
+.inspectorChat {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+}
+/* Under a selection pane the chat stays mounted but out of sight (FloatingInspector). */
+.inspectorChat[hidden] {
+	display: none;
+}
 .facetRail {
-	pointer-events: auto;
+	width: 52px;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	gap: 4px;
-	padding: 6px;
-	background: var(--surface-1);
-	border: 1px solid var(--border);
-	border-radius: 14px;
-	box-shadow: var(--elev-pop);
-	backdrop-filter: blur(18px);
-	-webkit-backdrop-filter: blur(18px);
+	gap: 6px;
+	padding: 12px 0;
+	box-sizing: border-box;
+	background: var(--ds-surface-raised);
 }
 .facetRail button {
-	width: 38px;
-	height: 38px;
+	width: 32px;
+	height: 32px;
 	display: grid;
 	place-items: center;
-	border-radius: 10px;
-	color: var(--muted);
+	border-radius: calc(var(--ds-radius, 8) * 0.5px);
+	color: var(--ds-ink-soft);
 	background: transparent;
 	border: 0;
 	cursor: pointer;
 	transition: background var(--motion-fast) var(--ease), color var(--motion-fast) var(--ease);
 }
 .facetRail button:hover {
-	background: var(--surface-3);
-	color: var(--fg);
+	background: var(--ds-chip);
+	color: var(--ds-ink);
 }
+/* Editor-01: the open facet is the dark tile. */
 .facetRail button[aria-pressed="true"] {
-	color: var(--accent);
-	background: var(--accent-soft);
+	color: var(--ds-surface);
+	background: var(--ds-ink);
+}
+/* The AI entry sits apart, at the rail's foot. */
+.facetRail .railAi {
+	margin-top: auto;
+}
+.facetRail button:focus-visible {
+	outline: 2px solid var(--ds-ink);
+	outline-offset: 2px;
 }
 
 /* ─── TIMELINE FOOTER ──────────────────────────────────────────────── */
-.timeline {
-	grid-row: 3;
+.timelineFooter {
 	position: relative;
-	background: var(--surface);
-	border-top: 1px solid var(--border);
+	grid-row: 3;
+	grid-column: 1;
 	min-height: 0;
-	display: flex;
-	flex-direction: column;
-	overflow: hidden;
+	background: var(--ds-surface-raised);
+	border-top: 1px solid var(--ds-line);
 }
-
 /* ─── MEDIA STAGE ──────────────────────────────────────────────────── */
 .mediaStage {
 	position: absolute;
@@ -2171,4 +2207,166 @@
 	height: 10px;
 	border-radius: 999px;
 	background: var(--danger);
+}
+
+/* ─── FINAL TIMELINE (Editor-01) ───────────────────────────────────── */
+/* Restyles the v4 timeline above without moving its geometry: lane and pill heights are
+   unchanged, and the only new box is the label gutter, a wider left padding shared by the
+   ruler, the tracks and the playhead layer, so ticks, pills and the line stay aligned and
+   every pointer→time conversion (made against the canvas) is untouched. */
+.tl {
+	--tl-gutter: 76px;
+	/* Orange is the playhead's meaning in the Final language (cut and playhead). */
+	--playhead: var(--ds-rec);
+	--playhead-glow: transparent;
+	--playhead-shadow: transparent;
+	background: var(--ds-surface-raised);
+}
+/* Media arranges clips with no lanes to name, so it keeps the plain edge. */
+.tl:not([data-lanes]) {
+	--tl-gutter: 20px;
+}
+.tlToolbar {
+	height: 44px;
+	border-bottom: 1px solid var(--ds-line);
+	container-type: inline-size;
+}
+/* The scroll hints are the first thing to go in a narrow toolbar: they are reminders, the
+   tools are controls. */
+@container (max-width: 620px) {
+	.tlHints {
+		display: none;
+	}
+}
+.tlToolBtn {
+	color: var(--ds-ink-soft);
+	border-radius: calc(var(--ds-radius, 8) * 0.5px);
+}
+.tlToolBtn:hover {
+	background: var(--ds-chip);
+	color: var(--ds-ink);
+}
+.tlToolBtn[aria-pressed="true"] {
+	background: var(--ds-accent-tint);
+	color: var(--ds-ink);
+}
+.tlToolBtn:focus-visible {
+	outline: 2px solid var(--ds-ink);
+	outline-offset: 1px;
+}
+.tlToolSep {
+	background: var(--ds-line);
+}
+.tlRulerRow,
+.tlTracks,
+.tlPlayheadLayer {
+	padding-left: var(--tl-gutter);
+}
+.tlNav {
+	margin-left: var(--tl-gutter);
+}
+.tlRuler {
+	border-bottom-color: var(--ds-line);
+}
+.tlTickLabel {
+	font-family: var(--ds-font-label), "JetBrains Mono", ui-monospace, monospace;
+	font-size: 10px;
+	color: var(--ds-ink-soft);
+}
+.tlHint,
+.tlKbd {
+	font-family: var(--ds-font-label), "JetBrains Mono", ui-monospace, monospace;
+	font-size: 10px;
+	color: var(--ds-ink-soft);
+}
+.tlLane {
+	border-radius: 2px;
+	background: var(--ds-chip);
+}
+.laneEmpty {
+	color: var(--ds-ink-soft);
+}
+/* The lane's name, in the gutter left of the visible window (V4Timeline#laneLabel). */
+/* It is also the gutter's mask: exactly the gutter's width, opaque, above the pills, and down
+   through the lane's bottom gap, so pills and clips from before the visible window never show
+   under the names. A press on it is not a seek (V4Timeline#startScrub). */
+.laneLabel {
+	position: absolute;
+	top: 0;
+	bottom: -5px;
+	z-index: 3;
+	display: flex;
+	align-items: flex-start;
+	box-sizing: border-box;
+	width: var(--tl-gutter);
+	padding: 6px 8px 0 16px;
+	transform: translateX(-100%);
+	background: var(--ds-surface-raised);
+	font-family: var(--ds-font-label), "JetBrains Mono", ui-monospace, monospace;
+	font-size: 10px;
+	line-height: 12px;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--ds-ink-soft);
+	white-space: nowrap;
+	overflow: hidden;
+}
+/* The ruler and the playhead have no labels to keep, so they are simply clipped at the
+   gutter, less half of what sits centred on the window's edge: a tick label (about 64px wide
+   at the finest step) on the ruler, the head on the playhead. */
+.tlRulerRow {
+	clip-path: inset(0 0 0 calc(var(--tl-gutter) - 34px));
+}
+.tlPlayheadLayer {
+	clip-path: inset(0 0 0 calc(var(--tl-gutter) - 8px));
+}
+/* Flat Final pills with mono labels, coloured by meaning. The ink is per lane, and every pair
+   is at least 4.5:1 in BOTH themes (theme.browser.test.tsx measures them): the trim and speed
+   fills turn light in the dark theme, so their ink is --ds-surface, cream on the light theme's
+   deep fills and the dark panel on the dark theme's pale ones. The trim pill is the deeper
+   orange rather than --ds-rec, which carries cream at only 3.6:1. */
+.lanePill {
+	border: 0;
+	border-radius: 2px;
+	background: var(--_c);
+	box-shadow: none;
+	color: var(--_ink, var(--ds-ink));
+	font-family: var(--ds-font-label), "JetBrains Mono", ui-monospace, monospace;
+	font-size: 10px;
+	font-weight: 500;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+.lanePillSel {
+	box-shadow: 0 0 0 2px var(--ds-surface-raised), 0 0 0 3.5px var(--ds-ink);
+}
+.laneZoom {
+	--_c: var(--ds-accent);
+	--_ink: var(--ds-on-accent);
+}
+.laneTrim {
+	--_c: var(--ds-rec-ink);
+	--_ink: var(--ds-surface);
+}
+.laneAnnotation {
+	--_c: var(--ds-ink);
+	--_ink: var(--ds-surface);
+}
+.laneSpeed {
+	--_c: var(--ds-accent-strong);
+	--_ink: var(--ds-surface);
+}
+.laneCameraFullscreen {
+	--_c: var(--ds-accent-200);
+	--_ink: var(--ds-ink);
+}
+.tlClip {
+	--clip: var(--ds-accent);
+	border-radius: calc(var(--ds-radius, 8) * 0.5px);
+	box-shadow: none;
+}
+/* The zoom window's thumb is navigation, not the playhead: the panel's quiet ink. */
+.tlNavWindow {
+	background: var(--ds-ink-faint) border-box;
+	box-shadow: none;
 }

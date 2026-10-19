@@ -111,6 +111,8 @@ interface Window {
 			accessibilityTrusted: boolean;
 			error?: string;
 		}>;
+		/** Swaps the editor window for the Library; refused for any other sender. */
+		showhowOpenLibrary: () => Promise<{ opened: boolean }>;
 		showhowAiGuideStatus: (
 			bundleDir?: string,
 		) => Promise<import("../src/lib/showhow/aiGuide").GuideStatus>;

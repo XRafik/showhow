@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom";
-import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { Profiler, type ProfilerOnRenderCallback } from "react";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 
@@ -109,6 +109,7 @@ function renderTimeline(
 	assets: Array<Record<string, unknown>> = [NO_CAMERA_ASSET],
 	onRender?: ProfilerOnRenderCallback,
 	overrides: Record<string, unknown> = {},
+	timelineProps: Partial<React.ComponentProps<typeof V4Timeline>> = {},
 ) {
 	const tl = {
 		clips,
@@ -150,10 +151,9 @@ function renderTimeline(
 				// stays typed as the real API rather than widened to `any` (AGENTS.md).
 				tl={tl as unknown as ReturnType<typeof useTimeline>}
 				setCurrentTime={setCurrentTime}
-				playing={false}
-				onTogglePlay={vi.fn()}
 				onEditClip={vi.fn()}
 				onAddVoiceover={vi.fn()}
+				{...timelineProps}
 			/>
 		</ShortcutsProvider>
 	);
@@ -681,8 +681,6 @@ describe("V4Timeline audio lane drag", () => {
 				<V4Timeline
 					tl={tl as unknown as ReturnType<typeof useTimeline>}
 					setCurrentTime={vi.fn()}
-					playing={false}
-					onTogglePlay={vi.fn()}
 					onEditClip={vi.fn()}
 					onAddVoiceover={props.onAddVoiceover ?? vi.fn()}
 				/>
@@ -1033,5 +1031,92 @@ describe("V4Timeline toolbar tooltips", () => {
 		const wide = document.querySelector("[class*=lanePill]") as HTMLElement;
 		expect(wide).toHaveTextContent("toolbar.newAnnotation");
 		expect(wide).not.toHaveAttribute("title");
+	});
+});
+
+describe("Final timeline toolbar and lanes (Editor-01)", () => {
+	afterEach(() => cleanup());
+
+	it("steps through history from the timeline toolbar, and says when there is nothing to step to", () => {
+		const onUndo = vi.fn();
+		const onRedo = vi.fn();
+		renderTimeline(
+			undefined,
+			undefined,
+			undefined,
+			undefined,
+			{},
+			{
+				canUndo: true,
+				canRedo: false,
+				onUndo,
+				onRedo,
+			},
+		);
+		const toolbar = screen.getByRole("toolbar", { name: "toolbar.timelineTools" });
+		const undo = within(toolbar).getByRole("button", { name: "fixedActions.undo" });
+		const redo = within(toolbar).getByRole("button", { name: "fixedActions.redo" });
+		fireEvent.click(undo);
+		expect(onUndo).toHaveBeenCalledTimes(1);
+		// aria-disabled, not disabled: the tooltip still opens, and the click does nothing.
+		expect(redo).toHaveAttribute("aria-disabled", "true");
+		expect(redo).not.toBeDisabled();
+		fireEvent.click(redo);
+		expect(onRedo).not.toHaveBeenCalled();
+	});
+
+	it("names every lane in a gutter, in the Final order, without covering it", () => {
+		renderTimeline();
+		const labels = Array.from(document.querySelectorAll<HTMLElement>("[data-lane-label]")).map(
+			(el) => el.textContent,
+		);
+		expect(labels).toEqual([
+			"lanes.zoom",
+			"lanes.trim",
+			"lanes.text",
+			"lanes.speed",
+			"lanes.camera",
+			"lanes.audio",
+			"lanes.video",
+		]);
+		for (const label of document.querySelectorAll("[data-lane-label]")) {
+			expect(label).toHaveAttribute("aria-hidden", "true");
+		}
+	});
+
+	it("does not seek from a press on the gutter's lane names, which mask hidden time", () => {
+		const { setCurrentTime } = renderTimeline();
+		const label = document.querySelector<HTMLElement>("[data-lane-label]");
+		if (!label) throw new Error("no lane label");
+		fireEvent.pointerDown(label, { button: 0, clientX: 10 });
+		expect(setCurrentTime).not.toHaveBeenCalled();
+	});
+
+	it("keeps the lane labels at the visible window's left edge when the timeline is zoomed", () => {
+		renderTimeline();
+		wheelZoomOn(screen.getByRole("toolbar", { name: "toolbar.timelineTools" }), 4);
+		const label = document.querySelector<HTMLElement>("[data-lane-label]");
+		const hint = document.querySelector<HTMLElement>("[class*=laneEmpty]");
+		expect(label?.style.left).toBe(hint?.style.left);
+	});
+
+	it("anchors wheel zoom to the visible lanes, not to the label gutter in front of them", () => {
+		renderTimeline();
+		// The Final gutter is padding on the tracks box; jsdom loads no CSS modules, so set it here.
+		const tracks = document.querySelector<HTMLElement>("[class*=tlTracks]");
+		if (!tracks) throw new Error("no tracks");
+		tracks.style.paddingLeft = "76px";
+		tracks.style.paddingRight = "20px";
+		// The cursor sits on the first visible instant, right after the gutter.
+		for (let i = 0; i < 4; i++) {
+			fireEvent.wheel(tracks, { ctrlKey: true, deltaY: -100, clientX: 76 });
+		}
+		// Zooming in under the window's left edge keeps that edge where it is.
+		expect(document.querySelector<HTMLElement>("[data-lane-label]")?.style.left).toBe("0%");
+	});
+
+	it("no longer carries the transport, which sits under the preview now", () => {
+		renderTimeline();
+		expect(screen.queryByRole("toolbar", { name: "transport.playbackControls" })).toBeNull();
 	});
 });

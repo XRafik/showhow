@@ -55,14 +55,9 @@
 		"selectSource": "録画するソースを選択してください"
 	},
 	"emptyState": {
-		"title": "プロジェクトが開かれていません",
-		"description": "新しいプロジェクトを作成するか、既存のプロジェクトを開いてください。",
 		"titleHasAsset": "動画を追加して開始",
 		"descriptionHasAsset": "録画をインポートして編集を開始します。",
-		"recordButton": "画面を録画",
-		"newProjectButton": "新規プロジェクト＋動画をインポート",
 		"importVideoButton": "動画をインポート",
-		"loadProjectButton": "プロジェクトを開く",
 		"supportedFormats": "対応フォーマット：MP4、MOV、WebM、MKV、AVI、M4V、WMV",
 		"dragDropHint": ".showhow, .openscreen プロジェクトファイルをここにドラッグ＆ドロップ",
 		"dropOverlay": "プロジェクトファイルをドロップして開く",
@@ -86,7 +81,6 @@
 		}
 	},
 	"topbar": {
-		"toggleChatPanel": "チャットパネル",
 		"openProject": "プロジェクトを開く",
 		"newProject": "新規プロジェクト",
 		"saveProject": "プロジェクトを保存",
@@ -97,14 +91,17 @@
 		"toggleTheme": "テーマを切り替え",
 		"export": "エクスポート",
 		"renameProject": "プロジェクト名を変更",
-		"noProject": "プロジェクトなし",
 		"changeLanguage": "言語を変更",
 		"editorMode": "エディターモード",
 		"modes": {
 			"media": "メディア",
-			"edit": "編集",
-			"rec": "録画"
-		}
+			"edit": "編集"
+		},
+		"navigation": "エディタのナビゲーション",
+		"library": "ライブラリ",
+		"newRecording": "新規録画",
+		"open": "開く",
+		"editorTitle": "Showhow · エディタ"
 	},
 	"rec": {
 		"source": "ソース",
@@ -223,7 +220,9 @@
 		"cropDescription": "録画をリフレーム — アスペクト比を選び、保持したい範囲にズームします。",
 		"openCrop": "切り抜きを開く…",
 		"deleteRegion": "区間を削除",
-		"freehandRendersAsBox": "書き出しでは、フリーハンドの形は外接する矩形で覆われます。覆いすぎることはあっても、足りないことはありません。"
+		"freehandRendersAsBox": "書き出しでは、フリーハンドの形は外接する矩形で覆われます。覆いすぎることはあっても、足りないことはありません。",
+		"label": "インスペクタ",
+		"aiChat": "AI チャット"
 	},
 	"chat": {
 		"changeProvider": "プロバイダーを変更",
@@ -350,11 +349,11 @@
 		"playbackControls": "再生コントロール",
 		"play": "再生",
 		"pause": "一時停止",
-		"loop": "ループ"
+		"loop": "ループ",
+		"seek": "シーク"
 	},
 	"shell": {
 		"aiEditor": "AI エディター",
-		"resizeChatPanel": "チャットパネルのサイズを変更",
 		"previewStage": "プレビュー領域",
 		"resizeTimeline": "タイムラインのサイズを変更"
 	},
@@ -432,5 +431,26 @@
 	"cpuCompositor": {
 		"notice": "対応 GPU がないため CPU で描画しています。再生が遅くなります。",
 		"exportWarning": "対応 GPU がありません。この書き出しは CPU で実行されるため、通常よりはるかに時間がかかります。"
+	},
+	"lanes": {
+		"zoom": "ズーム",
+		"trim": "トリム",
+		"text": "テキスト",
+		"speed": "速度",
+		"camera": "カメラ",
+		"audio": "オーディオ",
+		"video": "ビデオ"
+	},
+	"noProjectOpen": {
+		"eyebrow": "Showhow · エディタ",
+		"title": "開いているプロジェクトはありません",
+		"body": "ライブラリから録画を開いて、トリム、ズームの追加、書き出しを行いましょう。",
+		"openLibrary": "ライブラリを開く",
+		"openFile": "ファイルを開く…",
+		"importVideo": "ビデオを読み込む",
+		"record": "画面を録画",
+		"recent": "最近",
+		"today": "今日",
+		"yesterday": "昨日"
 	}
 }

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom";
-import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { ReactElement } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { I18nProvider } from "@/contexts/I18nContext";
@@ -124,25 +124,54 @@ describe("EditorEmptyState (new editor)", () => {
 		expect(screen.queryByText(/open project/i)).not.toBeInTheDocument();
 	});
 
-	it("shows both import + open-project buttons when no project is loaded", () => {
+	it("is Editor-06 when no project is loaded: open a file, or import a video", () => {
 		renderWithI18n(<EditorEmptyState hasProject={false} />);
 
-		expect(screen.getByText(/start with a recording/i)).toBeInTheDocument();
+		expect(screen.getByRole("heading", { name: /no project open/i })).toBeInTheDocument();
 		expect(screen.getByRole("button", { name: /import a video/i })).toBeInTheDocument();
-		expect(screen.getByRole("button", { name: /open project/i })).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: /open file/i })).toBeInTheDocument();
+		// Not offered without a way back to the Library.
+		expect(screen.queryByRole("button", { name: /open library/i })).not.toBeInTheDocument();
 	});
 
-	it("leads with recording on a first run, and keeps import and open beside it", () => {
+	it("leads with the Library when it can, and keeps recording, import and open beside it", () => {
 		const onRecord = vi.fn();
-		renderWithI18n(<EditorEmptyState hasProject={false} onRecord={onRecord} />);
+		const onOpenLibrary = vi.fn();
+		renderWithI18n(
+			<EditorEmptyState hasProject={false} onRecord={onRecord} onOpenLibrary={onOpenLibrary} />,
+		);
 
 		const buttons = screen.getAllByRole("button");
-		// The first action on the screen is the recorder's own.
-		expect(buttons[0]).toHaveAccessibleName(/record your screen/i);
+		expect(buttons[0]).toHaveAccessibleName(/open library/i);
 		fireEvent.click(buttons[0]);
+		expect(onOpenLibrary).toHaveBeenCalledTimes(1);
+		fireEvent.click(screen.getByRole("button", { name: /record your screen/i }));
 		expect(onRecord).toHaveBeenCalledTimes(1);
 		expect(screen.getByRole("button", { name: /import a video/i })).toBeInTheDocument();
-		expect(screen.getByRole("button", { name: /open project/i })).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: /open file/i })).toBeInTheDocument();
+	});
+
+	it("lists the projects opened lately and opens the one picked", () => {
+		const onOpenRecent = vi.fn();
+		renderWithI18n(
+			<EditorEmptyState
+				hasProject={false}
+				recentProjects={[
+					{
+						id: "p1",
+						title: "Export monthly report",
+						updatedAt: new Date().toISOString(),
+						assetCount: 1,
+					},
+				]}
+				onOpenRecent={onOpenRecent}
+			/>,
+		);
+		const recent = screen.getByRole("list", { name: /recent/i });
+		const row = within(recent).getByRole("button", { name: /export monthly report/i });
+		expect(row).toHaveTextContent(/today/i);
+		fireEvent.click(row);
+		expect(onOpenRecent).toHaveBeenCalledWith("p1");
 	});
 
 	it("does not offer to record into a project that only lacks media", () => {
@@ -226,7 +255,7 @@ describe("EditorEmptyState (new editor)", () => {
 		});
 	});
 
-	it("opens a .openscreen project file via the load button", async () => {
+	it("opens a .openscreen project file via Open file", async () => {
 		bridgeMocks.loadProjectFile.mockResolvedValue({
 			success: true,
 			project: { id: "loaded", title: "Loaded" },
@@ -236,7 +265,7 @@ describe("EditorEmptyState (new editor)", () => {
 		renderWithI18n(<EditorEmptyState hasProject={false} />);
 
 		await act(async () => {
-			fireEvent.click(screen.getByRole("button", { name: /open project/i }));
+			fireEvent.click(screen.getByRole("button", { name: /open file/i }));
 		});
 
 		await waitFor(() => {
@@ -249,7 +278,8 @@ describe("EditorEmptyState (new editor)", () => {
 		renderWithI18n(<EditorEmptyState hasProject={false} />);
 
 		const file = new File([new Uint8Array([0, 1, 2])], "recording.mp4", { type: "video/mp4" });
-		const dropZone = screen.getByText(/start with a recording/i).parentElement?.parentElement
+		// The drop zone wraps the whole page, so a file dropped anywhere on Editor-06 opens.
+		const dropZone = screen.getByRole("heading", { name: /no project open/i }).closest("section")
 			?.parentElement as HTMLElement;
 		expect(dropZone).toBeTruthy();
 

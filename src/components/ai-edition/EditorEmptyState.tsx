@@ -10,10 +10,10 @@
 // deprecated editor and its own `EditorEmptyState` were deleted in 1320121d,
 // so this is the single render path for the feature.
 
-import { AlertCircle, Circle, Film, FolderOpen, Upload, X } from "lucide-react";
-import { useCallback, useRef, useState } from "react";
+import { AlertCircle, Circle, Film, FolderOpen, Library, Play, Upload, X } from "lucide-react";
+import { useCallback, useId, useRef, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useScopedT } from "@/contexts/I18nContext";
+import { useI18n, useScopedT } from "@/contexts/I18nContext";
 import {
 	migrateProjectDataToAxcutDocument,
 	migrateRawDocumentToCurrent,
@@ -21,6 +21,7 @@ import {
 import { documentSchema } from "@/lib/ai-edition/schema";
 import { useProjectStore } from "@/lib/ai-edition/store/projectStore";
 import { nativeBridgeClient } from "@/native";
+import type { AiEditionProjectSummary } from "@/native/contracts";
 import styles from "./NewEditorShell.module.css";
 
 type DropError = "unsupported-format" | "load-failed" | null;
@@ -28,20 +29,37 @@ type DropError = "unsupported-format" | "load-failed" | null;
 interface EditorEmptyStateProps {
 	/** True when a project exists (so the copy becomes "add a video" not "no project"). */
 	hasProject: boolean;
-	/** Show the file dialog (Open Video) and a Load Project button when no project is loaded. */
-	showLoadProjectButton?: boolean;
-	/** Switches the editor to its Record mode. With it, recording leads the first-run screen, the
-	 *  way it does in a screen recorder; without it (a project that only lacks media), import does. */
+	/** Switches the editor to its Record mode: Editor-06 offers it beside importing a video. */
 	onRecord?: () => void;
+	/** Editor-06's Open library: back to the Library window. Absent, the button is not drawn. */
+	onOpenLibrary?: () => void;
+	/** Editor-06's Recent list, newest first as the store lists them. */
+	recentProjects?: readonly AiEditionProjectSummary[];
+	onOpenRecent?: (projectId: string) => void;
 }
 
 export function EditorEmptyState({
 	hasProject,
-	showLoadProjectButton = true,
 	onRecord,
+	onOpenLibrary,
+	recentProjects = [],
+	onOpenRecent,
 }: EditorEmptyStateProps) {
 	const t = useScopedT("editor");
 	const tc = useScopedT("common");
+	const { locale } = useI18n();
+	const titleId = useId();
+	const recentId = useId();
+	// "Today", "Yesterday", else a short date in the app's language (Editor-06 "22 SEP").
+	const recentWhen = (iso: string) => {
+		const when = new Date(iso);
+		if (Number.isNaN(when.getTime())) return "";
+		const day = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+		const daysAgo = Math.round((day(new Date()) - day(when)) / 86_400_000);
+		if (daysAgo === 0) return t("noProjectOpen.today");
+		if (daysAgo === 1) return t("noProjectOpen.yesterday");
+		return new Intl.DateTimeFormat(locale, { day: "numeric", month: "short" }).format(when);
+	};
 	const [isDraggingOver, setIsDraggingOver] = useState(false);
 	const [dropError, setDropError] = useState<DropError>(null);
 	const lastDropErrorRef = useRef<Exclude<DropError, null>>("unsupported-format");
@@ -49,7 +67,6 @@ export function EditorEmptyState({
 		lastDropErrorRef.current = dropError;
 	}
 
-	const recordLeads = !hasProject && onRecord !== undefined;
 	const createProject = useProjectStore((s) => s.createProject);
 	const addAsset = useProjectStore((s) => s.addAsset);
 	const loadProject = useProjectStore((s) => s.loadProject);
@@ -212,53 +229,105 @@ export function EditorEmptyState({
 				</DialogContent>
 			</Dialog>
 
-			<div className={styles.previewEmptyInner}>
-				<img src="./showhow.png" alt="" aria-hidden="true" className={styles.previewEmptyLogo} />
-				<div className={styles.previewEmptyHeading}>
-					<h2 className={styles.previewEmptyTitle}>
-						{hasProject ? t("emptyState.titleHasAsset") : t("emptyState.title")}
-					</h2>
-					<p className={styles.previewEmptyDescription}>
-						{hasProject ? t("emptyState.descriptionHasAsset") : t("emptyState.description")}
-					</p>
-				</div>
-				<div className={styles.previewEmptyActions}>
-					{recordLeads ? (
-						<button type="button" onClick={onRecord} className={styles.previewEmptyPrimaryButton}>
-							<Circle className={styles.previewEmptyButtonIcon} fill="currentColor" />
-							{t("emptyState.recordButton")}
-						</button>
-					) : null}
-					<button
-						type="button"
-						onClick={() => void handleImportVideo()}
-						className={
-							recordLeads ? styles.previewEmptySecondaryButton : styles.previewEmptyPrimaryButton
-						}
-					>
-						<Film className={styles.previewEmptyButtonIcon} />
-						{hasProject ? t("emptyState.importVideoButton") : t("emptyState.newProjectButton")}
-					</button>
-					{showLoadProjectButton && !hasProject ? (
-						// A link once recording leads: the third way in, and the rarest on a first run.
+			{hasProject ? (
+				// A project that only lacks media: import leads, and the drop zone still opens a file.
+				<div className={styles.previewEmptyInner}>
+					<img src="./showhow.png" alt="" aria-hidden="true" className={styles.previewEmptyLogo} />
+					<div className={styles.previewEmptyHeading}>
+						<h2 className={styles.previewEmptyTitle}>{t("emptyState.titleHasAsset")}</h2>
+						<p className={styles.previewEmptyDescription}>{t("emptyState.descriptionHasAsset")}</p>
+					</div>
+					<div className={styles.previewEmptyActions}>
 						<button
 							type="button"
-							onClick={() => void handleLoadProject()}
-							className={
-								recordLeads ? styles.previewEmptyLinkButton : styles.previewEmptySecondaryButton
-							}
+							onClick={() => void handleImportVideo()}
+							className={styles.previewEmptyPrimaryButton}
 						>
-							<FolderOpen className={styles.previewEmptyButtonIcon} />
-							{t("emptyState.loadProjectButton")}
+							<Film className={styles.previewEmptyButtonIcon} />
+							{t("emptyState.importVideoButton")}
 						</button>
-					) : null}
+					</div>
+					<p className={styles.previewEmptyHint}>{t("emptyState.supportedFormats")}</p>
+					<p className={styles.previewEmptyDragHint}>
+						<Upload className={styles.previewEmptyDragHintIcon} />
+						{t("emptyState.dragDropHint")}
+					</p>
 				</div>
-				<p className={styles.previewEmptyHint}>{t("emptyState.supportedFormats")}</p>
-				<p className={styles.previewEmptyDragHint}>
-					<Upload className={styles.previewEmptyDragHintIcon} />
-					{t("emptyState.dragDropHint")}
-				</p>
-			</div>
+			) : (
+				// Editor-06. The same entry points as before, in the Final page: the Library and a
+				// file first, then importing a video or recording, then the projects opened lately.
+				<section className={styles.noProject} aria-labelledby={titleId}>
+					<div className={styles.noProjectArt} aria-hidden="true">
+						<span className={styles.noProjectArtEyebrow}>{t("noProjectOpen.eyebrow")}</span>
+						<span className={styles.noProjectArtTransport}>
+							<span className={styles.noProjectArtClips} />
+							<Play size={10} fill="currentColor" />
+							<span className={styles.noProjectArtLine} />
+							<span>0:00</span>
+						</span>
+					</div>
+					<h1 id={titleId} className={styles.noProjectTitle}>
+						{t("noProjectOpen.title")}
+					</h1>
+					<p className={styles.noProjectBody}>{t("noProjectOpen.body")}</p>
+					<div className={styles.noProjectActions}>
+						{onOpenLibrary ? (
+							<button type="button" className={styles.noProjectPrimary} onClick={onOpenLibrary}>
+								<Library size={14} aria-hidden="true" />
+								{t("noProjectOpen.openLibrary")}
+							</button>
+						) : null}
+						<button
+							type="button"
+							className={onOpenLibrary ? styles.noProjectSecondary : styles.noProjectPrimary}
+							onClick={() => void handleLoadProject()}
+						>
+							<FolderOpen size={14} aria-hidden="true" />
+							{t("noProjectOpen.openFile")}
+						</button>
+					</div>
+					<div className={styles.noProjectLinks}>
+						<button type="button" onClick={() => void handleImportVideo()}>
+							<Film size={14} aria-hidden="true" />
+							{t("noProjectOpen.importVideo")}
+						</button>
+						{onRecord ? (
+							<button type="button" onClick={onRecord}>
+								<Circle size={12} fill="currentColor" aria-hidden="true" />
+								{t("noProjectOpen.record")}
+							</button>
+						) : null}
+					</div>
+					{recentProjects.length > 0 ? (
+						<div className={styles.noProjectRecent}>
+							<p className={styles.noProjectRecentLabel} id={recentId}>
+								{t("noProjectOpen.recent")}
+							</p>
+							<ul aria-labelledby={recentId}>
+								{recentProjects.slice(0, RECENT_LIMIT).map((project) => (
+									<li key={project.id}>
+										<button type="button" onClick={() => onOpenRecent?.(project.id)}>
+											<span data-recent-title className={styles.noProjectRecentTitle}>
+												{project.title}
+											</span>
+											<span className={styles.noProjectRecentMeta}>
+												{recentWhen(project.updatedAt)}
+											</span>
+										</button>
+									</li>
+								))}
+							</ul>
+						</div>
+					) : null}
+					<p className={styles.noProjectDragHint}>
+						<Upload size={13} aria-hidden="true" />
+						{t("emptyState.dragDropHint")}
+					</p>
+				</section>
+			)}
 		</div>
 	);
 }
+
+/** How many recent projects Editor-06 lists; the Open dialog has the rest. */
+const RECENT_LIMIT = 5;

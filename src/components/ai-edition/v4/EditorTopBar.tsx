@@ -1,29 +1,25 @@
 import {
 	ChevronDown,
+	CircleDot,
 	Download,
 	FolderOpen,
 	FolderPlus,
 	Info,
 	Keyboard,
 	Languages,
+	Library,
 	Moon,
-	PanelLeft,
-	Redo2,
+	MousePointer2,
 	RefreshCw,
 	Save,
 	Sparkles,
 	Star,
 	Sun,
-	Undo2,
 } from "lucide-react";
 import { type KeyboardEvent as ReactKeyboardEvent, useEffect, useRef, useState } from "react";
-import { Tooltip } from "@/components/ui/tooltip";
 import { useI18n, useScopedT } from "@/contexts/I18nContext";
-import { useShortcuts } from "@/contexts/ShortcutsContext";
 import { useTheme } from "@/hooks/useTheme";
 import { getAvailableLocales, getLocaleName } from "@/i18n/loader";
-import { formatFirstFixedBinding } from "@/lib/shortcuts";
-import logoMark from "../../../../public/showhow.png";
 import { StylePresetsMenu } from "../StylePresetsMenu";
 import styles from "./EditorShellV4.module.css";
 
@@ -36,12 +32,13 @@ export interface TopBarActions {
 	export: () => void;
 	openSettings: () => void;
 	renameProject: (title: string) => void;
-	toggleChat: () => void;
 	openProviderSettings: () => void;
 	showAbout: () => void;
 	checkForUpdates: () => void;
-	undo: () => void;
-	redo: () => void;
+	/** Back to the Library window (Editor-01 "Library"). */
+	openLibrary: () => void;
+	/** The editor's Record mode (Editor-01 "New recording"). */
+	newRecording: () => void;
 }
 
 interface EditorTopBarProps {
@@ -50,16 +47,14 @@ interface EditorTopBarProps {
 	projectTitle: string | null;
 	dirty: boolean;
 	canExport: boolean;
-	canUndo: boolean;
-	canRedo: boolean;
-	chatOpen: boolean;
 	actions: TopBarActions;
 }
 
+// Record is not a tab any more: the Final bar reaches it as New recording, beside Library and
+// Open, because starting a take leaves the project rather than showing another view of it.
 const MODES: Array<{ id: EditorMode; labelKey: string }> = [
 	{ id: "media", labelKey: "topbar.modes.media" },
 	{ id: "edit", labelKey: "topbar.modes.edit" },
-	{ id: "rec", labelKey: "topbar.modes.rec" },
 ];
 
 export function EditorTopBar({
@@ -68,58 +63,30 @@ export function EditorTopBar({
 	projectTitle,
 	dirty,
 	canExport,
-	canUndo,
-	canRedo,
-	chatOpen,
 	actions,
 }: EditorTopBarProps) {
 	const t = useScopedT("editor");
-	const tShortcuts = useScopedT("shortcuts");
-	const { isMac } = useShortcuts();
 	const savedLabel = dirty ? t("topbar.unsaved") : t("topbar.saved");
 
-	// ponytail: the left side panel only renders in "edit" mode (see
-	// NewEditorShell body), so its toggle is meaningless in Media/Rec —
-	// hide the button (and its separator) there to keep the topbar honest.
-	const showChatToggle = mode === "edit";
 	return (
 		<header className={styles.topbar}>
-			{/* Fixed-width slot: the toggle is Edit-only, and .topbarLead holds its
-			    space in the other modes so nothing to the right moves. */}
-			<span className={styles.topbarLead}>
-				{showChatToggle ? (
-					<>
-						<Tooltip content={t("topbar.toggleChatPanel")}>
-							<button
-								type="button"
-								className={`${styles.iconBtn}${chatOpen ? ` ${styles.on}` : ""}`}
-								aria-label={t("topbar.toggleChatPanel")}
-								aria-pressed={chatOpen}
-								onClick={actions.toggleChat}
-							>
-								<PanelLeft size={17} />
-							</button>
-						</Tooltip>
-						<span className={styles.sep} aria-hidden />
-					</>
-				) : null}
-			</span>
 			<AppMenu actions={actions} />
-			<span className={styles.sep} aria-hidden />
 			<span className={styles.projectSlot}>
 				<ProjectNameField title={projectTitle} onRename={actions.renameProject} />
-				{/* The saved state, as one dot right after the name it is about. Mounted with no
-				    project too, hidden, so loading one moves nothing. Save itself is in the
-				    OpenScreen menu, and on Ctrl+S. */}
+				{/* The saved state, in words right after the name it is about (Editor-01 "· SAVED").
+				    Mounted with no project too, hidden, so loading one moves nothing. Save itself is
+				    in the Showhow menu, and on Ctrl+S. */}
 				<span
-					className={styles.saveDot}
+					className={styles.saveState}
+					data-testid="topbar-save-state"
 					data-dirty={dirty}
 					data-hidden={!projectTitle}
-					title={savedLabel}
 				>
-					<span className="sr-only">{savedLabel}</span>
+					{savedLabel}
 				</span>
 			</span>
+
+			<span className={styles.topbarSpacer} aria-hidden />
 
 			<div className={styles.modeSwitch} role="tablist" aria-label={t("topbar.editorMode")}>
 				{MODES.map((m) => (
@@ -138,41 +105,28 @@ export function EditorTopBar({
 				))}
 			</div>
 
-			{/* A preset is the whole look the right panel's panes edit — Composition, camera,
-			    cursor — so its entry sits in the bar, reachable from every pane and mode,
-			    rather than in any one pane's header. */}
-			{/* Always mounted, disabled when there is nothing to step to: the bar keeps its width
-			    and the pair reads as the history it is. Same handlers as Ctrl+Z / Ctrl+Shift+Z. */}
-			{/* `aria-disabled`, not `disabled`: a natively disabled button takes no pointer events,
-			    so the tooltip could never open on it. The click does nothing while it is set. */}
-			<Tooltip
-				content={tShortcuts("fixedActions.undo")}
-				shortcut={formatFirstFixedBinding("undo", isMac)}
-			>
+			<nav className={styles.topbarNav} aria-label={t("topbar.navigation")}>
+				<button type="button" className={styles.navLink} onClick={actions.openLibrary}>
+					<Library size={14} aria-hidden />
+					<span className={styles.navLabel}>{t("topbar.library")}</span>
+				</button>
 				<button
 					type="button"
-					className={styles.iconBtn}
-					aria-label={tShortcuts("fixedActions.undo")}
-					aria-disabled={!canUndo || undefined}
-					onClick={canUndo ? actions.undo : undefined}
+					className={styles.navLink}
+					aria-current={mode === "rec" ? "page" : undefined}
+					onClick={actions.newRecording}
 				>
-					<Undo2 size={16} />
+					<CircleDot size={14} aria-hidden />
+					<span className={styles.navLabel}>{t("topbar.newRecording")}</span>
 				</button>
-			</Tooltip>
-			<Tooltip
-				content={tShortcuts("fixedActions.redo")}
-				shortcut={formatFirstFixedBinding("redo", isMac)}
-			>
-				<button
-					type="button"
-					className={styles.iconBtn}
-					aria-label={tShortcuts("fixedActions.redo")}
-					aria-disabled={!canRedo || undefined}
-					onClick={canRedo ? actions.redo : undefined}
-				>
-					<Redo2 size={16} />
+				<button type="button" className={styles.navLink} onClick={actions.openProject}>
+					<FolderOpen size={14} aria-hidden />
+					<span className={styles.navLabel}>{t("topbar.open")}</span>
 				</button>
-			</Tooltip>
+			</nav>
+
+			{/* A preset is the whole look the inspector's panes edit, so its entry stays in the bar,
+			    reachable from every pane and mode. */}
 			<StylePresetsMenu />
 			<button
 				type="button"
@@ -181,7 +135,7 @@ export function EditorTopBar({
 				onClick={actions.export}
 				disabled={!canExport}
 			>
-				<Download size={15} />
+				<Download size={14} />
 				<span className={styles.exportLabel}>{t("topbar.export")}</span>
 			</button>
 		</header>
@@ -242,7 +196,7 @@ function ProjectNameField({
 			disabled={!title}
 			onClick={startEditing}
 		>
-			<span className={styles.projectNameLabel}>{title ?? t("topbar.noProject")}</span>
+			<span className={styles.projectNameLabel}>{title ?? t("topbar.editorTitle")}</span>
 		</button>
 	);
 }
@@ -390,10 +344,11 @@ function AppMenu({ actions }: { actions: TopBarActions }) {
 				aria-label="Showhow"
 				onClick={() => setOpen((v) => !v)}
 			>
-				{/* Decorative: the wordmark beside it already names the app — and, being the
-				    button's only text, is also its accessible name. */}
-				<img src={logoMark} alt="" draggable={false} />
-				<span className={styles.name}>Showhow</span>
+				{/* The Final mark (Editor-01): the cream cursor tile with the sage offset shadow, the
+				    same one the recording bar starts with. Decorative; aria-label names the button. */}
+				<span className={styles.brandMark} aria-hidden>
+					<MousePointer2 size={13} fill="currentColor" />
+				</span>
 				<ChevronDown size={13} className={styles.brandChevron} aria-hidden />
 			</button>
 			{open ? (
