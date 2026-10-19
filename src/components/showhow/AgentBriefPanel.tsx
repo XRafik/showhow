@@ -41,6 +41,8 @@ export function useAgentBrief(bundleDir: string) {
 	const [alwaysSend, setAlwaysSend] = useState(false);
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string>();
+	// A failed re-preview in the review sheet; Make stays off until a retry succeeds.
+	const [previewFailed, setPreviewFailed] = useState(false);
 	const [copy, setCopy] = useState<"idle" | "copied" | "failed">("idle");
 	const [settings, setSettings] = useState(false);
 	const active = useRef(true);
@@ -49,6 +51,12 @@ export function useAgentBrief(bundleDir: string) {
 	const previewRequest = useRef(0);
 	// True while this view awaits its own run; its result handling owns the outcome.
 	const ownRun = useRef(false);
+	// Main may not hold the run yet: before the run call is sent, or before it registers it.
+	// A cancel pressed then is kept and resent on the run's first progress event.
+	const runSent = useRef(false);
+	const cancelQueued = useRef(false);
+	// Only the newest status reply may be applied: a late "making" must not undo "ready".
+	const statusRequest = useRef(0);
 	const invoker = useRef<HTMLElement | null>(null);
 	const api = window.electronAPI;
 
@@ -57,28 +65,27 @@ export function useAgentBrief(bundleDir: string) {
 		if (value.state === "failed") setError(value.error);
 		dispatch({ type: "status", status: value });
 	}, []);
+	const loadStatus = useCallback(async () => {
+		const request = ++statusRequest.current;
+		const value = await window.electronAPI.showhowAgentBriefStatus?.(bundleDir);
+		if (value && active.current && request === statusRequest.current) applyStatus(value);
+	}, [bundleDir, applyStatus]);
 	useEffect(() => {
 		active.current = true;
-		void window.electronAPI
-			.showhowAgentBriefStatus?.(bundleDir)
-			.then((value) => {
-				if (active.current) applyStatus(value);
-			})
-			.catch(() => {
-				/* The recording stays usable; Make brief reports a retryable error. */
-			});
+		loadStatus().catch(() => {
+			/* The recording stays usable; Make brief reports a retryable error. */
+		});
 		const dispose = window.electronAPI.showhowOnAgentBriefProgress?.((event) => {
-			if (event.bundleDir === bundleDir && active.current)
-				dispatch({ type: "phase", phase: event.phase });
+			if (event.bundleDir !== bundleDir || !active.current) return;
+			dispatch({ type: "phase", phase: event.phase });
+			if (ownRun.current && cancelQueued.current) {
+				cancelQueued.current = false;
+				void window.electronAPI.showhowAgentBriefCancel(bundleDir);
+			}
 		});
 		const disposeSettled = window.electronAPI.showhowOnAgentBriefSettled?.((event) => {
 			if (event.bundleDir !== bundleDir || !active.current || ownRun.current) return;
-			void window.electronAPI
-				.showhowAgentBriefStatus(bundleDir)
-				.then((value) => {
-					if (active.current) applyStatus(value);
-				})
-				.catch(() => undefined);
+			loadStatus().catch(() => undefined);
 		});
 		return () => {
 			active.current = false;
@@ -86,12 +93,8 @@ export function useAgentBrief(bundleDir: string) {
 			dispose?.();
 			disposeSettled?.();
 		};
-	}, [bundleDir, applyStatus]);
+	}, [bundleDir, loadStatus]);
 
-	const refresh = async () => {
-		const value = await api.showhowAgentBriefStatus(bundleDir);
-		if (active.current) applyStatus(value);
-	};
 	const writeClipboard = async () => {
 		clearTimeout(copyTimer.current);
 		setCopy("idle");
@@ -112,6 +115,8 @@ export function useAgentBrief(bundleDir: string) {
 	};
 	const run = async (payload: AgentBriefPreview, accept: boolean, copyAfter: boolean) => {
 		ownRun.current = true;
+		runSent.current = false;
+		cancelQueued.current = false;
 		setBusy(true);
 		setError(undefined);
 		setPreview(undefined);
@@ -122,6 +127,12 @@ export function useAgentBrief(bundleDir: string) {
 				!(await api.showhowAgentBriefConsent(bundleDir, payload.token, alwaysSend)).success
 			)
 				throw new Error("Consent failed");
+			if (cancelQueued.current) {
+				if (active.current)
+					dispatch({ type: "result", result: { success: false, cancelled: true } });
+				return;
+			}
+			runSent.current = true;
 			const result = await api.showhowAgentBriefRun(bundleDir, payload.token);
 			// A late result for a recording the user has left is not theirs to copy.
 			if (!active.current) return;
@@ -130,7 +141,7 @@ export function useAgentBrief(bundleDir: string) {
 				if (!result.cancelled) setError(result.error ?? "provider");
 				return;
 			}
-			await refresh();
+			await loadStatus();
 			if (copyAfter && active.current) await writeClipboard();
 		} catch {
 			if (active.current) {
@@ -139,6 +150,8 @@ export function useAgentBrief(bundleDir: string) {
 			}
 		} finally {
 			ownRun.current = false;
+			runSent.current = false;
+			cancelQueued.current = false;
 			if (active.current) setBusy(false);
 		}
 	};
@@ -179,14 +192,24 @@ export function useAgentBrief(bundleDir: string) {
 	const changeOptions = async (next: GuideOptions) => {
 		setOptions(next);
 		setPreview(undefined);
+		setPreviewFailed(false);
 		const request = ++previewRequest.current;
 		try {
 			const value = await api.showhowAgentBriefPreview(bundleDir, next);
-			if (active.current && request === previewRequest.current && value.success !== false)
-				setPreview(value);
+			if (!active.current || request !== previewRequest.current) return;
+			if (value.success === false) throw new Error("Preview failed");
+			setPreview(value);
 		} catch {
-			if (active.current) setError("prepare");
+			if (active.current && request === previewRequest.current) setPreviewFailed(true);
 		}
+	};
+	const cancel = async () => {
+		if (ownRun.current && !runSent.current) {
+			cancelQueued.current = true;
+			return;
+		}
+		const result = await api.showhowAgentBriefCancel(bundleDir);
+		if (!result.success && ownRun.current) cancelQueued.current = true;
 	};
 	return {
 		bundleDir,
@@ -197,6 +220,7 @@ export function useAgentBrief(bundleDir: string) {
 		alwaysSend,
 		busy,
 		error,
+		previewFailed,
 		copy,
 		settings,
 		invoker,
@@ -207,9 +231,10 @@ export function useAgentBrief(bundleDir: string) {
 		changeOptions,
 		copyForAgent: () =>
 			state.hasBrief && state.view !== "making" ? writeClipboard() : begin({ copyAfter: true }),
-		cancel: () => void api.showhowAgentBriefCancel(bundleDir),
+		cancel: () => void cancel().catch(() => undefined),
 		close: () => {
 			setPreview(undefined);
+			setPreviewFailed(false);
 			dispatch({ type: "close" });
 		},
 	};
@@ -615,6 +640,22 @@ export function AgentBriefSheets({ brief }: { brief: AgentBriefController }) {
 							}
 						/>
 					</label>
+					{brief.previewFailed && (
+						<div
+							role="alert"
+							className="flex flex-wrap items-center justify-between gap-2 border-t border-ds-line py-3 text-sm text-ds-rec-ink"
+						>
+							{t("showhowBrief.errorPrepare")}
+							<Button
+								type="button"
+								variant="secondary"
+								icon={RefreshCw}
+								onClick={() => void brief.changeOptions(brief.options)}
+							>
+								{t("showhowBrief.tryAgain")}
+							</Button>
+						</div>
+					)}
 					<div className="flex flex-wrap gap-2">
 						{preview?.frames.map((frame) => (
 							<img

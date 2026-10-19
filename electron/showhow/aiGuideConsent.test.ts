@@ -431,6 +431,86 @@ describe("agent brief IPC boundary", () => {
 		expect(await s.brief("status", s.bundle)).toMatchObject({ state: "failed", error: "save" });
 	});
 
+	it("refuses an unreviewed token whose options differ from the stored brief consent", async () => {
+		const s = await setup();
+		await reviewedBrief(s);
+		const wider = await s.brief("preview", s.bundle, { transcript: true, frames: true });
+		expect(await s.brief("run", s.bundle, wider.token)).toMatchObject({ success: false });
+		expect(s.briefModel).not.toHaveBeenCalled();
+		const same = await s.brief("preview", s.bundle, { transcript: true, frames: false });
+		expect(await s.brief("run", s.bundle, same.token)).toEqual({ success: true });
+	});
+
+	it("refuses an unreviewed token unless send without asking is stored", async () => {
+		const s = await setup();
+		const reviewed = await s.brief("preview", s.bundle, { transcript: true, frames: false });
+		await s.brief("consent", s.bundle, reviewed.token, false);
+		const next = await s.brief("preview", s.bundle, { transcript: true, frames: false });
+		expect(await s.brief("run", s.bundle, next.token)).toMatchObject({ success: false });
+		expect(s.briefModel).not.toHaveBeenCalled();
+	});
+
+	it("records a changed recording as a failure a remounted view can read", async () => {
+		const s = await setup();
+		const preview = await reviewedBrief(s);
+		await writeFile(
+			path.join(s.bundle, "steps.json"),
+			serializeStepsJson([{ ...step, label: "Edited while reviewing" }]),
+		);
+		expect(await s.brief("run", s.bundle, preview.token)).toEqual({
+			success: false,
+			error: "changed",
+		});
+		expect(await s.brief("status", s.bundle)).toMatchObject({ state: "failed", error: "changed" });
+	});
+
+	it("records a model change after review as a failure a remounted view can read", async () => {
+		const s = await setup();
+		const preview = await reviewedBrief(s);
+		s.setModel("other/model");
+		await s.brief("run", s.bundle, preview.token);
+		expect(await s.brief("status", s.bundle)).toMatchObject({ state: "failed", error: "changed" });
+	});
+
+	it("tells the renderer the run settled after success, cancel and a failed save", async () => {
+		const settled = async (s: Awaited<ReturnType<typeof setup>>) => {
+			const bundleDir = await realpath(s.bundle);
+			return s.event.sender.send.mock.calls.filter(
+				([channel, payload]) =>
+					channel === "showhow:agent-brief-settled" &&
+					(payload as { bundleDir: string }).bundleDir === bundleDir,
+			).length;
+		};
+		const ok = await setup();
+		await ok.brief("run", ok.bundle, (await reviewedBrief(ok)).token);
+		expect(await settled(ok)).toBe(1);
+
+		const cancelled = await setup();
+		const token = (await reviewedBrief(cancelled)).token;
+		cancelled.briefModel.mockImplementationOnce(
+			(_messages, signal) =>
+				new Promise((_resolve, reject) =>
+					signal?.addEventListener("abort", () => reject(new Error("aborted"))),
+				),
+		);
+		const running = cancelled.brief("run", cancelled.bundle, token);
+		await vi.waitFor(() => expect(cancelled.briefModel).toHaveBeenCalled());
+		expect(await settled(cancelled)).toBe(0);
+		await cancelled.brief("cancel", cancelled.bundle);
+		expect(await running).toEqual({ success: false, cancelled: true });
+		expect(await settled(cancelled)).toBe(1);
+
+		const save = await setup();
+		const saveToken = (await reviewedBrief(save)).token;
+		await chmod(save.bundle, 0o555);
+		try {
+			expect(await save.brief("run", save.bundle, saveToken)).toMatchObject({ error: "save" });
+		} finally {
+			await chmod(save.bundle, 0o755);
+		}
+		expect(await settled(save)).toBe(1);
+	});
+
 	it("marks a failed replacement as failed and keeps the previous brief", async () => {
 		const s = await setup();
 		await s.brief("run", s.bundle, (await reviewedBrief(s)).token);

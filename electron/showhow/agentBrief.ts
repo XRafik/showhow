@@ -216,12 +216,20 @@ export function renderBriefMarkdown(brief: AgentBrief): string {
 		}`,
 	);
 	sections.push(
-		`---\n\nMade with OpenRouter · ${brief.model} · ${new Date(brief.madeAt).toISOString()}. Source revision ${brief.sourceRevision.slice(0, 12)}. Times refer to the recording in this folder.`,
+		`---\n\nMade with OpenRouter · ${briefStamp(brief)}. Times refer to the recording in this folder.`,
 	);
 	return `${sections.join("\n\n")}\n`;
 }
 
-/** A complete, valid pair, or undefined: older bundles have no brief files. */
+/** Ties agent-brief.md to the agent-brief.json it was rendered from. */
+function briefStamp(brief: AgentBrief): string {
+	return `${brief.model} · ${new Date(brief.madeAt).toISOString()}. Source revision ${brief.sourceRevision.slice(0, 12)}`;
+}
+
+/**
+ * A complete, valid pair, or undefined: older bundles have no brief files. A crash between the
+ * two promotions can leave a new Markdown file beside the previous JSON; its stamp tells them apart.
+ */
 export async function readAgentBrief(bundleDir: string): Promise<AgentBrief | undefined> {
 	try {
 		const [json, md] = await Promise.all([
@@ -229,7 +237,7 @@ export async function readAgentBrief(bundleDir: string): Promise<AgentBrief | un
 			fs.readFile(path.join(bundleDir, AGENT_BRIEF_MD), "utf8"),
 		]);
 		const brief: unknown = JSON.parse(json);
-		return md.trim() && isAgentBrief(brief) ? brief : undefined;
+		return isAgentBrief(brief) && md.includes(briefStamp(brief)) ? brief : undefined;
 	} catch (error) {
 		if (error instanceof SyntaxError || (error as NodeJS.ErrnoException).code === "ENOENT")
 			return undefined;

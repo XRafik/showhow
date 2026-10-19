@@ -265,6 +265,24 @@ describe("readAgentBrief", () => {
 		await writeFile(path.join(other, AGENT_BRIEF_MD), "");
 		expect(await readAgentBrief(other)).toBeUndefined();
 	});
+	it("rejects a new Markdown file left beside an older JSON file", async () => {
+		const dir = await bundle();
+		await runAgentBrief(dir, {
+			model: async () => JSON.stringify(response),
+			modelSlug: "m",
+			now: () => 1_000,
+		});
+		const oldJson = await readFile(path.join(dir, AGENT_BRIEF_JSON), "utf8");
+		await runAgentBrief(dir, {
+			model: async () => JSON.stringify({ ...response, title: "Replacement" }),
+			modelSlug: "m",
+			now: () => 2_000,
+		});
+		expect(await readAgentBrief(dir)).toMatchObject({ title: "Replacement" });
+		// A crash between the two renames: the new Markdown beside the previous JSON.
+		await writeFile(path.join(dir, AGENT_BRIEF_JSON), oldJson);
+		expect(await readAgentBrief(dir)).toBeUndefined();
+	});
 });
 
 describe("agentClipboardText", () => {

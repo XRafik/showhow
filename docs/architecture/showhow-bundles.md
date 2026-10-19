@@ -201,12 +201,18 @@ claims, evidence, explicit unknowns, provider, model, `sourceRevision` (the guid
 and `madeAt`. `agent-brief.md` is rendered from it. Both are staged and promoted together, Markdown
 first; a promotion failure restores the previous pair. Provider errors, invalid output and cancel
 write nothing, so a previous brief, the guide, transcript and media survive. A bundle without a
-complete, valid pair reads as not made. Running and failed state live in the main process only.
+complete, valid pair reads as not made; the Markdown footer carries the model, `madeAt` and
+`sourceRevision` stamp, so a new `agent-brief.md` left beside an older `agent-brief.json` by a crash
+between the two renames is rejected. Running and failed state live in the main process only, and
+every failed run outcome (including "changed") is kept there so a view remounted mid-run can show it.
 
 Brief consent is separate from guide consent (`openrouterBrief` in
 `showhow-ai-guide-consent.json`): an accepted guide review never authorises a brief payload. Unlike
 the guide, the brief's "send without asking" checkbox is a gate: until it is ticked, each brief
-shows the review first. Copy for agent with no brief makes one first and writes the clipboard only
+shows the review first. Main enforces this: a payload not accepted through the consent handler
+is sent only when the stored brief consent has "send without asking" and exactly the same options.
+A Cancel pressed before main holds the run is kept by the renderer and either stops the run from
+being sent or is resent on the run's first progress event. Copy for agent with no brief makes one first and writes the clipboard only
 after the brief validates and saves. Main writes the saved Markdown plus the exact resolved bundle
 path; renderer copy feedback appears only after that write succeeds. Copy path stays independent.
 
