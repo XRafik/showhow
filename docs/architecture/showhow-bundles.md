@@ -22,6 +22,8 @@ MP4; a browser MediaRecorder fallback may write WebM. A representative bundle is
 ├── webcam.webm
 ├── transcript.txt
 ├── meta.json
+├── agent-brief.json   (optional, #142)
+├── agent-brief.md     (optional, #142)
 └── screenshots/
 ```
 
@@ -177,6 +179,63 @@ OpenRouter review is once per provider, including when the stored `alwaysSend` c
 The checkbox is retained as the approved send-preference record, not a second consent gate.
 The transcript/frame toggles determine the actual payload and their last accepted choices are
 reused on later runs and Retry. “Check what gets sent” remains available to inspect/change them.
+
+## Optional agent brief (#142)
+
+The Agent brief tab and Copy for agent turn a recording into a brief a coding agent can act on.
+`electron/showhow/agentBrief.ts` owns the brief payload, validation and files; the IPC handlers
+(`showhow:agent-brief-status|preview|consent|run|cancel|copy`) sit beside the guide handlers in
+`aiGuideConsent.ts` and share their recording-root containment and symlink checks.
+`electron/showhow/guideModel.ts` is the shared model adapter: one OpenRouter chat loader and model
+resolution for guide and brief, differing only in the structured-output schema.
+
+The brief reads the current `steps.json` (the guide, when one exists), else the deterministic or
+narration steps, plus the optional transcript and up to 20 selected frames. It reuses
+`buildGuideRequest`, so redacted labels stay `[redacted]`; frames of hidden redacted steps are never
+sent. The model must cite input `sourceIds` for every claim. Requested change, expected result and
+actual result are optional and kept only when cited. Evidence times come from the cited source
+step, never from model output. Output that fails validation is rejected, not repaired.
+
+`agent-brief.json` is versioned (`version: 1`) and holds title, observed behaviour, the optional
+claims, evidence, explicit unknowns, provider, model, `sourceRevision` (the guide source signature)
+and `madeAt`. `agent-brief.md` is rendered from it. Both are staged and promoted together, Markdown
+first; a promotion failure restores the previous pair. Provider errors, invalid output and cancel
+write nothing, so a previous brief, the guide, transcript and media survive. A bundle without a
+complete, valid pair reads as not made; the Markdown footer carries the model, `madeAt` and
+`sourceRevision` stamp, so a new `agent-brief.md` left beside an older `agent-brief.json` by a crash
+between the two renames is rejected. Running and failed state live in the main process only, and
+every failed run outcome (including "changed") is kept there so a view remounted mid-run can show it.
+
+Brief consent is separate from guide consent (`openrouterBrief` in
+`showhow-ai-guide-consent.json`): an accepted guide review never authorises a brief payload. Unlike
+the guide, the brief's "send without asking" checkbox is a gate: until it is ticked, each brief
+shows the review first. Main enforces this: a payload not accepted through the consent handler
+is sent only when the stored brief consent has "send without asking" and exactly the same options.
+A Cancel pressed before main holds the run is kept by the renderer and either stops the run from
+being sent or is resent on the run's first progress event. Copy for agent with no brief makes one first and writes the clipboard only
+after the brief validates and saves. Main writes the saved Markdown plus the exact resolved bundle
+path; renderer copy feedback appears only after that write succeeds. Copy path stays independent.
+
+## Workflow PDF export (#143)
+
+Export PDF on the Library guide tab saves the persisted guide as a PDF. It is a derived output: the
+bundle is only read. `electron/showhow/exportPdf.ts` reads `meta.json` title/source/duration, the
+ordered `steps.json` (validated with the guide's step check), `transcript.txt` and bundle-local
+screenshots; `pdfDocument.ts` turns that into escaped HTML with a `default-src 'none'` CSP and inline
+`data:` images only. Screenshots must be plain file names resolving inside the bundle's
+`screenshots/` folder. Main prints the HTML with `printToPDF` in a hidden, script-disabled window on
+its own session partition that may load only its temp file and `data:` URLs.
+
+The include switches (screenshots, narration, timestamps) are honoured exactly. Narration quotes are
+the transcript lines that lead into each step; lines after the last step stay with it. A step whose
+persisted redaction has no explicit `includeRevealedText` prints as "Sensitive text hidden" with no
+image and no narration. Revealing a step only in the current view does not change the export.
+
+Destinations stay in main. The default is the Downloads folder with a unique name ("Title.pdf",
+"Title 2.pdf"); Change opens the save panel, and a cancelled panel keeps the previous destination and
+writes nothing. Bytes reach the destination only after rendering succeeds, through a temp file and
+rename, so a failure keeps any existing file and reports an error. Show in Finder takes an opaque id
+for a file this session saved; the renderer never supplies a path.
 
 ### #117 verification boundary
 

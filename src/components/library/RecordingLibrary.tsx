@@ -1,9 +1,16 @@
-import { CircleDot, Folder, Scissors, Search, Upload } from "lucide-react";
+import { CircleDot, FileText, Folder, Scissors, Search, Upload } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import {
+	AgentBriefPanel,
+	AgentBriefSheets,
+	CopyForAgentButton,
+	useAgentBrief,
+} from "@/components/showhow/AgentBriefPanel";
 import { AiGuidePanel } from "@/components/showhow/AiGuidePanel";
 import { AiGuideSettings } from "@/components/showhow/AiGuideSettings";
 import { Button } from "@/components/showhow/Button";
 import { EmptyState } from "@/components/showhow/EmptyState";
+import { ExportPdfSheet } from "@/components/showhow/ExportPdfSheet";
 import { Field } from "@/components/showhow/Field";
 import { GuideStep, Mosaic } from "@/components/showhow/GuideStep";
 import { ImportVideoSheet } from "@/components/showhow/ImportVideoSheet";
@@ -11,6 +18,7 @@ import { LibraryRow } from "@/components/showhow/LibraryRow";
 import { Progress } from "@/components/showhow/Progress";
 import { Shell } from "@/components/showhow/Shell";
 import { Sidebar } from "@/components/showhow/Sidebar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/showhow/Tabs";
 import { Tag } from "@/components/showhow/Tag";
 import { VideoPlayer } from "@/components/showhow/VideoPlayer";
 import { useScopedT } from "@/contexts/I18nContext";
@@ -105,6 +113,10 @@ function RecordingDetail({
 	const [stepError, setStepError] = useState(false);
 	const [revealedSteps, setRevealedSteps] = useState<Set<number>>(() => new Set());
 	const [docStatus, setDocStatus] = useState<"idle" | "generating" | "failure">("idle");
+	const [tab, setTab] = useState("guide");
+	const [pdfOpen, setPdfOpen] = useState(false);
+	const pdfButton = useRef<HTMLButtonElement>(null);
+	const brief = useAgentBrief(entry.bundleDir);
 	const isMountedRef = useRef(true);
 	useEffect(() => {
 		isMountedRef.current = true;
@@ -230,130 +242,25 @@ function RecordingDetail({
 		}
 	};
 
-	return (
-		<div className="min-w-0">
-			<header className="mb-3 flex flex-wrap items-start justify-between gap-3">
-				{editingTitle ? (
-					<div className="flex w-full flex-wrap items-end gap-2">
-						<div className="min-w-0 flex-1">
-							<Field
-								label="Recording title"
-								value={titleDraft}
-								disabled={titleStatus === "saving"}
-								onChange={(event) => setTitleDraft(event.target.value)}
-								onKeyDown={(event) => {
-									if (event.key === "Enter" && titleStatus !== "saving") void saveTitle();
-									if (event.key === "Escape" && titleStatus !== "saving") cancelTitleEdit();
-								}}
-								autoFocus
-							/>
-						</div>
-						<Button
-							aria-label="Cancel title edit"
-							variant="ghost"
-							disabled={titleStatus === "saving"}
-							onClick={cancelTitleEdit}
-						>
-							Cancel
-						</Button>
-						<Button
-							aria-label="Save title"
-							disabled={titleStatus === "saving" || !titleDraft.trim()}
-							onClick={() => void saveTitle()}
-						>
-							Save
-						</Button>
-					</div>
-				) : (
-					<>
-						<h1 className="min-w-0 flex-1 break-words font-ds-display text-[32px] font-semibold leading-[1.15] tracking-[-0.64px]">
-							{entry.title}
-						</h1>
-						<div className="flex flex-wrap gap-2">
-							{entry.video && (
-								<Button
-									aria-label="Open in editor"
-									variant="secondary"
-									icon={Scissors}
-									onClick={() => void openInEditor()}
-								>
-									Edit video
-								</Button>
-							)}
-							<Button
-								aria-label="Edit title"
-								variant="secondary"
-								onClick={() => {
-									setTitleDraft(entry.title);
-									setTitleStatus("idle");
-									setEditingTitle(true);
-								}}
-							>
-								Rename
-							</Button>
-						</div>
-					</>
-				)}
-			</header>
-			{titleStatus !== "idle" && (
-				<p role="status" className="mb-3 text-sm text-ds-ink-soft">
-					{titleStatus === "saving"
-						? "Saving title…"
-						: titleStatus === "success"
-							? "Title saved"
-							: "Couldn't save title"}
-				</p>
-			)}
-			<p className="mb-5 font-ds-label text-[10px] uppercase tracking-[0.8px] text-ds-ink-soft">
-				<span>
-					{sourceLabel} {entry.source === "imported" ? "video" : "recording"}
-				</span>{" "}
-				· {entry.durationMs !== undefined && `${formatDuration(entry.durationMs)} · `}
-				{formatWhen(entry.createdAt)}
-			</p>
-			{videoSrc && (
-				<VideoPlayer
-					src={videoSrc}
-					durationMs={entry.durationMs ?? 0}
-					preload="metadata"
-					aria-label="Recording video"
-					onVideoReady={(video) => {
-						videoRef.current = video;
-					}}
-					onLoadedMetadata={applyPendingSeek}
-					className="h-[240px] min-[1100px]:h-[340px]"
-				/>
-			)}
-			{editorError && (
-				<p role="alert" className="mt-3 text-sm text-ds-rec-ink">
-					Couldn’t open this recording in the editor. The recording is still saved.
-				</p>
-			)}
-			<AiGuidePanel
-				entry={entry}
-				onEntryChange={onEntryChange}
-				onStatusChange={onGuideStatusChange}
-				actions={
-					<Button
-						title={entry.bundleDir}
-						variant="secondary"
-						icon={Folder}
-						disabled={copyStatus === "copying"}
-						onClick={() => void copyPath()}
-					>
-						{copyStatus === "copying" ? "Copying…" : "Copy path"}
-					</Button>
-				}
-			/>
-			{copyStatus !== "idle" && (
-				<p role="status" className="mt-2 text-sm text-ds-ink-soft">
-					{copyStatus === "copying"
-						? "Copying path…"
-						: copyStatus === "success"
-							? "Path copied"
-							: "Couldn't copy path"}
-				</p>
-			)}
+	const copyPathButton = (
+		<Button
+			title={entry.bundleDir}
+			variant="secondary"
+			icon={Folder}
+			disabled={copyStatus === "copying"}
+			onClick={() => void copyPath()}
+		>
+			{copyStatus === "copying" ? "Copying…" : "Copy path"}
+		</Button>
+	);
+	const tabList = (
+		<TabsList className="border-b-0">
+			<TabsTrigger value="guide">{t("showhowGuide.walkthrough")}</TabsTrigger>
+			<TabsTrigger value="brief">{t("showhowBrief.tab")}</TabsTrigger>
+		</TabsList>
+	);
+	const guideBody = (
+		<>
 			{entry.steps && entry.steps.length > 0 && <StepCaptureDegradationNotice entry={entry} />}
 			{stepError && (
 				<p role="alert" className="mb-3 text-sm text-ds-rec-ink">
@@ -496,6 +403,162 @@ function RecordingDetail({
 				<MissingDocSection entry={entry} docStatus={docStatus} onCreate={() => void createDoc()} />
 			) : (
 				<TranscriptOnlyDocSection entry={entry} />
+			)}
+		</>
+	);
+
+	return (
+		<div className="min-w-0">
+			<header className="mb-3 flex flex-wrap items-start justify-between gap-3">
+				{editingTitle ? (
+					<div className="flex w-full flex-wrap items-end gap-2">
+						<div className="min-w-0 flex-1">
+							<Field
+								label="Recording title"
+								value={titleDraft}
+								disabled={titleStatus === "saving"}
+								onChange={(event) => setTitleDraft(event.target.value)}
+								onKeyDown={(event) => {
+									if (event.key === "Enter" && titleStatus !== "saving") void saveTitle();
+									if (event.key === "Escape" && titleStatus !== "saving") cancelTitleEdit();
+								}}
+								autoFocus
+							/>
+						</div>
+						<Button
+							aria-label="Cancel title edit"
+							variant="ghost"
+							disabled={titleStatus === "saving"}
+							onClick={cancelTitleEdit}
+						>
+							Cancel
+						</Button>
+						<Button
+							aria-label="Save title"
+							disabled={titleStatus === "saving" || !titleDraft.trim()}
+							onClick={() => void saveTitle()}
+						>
+							Save
+						</Button>
+					</div>
+				) : (
+					<>
+						<h1 className="min-w-0 flex-1 break-words font-ds-display text-[32px] font-semibold leading-[1.15] tracking-[-0.64px]">
+							{entry.title}
+						</h1>
+						<div className="flex flex-wrap gap-2">
+							{entry.video && (
+								<Button
+									aria-label="Open in editor"
+									variant="secondary"
+									icon={Scissors}
+									onClick={() => void openInEditor()}
+								>
+									Edit video
+								</Button>
+							)}
+							<Button
+								aria-label="Edit title"
+								variant="secondary"
+								onClick={() => {
+									setTitleDraft(entry.title);
+									setTitleStatus("idle");
+									setEditingTitle(true);
+								}}
+							>
+								Rename
+							</Button>
+						</div>
+					</>
+				)}
+			</header>
+			{titleStatus !== "idle" && (
+				<p role="status" className="mb-3 text-sm text-ds-ink-soft">
+					{titleStatus === "saving"
+						? "Saving title…"
+						: titleStatus === "success"
+							? "Title saved"
+							: "Couldn't save title"}
+				</p>
+			)}
+			<p className="mb-5 font-ds-label text-[10px] uppercase tracking-[0.8px] text-ds-ink-soft">
+				<span>
+					{sourceLabel} {entry.source === "imported" ? "video" : "recording"}
+				</span>{" "}
+				· {entry.durationMs !== undefined && `${formatDuration(entry.durationMs)} · `}
+				{formatWhen(entry.createdAt)}
+			</p>
+			{videoSrc && (
+				<VideoPlayer
+					src={videoSrc}
+					durationMs={entry.durationMs ?? 0}
+					preload="metadata"
+					aria-label="Recording video"
+					onVideoReady={(video) => {
+						videoRef.current = video;
+					}}
+					onLoadedMetadata={applyPendingSeek}
+					className="h-[240px] min-[1100px]:h-[340px]"
+				/>
+			)}
+			{editorError && (
+				<p role="alert" className="mt-3 text-sm text-ds-rec-ink">
+					Couldn’t open this recording in the editor. The recording is still saved.
+				</p>
+			)}
+			<Tabs value={tab} onValueChange={setTab}>
+				{/* One tab row stays mounted across tabs, so arrow keys keep focus on it. */}
+				<AiGuidePanel
+					entry={entry}
+					onEntryChange={onEntryChange}
+					onStatusChange={onGuideStatusChange}
+					tabs={tabList}
+					selected={tab === "guide"}
+					actions={
+						<>
+							{tab === "guide" && entry.steps && entry.steps.length > 0 && (
+								<Button
+									ref={pdfButton}
+									type="button"
+									variant="secondary"
+									icon={FileText}
+									onClick={() => setPdfOpen(true)}
+								>
+									{t("showhowPdf.export")}
+								</Button>
+							)}
+							{copyPathButton}
+							{(tab === "guide" || (brief.state.hasBrief && brief.state.view !== "making")) && (
+								<CopyForAgentButton brief={brief} />
+							)}
+						</>
+					}
+				/>
+				<TabsContent value="guide" className="mt-0">
+					{guideBody}
+				</TabsContent>
+				<TabsContent value="brief" className="-mt-4">
+					<AgentBriefPanel brief={brief} />
+				</TabsContent>
+			</Tabs>
+			<AgentBriefSheets brief={brief} />
+			<ExportPdfSheet
+				entry={entry}
+				open={pdfOpen}
+				onOpenChange={setPdfOpen}
+				onCloseAutoFocus={(event) => {
+					event.preventDefault();
+					pdfButton.current?.focus();
+				}}
+			/>
+			{copyStatus !== "idle" && (
+				<p role="status" className="mt-2 text-sm text-ds-ink-soft">
+					{copyStatus === "copying"
+						? "Copying path…"
+						: copyStatus === "success"
+							? "Path copied"
+							: "Couldn't copy path"}
+				</p>
 			)}
 			<details className="mt-6 text-xs text-ds-ink-soft">
 				<summary className="cursor-pointer font-ds-label uppercase">Recording folder</summary>

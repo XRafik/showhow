@@ -165,6 +165,94 @@ describe("RecordingLibrary", () => {
 		expect(await screen.findByText("Path copied")).toBeInTheDocument();
 		expect(screen.getByText(desktopDocEntry.bundleDir)).toBeInTheDocument();
 	});
+	it("shows the guide and agent brief tabs with Copy for agent beside Copy path", async () => {
+		const briefStatus = vi.fn(async () => ({
+			connected: true,
+			model: "fake/model",
+			reviewed: true,
+			alwaysSend: true,
+			options: { transcript: true, frames: true },
+			state: "none" as const,
+		}));
+		const briefCopy = vi.fn();
+		Object.assign(window.electronAPI, {
+			showhowAgentBriefStatus: briefStatus,
+			showhowAgentBriefCopy: briefCopy,
+			showhowOnAgentBriefProgress: () => () => undefined,
+		});
+		mockShowhowListRecordings.mockResolvedValue([desktopDocEntry]);
+		render(<RecordingLibrary />);
+		await screen.findByRole("heading", { level: 1, name: desktopEntry.title });
+		const guideTab = screen.getByRole("tab", { name: "01 / Walkthrough guide" });
+		expect(guideTab).toHaveAttribute("aria-selected", "true");
+		const guide = screen.getByRole("region", { name: "AI guide" });
+		expect(within(guide).getByRole("button", { name: "Copy for agent" })).toBeVisible();
+		expect(screen.getByRole("list")).toBeInTheDocument();
+
+		await userEvent.click(screen.getByRole("tab", { name: "02 / Agent brief" }));
+		const brief = await screen.findByRole("region", { name: "Agent brief" });
+		expect(
+			within(brief).getByRole("heading", { name: "Make a brief for your agent" }),
+		).toBeVisible();
+		expect(screen.queryByRole("button", { name: "Copy for agent" })).not.toBeInTheDocument();
+		await userEvent.click(screen.getByRole("button", { name: "Copy path" }));
+		expect(mockShowhowCopyPath).toHaveBeenCalledWith(desktopDocEntry.bundleDir);
+		expect(briefCopy).not.toHaveBeenCalled();
+		expect(briefStatus).toHaveBeenCalledWith(desktopDocEntry.bundleDir);
+	});
+
+	it("opens Export PDF from the guide actions only when the guide has steps", async () => {
+		Object.assign(window.electronAPI, {
+			showhowPdfDestination: vi.fn(async () => ({ display: "~/Downloads" })),
+		});
+		mockShowhowListRecordings.mockResolvedValue([desktopDocEntry, browserEntry]);
+		render(<RecordingLibrary />);
+		await screen.findByRole("heading", { level: 1, name: desktopEntry.title });
+		const guide = screen.getByRole("region", { name: "AI guide" });
+		const actions = within(guide)
+			.getAllByRole("button")
+			.map((button) => button.textContent);
+		expect(actions.indexOf("Export PDF")).toBeLessThan(actions.indexOf("Copy path"));
+		await userEvent.click(within(guide).getByRole("button", { name: "Export PDF" }));
+		expect(await screen.findByRole("dialog", { name: "Export PDF" })).toBeVisible();
+		expect(await screen.findByText("~/Downloads")).toBeVisible();
+		await userEvent.keyboard("{Escape}");
+		await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+		expect(within(guide).getByRole("button", { name: "Export PDF" })).toHaveFocus();
+
+		await userEvent.click(screen.getByRole("tab", { name: "02 / Agent brief" }));
+		expect(screen.queryByRole("button", { name: "Export PDF" })).not.toBeInTheDocument();
+		await userEvent.click(screen.getByText(browserEntry.title));
+		expect(screen.queryByRole("button", { name: "Export PDF" })).not.toBeInTheDocument();
+	});
+
+	it("keeps focus on the tab row when arrowing between guide and brief", async () => {
+		Object.assign(window.electronAPI, {
+			showhowAgentBriefStatus: vi.fn(async () => ({
+				connected: true,
+				model: "fake/model",
+				reviewed: true,
+				alwaysSend: true,
+				options: { transcript: true, frames: true },
+				state: "none" as const,
+			})),
+			showhowOnAgentBriefProgress: () => () => undefined,
+		});
+		mockShowhowListRecordings.mockResolvedValue([desktopDocEntry]);
+		render(<RecordingLibrary />);
+		const guideTab = await screen.findByRole("tab", { name: "01 / Walkthrough guide" });
+		expect(screen.getAllByRole("tablist")).toHaveLength(1);
+		guideTab.focus();
+		await userEvent.keyboard("{ArrowRight}");
+		const briefTab = screen.getByRole("tab", { name: "02 / Agent brief" });
+		await waitFor(() => expect(briefTab).toHaveAttribute("aria-selected", "true"));
+		expect(document.activeElement).toBe(briefTab);
+		await userEvent.keyboard("{ArrowLeft}");
+		await waitFor(() => expect(guideTab).toHaveAttribute("aria-selected", "true"));
+		expect(document.activeElement).toBe(
+			screen.getByRole("tab", { name: "01 / Walkthrough guide" }),
+		);
+	});
 	it.each([
 		false,
 		"reject",
