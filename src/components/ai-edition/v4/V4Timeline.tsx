@@ -890,6 +890,8 @@ export function V4Timeline({
 			if (!showLanes) return;
 			const target = e.target as HTMLElement;
 			if (target.closest("[data-clip-id]") || target.closest(`.${styles.lanePill}`)) return;
+			// The lane names mask the gutter; a press there would seek to time the window hides.
+			if (target.closest("[data-lane-label]")) return;
 			tl.clearSelection();
 			seekToClientX(e.clientX, true);
 			// Sonde de fluidité (diagnostic) : marque la fenêtre de drag pour que les
@@ -1358,7 +1360,13 @@ export function V4Timeline({
 		// no control to undo it and no ruler reading to explain it is a trap.
 		if (!showLanes) return;
 		const onWheelNative = (e: WheelEvent) => {
-			const r = tracks.getBoundingClientRect();
+			// The visible window is the tracks' CONTENT box: the Final label gutter is left
+			// padding, and measuring the padded box would slide the content under a still cursor.
+			const box = tracks.getBoundingClientRect();
+			const style = getComputedStyle(tracks);
+			const padLeft = Number.parseFloat(style.paddingLeft) || 0;
+			const padRight = Number.parseFloat(style.paddingRight) || 0;
+			const r = { left: box.left + padLeft, width: Math.max(1, box.width - padLeft - padRight) };
 			const viewportPct = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
 			if (e.shiftKey) {
 				e.preventDefault();
@@ -1834,7 +1842,7 @@ export function V4Timeline({
 	};
 
 	return (
-		<div className={styles.tl} ref={panelRef}>
+		<div className={styles.tl} ref={panelRef} data-lanes={showLanes || undefined}>
 			<div className={styles.tlToolbar}>
 				{showLanes ? (
 					// Its own provider rather than leaning on the app root's: the toolbar
@@ -2339,6 +2347,7 @@ export function V4Timeline({
 								if (id && onDropAsset) void onDropAsset(id).catch(() => undefined);
 							}}
 						>
+							{showLanes ? laneLabel(te("lanes.video")) : null}
 							{clips.map((c, i) => {
 								const dur = c.timelineEndSec - c.timelineStartSec;
 								// On the expanded ruler the box also carries whatever pauses fall

@@ -55,14 +55,9 @@
 		"selectSource": "Bitte wähle eine Quelle für die Aufnahme"
 	},
 	"emptyState": {
-		"title": "Kein Projekt geöffnet",
-		"description": "Erstelle ein neues Projekt oder öffne ein vorhandenes.",
 		"titleHasAsset": "Füge ein Video hinzu, um loszulegen",
 		"descriptionHasAsset": "Importiere eine Aufnahme, um mit dem Bearbeiten zu beginnen.",
-		"recordButton": "Bildschirm aufnehmen",
-		"newProjectButton": "Neues Projekt + Video importieren",
 		"importVideoButton": "Video importieren",
-		"loadProjectButton": "Projekt öffnen",
 		"supportedFormats": "Unterstützte Formate: MP4, MOV, WebM, MKV, AVI, M4V, WMV",
 		"dragDropHint": "oder zieh eine .showhow, .openscreen-Projektdatei hierher",
 		"dropOverlay": "Projektdatei ablegen zum Öffnen",
@@ -86,7 +81,6 @@
 		}
 	},
 	"topbar": {
-		"toggleChatPanel": "Chat-Panel",
 		"openProject": "Projekt öffnen",
 		"newProject": "Neues Projekt",
 		"saveProject": "Projekt speichern",
@@ -97,13 +91,11 @@
 		"toggleTheme": "Design umschalten",
 		"export": "Export",
 		"renameProject": "Projekt umbenennen",
-		"noProject": "Kein Projekt",
 		"changeLanguage": "Sprache ändern",
 		"editorMode": "Editor-Modus",
 		"modes": {
 			"media": "Medien",
-			"edit": "Schnitt",
-			"rec": "Aufnahme"
+			"edit": "Schnitt"
 		},
 		"navigation": "Editor-Navigation",
 		"library": "Bibliothek",
@@ -362,7 +354,6 @@
 	},
 	"shell": {
 		"aiEditor": "KI-Editor",
-		"resizeChatPanel": "Größe des Chat-Panels ändern",
 		"previewStage": "Vorschaubereich",
 		"resizeTimeline": "Größe der Timeline ändern"
 	},
@@ -447,7 +438,8 @@
 		"text": "Text",
 		"speed": "Tempo",
 		"camera": "Kamera",
-		"audio": "Audio"
+		"audio": "Audio",
+		"video": "Video"
 	},
 	"noProjectOpen": {
 		"eyebrow": "Showhow · Editor",

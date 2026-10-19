@@ -55,14 +55,9 @@
 		"selectSource": "Seleziona una sorgente da registrare"
 	},
 	"emptyState": {
-		"title": "Nessun progetto aperto",
-		"description": "Crea un nuovo progetto o aprine uno esistente.",
 		"titleHasAsset": "Aggiungi un video per iniziare",
 		"descriptionHasAsset": "Importa una registrazione per iniziare a modificare.",
-		"recordButton": "Registra lo schermo",
-		"newProjectButton": "Nuovo progetto + importa video",
 		"importVideoButton": "Importa video",
-		"loadProjectButton": "Apri progetto",
 		"supportedFormats": "Formati supportati: MP4, MOV, WebM, MKV, AVI, M4V, WMV",
 		"dragDropHint": "oppure trascina qui un file di progetto .showhow, .openscreen",
 		"dropOverlay": "Rilascia il file di progetto per aprirlo",
@@ -86,7 +81,6 @@
 		}
 	},
 	"topbar": {
-		"toggleChatPanel": "Pannello chat",
 		"openProject": "Apri progetto",
 		"newProject": "Nuovo progetto",
 		"saveProject": "Salva progetto",
@@ -97,13 +91,11 @@
 		"toggleTheme": "Cambia tema",
 		"export": "Esporta",
 		"renameProject": "Rinomina progetto",
-		"noProject": "Nessun progetto",
 		"changeLanguage": "Cambia lingua",
 		"editorMode": "Modalità editor",
 		"modes": {
 			"media": "Media",
-			"edit": "Modifica",
-			"rec": "Registra"
+			"edit": "Modifica"
 		},
 		"navigation": "Navigazione dell'editor",
 		"library": "Libreria",
@@ -362,7 +354,6 @@
 	},
 	"shell": {
 		"aiEditor": "Editor IA",
-		"resizeChatPanel": "Ridimensiona il pannello chat",
 		"previewStage": "Area di anteprima",
 		"resizeTimeline": "Ridimensiona la timeline"
 	},
@@ -447,7 +438,8 @@
 		"text": "Testo",
 		"speed": "Velocità",
 		"camera": "Fotocamera",
-		"audio": "Audio"
+		"audio": "Audio",
+		"video": "Video"
 	},
 	"noProjectOpen": {
 		"eyebrow": "Showhow · Editor",

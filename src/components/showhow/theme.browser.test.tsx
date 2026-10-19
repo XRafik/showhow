@@ -621,6 +621,41 @@ it("keeps HUD notice and Record buttons sage and readable on real hover in both 
 	}
 });
 
+it("keeps every Final timeline pill label readable on its fill in both themes (#146)", () => {
+	const prior = document.documentElement.getAttribute("data-sh-theme");
+	const lanes = {
+		zoom: editorStyles.laneZoom,
+		trim: editorStyles.laneTrim,
+		text: editorStyles.laneAnnotation,
+		speed: editorStyles.laneSpeed,
+		camera: editorStyles.laneCameraFullscreen,
+	};
+	const { getByText, unmount } = render(
+		<div className={editorStyles.tl}>
+			{Object.entries(lanes).map(([name, lane]) => (
+				<div key={name} className={`${editorStyles.lanePill} ${lane}`}>
+					{`${name} pill`}
+				</div>
+			))}
+		</div>,
+	);
+	try {
+		for (const theme of ["light", "dark"]) {
+			document.documentElement.setAttribute("data-sh-theme", theme);
+			for (const name of Object.keys(lanes)) {
+				const style = getComputedStyle(getByText(`${name} pill`));
+				expect
+					.soft(textContrast(style.color, style.backgroundColor), `${theme}: ${name} pill`)
+					.toBeGreaterThanOrEqual(4.5);
+			}
+		}
+	} finally {
+		unmount();
+		if (prior === null) document.documentElement.removeAttribute("data-sh-theme");
+		else document.documentElement.setAttribute("data-sh-theme", prior);
+	}
+});
+
 it("renders actual Sonner notifications with Final surface and offset shadow", async () => {
 	const prior = document.documentElement.getAttribute("data-sh-theme");
 	const { getByText, unmount } = render(<ShowhowToaster />);

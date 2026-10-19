@@ -55,14 +55,9 @@
 		"confirm": "Onayla"
 	},
 	"emptyState": {
-		"title": "Açık proje yok",
-		"description": "Yeni bir proje oluşturun veya mevcut birini açın.",
 		"titleHasAsset": "Başlamak için bir video ekleyin",
 		"descriptionHasAsset": "Düzenlemeye başlamak için bir kayıt içe aktarın.",
-		"recordButton": "Ekranını kaydet",
-		"newProjectButton": "Yeni proje + video içe aktar",
 		"importVideoButton": "Video içe aktar",
-		"loadProjectButton": "Proje aç",
 		"supportedFormats": "Desteklenen formatlar: MP4, MOV, WebM, MKV, AVI, M4V, WMV",
 		"dragDropHint": "veya bir .showhow, .openscreen proje dosyasını buraya sürükleyip bırakın",
 		"dropOverlay": "Açmak için proje dosyasını bırakın",
@@ -86,7 +81,6 @@
 		}
 	},
 	"topbar": {
-		"toggleChatPanel": "Sohbet paneli",
 		"openProject": "Proje aç",
 		"newProject": "Yeni proje",
 		"saveProject": "Projeyi kaydet",
@@ -97,13 +91,11 @@
 		"toggleTheme": "Temayı değiştir",
 		"export": "Dışa aktar",
 		"renameProject": "Projeyi yeniden adlandır",
-		"noProject": "Proje yok",
 		"changeLanguage": "Dili değiştir",
 		"editorMode": "Düzenleyici modu",
 		"modes": {
 			"media": "Medya",
-			"edit": "Düzenle",
-			"rec": "Kayıt"
+			"edit": "Düzenle"
 		},
 		"navigation": "Düzenleyici gezinmesi",
 		"library": "Kitaplık",
@@ -362,7 +354,6 @@
 	},
 	"shell": {
 		"aiEditor": "Yapay zekâ düzenleyici",
-		"resizeChatPanel": "Sohbet panelini yeniden boyutlandır",
 		"previewStage": "Önizleme alanı",
 		"resizeTimeline": "Zaman çizelgesini yeniden boyutlandır"
 	},
@@ -447,7 +438,8 @@
 		"text": "Metin",
 		"speed": "Hız",
 		"camera": "Kamera",
-		"audio": "Ses"
+		"audio": "Ses",
+		"video": "Video"
 	},
 	"noProjectOpen": {
 		"eyebrow": "Showhow · Düzenleyici",

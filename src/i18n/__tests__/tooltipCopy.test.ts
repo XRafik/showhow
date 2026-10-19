@@ -143,7 +143,7 @@ const EDITOR_TOOLTIP_KEYS: Record<string, string[]> = {
 	editor: [
 		"transport.play",
 		"transport.pause",
-		"topbar.toggleChatPanel",
+		"inspector.aiChat",
 		"inspector.editClipTip",
 		"rec.systemAudioTip",
 		"rec.editableCursor",

@@ -55,14 +55,9 @@
 		"selectSource": "يرجى تحديد مصدر للتسجيل"
 	},
 	"emptyState": {
-		"title": "لا يوجد مشروع مفتوح",
-		"description": "أنشئ مشروعًا جديدًا أو افتح مشروعًا موجودًا.",
 		"titleHasAsset": "أضف فيديو للبدء",
 		"descriptionHasAsset": "استورد تسجيلاً لبدء التحرير.",
-		"recordButton": "سجّل شاشتك",
-		"newProjectButton": "مشروع جديد + استيراد فيديو",
 		"importVideoButton": "استيراد فيديو",
-		"loadProjectButton": "فتح مشروع",
 		"supportedFormats": "الصيغ المدعومة: MP4، MOV، WebM، MKV، AVI، M4V، WMV",
 		"dragDropHint": "أو اسحب وأفلت ملف مشروع .showhow, .openscreen هنا",
 		"dropOverlay": "أفلت ملف المشروع لفتحه",
@@ -86,7 +81,6 @@
 		}
 	},
 	"topbar": {
-		"toggleChatPanel": "لوحة الدردشة",
 		"openProject": "فتح مشروع",
 		"newProject": "مشروع جديد",
 		"saveProject": "حفظ المشروع",
@@ -97,13 +91,11 @@
 		"toggleTheme": "تبديل المظهر",
 		"export": "تصدير",
 		"renameProject": "إعادة تسمية المشروع",
-		"noProject": "لا يوجد مشروع",
 		"changeLanguage": "تغيير اللغة",
 		"editorMode": "وضع المحرر",
 		"modes": {
 			"media": "الوسائط",
-			"edit": "تحرير",
-			"rec": "تسجيل"
+			"edit": "تحرير"
 		},
 		"navigation": "تنقل المحرر",
 		"library": "المكتبة",
@@ -362,7 +354,6 @@
 	},
 	"shell": {
 		"aiEditor": "محرّر الذكاء الاصطناعي",
-		"resizeChatPanel": "تغيير حجم لوحة المحادثة",
 		"previewStage": "منطقة المعاينة",
 		"resizeTimeline": "تغيير حجم المخطط الزمني"
 	},
@@ -447,7 +438,8 @@
 		"text": "نص",
 		"speed": "سرعة",
 		"camera": "الكاميرا",
-		"audio": "الصوت"
+		"audio": "الصوت",
+		"video": "الفيديو"
 	},
 	"noProjectOpen": {
 		"eyebrow": "Showhow · المحرر",

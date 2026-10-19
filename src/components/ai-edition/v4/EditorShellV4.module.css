@@ -629,6 +629,10 @@
 	flex: 1;
 	min-height: 0;
 }
+/* Under a selection pane the chat stays mounted but out of sight (FloatingInspector). */
+.inspectorChat[hidden] {
+	display: none;
+}
 .facetRail {
 	width: 52px;
 	display: flex;
@@ -2218,6 +2222,10 @@
 	--playhead-shadow: transparent;
 	background: var(--ds-surface-raised);
 }
+/* Media arranges clips with no lanes to name, so it keeps the plain edge. */
+.tl:not([data-lanes]) {
+	--tl-gutter: 20px;
+}
 .tlToolbar {
 	height: 44px;
 	border-bottom: 1px solid var(--ds-line);
@@ -2279,25 +2287,44 @@
 	color: var(--ds-ink-soft);
 }
 /* The lane's name, in the gutter left of the visible window (V4Timeline#laneLabel). */
+/* It is also the gutter's mask: exactly the gutter's width, opaque, above the pills, and down
+   through the lane's bottom gap, so pills and clips from before the visible window never show
+   under the names. A press on it is not a seek (V4Timeline#startScrub). */
 .laneLabel {
 	position: absolute;
 	top: 0;
-	bottom: 0;
+	bottom: -5px;
+	z-index: 3;
 	display: flex;
-	align-items: center;
-	width: calc(var(--tl-gutter) - 22px);
-	transform: translateX(calc(-100% - 12px));
+	align-items: flex-start;
+	box-sizing: border-box;
+	width: var(--tl-gutter);
+	padding: 6px 8px 0 16px;
+	transform: translateX(-100%);
+	background: var(--ds-surface-raised);
 	font-family: var(--ds-font-label), "JetBrains Mono", ui-monospace, monospace;
 	font-size: 10px;
+	line-height: 12px;
 	letter-spacing: 0.08em;
 	text-transform: uppercase;
 	color: var(--ds-ink-soft);
 	white-space: nowrap;
 	overflow: hidden;
-	pointer-events: none;
 }
-/* Flat Final pills with mono labels, coloured by meaning. The ink is per lane: every pair is
-   at least 4.5:1, which is why the trim pill is the deeper orange rather than --ds-rec. */
+/* The ruler and the playhead have no labels to keep, so they are simply clipped at the
+   gutter, less half of what sits centred on the window's edge: a tick label (about 64px wide
+   at the finest step) on the ruler, the head on the playhead. */
+.tlRulerRow {
+	clip-path: inset(0 0 0 calc(var(--tl-gutter) - 34px));
+}
+.tlPlayheadLayer {
+	clip-path: inset(0 0 0 calc(var(--tl-gutter) - 8px));
+}
+/* Flat Final pills with mono labels, coloured by meaning. The ink is per lane, and every pair
+   is at least 4.5:1 in BOTH themes (theme.browser.test.tsx measures them): the trim and speed
+   fills turn light in the dark theme, so their ink is --ds-surface, cream on the light theme's
+   deep fills and the dark panel on the dark theme's pale ones. The trim pill is the deeper
+   orange rather than --ds-rec, which carries cream at only 3.6:1. */
 .lanePill {
 	border: 0;
 	border-radius: 2px;
@@ -2319,7 +2346,7 @@
 }
 .laneTrim {
 	--_c: var(--ds-rec-ink);
-	--_ink: var(--ds-on-panel);
+	--_ink: var(--ds-surface);
 }
 .laneAnnotation {
 	--_c: var(--ds-ink);
@@ -2327,7 +2354,7 @@
 }
 .laneSpeed {
 	--_c: var(--ds-accent-strong);
-	--_ink: var(--ds-on-panel);
+	--_ink: var(--ds-surface);
 }
 .laneCameraFullscreen {
 	--_c: var(--ds-accent-200);

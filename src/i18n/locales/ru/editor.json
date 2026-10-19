@@ -55,14 +55,9 @@
 		"selectSource": "Пожалуйста, выберите источник для записи"
 	},
 	"emptyState": {
-		"title": "Нет открытых проектов",
-		"description": "Создайте новый проект или откройте существующий.",
 		"titleHasAsset": "Добавьте видео, чтобы начать",
 		"descriptionHasAsset": "Импортируйте запись, чтобы начать редактирование.",
-		"recordButton": "Записать экран",
-		"newProjectButton": "Новый проект + импорт видео",
 		"importVideoButton": "Импортировать видео",
-		"loadProjectButton": "Открыть проект",
 		"supportedFormats": "Поддерживаемые форматы: MP4, MOV, WebM, MKV, AVI, M4V, WMV",
 		"dragDropHint": "или перетащите файл проекта .showhow, .openscreen сюда",
 		"dropOverlay": "Перетащите файл проекта для открытия",
@@ -86,7 +81,6 @@
 		}
 	},
 	"topbar": {
-		"toggleChatPanel": "Панель чата",
 		"openProject": "Открыть проект",
 		"newProject": "Новый проект",
 		"saveProject": "Сохранить проект",
@@ -97,13 +91,11 @@
 		"toggleTheme": "Переключить тему",
 		"export": "Экспорт",
 		"renameProject": "Переименовать проект",
-		"noProject": "Нет проекта",
 		"changeLanguage": "Сменить язык",
 		"editorMode": "Режим редактора",
 		"modes": {
 			"media": "Медиа",
-			"edit": "Редактирование",
-			"rec": "Запись"
+			"edit": "Редактирование"
 		},
 		"navigation": "Навигация редактора",
 		"library": "Библиотека",
@@ -362,7 +354,6 @@
 	},
 	"shell": {
 		"aiEditor": "ИИ-редактор",
-		"resizeChatPanel": "Изменить размер панели чата",
 		"previewStage": "Область предпросмотра",
 		"resizeTimeline": "Изменить размер таймлайна"
 	},
@@ -447,7 +438,8 @@
 		"text": "Текст",
 		"speed": "Скорость",
 		"camera": "Камера",
-		"audio": "Звук"
+		"audio": "Звук",
+		"video": "Видео"
 	},
 	"noProjectOpen": {
 		"eyebrow": "Showhow · Редактор",

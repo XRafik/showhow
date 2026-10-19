@@ -55,14 +55,9 @@
 		"selectSource": "請選擇要錄製的來源"
 	},
 	"emptyState": {
-		"title": "未開啟任何專案",
-		"description": "建立新專案或開啟現有專案。",
 		"titleHasAsset": "新增影片以開始",
 		"descriptionHasAsset": "匯入錄製內容以開始編輯。",
-		"recordButton": "錄製螢幕",
-		"newProjectButton": "新專案＋匯入影片",
 		"importVideoButton": "匯入影片",
-		"loadProjectButton": "開啟專案",
 		"supportedFormats": "支援的格式：MP4、MOV、WebM、MKV、AVI、M4V、WMV",
 		"dragDropHint": "或將 .showhow, .openscreen 專案檔案拖放至此",
 		"dropOverlay": "將專案檔案拖放至此以開啟",
@@ -86,7 +81,6 @@
 		}
 	},
 	"topbar": {
-		"toggleChatPanel": "聊天面板",
 		"openProject": "開啟專案",
 		"newProject": "新專案",
 		"saveProject": "儲存專案",
@@ -97,13 +91,11 @@
 		"toggleTheme": "切換主題",
 		"export": "匯出",
 		"renameProject": "重新命名專案",
-		"noProject": "無專案",
 		"changeLanguage": "切換語言",
 		"editorMode": "編輯器模式",
 		"modes": {
 			"media": "媒體",
-			"edit": "編輯",
-			"rec": "錄製"
+			"edit": "編輯"
 		},
 		"navigation": "編輯器導覽",
 		"library": "資料庫",
@@ -362,7 +354,6 @@
 	},
 	"shell": {
 		"aiEditor": "AI 編輯器",
-		"resizeChatPanel": "調整聊天面板大小",
 		"previewStage": "預覽區域",
 		"resizeTimeline": "調整時間軸大小"
 	},
@@ -447,7 +438,8 @@
 		"text": "文字",
 		"speed": "速度",
 		"camera": "相機",
-		"audio": "音訊"
+		"audio": "音訊",
+		"video": "影片"
 	},
 	"noProjectOpen": {
 		"eyebrow": "Showhow · 編輯器",

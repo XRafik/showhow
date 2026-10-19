@@ -642,6 +642,23 @@ describe("Final docked inspector and its AI seam (Editor-01)", () => {
 		);
 	});
 
+	it("keeps the chat mounted, hidden, while a selection pane is on top, so a run in flight survives", () => {
+		const tl = {
+			selection: null,
+			clearSelection: vi.fn(),
+			selectedAudioTrackId: "track_1",
+			selectAudioTrack: vi.fn(),
+		} as unknown as React.ComponentProps<typeof FloatingInspector>["tl"];
+		render(<FloatingInspector {...props({ chatOpen: true, tl })} />);
+		expect(screen.getByTestId("audio-track-pane")).toBeInTheDocument();
+		const chat = screen.getByTestId("chat-panel");
+		expect(chat).not.toBeVisible();
+		expect(screen.getByRole("button", { name: "editor.inspector.aiChat" })).toHaveAttribute(
+			"aria-pressed",
+			"false",
+		);
+	});
+
 	it("goes back to the facet when a facet is picked while the chat is open", () => {
 		const onToggleChat = vi.fn();
 		const onFacetChange = vi.fn();

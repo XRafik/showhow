@@ -185,11 +185,17 @@ export function FloatingInspector({
 						<SelectionPane tl={tl} onClose={() => tl.clearSelection()} />
 					) : audioTrackSelected ? (
 						<AudioTrackPane tl={tl} onClose={() => tl.clearSelection()} />
-					) : showingChat ? (
-						<div className={styles.inspectorChat}>{chatPanel}</div>
-					) : (
+					) : showingChat ? null : (
 						<FacetBody facet={facet} onCollapse={onToggleOpen} transcriptProps={transcriptProps} />
 					)}
+					{/* Mounted for as long as the chat is open, and only hidden under a selection: its
+					    draft, busy flag and in-flight run are component state, and unmounting it for a
+					    glance at a pill would drop them and let a second run start over the first. */}
+					{chatOpen && chatPanel !== undefined ? (
+						<div className={styles.inspectorChat} hidden={!showingChat}>
+							{chatPanel}
+						</div>
+					) : null}
 				</div>
 			) : null}
 			<div className={styles.facetRail}>

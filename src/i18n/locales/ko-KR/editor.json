@@ -55,14 +55,9 @@
 		"selectSource": "녹화할 소스를 선택해 주세요"
 	},
 	"emptyState": {
-		"title": "열린 프로젝트 없음",
-		"description": "새 프로젝트를 만들거나 기존 프로젝트를 여세요.",
 		"titleHasAsset": "시작하려면 동영상을 추가하세요",
 		"descriptionHasAsset": "녹화 파일을 가져와서 편집을 시작하세요.",
-		"recordButton": "화면 녹화하기",
-		"newProjectButton": "새 프로젝트 + 동영상 가져오기",
 		"importVideoButton": "동영상 가져오기",
-		"loadProjectButton": "프로젝트 열기",
 		"supportedFormats": "지원 형식: MP4, MOV, WebM, MKV, AVI, M4V, WMV",
 		"dragDropHint": ".showhow, .openscreen 프로젝트 파일을 여기에 드래그 앤 드롭",
 		"dropOverlay": "프로젝트 파일을 드롭하여 열기",
@@ -86,7 +81,6 @@
 		}
 	},
 	"topbar": {
-		"toggleChatPanel": "채팅 패널",
 		"openProject": "프로젝트 열기",
 		"newProject": "새 프로젝트",
 		"saveProject": "프로젝트 저장",
@@ -97,13 +91,11 @@
 		"toggleTheme": "테마 전환",
 		"export": "내보내기",
 		"renameProject": "프로젝트 이름 변경",
-		"noProject": "프로젝트 없음",
 		"changeLanguage": "언어 변경",
 		"editorMode": "편집기 모드",
 		"modes": {
 			"media": "미디어",
-			"edit": "편집",
-			"rec": "녹화"
+			"edit": "편집"
 		},
 		"navigation": "편집기 탐색",
 		"library": "라이브러리",
@@ -362,7 +354,6 @@
 	},
 	"shell": {
 		"aiEditor": "AI 편집기",
-		"resizeChatPanel": "채팅 패널 크기 조절",
 		"previewStage": "미리보기 영역",
 		"resizeTimeline": "타임라인 크기 조절"
 	},
@@ -447,7 +438,8 @@
 		"text": "텍스트",
 		"speed": "속도",
 		"camera": "카메라",
-		"audio": "오디오"
+		"audio": "오디오",
+		"video": "비디오"
 	},
 	"noProjectOpen": {
 		"eyebrow": "Showhow · 편집기",

@@ -1077,10 +1077,19 @@ describe("Final timeline toolbar and lanes (Editor-01)", () => {
 			"lanes.speed",
 			"lanes.camera",
 			"lanes.audio",
+			"lanes.video",
 		]);
 		for (const label of document.querySelectorAll("[data-lane-label]")) {
 			expect(label).toHaveAttribute("aria-hidden", "true");
 		}
+	});
+
+	it("does not seek from a press on the gutter's lane names, which mask hidden time", () => {
+		const { setCurrentTime } = renderTimeline();
+		const label = document.querySelector<HTMLElement>("[data-lane-label]");
+		if (!label) throw new Error("no lane label");
+		fireEvent.pointerDown(label, { button: 0, clientX: 10 });
+		expect(setCurrentTime).not.toHaveBeenCalled();
 	});
 
 	it("keeps the lane labels at the visible window's left edge when the timeline is zoomed", () => {
@@ -1089,6 +1098,21 @@ describe("Final timeline toolbar and lanes (Editor-01)", () => {
 		const label = document.querySelector<HTMLElement>("[data-lane-label]");
 		const hint = document.querySelector<HTMLElement>("[class*=laneEmpty]");
 		expect(label?.style.left).toBe(hint?.style.left);
+	});
+
+	it("anchors wheel zoom to the visible lanes, not to the label gutter in front of them", () => {
+		renderTimeline();
+		// The Final gutter is padding on the tracks box; jsdom loads no CSS modules, so set it here.
+		const tracks = document.querySelector<HTMLElement>("[class*=tlTracks]");
+		if (!tracks) throw new Error("no tracks");
+		tracks.style.paddingLeft = "76px";
+		tracks.style.paddingRight = "20px";
+		// The cursor sits on the first visible instant, right after the gutter.
+		for (let i = 0; i < 4; i++) {
+			fireEvent.wheel(tracks, { ctrlKey: true, deltaY: -100, clientX: 76 });
+		}
+		// Zooming in under the window's left edge keeps that edge where it is.
+		expect(document.querySelector<HTMLElement>("[data-lane-label]")?.style.left).toBe("0%");
 	});
 
 	it("no longer carries the transport, which sits under the preview now", () => {

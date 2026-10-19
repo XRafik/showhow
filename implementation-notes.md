@@ -1208,7 +1208,7 @@ Carried as follow-ups, not changed: (4) cream STOP on `--ds-rec` is 3.6:1 for 11
 | Editor-06 no project | Match, plus kept entry points | `after-empty/shots/*`. Import a video, Record and the drop zone are kept under the frame's two buttons. Recent rows show title and date (the store's summary has no duration). |
 
 ### Other adaptations
-- The trim/cut pill is the deeper orange (`--ds-rec-ink`, 5.5:1 with cream text) rather than `--ds-rec` (3.6:1), so its 10px label passes AA. The playhead is `--ds-rec`.
+- The trim/cut pill is the deeper orange (`--ds-rec-ink`) rather than `--ds-rec`, whose cream label is 3.6:1. Its ink is `--ds-surface`, as is the speed pill's: cream on the light theme's deep fills, the dark panel on the dark theme's pale ones. Every pill pair is at least 4.5:1 in both themes, measured by `theme.browser.test.tsx`. (The first candidate claimed this and was wrong in dark theme: see review round 1.) The playhead is `--ds-rec`.
 - The stage transport has no fullscreen button: the editor has no fullscreen preview to open.
 - At windows ≤960px the inspector is 260px (320px above), and the timeline's scroll hints hide under a 620px toolbar, so every control stays reachable at 800×600 (checked natively: no clipped button in the top bar or any toolbar, with the fullest timeline toolbar).
 
@@ -1216,3 +1216,15 @@ Carried as follow-ups, not changed: (4) cream STOP on `--ds-rec` is 3.6:1 for 11
 - Native (built app, isolated roots, only the committed synthetic `sample.webm`, no fakes in the editor path): playback from the stage transport (0 → 1.2 s), keyboard seek (Home → 0, → → 1 s), add zoom → undo → redo from the timeline toolbar (0 → 1 → 0 → 1 pills), Save, reopen from Open (zoom still there), Library link (editor window gone, Library shown).
 - **GIF verification recipe not run**: its doctor accepts only Codex 0.160.0/0.162.1 and this machine has 0.163.0; the recipe forbids changing tools to pass. The export pipeline is unchanged; the Export button keeps its accessible name. Owed: two isolated recipe runs once the pinned Codex is available.
 - Page screenshots show the DOM; the native compositor's video texture is outside them (the wallpaper visible is the canvas background).
+
+### Review round 1 (FAIL: dark-theme pill contrast) → fixes
+| Finding | Fix |
+|---|---|
+| 1 Trim and speed pill labels 2.4:1 and 1.7:1 in dark theme | Their ink is `--ds-surface`; a browser test measures every pill in both themes (RED on the old CSS). Note corrected. |
+| 2 A selection unmounted the chat, dropping its draft and in-flight run | The chat stays mounted and is hidden under a selection pane (test added, RED on the old code). |
+| 3 Wheel zoom measured the padded tracks box, so content slid under the cursor | Anchored to the tracks' content box (test added, RED on the old code). |
+| 4 The label gutter showed pills, clips, ticks and the playhead from before the window | Lane labels are opaque masks spanning the gutter (a VIDEO label masks the clip row); a press on them does not seek (test, RED without the guard); the ruler and playhead layers are clipped at the gutter. Media keeps the plain 20px edge. |
+| 5 Seek drag unthrottled, no capture or cancel cleanup | rAF-throttled like the ruler scrub, pointer captured, ended on pointerup/pointercancel/unmount (test, RED on the old code). |
+| 7 Strings left without a reader | Removed from all 15 locales: `topbar.modes.rec`, `topbar.toggleChatPanel`, `topbar.noProject`, `shell.resizeChatPanel` and five `emptyState` strings. |
+
+Not changed: (6) during a ruler drag the stage timecode follows the store, one frame behind the playhead; the #125 play/callback path (`togglePlay`, `NativePlaybackSync`) is unchanged. (8) The Library link reuses the "close" unsaved prompt ("Save changes before closing?"), which is accurate since the editor window closes. In Record mode the MEDIA/EDIT tablist has no selected tab; New recording carries `aria-current="page"`.

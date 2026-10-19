@@ -1,5 +1,5 @@
 import { Pause, Play } from "lucide-react";
-import { type KeyboardEvent, memo, type PointerEvent } from "react";
+import { type KeyboardEvent, memo, type PointerEvent, useEffect, useRef } from "react";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useScopedT } from "@/contexts/I18nContext";
 import { useShortcuts } from "@/contexts/ShortcutsContext";
@@ -67,8 +67,14 @@ export const TransportBar = memo(function TransportBar({
 		onSeek(clamp(next));
 	};
 
+	// A drag seeks at most once a frame, like the ruler's scrub: every seek re-renders the shell
+	// and goes to the native compositor, and pointermove fires far more often than that.
+	const endDragRef = useRef<(() => void) | null>(null);
+	useEffect(() => () => endDragRef.current?.(), []);
+
 	const onSeekPointerDown = (event: PointerEvent<HTMLDivElement>) => {
-		if (!onSeek || virtualDurationSec <= 0) return;
+		if (!onSeek || virtualDurationSec <= 0 || event.button !== 0) return;
+		endDragRef.current?.();
 		const bar = event.currentTarget;
 		const seekAt = (clientX: number) => {
 			const rect = bar.getBoundingClientRect();
@@ -76,13 +82,28 @@ export const TransportBar = memo(function TransportBar({
 			onSeek(clamp(((clientX - rect.left) / rect.width) * virtualDurationSec));
 		};
 		seekAt(event.clientX);
-		const move = (ev: globalThis.PointerEvent) => seekAt(ev.clientX);
-		const up = () => {
-			window.removeEventListener("pointermove", move);
-			window.removeEventListener("pointerup", up);
+		bar.setPointerCapture?.(event.pointerId);
+		let frame = 0;
+		let pendingX: number | null = null;
+		const move = (ev: globalThis.PointerEvent) => {
+			pendingX = ev.clientX;
+			if (frame) return;
+			frame = requestAnimationFrame(() => {
+				frame = 0;
+				if (pendingX !== null) seekAt(pendingX);
+			});
 		};
+		const end = () => {
+			cancelAnimationFrame(frame);
+			window.removeEventListener("pointermove", move);
+			window.removeEventListener("pointerup", end);
+			window.removeEventListener("pointercancel", end);
+			endDragRef.current = null;
+		};
+		endDragRef.current = end;
 		window.addEventListener("pointermove", move);
-		window.addEventListener("pointerup", up);
+		window.addEventListener("pointerup", end);
+		window.addEventListener("pointercancel", end);
 	};
 
 	const progressPct = virtualDurationSec > 0 ? (currentTimeSec / virtualDurationSec) * 100 : 0;

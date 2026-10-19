@@ -205,6 +205,28 @@ describe("TransportBar seek bar under the preview (Editor-01)", () => {
 		expect(onSeek).toHaveBeenCalledWith(15);
 	});
 
+	it("seeks at most once a frame while dragged, and stops listening once the drag is cancelled", () => {
+		const frames: FrameRequestCallback[] = [];
+		vi.stubGlobal("requestAnimationFrame", (cb: FrameRequestCallback) => frames.push(cb));
+		vi.stubGlobal("cancelAnimationFrame", vi.fn());
+		const { slider, onSeek } = renderSeekable();
+		slider.getBoundingClientRect = () =>
+			({ left: 0, width: 300, top: 0, height: 4, right: 300, bottom: 4 }) as DOMRect;
+		fireEvent.pointerDown(slider, { clientX: 0, pointerId: 1, button: 0 });
+		for (const x of [30, 60, 90]) {
+			window.dispatchEvent(new MouseEvent("pointermove", { clientX: x }));
+		}
+		// The press seeks at once; the three moves wait for one frame and seek to the last.
+		expect(onSeek.mock.calls.map(([sec]) => sec)).toEqual([0]);
+		expect(frames).toHaveLength(1);
+		frames[0](0);
+		expect(onSeek.mock.calls.map(([sec]) => sec)).toEqual([0, 9]);
+
+		window.dispatchEvent(new MouseEvent("pointercancel"));
+		window.dispatchEvent(new MouseEvent("pointermove", { clientX: 150 }));
+		expect(frames).toHaveLength(1);
+	});
+
 	it("shows the total length beside the bar", () => {
 		renderSeekable();
 		expect(screen.getByTestId("transport-total")).toHaveTextContent("0:30");

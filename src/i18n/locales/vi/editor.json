@@ -55,14 +55,9 @@
 		"selectSource": "Vui lòng chọn một nguồn để ghi"
 	},
 	"emptyState": {
-		"title": "Không có dự án nào được mở",
-		"description": "Tạo dự án mới hoặc mở một dự án hiện có.",
 		"titleHasAsset": "Thêm video để bắt đầu",
 		"descriptionHasAsset": "Nhập một bản ghi để bắt đầu chỉnh sửa.",
-		"recordButton": "Ghi màn hình",
-		"newProjectButton": "Dự án mới + nhập video",
 		"importVideoButton": "Nhập video",
-		"loadProjectButton": "Mở dự án",
 		"supportedFormats": "Định dạng được hỗ trợ: MP4, MOV, WebM, MKV, AVI, M4V, WMV",
 		"dragDropHint": "hoặc kéo và thả tệp dự án .showhow, .openscreen vào đây",
 		"dropOverlay": "Thả tệp dự án để mở",
@@ -86,7 +81,6 @@
 		}
 	},
 	"topbar": {
-		"toggleChatPanel": "Bảng trò chuyện",
 		"openProject": "Mở dự án",
 		"newProject": "Dự án mới",
 		"saveProject": "Lưu dự án",
@@ -97,13 +91,11 @@
 		"toggleTheme": "Đổi giao diện",
 		"export": "Xuất",
 		"renameProject": "Đổi tên dự án",
-		"noProject": "Không có dự án",
 		"changeLanguage": "Đổi ngôn ngữ",
 		"editorMode": "Chế độ trình chỉnh sửa",
 		"modes": {
 			"media": "Media",
-			"edit": "Chỉnh sửa",
-			"rec": "Ghi hình"
+			"edit": "Chỉnh sửa"
 		},
 		"navigation": "Điều hướng trình chỉnh sửa",
 		"library": "Thư viện",
@@ -362,7 +354,6 @@
 	},
 	"shell": {
 		"aiEditor": "Trình biên tập AI",
-		"resizeChatPanel": "Đổi kích thước bảng trò chuyện",
 		"previewStage": "Khu vực xem trước",
 		"resizeTimeline": "Đổi kích thước dòng thời gian"
 	},
@@ -447,7 +438,8 @@
 		"text": "Văn bản",
 		"speed": "Tốc độ",
 		"camera": "Camera",
-		"audio": "Âm thanh"
+		"audio": "Âm thanh",
+		"video": "Video"
 	},
 	"noProjectOpen": {
 		"eyebrow": "Showhow · Trình chỉnh sửa",

@@ -55,14 +55,9 @@
 		"selectSource": "请选择要录制的源"
 	},
 	"emptyState": {
-		"title": "未打开任何项目",
-		"description": "创建新项目或打开现有项目。",
 		"titleHasAsset": "添加视频以开始",
 		"descriptionHasAsset": "导入录制内容以开始编辑。",
-		"recordButton": "录制屏幕",
-		"newProjectButton": "新建项目并导入视频",
 		"importVideoButton": "导入视频",
-		"loadProjectButton": "打开项目",
 		"supportedFormats": "支持的格式：MP4、MOV、WebM、MKV、AVI、M4V、WMV",
 		"dragDropHint": "或将 .showhow, .openscreen 项目文件拖放到此处",
 		"dropOverlay": "将项目文件拖放至此以打开",
@@ -86,7 +81,6 @@
 		}
 	},
 	"topbar": {
-		"toggleChatPanel": "聊天面板",
 		"openProject": "打开项目",
 		"newProject": "新建项目",
 		"saveProject": "保存项目",
@@ -97,13 +91,11 @@
 		"toggleTheme": "切换主题",
 		"export": "导出",
 		"renameProject": "重命名项目",
-		"noProject": "无项目",
 		"changeLanguage": "切换语言",
 		"editorMode": "编辑器模式",
 		"modes": {
 			"media": "媒体",
-			"edit": "编辑",
-			"rec": "录制"
+			"edit": "编辑"
 		},
 		"navigation": "编辑器导航",
 		"library": "资料库",
@@ -362,7 +354,6 @@
 	},
 	"shell": {
 		"aiEditor": "AI 编辑器",
-		"resizeChatPanel": "调整聊天面板大小",
 		"previewStage": "预览区域",
 		"resizeTimeline": "调整时间轴大小"
 	},
@@ -447,7 +438,8 @@
 		"text": "文字",
 		"speed": "速度",
 		"camera": "摄像头",
-		"audio": "音频"
+		"audio": "音频",
+		"video": "视频"
 	},
 	"noProjectOpen": {
 		"eyebrow": "Showhow · 编辑器",
