@@ -1,5 +1,13 @@
 import { KeyRound } from "lucide-react";
-import { type ReactNode, useCallback, useEffect, useId, useRef, useState } from "react";
+import {
+	type KeyboardEvent,
+	type ReactNode,
+	useCallback,
+	useEffect,
+	useId,
+	useRef,
+	useState,
+} from "react";
 import { useScopedT } from "@/contexts/I18nContext";
 import {
 	BUNDLED_TRANSCRIPTION,
@@ -70,11 +78,13 @@ function Switch({
 	name,
 	checked,
 	disabled,
+	describedBy,
 	onChange,
 }: {
 	name: string;
 	checked: boolean;
 	disabled?: boolean;
+	describedBy?: string;
 	onChange?: (checked: boolean) => void;
 }) {
 	return (
@@ -83,6 +93,7 @@ function Switch({
 			role="switch"
 			aria-label={name}
 			aria-checked={checked}
+			aria-describedby={describedBy}
 			disabled={disabled}
 			onClick={() => onChange?.(!checked)}
 			className={cn(
@@ -101,14 +112,28 @@ function Switch({
 	);
 }
 
-function SettingLine({ name, note, control }: { name: string; note?: string; control: ReactNode }) {
+/** `control` receives the note's id so a switch can be described by it. */
+function SettingLine({
+	name,
+	note,
+	control,
+}: {
+	name: string;
+	note?: string;
+	control: ReactNode | ((noteId: string | undefined) => ReactNode);
+}) {
+	const noteId = useId();
 	return (
 		<div className="flex flex-wrap items-center justify-between gap-3 border-b border-ds-line py-4">
 			<div className="min-w-0">
 				<p className="text-[15px]">{name}</p>
-				{note && <p className="mt-1 text-sm text-ds-ink-soft">{note}</p>}
+				{note && (
+					<p id={noteId} className="mt-1 text-sm text-ds-ink-soft">
+						{note}
+					</p>
+				)}
 			</div>
-			{control}
+			{typeof control === "function" ? control(note ? noteId : undefined) : control}
 		</div>
 	);
 }
@@ -179,13 +204,17 @@ function Connections() {
 				>
 					{editing
 						? t("showhowSettings.hideKey")
-						: connected
-							? t("showhowSettings.manageKey")
-							: t("showhowSettings.addKey")}
+						: connected === false
+							? t("showhowSettings.addKey")
+							: t("showhowSettings.manageKey")}
 				</Button>
 				{editing && (
 					<div className="mt-4 max-w-[520px]">
-						<AiConnections onSaved={() => void refresh()} onRemoved={() => void refresh()} />
+						<AiConnections
+							embedded
+							onSaved={() => void refresh()}
+							onRemoved={() => void refresh()}
+						/>
 					</div>
 				)}
 			</Row>
@@ -255,14 +284,15 @@ function Recording() {
 			<SettingLine
 				name={t("showhowSettings.hideIcons")}
 				note={t("showhowSettings.hideIconsNote")}
-				control={
+				control={(noteId) => (
 					<Switch
 						name={t("showhowSettings.hideIcons")}
+						describedBy={noteId}
 						checked={hideIcons ?? false}
 						disabled={hideIcons === undefined || status === "saving"}
 						onChange={(next) => void save(next)}
 					/>
-				}
+				)}
 			/>
 			{(status === "error" || status === "load-error") && (
 				<p role="alert" className="mt-3 text-sm text-ds-rec-ink">
@@ -322,22 +352,61 @@ function Agents() {
 			<SettingLine
 				name={t("showhowSettings.mcp")}
 				note={t("showhowSettings.mcpNote")}
-				control={<Switch name={t("showhowSettings.mcp")} checked={false} disabled />}
+				control={(noteId) => (
+					<Switch name={t("showhowSettings.mcp")} checked={false} disabled describedBy={noteId} />
+				)}
 			/>
 		</>
 	);
 }
 
+const THEMES: ThemePreference[] = ["light", "dark", "system"];
+
+function readTheme(): ThemePreference {
+	try {
+		return readStoredThemePreference(window.localStorage);
+	} catch {
+		return "system";
+	}
+}
+
 function Appearance() {
 	const t = useScopedT("common");
-	const [theme, setTheme] = useState<ThemePreference>(() => {
-		try {
-			return readStoredThemePreference(window.localStorage);
-		} catch {
-			return "system";
-		}
-	});
-	const options: ThemePreference[] = ["light", "dark", "system"];
+	const [theme, setTheme] = useState<ThemePreference>(readTheme);
+	const buttons = useRef<(HTMLButtonElement | null)[]>([]);
+	// Another window can change the theme; follow it here too.
+	useEffect(() => {
+		const onStorage = () => setTheme(readTheme());
+		window.addEventListener("storage", onStorage);
+		return () => window.removeEventListener("storage", onStorage);
+	}, []);
+	const choose = (option: ThemePreference) => {
+		setTheme(option);
+		// Stored where every Showhow window listens, so open windows follow.
+		setThemePreference(option);
+	};
+	// One tab stop; arrows, Home and End move and select, as in the source picker.
+	const onKeyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
+		const last = THEMES.length - 1;
+		const next =
+			event.key === "ArrowRight" || event.key === "ArrowDown"
+				? index === last
+					? 0
+					: index + 1
+				: event.key === "ArrowLeft" || event.key === "ArrowUp"
+					? index === 0
+						? last
+						: index - 1
+					: event.key === "Home"
+						? 0
+						: event.key === "End"
+							? last
+							: undefined;
+		if (next === undefined) return;
+		event.preventDefault();
+		choose(THEMES[next]!);
+		buttons.current[next]?.focus();
+	};
 	return (
 		<SettingLine
 			name={t("showhowSettings.theme")}
@@ -347,17 +416,18 @@ function Appearance() {
 					aria-label={t("showhowSettings.theme")}
 					className="flex rounded-[6px] border border-ds-line p-[3px]"
 				>
-					{options.map((option) => (
+					{THEMES.map((option, index) => (
 						<button
 							key={option}
+							ref={(element) => {
+								buttons.current[index] = element;
+							}}
 							type="button"
 							role="radio"
 							aria-checked={theme === option}
-							onClick={() => {
-								setTheme(option);
-								// Stored where every Showhow window listens, so open windows follow.
-								setThemePreference(option);
-							}}
+							tabIndex={theme === option ? 0 : -1}
+							onClick={() => choose(option)}
+							onKeyDown={(event) => onKeyDown(event, index)}
 							className={cn(
 								"min-w-[86px] rounded-[4px] px-4 py-2 font-ds-label text-[11px] uppercase tracking-[0.8px] transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ds-ink motion-reduce:transition-none",
 								theme === option

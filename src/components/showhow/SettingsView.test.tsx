@@ -124,6 +124,48 @@ describe("SettingsView", () => {
 		expect(screen.getByRole("switch", { name: "MCP server" })).toBeDisabled();
 	});
 
+	it("moves through the theme options with arrow keys, one tab stop for the group", async () => {
+		localStorage.setItem("showhow:theme", "light");
+		render(<SettingsView />);
+		await tab("Appearance");
+		const light = screen.getByRole("radio", { name: "Light" });
+		expect(light).toHaveAttribute("tabindex", "0");
+		expect(screen.getByRole("radio", { name: "Dark" })).toHaveAttribute("tabindex", "-1");
+		light.focus();
+		await userEvent.keyboard("{ArrowRight}");
+		expect(screen.getByRole("radio", { name: "Dark" })).toBeChecked();
+		expect(screen.getByRole("radio", { name: "Dark" })).toHaveFocus();
+		await userEvent.keyboard("{End}");
+		expect(screen.getByRole("radio", { name: "System" })).toBeChecked();
+		await userEvent.keyboard("{ArrowRight}");
+		expect(screen.getByRole("radio", { name: "Light" })).toHaveFocus();
+		expect(localStorage.getItem("showhow:theme")).toBe("light");
+	});
+
+	it("follows a theme chosen in another window", async () => {
+		render(<SettingsView />);
+		await tab("Appearance");
+		localStorage.setItem("showhow:theme", "dark");
+		window.dispatchEvent(new StorageEvent("storage", { key: "showhow:theme" }));
+		await waitFor(() => expect(screen.getByRole("radio", { name: "Dark" })).toBeChecked());
+	});
+
+	it("does not claim a missing key when the status check fails", async () => {
+		guideStatus.mockRejectedValueOnce(new Error("bridge down"));
+		render(<SettingsView />);
+		await screen.findByRole("alert");
+		expect(screen.queryByRole("button", { name: "Add API key" })).not.toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "Manage key" })).toBeEnabled();
+	});
+
+	it("reads each switch's note with it", async () => {
+		render(<SettingsView />);
+		await tab("Agents");
+		expect(screen.getByRole("switch", { name: "MCP server" })).toHaveAccessibleDescription(
+			"Let agents read your library directly. Coming later.",
+		);
+	});
+
 	it("applies and stores the chosen theme, and resolves System from the Mac", async () => {
 		render(<SettingsView />);
 		await tab("Appearance");

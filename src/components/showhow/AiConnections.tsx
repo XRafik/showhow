@@ -6,9 +6,12 @@ import { Button } from "./Button";
 export function AiConnections({
 	onSaved,
 	onRemoved,
+	embedded,
 }: {
 	onSaved?: () => void;
 	onRemoved?: () => void;
+	/** Inside a Settings row that already names OpenRouter and explains the key. */
+	embedded?: boolean;
 }) {
 	const t = useScopedT("common");
 	const [model, setModel] = useState(DEFAULT_GUIDE_MODEL);
@@ -74,8 +77,12 @@ export function AiConnections({
 	}
 	return (
 		<section aria-label={t("showhowGuide.connections")} className="grid gap-4">
-			<h3 className="font-ds-body text-lg font-medium">OpenRouter</h3>
-			<p className="text-sm text-ds-ink-soft">{t("showhowGuide.ownKey")}</p>
+			{!embedded && (
+				<>
+					<h3 className="font-ds-body text-lg font-medium">OpenRouter</h3>
+					<p className="text-sm text-ds-ink-soft">{t("showhowGuide.ownKey")}</p>
+				</>
+			)}
 			<p className="text-xs text-ds-ink-soft">
 				{t("showhowGuide.defaultModel")}: {DEFAULT_GUIDE_MODEL}
 			</p>
