@@ -130,6 +130,23 @@ contextBridge.exposeInMainWorld("electronAPI", {
 		ipcRenderer.on("showhow:agent-brief-settled", listener);
 		return () => ipcRenderer.removeListener("showhow:agent-brief-settled", listener);
 	},
+	showhowPdfDestination: (bundleDir: string) =>
+		ipcRenderer.invoke("showhow:pdf-destination", bundleDir) as Promise<
+			import("../src/lib/showhow/pdfExport").PdfDestination
+		>,
+	showhowPdfChooseDestination: (bundleDir: string) =>
+		ipcRenderer.invoke("showhow:pdf-choose-destination", bundleDir) as Promise<
+			import("../src/lib/showhow/pdfExport").PdfDestination | { status: "cancelled" | "failed" }
+		>,
+	showhowPdfExport: (
+		bundleDir: string,
+		options: import("../src/lib/showhow/pdfExport").PdfExportOptions,
+	) =>
+		ipcRenderer.invoke("showhow:pdf-export", bundleDir, options) as Promise<
+			import("../src/lib/showhow/pdfExport").PdfExportResult
+		>,
+	showhowPdfReveal: (revealId: string) =>
+		ipcRenderer.invoke("showhow:pdf-reveal", revealId) as Promise<{ success: boolean }>,
 	showhowGetSystemTheme: () => ipcRenderer.invoke("showhow:get-system-theme") as Promise<boolean>,
 	showhowOnSystemThemeChanged: (callback: (isDark: boolean) => void) => {
 		const listener = (_event: unknown, isDark: boolean) => callback(isDark);

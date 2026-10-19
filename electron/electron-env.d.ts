@@ -164,6 +164,20 @@ interface Window {
 		) => () => void;
 		/** Sent when any brief run ends, so a view that did not start it can refresh. */
 		showhowOnAgentBriefSettled: (callback: (event: { bundleDir: string }) => void) => () => void;
+		showhowPdfDestination: (
+			bundleDir: string,
+		) => Promise<import("../src/lib/showhow/pdfExport").PdfDestination>;
+		/** Main shows the save panel and keeps the chosen file; the renderer gets a display string. */
+		showhowPdfChooseDestination: (
+			bundleDir: string,
+		) => Promise<
+			import("../src/lib/showhow/pdfExport").PdfDestination | { status: "cancelled" | "failed" }
+		>;
+		showhowPdfExport: (
+			bundleDir: string,
+			options: import("../src/lib/showhow/pdfExport").PdfExportOptions,
+		) => Promise<import("../src/lib/showhow/pdfExport").PdfExportResult>;
+		showhowPdfReveal: (revealId: string) => Promise<{ success: boolean }>;
 		showhowOpenRecording: (bundleDir: string) => Promise<{ success: boolean }>;
 		showhowImportRecording: (
 			request: import("../src/lib/showhow/recordingLibrary").ImportRecordingRequest,
