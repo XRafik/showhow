@@ -1186,3 +1186,7 @@ Windows/Linux runtime, macOS13 hardware, current packaging/install/signing and r
 | 10 Sheet height literal | `--hud-sheet-max-h` is set from `HUD_SHEET_MAX_HEIGHT`. |
 
 Carried as follow-ups, not changed: (4) cream STOP on `--ds-rec` is 3.6:1 for 11px capitals, as the approved HUD-04 frame draws it, which needs an owner decision; (6) pressing Record during a countdown with the mic just unplugged opens HUD-08 rather than cancelling, because the recorder does not expose the countdown state to the HUD.
+
+### Review round 2 (FAIL: notice hover) → owner-approved fix and third review
+- Round 2 confirmed every round-1 fix. Its one blocker: the HUD notice's primary `<Button>` kept the shared variant's `hover:bg-[var(--brand-lo)]`, a token this theme does not map, once the round-1 hover rule became filter-only. A real-hover browser test (RED: settled fill `rgba(0, 0, 0, 0)`, text 1.6:1) now pins both the notice button and Record to the sage fill with ≥4.5:1 text in both themes. The notice hovers are scoped under `.hudNotice` so they outrank the shared button.
+- Also from round 2: the hover filter now eases with the other transitions, and the focus-restore ref is renamed `restoreFocusOnCloseRef`. Not changed: if a HUD mic pick fails to persist, a later unrelated snapshot can restore the old wanted mic (non-blocking).

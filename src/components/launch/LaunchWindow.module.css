@@ -285,7 +285,7 @@
 	border: 0;
 	border-radius: calc(var(--ds-radius, 8) * 0.5px);
 	cursor: pointer;
-	transition: background-color 120ms ease, transform 120ms ease;
+	transition: background-color 120ms ease, filter 120ms ease, transform 120ms ease;
 }
 
 .hudRecordButton:active {
@@ -659,7 +659,7 @@
 	color: var(--ds-on-panel-soft);
 }
 
-.hudNoticeSecondary:hover {
+.hudNotice .hudNoticeSecondary:hover {
 	background: var(--ds-on-panel-hover);
 	color: var(--ds-on-panel);
 }
@@ -670,7 +670,10 @@
 	font-weight: 600;
 }
 
-.hudNoticePrimary:hover {
+/* Scoped under the notice so it outranks the shared Button's hover fill (an inherited
+   colour token this theme does not map): the hover only brightens the sage. */
+.hudNotice .hudNoticePrimary:hover {
+	background: var(--ds-accent);
 	filter: brightness(1.08);
 }
 

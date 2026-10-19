@@ -3,11 +3,13 @@ import "@/index.css";
 import "@/lib/showhow/upstreamTheme.css";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+import { userEvent } from "vitest/browser";
 import editorStyles from "@/components/ai-edition/v4/EditorShellV4.module.css";
 import {
 	HudCursorButton,
 	HudLanguageButton,
 	HudMicButton,
+	HudNotice,
 	HudRecordButton,
 	HudSheet,
 	HudSourceButton,
@@ -546,6 +548,61 @@ it("keeps the HUD recovery sheet's text readable in both themes", () => {
 				expect
 					.soft(textContrast(primaryStyle.color, primaryStyle.backgroundColor), `${theme}: primary`)
 					.toBeGreaterThanOrEqual(4.5);
+			} finally {
+				unmount();
+			}
+		}
+	} finally {
+		if (prior === null) document.documentElement.removeAttribute("data-sh-theme");
+		else document.documentElement.setAttribute("data-sh-theme", prior);
+	}
+});
+
+it("keeps HUD notice and Record buttons sage and readable on real hover in both themes", async () => {
+	const prior = document.documentElement.getAttribute("data-sh-theme");
+	const idle = () => undefined;
+	try {
+		for (const theme of ["light", "dark"]) {
+			document.documentElement.setAttribute("data-sh-theme", theme);
+			const { getByRole, unmount } = render(
+				<TooltipProvider>
+					<div data-tray-layout="horizontal" className={hudStyles.hudBar}>
+						<HudRecordButton
+							recording={false}
+							paused={false}
+							saving={false}
+							label="Hover record"
+							text="Record"
+							onClick={idle}
+						/>
+					</div>
+					<HudNotice
+						title="Notice"
+						description="Notice body"
+						dismissLabel="Notice dismiss"
+						confirmLabel="Notice confirm"
+						onDismiss={idle}
+						onConfirm={idle}
+					/>
+				</TooltipProvider>,
+			);
+			try {
+				for (const name of ["Notice confirm", "Hover record"]) {
+					const button = getByRole("button", { name });
+					await userEvent.hover(button);
+					await expect.poll(() => button.matches(":hover")).toBe(true);
+					// The Final hover brightens the sage fill; it never swaps to another hue. Read once
+					// any colour transition has settled.
+					await new Promise((resolve) => setTimeout(resolve, 300));
+					const style = getComputedStyle(button);
+					expect
+						.soft(style.backgroundColor, `${theme}: ${name} hover fill`)
+						.toBe("rgb(130, 176, 154)");
+					expect
+						.soft(textContrast(style.color, style.backgroundColor), `${theme}: ${name} hover text`)
+						.toBeGreaterThanOrEqual(4.5);
+					await userEvent.unhover(button);
+				}
 			} finally {
 				unmount();
 			}

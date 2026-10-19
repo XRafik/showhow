@@ -1098,14 +1098,14 @@ export function LaunchWindow() {
 	// --- Recovery sheets ------------------------------------------------------
 	// The bar is inert behind an open sheet (React 18 has no `inert` prop), and focus goes back
 	// to the control that opened it (else Record) when it closes, unless a take is starting.
-	const returnFocusToRecordRef = useRef(false);
+	const restoreFocusOnCloseRef = useRef(false);
 	const [startAfterSheet, setStartAfterSheet] = useState(0);
 
 	useEffect(() => {
 		const bar = hudBarRef.current;
 		bar?.toggleAttribute("inert", sheet !== null);
-		if (sheet === null && returnFocusToRecordRef.current) {
-			returnFocusToRecordRef.current = false;
+		if (sheet === null && restoreFocusOnCloseRef.current) {
+			restoreFocusOnCloseRef.current = false;
 			const opener = sheetOpenerRef.current;
 			sheetOpenerRef.current = null;
 			const target =
@@ -1121,7 +1121,7 @@ export function LaunchWindow() {
 	}, [startAfterSheet]);
 
 	const closeSheet = useCallback(() => {
-		returnFocusToRecordRef.current = true;
+		restoreFocusOnCloseRef.current = true;
 		setSheet(null);
 	}, []);
 
