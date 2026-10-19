@@ -2,6 +2,10 @@ import { expect, test } from "@playwright/test";
 
 const REPO_URL = "https://github.com/bedarstudios/showhow";
 
+type LenisWindow = Window & {
+	__lenis?: { scrollTo: (y: number, options: { immediate: boolean }) => void };
+};
+
 test.describe("landing page", () => {
 	test("has no horizontal scroll at desktop and mobile widths", async ({ browser }) => {
 		for (const viewport of [
@@ -161,11 +165,11 @@ test.describe("landing page", () => {
 	test("the nav stays on screen and hero copy survives a scroll round trip", async ({ page }) => {
 		await page.goto("/");
 		await page.waitForSelector("html[data-ready=true]");
-		await page.evaluate(() => window.__lenis?.scrollTo(1400, { immediate: true }));
+		await page.evaluate(() => (window as LenisWindow).__lenis?.scrollTo(1400, { immediate: true }));
 		await page.waitForTimeout(500);
 		const navTop = await page.locator("nav.nav").evaluate((el) => el.getBoundingClientRect().top);
 		expect(navTop).toBe(0);
-		await page.evaluate(() => window.__lenis?.scrollTo(0, { immediate: true }));
+		await page.evaluate(() => (window as LenisWindow).__lenis?.scrollTo(0, { immediate: true }));
 		await page.waitForTimeout(500);
 		await expect(page.locator(".hero__sub")).toHaveCSS("opacity", "1");
 	});
