@@ -1,5 +1,22 @@
 # Implementation notes
 
+## 19 October 2026 — Showhow #142 agent brief and Copy for agent
+
+Built in a single Claude Code session at the owner's direction (Codex weekly limit exhausted), not
+through the Herdr ticket lane. Writer and fresh reviewer were separate sessions.
+
+Deviations and adaptations:
+- The Library-07 "Bug report" kind tag is not implemented. Classifying a recording would be an
+  inferred claim; the brief records only cited claims and explicit unknowns.
+- Library-21's "~6s left" estimate is not shown; only the real phase ("Step n of 3") is reported.
+- Library-24's toast is a fixed status element in the Library window, not a new toaster mount.
+- A "Remake brief" control sits under a ready brief. The frames have no remake control, and a brief
+  must be replaceable after its recording changes.
+- Brief "send without asking" is a real gate, unlike the guide's retained checkbox (see
+  `docs/architecture/showhow-bundles.md`).
+- `aiGuide.ts` exports its step validator, current-steps source and frame reader for reuse;
+  guide behaviour is unchanged.
+
 ## 16 October 2026 — Showhow #108 overnight retirement
 
 Removed the dedicated overnight controller/test family, policy, skill and

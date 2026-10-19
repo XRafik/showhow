@@ -135,6 +135,35 @@ interface Window {
 				phase: import("../src/lib/showhow/aiGuide").GuidePhase;
 			}) => void,
 		) => () => void;
+		showhowAgentBriefStatus: (
+			bundleDir: string,
+		) => Promise<import("../src/lib/showhow/agentBrief").AgentBriefStatus>;
+		showhowAgentBriefPreview: (
+			bundleDir: string,
+			options: import("../src/lib/showhow/aiGuide").GuideOptions,
+		) => Promise<import("../src/lib/showhow/agentBrief").AgentBriefPreview & { success?: boolean }>;
+		showhowAgentBriefConsent: (
+			bundleDir: string,
+			token: string,
+			alwaysSend: boolean,
+		) => Promise<{ success: boolean }>;
+		showhowAgentBriefRun: (
+			bundleDir: string,
+			token: string,
+		) => Promise<import("../src/lib/showhow/agentBrief").AgentBriefRunResult>;
+		showhowAgentBriefCancel: (bundleDir: string) => Promise<{ success: boolean }>;
+		/** Main writes the saved brief plus the exact bundle path; nothing is generated here. */
+		showhowAgentBriefCopy: (
+			bundleDir: string,
+		) => Promise<import("../src/lib/showhow/agentBrief").AgentBriefCopyResult>;
+		showhowOnAgentBriefProgress: (
+			callback: (event: {
+				bundleDir: string;
+				phase: import("../src/lib/showhow/agentBrief").BriefPhase;
+			}) => void,
+		) => () => void;
+		/** Sent when any brief run ends, so a view that did not start it can refresh. */
+		showhowOnAgentBriefSettled: (callback: (event: { bundleDir: string }) => void) => () => void;
 		showhowOpenRecording: (bundleDir: string) => Promise<{ success: boolean }>;
 		showhowImportRecording: (
 			request: import("../src/lib/showhow/recordingLibrary").ImportRecordingRequest,

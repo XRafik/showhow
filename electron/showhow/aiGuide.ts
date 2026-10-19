@@ -189,9 +189,9 @@ export async function readGuideSources(bundleDir: string) {
 	const signature = createHash("sha256")
 		.update(JSON.stringify([metaRaw, currentRaw, baselineRaw, transcript]))
 		.digest("hex");
-	return { meta, baselineRaw, inputSteps, segments, signature };
+	return { meta, baselineRaw, currentRaw, inputSteps, segments, signature };
 }
-function isSourceStep(value: unknown): value is Step {
+export function isSourceStep(value: unknown): value is Step {
 	if (!isRecord(value) || !isRecord(value.coords)) return false;
 	return (
 		typeof value.label === "string" &&
@@ -352,39 +352,18 @@ export async function prepareGuide(
 			]);
 		}
 	}
-	if (options.frames) {
-		const selected = evenlySelect(
-			source.inputSteps
-				.map((step, index) => ({ step, sourceId: String(index + 1) }))
-				.filter(({ step }) => step.screenshot !== ""),
-		);
-		for (const { step, sourceId } of selected) {
-			const imagePath = path.join(screenshotsDir, step.screenshot);
-			await assertLocalFile(bundleDir, imagePath);
-			const { stdout } = await execFile(
+	if (options.frames)
+		frames.push(
+			...(await readStepFrames(
+				bundleDir,
 				ffmpeg,
-				[
-					"-i",
-					imagePath,
-					"-frames:v",
-					"1",
-					"-vf",
-					JPEG_SCALE,
-					"-f",
-					"image2pipe",
-					"-vcodec",
-					"mjpeg",
-					"pipe:1",
-				],
-				{ encoding: "buffer", maxBuffer: 16 * 1024 * 1024 },
-			);
-			frames.push({
-				sourceId,
-				ts: step.ts,
-				dataUrl: `data:image/jpeg;base64,${stdout.toString("base64")}`,
-			});
-		}
-	}
+				evenlySelect(
+					source.inputSteps
+						.map((step, index) => ({ step, sourceId: String(index + 1) }))
+						.filter(({ step }) => step.screenshot !== ""),
+				),
+			)),
+		);
 	return {
 		...source,
 		request: buildGuideRequest({
@@ -394,6 +373,47 @@ export async function prepareGuide(
 			options,
 		}),
 	};
+}
+/** Encode bundle-local step screenshots as bounded JPEG data URLs for a reviewed payload. */
+export async function readStepFrames(
+	bundleDir: string,
+	ffmpeg: string,
+	selected: { step: Step; sourceId: string }[],
+	skipMissing = false,
+) {
+	const frames: { sourceId: string; ts: number; dataUrl: string }[] = [];
+	for (const { step, sourceId } of selected) {
+		const imagePath = path.join(bundleDir, "screenshots", step.screenshot);
+		try {
+			await assertLocalFile(bundleDir, imagePath);
+		} catch (error) {
+			if (skipMissing && (error as NodeJS.ErrnoException).code === "ENOENT") continue;
+			throw error;
+		}
+		const { stdout } = await execFile(
+			ffmpeg,
+			[
+				"-i",
+				imagePath,
+				"-frames:v",
+				"1",
+				"-vf",
+				JPEG_SCALE,
+				"-f",
+				"image2pipe",
+				"-vcodec",
+				"mjpeg",
+				"pipe:1",
+			],
+			{ encoding: "buffer", maxBuffer: 16 * 1024 * 1024 },
+		);
+		frames.push({
+			sourceId,
+			ts: step.ts,
+			dataUrl: `data:image/jpeg;base64,${stdout.toString("base64")}`,
+		});
+	}
+	return frames;
 }
 async function assertLocalFile(bundleDir: string, file: string, allowMissing = false) {
 	try {

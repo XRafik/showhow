@@ -22,6 +22,8 @@ MP4; a browser MediaRecorder fallback may write WebM. A representative bundle is
 ├── webcam.webm
 ├── transcript.txt
 ├── meta.json
+├── agent-brief.json   (optional, #142)
+├── agent-brief.md     (optional, #142)
 └── screenshots/
 ```
 
@@ -177,6 +179,36 @@ OpenRouter review is once per provider, including when the stored `alwaysSend` c
 The checkbox is retained as the approved send-preference record, not a second consent gate.
 The transcript/frame toggles determine the actual payload and their last accepted choices are
 reused on later runs and Retry. “Check what gets sent” remains available to inspect/change them.
+
+## Optional agent brief (#142)
+
+The Agent brief tab and Copy for agent turn a recording into a brief a coding agent can act on.
+`electron/showhow/agentBrief.ts` owns the brief payload, validation and files; the IPC handlers
+(`showhow:agent-brief-status|preview|consent|run|cancel|copy`) sit beside the guide handlers in
+`aiGuideConsent.ts` and share their recording-root containment and symlink checks.
+`electron/showhow/guideModel.ts` is the shared model adapter: one OpenRouter chat loader and model
+resolution for guide and brief, differing only in the structured-output schema.
+
+The brief reads the current `steps.json` (the guide, when one exists), else the deterministic or
+narration steps, plus the optional transcript and up to 20 selected frames. It reuses
+`buildGuideRequest`, so redacted labels stay `[redacted]`; frames of hidden redacted steps are never
+sent. The model must cite input `sourceIds` for every claim. Requested change, expected result and
+actual result are optional and kept only when cited. Evidence times come from the cited source
+step, never from model output. Output that fails validation is rejected, not repaired.
+
+`agent-brief.json` is versioned (`version: 1`) and holds title, observed behaviour, the optional
+claims, evidence, explicit unknowns, provider, model, `sourceRevision` (the guide source signature)
+and `madeAt`. `agent-brief.md` is rendered from it. Both are staged and promoted together, Markdown
+first; a promotion failure restores the previous pair. Provider errors, invalid output and cancel
+write nothing, so a previous brief, the guide, transcript and media survive. A bundle without a
+complete, valid pair reads as not made. Running and failed state live in the main process only.
+
+Brief consent is separate from guide consent (`openrouterBrief` in
+`showhow-ai-guide-consent.json`): an accepted guide review never authorises a brief payload. Unlike
+the guide, the brief's "send without asking" checkbox is a gate: until it is ticked, each brief
+shows the review first. Copy for agent with no brief makes one first and writes the clipboard only
+after the brief validates and saves. Main writes the saved Markdown plus the exact resolved bundle
+path; renderer copy feedback appears only after that write succeeds. Copy path stays independent.
 
 ### #117 verification boundary
 
