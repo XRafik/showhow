@@ -2363,7 +2363,7 @@ export function registerIpcHandlers(
 		return access;
 	});
 
-	ipcMain.handle("open-source-selector", async () => {
+	ipcMain.handle("open-source-selector", async (event) => {
 		// Nothing to open on Linux WHEN THE NATIVE HELPER IS THERE. The selector's
 		// own `desktopCapturer.getSources()` raises a portal dialog — a SECOND
 		// one, for a session that is thrown away — and whatever it returns cannot
@@ -2389,10 +2389,14 @@ export function registerIpcHandlers(
 		// macOS means granted, and granted before launch: the app's own read is cached for
 		// the life of the process. Anything short of that belongs in the permissions
 		// window, which says what is missing and offers the relaunch when that is all.
+		// The HUD shows its own sheet for this answer (HUD-07, #145), so a request from
+		// it does not also open the window; every other caller still gets the window.
 		if (process.platform === "darwin") {
 			const permissions = await getMacPermissions().read();
 			if (permissions.screen !== "granted" || permissions.screenRequiresRelaunch) {
-				showPermissionsWindow();
+				if (!event.sender.getURL().includes("windowType=hud-overlay")) {
+					showPermissionsWindow();
+				}
 				return { opened: false, reason: "screen-access-required" };
 			}
 		}

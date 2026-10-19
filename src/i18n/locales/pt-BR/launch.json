@@ -59,19 +59,27 @@
 	},
 	"sourceSelector": {
 		"loading": "Carregando fontes...",
-		"screens": "Telas ({{count}})",
-		"windows": "Janelas ({{count}})",
+		"screens": "Telas · {{count}}",
+		"windows": "Janelas · {{count}}",
 		"emptyTitle": "Nenhuma tela ou janela encontrada",
 		"emptyDescription": "Se você acabou de conceder a permissão de gravação de tela, recarregue este seletor. No macOS, pode ser necessário reabrir o Showhow.",
 		"loadFailedDescription": "O Showhow não conseguiu carregar as fontes de captura. Recarregue este seletor e tente novamente.",
-		"defaultSourceName": "Tela"
+		"defaultSourceName": "Tela",
+		"eyebrow": "Fonte",
+		"title": "O que o Showhow deve gravar?",
+		"close": "Fechar",
+		"selected": "Selecionado",
+		"useScreen": "Usar esta tela",
+		"useWindow": "Usar esta janela"
 	},
 	"recording": {
 		"selectSource": "Por favor, selecione uma fonte para gravar",
 		"systemPicker": "O sistema perguntará o que compartilhar",
 		"start": "Iniciar gravação",
 		"stop": "Parar e salvar a gravação",
-		"saving": "Salvando..."
+		"saving": "Salvando...",
+		"record": "Gravar",
+		"stopShort": "Parar"
 	},
 	"language": "Idioma",
 	"languageWithName": "Idioma: {{language}}",
@@ -153,5 +161,26 @@
 			"screenRequired": "A gravação de tela é necessária para gravar.",
 			"ready": "Tudo pronto."
 		}
+	},
+	"countdown": {
+		"caption": "A gravação começa · pressione Gravar para cancelar"
+	},
+	"sheets": {
+		"eyebrow": "Showhow",
+		"close": "Fechar",
+		"cancel": "Cancelar"
+	},
+	"permissionSheet": {
+		"title": "Permitir gravação de tela",
+		"description": "O Showhow precisa de permissão de gravação de tela para capturar sua tela.",
+		"hint": "Permita o Showhow nos ajustes de gravação de tela do macOS e volte para escolher uma fonte.",
+		"relaunchHint": "A gravação de tela está permitida. Reinicie o Showhow para que o macOS a aplique."
+	},
+	"microphoneSheet": {
+		"title": "Nenhum microfone encontrado",
+		"description": "O Showhow não encontra o microfone selecionado.",
+		"hint": "Reconecte o microfone e tente de novo. Você pode escolher outra entrada no gravador.",
+		"tryAgain": "Tentar de novo",
+		"stillMissing": "Ainda não encontrado. Verifique a conexão ou escolha outra entrada."
 	}
 }

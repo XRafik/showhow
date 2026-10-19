@@ -1,3 +1,4 @@
+import { MicOff, Monitor } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useI18n, useScopedT } from "@/contexts/I18nContext";
 import { getAvailableLocales, getLocaleName } from "@/i18n/loader";
@@ -25,12 +26,15 @@ import {
 	HudLanguageButton,
 	HudLanguageMenu,
 	HudLayoutProvider,
+	HudLogoMark,
 	HudMicButton,
 	HudNotesButton,
 	HudNotice,
 	HudRecordButton,
 	HudRecordingControls,
+	HudRecordingTimer,
 	HudSettingsButton,
+	HudSheet,
 	HudSourceButton,
 	HudStudioButton,
 	HudSystemAudioButton,
@@ -38,6 +42,7 @@ import {
 	HudWindowControls,
 } from "./HudControls";
 import { HudDeviceSettings, type HudDeviceSettingsLabels } from "./HudDeviceSettings";
+import { getIcon } from "./HudIcons";
 import {
 	computeHudBarMaxHeight,
 	computeHudModalMaxHeight,
@@ -71,6 +76,30 @@ function getAvailableScreenHeight(): number {
 function hudBarMaxHeightCss(): string {
 	return `${computeHudBarMaxHeight(getAvailableScreenHeight())}px`;
 }
+
+/** The recovery sheet over the bar, if any (HUD-07 screen permission, HUD-08 microphone). */
+type HudSheetState =
+	| { kind: "screen"; relaunch: boolean }
+	| { kind: "microphone"; status: string | null };
+
+type WantedMicrophone = { id?: string; name?: string };
+
+/**
+ * The input the user chose, found among the live ones the same way the device hook resolves
+ * a saved preference: by exact id, then by a label only one device has.
+ */
+function findWantedMicrophone(
+	devices: readonly MicrophoneDevice[],
+	wanted: WantedMicrophone,
+): MicrophoneDevice | undefined {
+	const byId = wanted.id ? devices.find((device) => device.deviceId === wanted.id) : undefined;
+	if (byId) return byId;
+	const byLabel = wanted.name ? devices.filter((device) => device.label === wanted.name) : [];
+	return byLabel.length === 1 ? byLabel[0] : undefined;
+}
+
+/** How long a Stop press holds off a second one while the saving state has not arrived. */
+const STOP_REPEAT_GUARD_MS = 2000;
 
 /** Launches the floating recording HUD and its recorder controls. */
 export function LaunchWindow() {
@@ -156,6 +185,8 @@ export function LaunchWindow() {
 	 */
 	const portalOwnsSource = usePortalOwnsSource();
 
+	const [sheet, setSheet] = useState<HudSheetState | null>(null);
+
 	const isVertical = trayLayout === "vertical";
 	const isPopoverOpen = isLanguageMenuOpen || isDeviceSettingsOpen;
 	const controlsLocked = recording || saving;
@@ -219,6 +250,17 @@ export function LaunchWindow() {
 			setMicrophoneDeviceName(undefined);
 		}
 	}, [selectedMicId, micDevices, micDevicesReady, setMicrophoneDeviceId, setMicrophoneDeviceName]);
+
+	// The microphone the user chose, as saved before the device list resolved. The effect above
+	// replaces a missing choice with the first live input, so without this the HUD could not tell
+	// that the chosen one is gone: that is what the HUD-08 sheet stops a take for. A pick made in
+	// the settings panel replaces it.
+	const wantedMicrophoneRef = useRef<WantedMicrophone | null>(null);
+	useLayoutEffect(() => {
+		if (recordingPrefsLoaded && wantedMicrophoneRef.current === null) {
+			wantedMicrophoneRef.current = { id: microphoneDeviceId, name: microphoneDeviceName };
+		}
+	}, [recordingPrefsLoaded, microphoneDeviceId, microphoneDeviceName]);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -734,8 +776,6 @@ export function LaunchWindow() {
 	}, [applySelectedSource, recording, startWhenDevicesReady]);
 
 	const openSourceSelector = useCallback(async () => {
-		// A missing macOS permission is handled on the main side: it opens the permissions
-		// window and answers `screen-access-required`, so there is nothing to retry here.
 		if (window.electronAPI) {
 			return await window.electronAPI.openSourceSelector();
 		}
@@ -743,13 +783,69 @@ export function LaunchWindow() {
 		return { opened: false, reason: "electron-api-unavailable" };
 	}, []);
 
+	// HUD-07. A missing macOS Screen Recording grant answers `screen-access-required`; for the
+	// HUD the main process leaves the full permissions window closed and this sheet says what is
+	// missing. The grant is read once more so a grant that only needs a restart offers that.
+	const showScreenPermissionSheet = useCallback(async () => {
+		let relaunch = false;
+		try {
+			const snapshot = await window.electronAPI?.permissions?.get();
+			relaunch = snapshot?.screen === "granted" && Boolean(snapshot.screenRequiresRelaunch);
+		} catch (error) {
+			console.warn("Failed to read the screen recording permission:", error);
+		}
+		closePopovers();
+		setSheet({ kind: "screen", relaunch });
+	}, [closePopovers]);
+
+	const handleSourceButtonClick = useCallback(() => {
+		void openSourceSelector()
+			.then((result) => {
+				if (!result.opened && result.reason === "screen-access-required") {
+					void showScreenPermissionSheet();
+				}
+			})
+			.catch((error) => {
+				console.warn("Failed to open the source selector:", error);
+			});
+	}, [openSourceSelector, showScreenPermissionSheet]);
+
+	// HUD-08. With the microphone on, a take whose chosen input is not connected (or with no
+	// input at all) waits for the user instead of quietly recording a different one.
+	const isMicrophoneMissing = useCallback(() => {
+		if (!microphoneOffered || !microphoneEnabled || !micDevicesReady) return false;
+		if (micDevices.length === 0) return true;
+		const wanted = wantedMicrophoneRef.current;
+		if (!wanted?.id && !wanted?.name) return false;
+		return !findWantedMicrophone(micDevices, wanted);
+	}, [micDevices, micDevicesReady, microphoneEnabled, microphoneOffered]);
+
+	// A second Stop before the saving state renders would stop the take twice. Held until the
+	// take ends, or released after a moment if saving never started, so Stop is never lost.
+	const stopRequestedRef = useRef(false);
+	const savingRef = useRef(saving);
+	savingRef.current = saving;
+	useEffect(() => {
+		if (!recording) stopRequestedRef.current = false;
+	}, [recording]);
+
 	const handleRecordButtonClick = useCallback(
 		(sourceSelectedOverride?: boolean) => {
 			if (saving) {
 				return;
 			}
 			if (recording) {
+				if (stopRequestedRef.current) return;
+				stopRequestedRef.current = true;
+				window.setTimeout(() => {
+					if (!savingRef.current) stopRequestedRef.current = false;
+				}, STOP_REPEAT_GUARD_MS);
 				toggleRecording();
+				return;
+			}
+			if (isMicrophoneMissing()) {
+				closePopovers();
+				setSheet({ kind: "microphone", status: null });
 				return;
 			}
 			// Linux never detours through the in-app picker: there is nothing for
@@ -764,6 +860,10 @@ export function LaunchWindow() {
 							return;
 						}
 						recordAfterSourceSelectionRef.current = false;
+						if (result.reason === "screen-access-required") {
+							void showScreenPermissionSheet();
+							return;
+						}
 						// The main process is the authority on who owns the choice,
 						// and it answers synchronously. `portalOwnsSource` is resolved
 						// over IPC, so for a moment after mount it still reads false —
@@ -784,11 +884,14 @@ export function LaunchWindow() {
 			void startWhenDevicesReady();
 		},
 		[
+			closePopovers,
 			hasSelectedSource,
+			isMicrophoneMissing,
 			portalOwnsSource,
 			openSourceSelector,
 			recording,
 			saving,
+			showScreenPermissionSheet,
 			startWhenDevicesReady,
 			toggleRecording,
 		],
@@ -908,6 +1011,7 @@ export function LaunchWindow() {
 	// one the next toggle should use.
 	const handleSelectMicDevice = useCallback(
 		(device: MicrophoneDevice) => {
+			wantedMicrophoneRef.current = { id: device.deviceId, name: device.label };
 			setSelectedMicId(device.deviceId);
 			setMicrophoneDeviceId(device.deviceId);
 			setMicrophoneDeviceName(device.label);
@@ -970,6 +1074,56 @@ export function LaunchWindow() {
 	const enableHudMouseEvents = useCallback(() => {
 		setHudMouseEventsEnabled(true);
 	}, [setHudMouseEventsEnabled]);
+
+	// --- Recovery sheets ------------------------------------------------------
+	// The bar is inert behind an open sheet (React 18 has no `inert` prop), and focus goes back
+	// to Record when the sheet closes, unless a take is starting from it.
+	const returnFocusToRecordRef = useRef(false);
+	const [startAfterSheet, setStartAfterSheet] = useState(0);
+
+	useEffect(() => {
+		const bar = hudBarRef.current;
+		bar?.toggleAttribute("inert", sheet !== null);
+		if (sheet === null && returnFocusToRecordRef.current) {
+			returnFocusToRecordRef.current = false;
+			bar?.querySelector<HTMLButtonElement>("[data-testid='launch-record-button']")?.focus();
+		}
+	}, [sheet]);
+
+	useEffect(() => {
+		if (startAfterSheet > 0) handleRecordButtonClickRef.current();
+	}, [startAfterSheet]);
+
+	const closeSheet = useCallback(() => {
+		returnFocusToRecordRef.current = true;
+		setSheet(null);
+	}, []);
+
+	const handleScreenSheetPrimary = useCallback(() => {
+		const permissions = window.electronAPI?.permissions;
+		const action =
+			sheet?.kind === "screen" && sheet.relaunch
+				? permissions?.relaunch()
+				: permissions?.openSettings("screen");
+		void action?.catch((error: unknown) => {
+			console.warn("Failed to open the screen recording settings:", error);
+		});
+		closeSheet();
+	}, [closeSheet, sheet]);
+
+	const retryMicrophone = useCallback(() => {
+		const wanted = wantedMicrophoneRef.current;
+		const hasWanted = Boolean(wanted?.id || wanted?.name);
+		const found = wanted && hasWanted ? findWantedMicrophone(micDevices, wanted) : micDevices[0];
+		if (!found) {
+			setSheet({ kind: "microphone", status: t("microphoneSheet.stillMissing") });
+			return;
+		}
+		// Back on the chosen input: the list may have moved to a fallback while it was gone.
+		if (hasWanted) handleSelectMicDevice(found);
+		setSheet(null);
+		setStartAfterSheet((count) => count + 1);
+	}, [handleSelectMicDevice, micDevices, t]);
 
 	// ---------------------------------------------------------------------------
 	// Dragging
@@ -1065,6 +1219,12 @@ export function LaunchWindow() {
 				: hasSelectedSource
 					? t("recording.start")
 					: t("recording.selectSource");
+	// The short word the Final bar shows; the sentence above stays the name and tooltip.
+	const recordText = saving
+		? t("recording.saving")
+		: recording
+			? t("recording.stopShort")
+			: t("recording.record");
 
 	// Stable identity, or the panel's memo boundary would break on every parent
 	// render — including the once-a-second one during a recording.
@@ -1137,13 +1297,9 @@ export function LaunchWindow() {
 							onPointerEnd={handleHudDragPointerEnd}
 						/>
 
-						<HudDivider vertical={isVertical} />
+						<HudLogoMark />
 
-						<HudTrayLayoutButton
-							vertical={isVertical}
-							label={isVertical ? t("tooltips.useHorizontalTray") : t("tooltips.useVerticalTray")}
-							onClick={toggleTrayLayout}
-						/>
+						<HudDivider vertical={isVertical} />
 
 						{/* No source button on Linux: `SelectSources` has no parameter
 					    naming a source, so nothing this picker returned could reach
@@ -1165,7 +1321,7 @@ export function LaunchWindow() {
 								}
 								remembered={!hasSelectedSource && rememberedSourceName !== null}
 								disabled={controlsLocked}
-								onClick={openSourceSelector}
+								onClick={handleSourceButtonClick}
 							/>
 						)}
 
@@ -1232,11 +1388,12 @@ export function LaunchWindow() {
 							recording={recording}
 							paused={paused}
 							saving={saving}
-							elapsedSeconds={elapsedSeconds}
 							label={recordLabel}
-							savingLabel={t("recording.saving")}
+							text={recordText}
 							onClick={handleRecordClick}
 						/>
+
+						{recording && <HudRecordingTimer elapsedSeconds={elapsedSeconds} paused={paused} />}
 
 						{!recording && (
 							<HudStudioButton
@@ -1271,10 +1428,17 @@ export function LaunchWindow() {
 
 						<HudDivider vertical={isVertical} />
 
-						{/* Right sidebar controls */}
+						{/* Right sidebar controls. The layout toggle is not in the Final frames, but it is
+						    an established control, so it stays here beside the language button. */}
 						<div
-							className={`flex items-center gap-[5px] ${isVertical ? "flex-col" : ""} ${styles.electronNoDrag}`}
+							className={`${styles.hudCluster} ${isVertical ? styles.hudClusterVertical : ""} ${styles.electronNoDrag}`}
 						>
+							<HudTrayLayoutButton
+								vertical={isVertical}
+								label={isVertical ? t("tooltips.useHorizontalTray") : t("tooltips.useVerticalTray")}
+								onClick={toggleTrayLayout}
+							/>
+
 							<HudLanguageButton
 								buttonRef={languageTriggerRef}
 								vertical={isVertical}
@@ -1300,9 +1464,48 @@ export function LaunchWindow() {
 					</div>
 				</HudLayoutProvider>
 
-				{(isPopoverOpen || hasNotices) && (
+				{(isPopoverOpen || hasNotices || sheet) && (
 					// column-reverse: first child sits closest to the bar.
 					<div className={styles.hudAbove}>
+						{sheet?.kind === "screen" && (
+							<HudSheet
+								eyebrow={t("sheets.eyebrow")}
+								title={t("permissionSheet.title")}
+								description={t("permissionSheet.description")}
+								hint={
+									sheet.relaunch ? t("permissionSheet.relaunchHint") : t("permissionSheet.hint")
+								}
+								icon={<Monitor size={24} strokeWidth={1.75} />}
+								closeLabel={t("sheets.close")}
+								cancelLabel={t("sheets.cancel")}
+								primaryLabel={
+									sheet.relaunch
+										? t("permissions.actions.restart")
+										: t("permissions.actions.openSettings")
+								}
+								primaryIcon={getIcon(sheet.relaunch ? "retry" : "external")}
+								onCancel={closeSheet}
+								onPrimary={handleScreenSheetPrimary}
+							/>
+						)}
+
+						{sheet?.kind === "microphone" && (
+							<HudSheet
+								eyebrow={t("sheets.eyebrow")}
+								title={t("microphoneSheet.title")}
+								description={t("microphoneSheet.description")}
+								hint={t("microphoneSheet.hint")}
+								status={sheet.status}
+								icon={<MicOff size={24} strokeWidth={1.75} />}
+								closeLabel={t("sheets.close")}
+								cancelLabel={t("sheets.cancel")}
+								primaryLabel={t("microphoneSheet.tryAgain")}
+								primaryIcon={getIcon("retry")}
+								onCancel={closeSheet}
+								onPrimary={retryMicrophone}
+							/>
+						)}
+
 						{isDeviceSettingsOpen && (
 							<HudDeviceSettings
 								showMicrophone={microphoneOffered}

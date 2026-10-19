@@ -1141,3 +1141,34 @@ Windows/Linux runtime, macOS13 hardware, current packaging/install/signing and r
 - All loops are placeholders (Task 3).
 - The download button links to the repository until a release exists.
 - A DialKit tweak pane (`?tweak` or Shift+T, hidden by default) adjusts the shader, hero sizing, palette and scroll smoothness live. It is lazy-loaded and persists values in the owner's browser only.
+
+## 19 October 2026 — Showhow #145 Final HUD and recording sheets
+
+### Owner decisions (asked before building)
+- HUD-07: the sheet replaces the permissions window on the HUD's Record and source paths. Bounded amendment to `electron/ipc/handlers.ts` (outside the listed files): `open-source-selector` skips `showPermissionsWindow()` only when the HUD asks. The menu, first launch and the editor's Record stage keep the window.
+- HUD-08: the microphone is checked before a take. With the mic on, a missing chosen input (or no input at all) shows the sheet instead of starting; Try again re-checks, re-selects the chosen input and starts; Cancel leaves the take unstarted. This replaces the silent fallback to the first input.
+
+### Frame to evidence
+| Frame | Status | Evidence (outside the repo, `~/dev/loop-evidence/showhow-145/native/`) |
+|-------|--------|------|
+| HUD-01 source selector | Adapted | `after-picker/shots/hud01-*.png`; real picker route in its 680x580 window with generated sources. No resolution figure on cards (not available from `getSources`); no footer hint (see below). On macOS 15.2+ the app uses Apple's picker, so this sheet appears only where the app's own picker is used. |
+| HUD-02 countdown | Adapted copy | `after-record/shots/hud02-countdown.png`; real countdown window. Caption says "press Record to cancel", not "Esc to cancel" (below). |
+| HUD-03 idle | Adapted | `after-record/shots/hud03-*.png`; extra established controls kept (gear, layout toggle, Studio). |
+| HUD-04 recording | Adapted | `after-record/shots/hud04-recording.png`, `hud04-paused.png`. |
+| HUD-05 saving | Match in behaviour | `after-record/shots/hud05-saving.png`; Record disabled and busy, one stop call for a double-click. |
+| HUD-07 screen permission | Fixture-only state | `after-permission/shots/hud07-permission.png`; the harness answers `screen-access-required`. This Mac uses Apple's picker, which needs no grant, so the state is not reachable live here. |
+| HUD-08 no microphone | Match | `after-mic/shots/hud08-*.png`; a saved synthetic mic id that no device has. Media access was denied in-session; no device was opened. |
+| HUD-06 Notes | Excluded | Out of scope; Notes code untouched. |
+
+### Adaptations and why
+- **Established controls kept** (issue: no removal for a pixel match): the device-settings gear sits with mic/camera, the vertical/horizontal layout toggle moves to the right cluster, and the Studio (editor) button keeps its clapperboard icon rather than the frames' library glyph, because it opens the editor.
+- **No `⌘⇧2` hint on Record.** The record shortcut is user-configurable and the HUD does not read the binding, so a fixed hint could be wrong.
+- **Countdown caption.** The countdown window is click-through and never focused, and the recorder does not expose the countdown state, so Esc cannot reach it. Pressing Record again does cancel it (existing `toggleRecording`), so the caption names that instead.
+- **No "Window recording captures clicks only inside it" footer.** Not verified against the cursor pipeline, so not claimed.
+- **Pressed toggles** (mic, audio, camera, cursor) use the frames' sage tint behind a sage glyph. The cursor toggle was solid sage under the T1 bridge; the theme browser test now checks the tint and keeps the ≥3:1 glyph contrast against the blended background.
+- **Sheet width** 560px as in the frames; reserved in `HUD_STACK_WIDTH`, so the overlay window is wider for a narrow (vertical) bar than before.
+
+### Proof limits
+- Native runs use the built app with isolated synthetic roots. Faked: capture IPC (start/pause/resume/stop), source listing, selected source, permission reads, Accessibility check, and `permissions:open-settings`/`relaunch` (logged only). No ScreenCaptureKit helper ran and no bundle was written by a real stop; the editor opened on a synthetic fixture video. The main-process amendment is covered by `electron/ipc/openSourceSelectorPermission.test.ts`, not natively (the harness replaces that handler).
+- Capture exclusion is unchanged code and was not observed natively. On this macOS 26 Mac `windows.ts` deliberately leaves the HUD without content protection (observed `isContentProtected() === false`, the documented macOS 26 workaround), and ScreenCaptureKit excludes the HUD by window id inside the real `start-native-mac-recording` handler, which the harness replaces.
+- Owed to the owner: a real recording start/pause/stop/save with the Final HUD (including that the bar and sheets stay out of the video), and HUD-07 on a Mac that uses the app's own picker. Windows and Linux are untested.

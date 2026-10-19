@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import "@testing-library/jest-dom";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SourceSelector } from "./SourceSelector";
 
@@ -26,6 +26,12 @@ vi.mock("@/contexts/I18nContext", () => ({
 			}
 			if (key === "sourceSelector.screens") return `Screens (${vars?.count ?? "0"})`;
 			if (key === "sourceSelector.windows") return `Windows (${vars?.count ?? "0"})`;
+			if (key === "sourceSelector.eyebrow") return "Source";
+			if (key === "sourceSelector.title") return "What should Showhow record?";
+			if (key === "sourceSelector.close") return "Close";
+			if (key === "sourceSelector.selected") return "Selected";
+			if (key === "sourceSelector.useScreen") return "Use this screen";
+			if (key === "sourceSelector.useWindow") return "Use this window";
 			return key;
 		};
 	},
@@ -38,6 +44,72 @@ describe("SourceSelector", () => {
 			getSources: vi.fn().mockResolvedValue([]),
 			selectSource: vi.fn(),
 		} as typeof window.electronAPI;
+	});
+
+	it("is the Final source sheet: titled dialog, close button, selected chip and a named action", async () => {
+		window.electronAPI = {
+			...window.electronAPI,
+			getSources: vi.fn().mockResolvedValue([
+				{ id: "screen:1:0", name: "Display 1", thumbnail: null, display_id: "1", appIcon: null },
+				{ id: "window:7:0", name: "Notes", thumbnail: null, display_id: "", appIcon: null },
+			]),
+			selectSource: vi.fn(),
+		} as typeof window.electronAPI;
+		const close = vi.spyOn(window, "close").mockImplementation(() => undefined);
+
+		render(<SourceSelector />);
+
+		const dialog = await screen.findByRole("dialog", { name: "What should Showhow record?" });
+		expect(within(dialog).getByText("Source")).toBeInTheDocument();
+		const display = screen.getByRole("radio", { name: "Display 1" });
+		expect(within(display).queryByText("Selected")).toBeNull();
+		fireEvent.click(display);
+		expect(within(display).getByText("Selected")).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "Use this screen" })).toBeEnabled();
+
+		fireEvent.click(screen.getByRole("button", { name: "Close" }));
+		expect(close).toHaveBeenCalledTimes(1);
+		close.mockRestore();
+	});
+
+	it("names the action after the kind of source chosen", async () => {
+		window.electronAPI = {
+			...window.electronAPI,
+			getSources: vi
+				.fn()
+				.mockResolvedValue([
+					{ id: "window:7:0", name: "Notes", thumbnail: null, display_id: "", appIcon: null },
+				]),
+			selectSource: vi.fn(),
+		} as typeof window.electronAPI;
+
+		render(<SourceSelector />);
+
+		fireEvent.click(await screen.findByRole("radio", { name: "Notes" }));
+		fireEvent.click(screen.getByRole("button", { name: "Use this window" }));
+		await waitFor(() =>
+			expect(window.electronAPI.selectSource).toHaveBeenCalledWith(
+				expect.objectContaining({ id: "window:7:0" }),
+			),
+		);
+	});
+
+	it("closes on Escape", async () => {
+		window.electronAPI = {
+			...window.electronAPI,
+			getSources: vi
+				.fn()
+				.mockResolvedValue([
+					{ id: "screen:1:0", name: "Display 1", thumbnail: null, display_id: "1", appIcon: null },
+				]),
+			selectSource: vi.fn(),
+		} as typeof window.electronAPI;
+		const close = vi.spyOn(window, "close").mockImplementation(() => undefined);
+		render(<SourceSelector />);
+		const dialog = await screen.findByRole("dialog");
+		fireEvent.keyDown(dialog, { key: "Escape" });
+		expect(close).toHaveBeenCalledTimes(1);
+		close.mockRestore();
 	});
 
 	it("shows a retry state when no capture sources are available", async () => {
@@ -90,7 +162,7 @@ describe("SourceSelector", () => {
 		expect(secondCard).toHaveFocus();
 
 		// Share sends the keyboard-selected source through the existing IPC.
-		fireEvent.click(screen.getByRole("button", { name: "Share" }));
+		fireEvent.click(screen.getByRole("button", { name: "Use this screen" }));
 		await waitFor(() => {
 			expect(window.electronAPI.selectSource).toHaveBeenCalledTimes(1);
 		});
@@ -164,7 +236,7 @@ describe("SourceSelector", () => {
 		expect(firstCard).toBeChecked();
 
 		// Share sends the Enter-selected source through the existing IPC.
-		fireEvent.click(screen.getByRole("button", { name: "Share" }));
+		fireEvent.click(screen.getByRole("button", { name: "Use this screen" }));
 		await waitFor(() => {
 			expect(window.electronAPI.selectSource).toHaveBeenCalledTimes(1);
 		});
@@ -250,6 +322,6 @@ describe("SourceSelector", () => {
 		const firstCard = screen.getByRole("radio", { name: "Display 1" });
 		expect(firstCard).not.toBeChecked();
 		expect(firstCard).toHaveAttribute("tabindex", "0");
-		expect(screen.getByRole("button", { name: "Share" })).toBeDisabled();
+		expect(screen.getByRole("button", { name: "Use this screen" })).toBeDisabled();
 	});
 });

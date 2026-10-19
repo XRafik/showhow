@@ -59,19 +59,27 @@
 	},
 	"sourceSelector": {
 		"loading": "Caricamento sorgenti...",
-		"screens": "Schermi ({{count}})",
-		"windows": "Finestre ({{count}})",
+		"screens": "Schermi · {{count}}",
+		"windows": "Finestre · {{count}}",
 		"emptyTitle": "Nessuno schermo o finestra trovati",
 		"emptyDescription": "Se hai appena concesso il permesso di registrazione dello schermo, ricarica questo selettore. Su macOS potrebbe essere necessario riaprire Showhow.",
 		"loadFailedDescription": "Showhow non è riuscito a caricare le sorgenti di cattura. Ricarica questo selettore e riprova.",
-		"defaultSourceName": "Schermo"
+		"defaultSourceName": "Schermo",
+		"eyebrow": "Sorgente",
+		"title": "Cosa deve registrare Showhow?",
+		"close": "Chiudi",
+		"selected": "Selezionato",
+		"useScreen": "Usa questo schermo",
+		"useWindow": "Usa questa finestra"
 	},
 	"recording": {
 		"selectSource": "Seleziona una sorgente da registrare",
 		"systemPicker": "Il sistema ti chiederà cosa condividere",
 		"start": "Avvia registrazione",
 		"stop": "Interrompi e salva la registrazione",
-		"saving": "Salvataggio..."
+		"saving": "Salvataggio...",
+		"record": "Registra",
+		"stopShort": "Stop"
 	},
 	"language": "Lingua",
 	"languageWithName": "Lingua: {{language}}",
@@ -153,5 +161,26 @@
 			"screenRequired": "Per registrare serve la registrazione dello schermo.",
 			"ready": "È tutto pronto."
 		}
+	},
+	"countdown": {
+		"caption": "La registrazione inizia · premi Registra per annullare"
+	},
+	"sheets": {
+		"eyebrow": "Showhow",
+		"close": "Chiudi",
+		"cancel": "Annulla"
+	},
+	"permissionSheet": {
+		"title": "Consenti la registrazione dello schermo",
+		"description": "Showhow ha bisogno del permesso di registrazione dello schermo per poterlo catturare.",
+		"hint": "Consenti Showhow nelle impostazioni di registrazione dello schermo di macOS, poi torna a scegliere una sorgente.",
+		"relaunchHint": "La registrazione dello schermo è consentita. Riavvia Showhow perché macOS la applichi."
+	},
+	"microphoneSheet": {
+		"title": "Nessun microfono trovato",
+		"description": "Showhow non trova il microfono selezionato.",
+		"hint": "Ricollega il microfono e riprova. Puoi scegliere un altro ingresso nel registratore.",
+		"tryAgain": "Riprova",
+		"stillMissing": "Ancora non trovato. Controlla il collegamento o scegli un altro ingresso."
 	}
 }

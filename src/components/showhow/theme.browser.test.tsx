@@ -173,9 +173,8 @@ it("renders real HUD labels and editor text in Inter Tight with house HUD surfac
 					recording={false}
 					paused={false}
 					saving={false}
-					elapsedSeconds={0}
 					label="Start recording"
-					savingLabel="Saving"
+					text="Record"
 					onClick={idle}
 				/>
 			</div>
@@ -198,14 +197,21 @@ it("renders real HUD labels and editor text in Inter Tight with house HUD surfac
 		expect(getComputedStyle(libraryControl).borderRadius).toBe("4px");
 		for (const theme of ["light", "dark"]) {
 			document.documentElement.setAttribute("data-sh-theme", theme);
+			expect
+				.soft(
+					getComputedStyle(getByRole("tab", { name: "Editor typography" })).fontFamily,
+					`${theme}: editor tab`,
+				)
+				.toMatch(/^"?Inter Tight"?[,]/);
+			// The Final HUD sets its labels in JetBrains Mono capitals (HUD-03/04).
 			for (const node of [
 				getByText("Synthetic HUD source"),
 				getByText("EN"),
-				getByRole("tab", { name: "Editor typography" }),
+				getByText("Record"),
 			]) {
-				expect
-					.soft(getComputedStyle(node).fontFamily, `${theme}: ${node.textContent}`)
-					.toMatch(/^"?Inter Tight"?[,]/);
+				const style = getComputedStyle(node);
+				expect.soft(style.fontFamily, `${theme}: ${node.textContent}`).toContain("JetBrains Mono");
+				expect.soft(style.textTransform, `${theme}: ${node.textContent}`).toBe("uppercase");
 			}
 			const activeMic = getByRole("button", { name: "HUD microphone enabled" }).querySelector(
 				"svg",
@@ -219,19 +225,26 @@ it("renders real HUD labels and editor text in Inter Tight with house HUD surfac
 			expect(cursorGlyph).not.toBeNull();
 			const cursorColor = getComputedStyle(cursorGlyph as SVGElement).color;
 			const cursorBackground = getComputedStyle(cursor).backgroundColor;
-			expect.soft(cursorBackground, `${theme}: solid cursor background`).toBe("rgb(130, 176, 154)");
-			expect.soft(cursorColor, `${theme}: solid cursor glyph`).toBe("rgb(47, 47, 47)");
+			// Final frames: a pressed toggle is a sage tint behind a sage glyph, like the mic.
+			expect
+				.soft(cursorBackground, `${theme}: pressed cursor background`)
+				.toBe("rgba(130, 176, 154, 0.2)");
+			expect.soft(cursorColor, `${theme}: pressed cursor glyph`).toBe("rgb(130, 176, 154)");
+			const channels = (color: string) => (color.match(/[\d.]+/g) ?? []).map(Number);
+			const panel = channels(getComputedStyle(getByTestId("house-hud")).backgroundColor);
+			const [tr, tg, tb, ta = 1] = channels(cursorBackground);
+			// What the eye sees: the tint laid over the bar's panel.
+			const seenBackground = `rgb(${[tr, tg, tb].map((v, i) => v * ta + panel[i] * (1 - ta)).join(",")})`;
 			const luminance = (color: string) => {
-				const c = (color.match(/[\d.]+/g) ?? [])
+				const c = channels(color)
 					.slice(0, 3)
-					.map(Number)
 					.map((v) => {
 						const x = v / 255;
 						return x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4;
 					});
 				return c[0] * 0.2126 + c[1] * 0.7152 + c[2] * 0.0722;
 			};
-			const l = [luminance(cursorColor), luminance(cursorBackground)].sort((a, b) => a - b);
+			const l = [luminance(cursorColor), luminance(seenBackground)].sort((a, b) => a - b);
 			expect
 				.soft((l[1] + 0.05) / (l[0] + 0.05), `${theme}: active cursor icon contrast`)
 				.toBeGreaterThanOrEqual(3);
@@ -248,13 +261,18 @@ it("renders real HUD labels and editor text in Inter Tight with house HUD surfac
 			expect
 				.soft(getComputedStyle(getByText("Synthetic HUD source")).color, `${theme}: HUD label`)
 				.toBe("rgb(255, 252, 247)");
-			expect.soft(getComputedStyle(bar).borderRadius, `${theme}: HUD panel radius`).toBe("17px");
+			expect.soft(getComputedStyle(bar).borderRadius, `${theme}: HUD panel radius`).toBe("6px");
+			expect
+				.soft(getComputedStyle(bar).boxShadow, `${theme}: signature offset shadow`)
+				.toBe("rgb(130, 176, 154) 4px 4px 0px 0px");
 			expect
 				.soft(getComputedStyle(getByRole("button", { name: "Synthetic HUD source" })).borderRadius)
-				.toBe("10px");
+				.toBe("4px");
+			const record = getByRole("button", { name: "Start recording" });
+			expect.soft(getComputedStyle(record).borderRadius).toBe("4px");
 			expect
-				.soft(getComputedStyle(getByRole("button", { name: "Start recording" })).borderRadius)
-				.toBe("17px");
+				.soft(getComputedStyle(record).backgroundColor, `${theme}: sage Record`)
+				.toBe("rgb(130, 176, 154)");
 		}
 		const cursor = getByRole("button", { name: "Editable HUD cursor" });
 		expect(cursor.getAttribute("aria-pressed")).toBe("true");
@@ -267,12 +285,12 @@ it("renders real HUD labels and editor text in Inter Tight with house HUD surfac
 		fireEvent.click(getByRole("button", { name: "Locked HUD cursor" }));
 		expect(cursorClicks).toBe(2);
 		document.documentElement.style.setProperty("--ds-radius", "10");
-		expect(getComputedStyle(getByTestId("house-hud")).borderRadius).toBe("19px");
+		expect(getComputedStyle(getByTestId("house-hud")).borderRadius).toBe("8px");
 		await expect
 			.poll(
 				() => getComputedStyle(getByRole("button", { name: "Synthetic HUD source" })).borderRadius,
 			)
-			.toBe("12px");
+			.toBe("5px");
 	} finally {
 		document.documentElement.style.removeProperty("--ds-radius");
 		unmount();

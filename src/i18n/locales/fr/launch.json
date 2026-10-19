@@ -59,19 +59,27 @@
 	},
 	"sourceSelector": {
 		"loading": "Chargement des sources...",
-		"screens": "Écrans ({{count}})",
-		"windows": "Fenêtres ({{count}})",
+		"screens": "Écrans · {{count}}",
+		"windows": "Fenêtres · {{count}}",
 		"emptyTitle": "Aucun écran ni fenêtre trouvé",
 		"emptyDescription": "Si vous venez d'accorder l'autorisation d'enregistrement d'écran, rechargez ce sélecteur. Sur macOS, il peut être nécessaire de rouvrir Showhow.",
 		"loadFailedDescription": "Showhow n'a pas pu charger les sources de capture. Rechargez ce sélecteur et réessayez.",
-		"defaultSourceName": "Écran"
+		"defaultSourceName": "Écran",
+		"eyebrow": "Source",
+		"title": "Que doit enregistrer Showhow ?",
+		"close": "Fermer",
+		"selected": "Sélectionné",
+		"useScreen": "Utiliser cet écran",
+		"useWindow": "Utiliser cette fenêtre"
 	},
 	"recording": {
 		"selectSource": "Veuillez sélectionner une source à enregistrer",
 		"systemPicker": "Le système vous demandera quoi partager",
 		"start": "Démarrer l'enregistrement",
 		"stop": "Arrêter et sauvegarder l'enregistrement",
-		"saving": "Sauvegarde..."
+		"saving": "Sauvegarde...",
+		"record": "Enregistrer",
+		"stopShort": "Arrêter"
 	},
 	"language": "Langue",
 	"languageWithName": "Langue : {{language}}",
@@ -153,5 +161,26 @@
 			"screenRequired": "L'enregistrement de l'écran est nécessaire pour enregistrer.",
 			"ready": "Tout est prêt."
 		}
+	},
+	"countdown": {
+		"caption": "L'enregistrement démarre · appuyez sur Enregistrer pour annuler"
+	},
+	"sheets": {
+		"eyebrow": "Showhow",
+		"close": "Fermer",
+		"cancel": "Annuler"
+	},
+	"permissionSheet": {
+		"title": "Autoriser l'enregistrement de l'écran",
+		"description": "Showhow a besoin de l'autorisation d'enregistrement de l'écran pour capturer votre écran.",
+		"hint": "Autorisez Showhow dans les réglages d'enregistrement de l'écran de macOS, puis revenez choisir une source.",
+		"relaunchHint": "L'enregistrement de l'écran est autorisé. Redémarrez Showhow pour que macOS l'applique."
+	},
+	"microphoneSheet": {
+		"title": "Aucun micro trouvé",
+		"description": "Showhow ne trouve pas le micro sélectionné.",
+		"hint": "Rebranchez votre micro, puis réessayez. Vous pouvez choisir une autre entrée dans l'enregistreur.",
+		"tryAgain": "Réessayer",
+		"stillMissing": "Toujours introuvable. Vérifiez la connexion ou choisissez une autre entrée."
 	}
 }

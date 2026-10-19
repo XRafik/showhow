@@ -59,19 +59,27 @@
 	},
 	"sourceSelector": {
 		"loading": "Kaynaklar yükleniyor...",
-		"screens": "Ekranlar ({{count}})",
-		"windows": "Pencereler ({{count}})",
+		"screens": "Ekranlar · {{count}}",
+		"windows": "Pencereler · {{count}}",
 		"emptyTitle": "Ekran veya pencere bulunamadı",
 		"emptyDescription": "Ekran kaydı iznini az önce verdiyseniz bu seçiciyi yeniden yükleyin. macOS'ta Showhow'i yeniden açmanız gerekebilir.",
 		"loadFailedDescription": "Showhow yakalama kaynaklarını yükleyemedi. Bu seçiciyi yeniden yükleyip tekrar deneyin.",
-		"defaultSourceName": "Ekran"
+		"defaultSourceName": "Ekran",
+		"eyebrow": "Kaynak",
+		"title": "Showhow neyi kaydetsin?",
+		"close": "Kapat",
+		"selected": "Seçildi",
+		"useScreen": "Bu ekranı kullan",
+		"useWindow": "Bu pencereyi kullan"
 	},
 	"recording": {
 		"selectSource": "Lütfen kayıt için bir kaynak seçin",
 		"systemPicker": "Sisteminiz neyi paylaşacağınızı soracak",
 		"start": "Kaydı başlat",
 		"stop": "Kaydı durdur ve kaydet",
-		"saving": "Kaydediliyor..."
+		"saving": "Kaydediliyor...",
+		"record": "Kaydet",
+		"stopShort": "Durdur"
 	},
 	"language": "Dil",
 	"languageWithName": "Dil: {{language}}",
@@ -153,5 +161,26 @@
 			"screenRequired": "Kayıt için ekran kaydı gereklidir.",
 			"ready": "Her şey hazır."
 		}
+	},
+	"countdown": {
+		"caption": "Kayıt başlıyor · iptal etmek için Kaydet'e basın"
+	},
+	"sheets": {
+		"eyebrow": "Showhow",
+		"close": "Kapat",
+		"cancel": "İptal"
+	},
+	"permissionSheet": {
+		"title": "Ekran kaydına izin verin",
+		"description": "Showhow'un ekranınızı yakalayabilmesi için ekran kaydı izni gerekir.",
+		"hint": "macOS ekran kaydı ayarlarında Showhow'a izin verin, ardından bir kaynak seçmek için geri dönün.",
+		"relaunchHint": "Ekran kaydına izin verildi. macOS'un uygulaması için Showhow'u yeniden başlatın."
+	},
+	"microphoneSheet": {
+		"title": "Mikrofon bulunamadı",
+		"description": "Showhow seçili mikrofonu bulamıyor.",
+		"hint": "Mikrofonunuzu yeniden bağlayıp tekrar deneyin. Kaydedicide farklı bir giriş seçebilirsiniz.",
+		"tryAgain": "Tekrar dene",
+		"stillMissing": "Hâlâ bulunamadı. Bağlantıyı kontrol edin veya başka bir giriş seçin."
 	}
 }

@@ -64,14 +64,22 @@
 		"emptyTitle": "화면이나 창을 찾을 수 없음",
 		"emptyDescription": "화면 녹화 권한을 방금 허용했다면 이 선택기를 새로고침하세요. macOS에서는 Showhow을 다시 열어야 할 수도 있습니다.",
 		"loadFailedDescription": "Showhow이 캡처 소스를 불러오지 못했습니다. 이 선택기를 새로고침한 후 다시 시도하세요.",
-		"defaultSourceName": "화면"
+		"defaultSourceName": "화면",
+		"eyebrow": "소스",
+		"title": "Showhow로 무엇을 녹화할까요?",
+		"close": "닫기",
+		"selected": "선택됨",
+		"useScreen": "이 화면 사용",
+		"useWindow": "이 창 사용"
 	},
 	"recording": {
 		"selectSource": "녹화할 소스를 선택해 주세요",
 		"systemPicker": "공유할 대상을 시스템이 묻습니다",
 		"start": "녹화 시작",
 		"stop": "녹화 중지 및 저장",
-		"saving": "저장 중..."
+		"saving": "저장 중...",
+		"record": "녹화",
+		"stopShort": "중지"
 	},
 	"language": "언어",
 	"languageWithName": "언어: {{language}}",
@@ -153,5 +161,26 @@
 			"screenRequired": "녹화하려면 화면 기록 권한이 필요합니다.",
 			"ready": "모든 준비가 끝났습니다."
 		}
+	},
+	"countdown": {
+		"caption": "녹화가 시작됩니다 · 취소하려면 녹화를 누르세요"
+	},
+	"sheets": {
+		"eyebrow": "Showhow",
+		"close": "닫기",
+		"cancel": "취소"
+	},
+	"permissionSheet": {
+		"title": "화면 기록 허용",
+		"description": "화면을 캡처하려면 Showhow에 화면 기록 권한이 필요합니다.",
+		"hint": "macOS 화면 기록 설정에서 Showhow를 허용한 다음 돌아와 소스를 선택하세요.",
+		"relaunchHint": "화면 기록이 허용되었습니다. macOS에 적용되도록 Showhow를 다시 시작하세요."
+	},
+	"microphoneSheet": {
+		"title": "마이크를 찾을 수 없음",
+		"description": "선택한 마이크를 찾을 수 없습니다.",
+		"hint": "마이크를 다시 연결한 뒤 다시 시도하세요. 녹화 도구에서 다른 입력을 선택할 수도 있습니다.",
+		"tryAgain": "다시 시도",
+		"stillMissing": "아직 찾을 수 없습니다. 연결을 확인하거나 다른 입력을 선택하세요."
 	}
 }

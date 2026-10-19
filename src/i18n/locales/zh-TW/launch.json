@@ -59,19 +59,27 @@
 	},
 	"sourceSelector": {
 		"loading": "正在載入來源...",
-		"screens": "螢幕 ({{count}})",
-		"windows": "視窗 ({{count}})",
+		"screens": "螢幕 · {{count}}",
+		"windows": "視窗 · {{count}}",
 		"emptyTitle": "找不到螢幕或視窗",
 		"emptyDescription": "如果您剛授予螢幕錄製權限，請重新載入此選擇器。在 macOS 上，您可能需要重新開啟 Showhow。",
 		"loadFailedDescription": "Showhow 無法載入擷取來源。請重新載入此選擇器並再試一次。",
-		"defaultSourceName": "螢幕"
+		"defaultSourceName": "螢幕",
+		"eyebrow": "來源",
+		"title": "Showhow 要錄製什麼？",
+		"close": "關閉",
+		"selected": "已選取",
+		"useScreen": "使用此螢幕",
+		"useWindow": "使用此視窗"
 	},
 	"recording": {
 		"selectSource": "請選擇要錄製的來源",
 		"systemPicker": "系統將詢問要分享的內容",
 		"start": "開始錄製",
 		"stop": "停止並儲存錄製",
-		"saving": "正在儲存..."
+		"saving": "正在儲存...",
+		"record": "錄製",
+		"stopShort": "停止"
 	},
 	"language": "語言",
 	"languageWithName": "語言：{{language}}",
@@ -153,5 +161,26 @@
 			"screenRequired": "錄製需要螢幕錄製權限。",
 			"ready": "一切就緒。"
 		}
+	},
+	"countdown": {
+		"caption": "即將開始錄製 · 按錄製可取消"
+	},
+	"sheets": {
+		"eyebrow": "Showhow",
+		"close": "關閉",
+		"cancel": "取消"
+	},
+	"permissionSheet": {
+		"title": "允許螢幕錄製",
+		"description": "Showhow 需要螢幕錄製權限才能擷取你的螢幕。",
+		"hint": "在 macOS 螢幕錄製設定中允許 Showhow，然後返回選擇來源。",
+		"relaunchHint": "已允許螢幕錄製。請重新啟動 Showhow，讓 macOS 套用此權限。"
+	},
+	"microphoneSheet": {
+		"title": "找不到麥克風",
+		"description": "Showhow 找不到所選的麥克風。",
+		"hint": "請重新連接麥克風後再試一次。你也可以在錄製器中選擇其他輸入。",
+		"tryAgain": "再試一次",
+		"stillMissing": "仍然找不到。請檢查連接，或選擇其他輸入。"
 	}
 }

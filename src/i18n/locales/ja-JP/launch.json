@@ -59,19 +59,27 @@
 	},
 	"sourceSelector": {
 		"loading": "ソースを読み込み中...",
-		"screens": "画面 ({{count}})",
-		"windows": "ウィンドウ ({{count}})",
+		"screens": "画面 · {{count}}",
+		"windows": "ウィンドウ · {{count}}",
 		"emptyTitle": "画面またはウィンドウが見つかりません",
 		"emptyDescription": "画面収録の権限を許可したばかりの場合は、このピッカーを再読み込みしてください。macOSではShowhowの再起動が必要な場合があります。",
 		"loadFailedDescription": "Showhowはキャプチャソースを読み込めませんでした。このピッカーを再読み込みしてもう一度お試しください。",
-		"defaultSourceName": "画面"
+		"defaultSourceName": "画面",
+		"eyebrow": "ソース",
+		"title": "Showhow で何を録画しますか？",
+		"close": "閉じる",
+		"selected": "選択中",
+		"useScreen": "この画面を使用",
+		"useWindow": "このウィンドウを使用"
 	},
 	"recording": {
 		"selectSource": "録画するソースを選択してください",
 		"systemPicker": "共有する対象はシステムが確認します",
 		"start": "録画を開始",
 		"stop": "録画を停止して保存",
-		"saving": "保存中..."
+		"saving": "保存中...",
+		"record": "録画",
+		"stopShort": "停止"
 	},
 	"language": "言語",
 	"languageWithName": "言語：{{language}}",
@@ -153,5 +161,26 @@
 			"screenRequired": "録画には画面収録が必要です。",
 			"ready": "準備が整いました。"
 		}
+	},
+	"countdown": {
+		"caption": "録画を開始します · 録画を押すとキャンセル"
+	},
+	"sheets": {
+		"eyebrow": "Showhow",
+		"close": "閉じる",
+		"cancel": "キャンセル"
+	},
+	"permissionSheet": {
+		"title": "画面収録を許可",
+		"description": "画面を収録するには、Showhow に画面収録の許可が必要です。",
+		"hint": "macOS の画面収録の設定で Showhow を許可してから、戻ってソースを選んでください。",
+		"relaunchHint": "画面収録は許可されています。macOS に反映させるには Showhow を再起動してください。"
+	},
+	"microphoneSheet": {
+		"title": "マイクが見つかりません",
+		"description": "選択したマイクが見つかりません。",
+		"hint": "マイクを接続し直してから、もう一度お試しください。レコーダーで別の入力を選ぶこともできます。",
+		"tryAgain": "再試行",
+		"stillMissing": "まだ見つかりません。接続を確認するか、別の入力を選んでください。"
 	}
 }

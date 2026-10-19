@@ -11,6 +11,8 @@ import {
 	HUD_POPOVER_GAP,
 	HUD_POPOVER_MAX_HEIGHT,
 	HUD_POPOVER_MIN_HEIGHT,
+	HUD_SHEET_MAX_HEIGHT,
+	HUD_SHEET_WIDTH,
 	HUD_STACK_WIDTH,
 } from "./hudGeometry";
 
@@ -55,6 +57,23 @@ describe("computeHudWindowSize", () => {
 	it("reserves room for the widest floating panel even when the bar is narrow", () => {
 		const { required } = size(48, 520);
 		expect(required.width).toBeGreaterThanOrEqual(HUD_STACK_WIDTH + HUD_EDGE_SLACK * 2);
+	});
+
+	it("reserves the recovery sheets' width, so opening one never widens the window", () => {
+		const { required } = size(48, 520);
+		expect(HUD_STACK_WIDTH).toBeGreaterThanOrEqual(HUD_SHEET_WIDTH);
+		expect(required.width).toBeGreaterThanOrEqual(HUD_SHEET_WIDTH + HUD_EDGE_SLACK * 2);
+	});
+
+	it("fits a recovery sheet inside the height already reserved for the settings panel", () => {
+		expect(HUD_SHEET_MAX_HEIGHT).toBeLessThanOrEqual(HUD_MODAL_MAX_HEIGHT);
+	});
+
+	it("keeps every control of the widest Final recording bar inside the window", () => {
+		// Stop, timer, pause/restart/delete and the window controls: about 900px wide.
+		const { required, granted } = size(900, 48);
+		expect(required.width).toBeGreaterThanOrEqual(900 + HUD_EDGE_SLACK * 2);
+		expect(granted.width).toBeGreaterThanOrEqual(required.width);
 	});
 
 	it("absorbs bar growth without needing a bigger window", () => {

@@ -59,19 +59,27 @@
 	},
 	"sourceSelector": {
 		"loading": "Načítání zdrojů...",
-		"screens": "Obrazovky ({{count}})",
-		"windows": "Okna ({{count}})",
+		"screens": "Obrazovky · {{count}}",
+		"windows": "Okna · {{count}}",
 		"emptyTitle": "Žádné obrazovky ani okna nenalezena",
 		"emptyDescription": "Pokud jste právě udělili oprávnění pro záznam obrazovky, znovu načtěte tento výběr. Na macOS může být nutné znovu otevřít Showhow.",
 		"loadFailedDescription": "Showhow nemohl načíst zdroje záznamu. Znovu načtěte tento výběr a zkuste to znovu.",
-		"defaultSourceName": "Obrazovka"
+		"defaultSourceName": "Obrazovka",
+		"eyebrow": "Zdroj",
+		"title": "Co má Showhow nahrávat?",
+		"close": "Zavřít",
+		"selected": "Vybráno",
+		"useScreen": "Použít tuto obrazovku",
+		"useWindow": "Použít toto okno"
 	},
 	"recording": {
 		"selectSource": "Vyberte prosím zdroj pro nahrávání",
 		"systemPicker": "Systém se zeptá, co sdílet",
 		"start": "Spustit nahrávání",
 		"stop": "Zastavit a uložit nahrávku",
-		"saving": "Ukládání..."
+		"saving": "Ukládání...",
+		"record": "Nahrát",
+		"stopShort": "Stop"
 	},
 	"language": "Jazyk",
 	"languageWithName": "Jazyk: {{language}}",
@@ -153,5 +161,26 @@
 			"screenRequired": "K nahrávání je potřeba nahrávání obrazovky.",
 			"ready": "Vše je připraveno."
 		}
+	},
+	"countdown": {
+		"caption": "Nahrávání začíná · zrušíte stiskem Nahrát"
+	},
+	"sheets": {
+		"eyebrow": "Showhow",
+		"close": "Zavřít",
+		"cancel": "Zrušit"
+	},
+	"permissionSheet": {
+		"title": "Povolte nahrávání obrazovky",
+		"description": "Showhow potřebuje oprávnění k nahrávání obrazovky, aby mohl zachytit vaši obrazovku.",
+		"hint": "Povolte Showhow v nastavení nahrávání obrazovky v macOS a pak se vraťte a vyberte zdroj.",
+		"relaunchHint": "Nahrávání obrazovky je povoleno. Restartujte Showhow, aby to macOS použil."
+	},
+	"microphoneSheet": {
+		"title": "Mikrofon nenalezen",
+		"description": "Showhow nemůže najít vybraný mikrofon.",
+		"hint": "Znovu připojte mikrofon a zkuste to znovu. V nahrávači můžete zvolit jiný vstup.",
+		"tryAgain": "Zkusit znovu",
+		"stillMissing": "Stále nenalezen. Zkontrolujte připojení nebo zvolte jiný vstup."
 	}
 }
