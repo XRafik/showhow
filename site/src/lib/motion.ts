@@ -181,3 +181,4 @@ if (reduced) {
 	initScroll();
 	playIntro();
 }
+import "./tweaks-boot";

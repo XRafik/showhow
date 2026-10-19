@@ -1,20 +1,22 @@
+import { useShaderTweaks } from "../lib/tweaks-store";
 import Grainient from "./vendor/reactbits/Grainient";
 
 /** Darkroom background: the pen palette (room, deep sage, sage, ember) on a grain shader that follows the pointer. */
 export default function HeroShader() {
+	const tweaks = useShaderTweaks();
 	return (
 		<Grainient
-			colors={["#161616", "#1F3A31", "#82B09A", "#E3582D"]}
+			colors={tweaks.colors}
 			type="radial"
-			speed={0.55}
-			flow={0.7}
-			softness={1.2}
-			silk={0.4}
-			grainAmount={0.12}
+			speed={tweaks.speed}
+			flow={tweaks.flow}
+			softness={tweaks.softness}
+			silk={tweaks.silk}
+			grainAmount={tweaks.grainAmount}
 			grainSize={1.2}
-			interactive
-			stir={1.4}
-			clickSwirl
+			interactive={tweaks.interactive}
+			stir={tweaks.stir}
+			clickSwirl={tweaks.clickSwirl}
 			intro
 			dpr={1.5}
 		/>

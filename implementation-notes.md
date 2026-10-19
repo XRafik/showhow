@@ -1077,3 +1077,4 @@ Windows/Linux runtime, macOS13 hardware, current packaging/install/signing and r
 - Shader opacity stays at the design's 0.3 (`--landing-shader-opacity`). The owner plans to tune it in code.
 - All loops are placeholders (Task 3).
 - The download button links to the repository until a release exists.
+- A DialKit tweak pane (`?tweak` or Shift+T, hidden by default) adjusts the shader, hero sizing, palette and scroll smoothness live. It is lazy-loaded and persists values in the owner's browser only.

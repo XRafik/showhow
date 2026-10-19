@@ -31,3 +31,7 @@ From the repo root, `npx playwright test --project=landing` builds the page, ser
 ## Replace a placeholder loop
 
 Hero: swap the three `hero-make-guide.*` files in `public/assets/`, then remove the `Placeholder` tag in `index.astro`. Step and handoff slots are `LoopSlot` instances; replace the CSS still and fake with a `<video>` of the same aspect ratio (16:10).
+
+## Tweak pane (DialKit)
+
+Open it with `?tweak` on the URL or Shift+T. Hide it with Shift+T, the pane's close button, or `?tweak=0`. It loads only on request, so visitors never download it. Values apply live (shader, hero size, palette, scroll smoothness), persist in your browser only, and the pane's copy button exports them. To make a value permanent, copy it into `src/lib/tweaks-store.ts` (shader), `src/styles/tokens.css` or `src/components/Tweaks.tsx` (defaults).

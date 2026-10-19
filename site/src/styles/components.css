@@ -238,7 +238,7 @@
 	background: var(--color-landing-surface);
 	border-radius: 10px;
 	border: 1px solid var(--color-landing-hairline);
-	box-shadow: 6px 6px 0 var(--color-landing-accent);
+	box-shadow: var(--window-shadow, 6px) var(--window-shadow, 6px) 0 var(--color-landing-accent);
 	overflow: hidden;
 	margin-right: 6px;
 	position: relative;
@@ -306,13 +306,13 @@
 }
 @media (min-width: 900px) {
 	.hero__title {
-		font-size: 116px;
+		font-size: var(--hero-title-size, 116px);
 	}
 	.hero__stage-wrap {
 		margin-top: 64px;
 	}
 	.hero__stage {
-		height: 460px;
+		height: var(--hero-stage-height, 460px);
 	}
 	.hero__fade {
 		height: 160px;

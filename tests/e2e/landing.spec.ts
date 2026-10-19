@@ -138,4 +138,24 @@ test.describe("landing page", () => {
 		await page.waitForSelector("html[data-ready=true]");
 		expect(errors).toEqual([]);
 	});
+	test("the tweak pane is absent by default, opens with ?tweak and hides with Shift+T", async ({
+		page,
+	}) => {
+		await page.goto("/");
+		await page.waitForSelector("html[data-ready=true]");
+		await expect(page.locator("#tweaks-root")).toHaveCount(0);
+
+		await page.goto("/?tweak");
+		await page.waitForSelector("html[data-ready=true]");
+		const pane = page.getByText("Showhow landing", { exact: true });
+		await expect(pane).toBeVisible();
+
+		await page.keyboard.press("Shift+T");
+		await expect(pane).toHaveCount(0);
+		await page.keyboard.press("Shift+T");
+		await expect(pane).toBeVisible();
+
+		await page.goto("/?tweak=0");
+		await expect(page.locator("#tweaks-root")).toHaveCount(0);
+	});
 });
