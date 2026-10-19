@@ -1,9 +1,18 @@
 import { DialRoot, useDialKit } from "dialkit";
-import "dialkit/styles.css";
+import dialkitCss from "dialkit/styles.css?inline";
 import { useEffect, useState } from "react";
 import { setShaderTweaks } from "../lib/tweaks-store";
 
 const root = document.documentElement;
+
+// Inject the pane's styles at mount (not as a page stylesheet) and drop its Google Fonts @import:
+// the page loads nothing from a third-party host.
+if (!document.getElementById("tweaks-styles")) {
+	const style = document.createElement("style");
+	style.id = "tweaks-styles";
+	style.textContent = dialkitCss.replace(/@import[^;]*;/g, "");
+	document.head.append(style);
+}
 const px = (value: number) => `${value}px`;
 
 /**
