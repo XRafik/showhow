@@ -8,6 +8,7 @@ import {
 	saveEditorWindowState,
 	shouldTrackEditorWindow,
 } from "./editorWindowState";
+import { setHudOwnUiProvider } from "./hudOwnUi";
 import {
 	clampHudBoundsToWorkArea,
 	HUD_WINDOW_MIN,
@@ -128,7 +129,7 @@ let hudContentRect: HudContentRect | null = null;
 const HUD_CLAMPS_CONTENT = process.platform !== "linux";
 
 /** The HUD's drawn controls on screen, for keeping their clicks out of guide steps (#124). */
-export function getHudOwnUiRects(): Electron.Rectangle[] {
+function getHudOwnUiRects(): Electron.Rectangle[] {
 	const win = hudOverlayWindow;
 	if (!win || win.isDestroyed()) return [];
 	return hudOwnUiRects({
@@ -138,6 +139,8 @@ export function getHudOwnUiRects(): Electron.Rectangle[] {
 		minimized: win.isMinimized(),
 	});
 }
+
+setHudOwnUiProvider(getHudOwnUiRects);
 
 /** Work area of the display the bar is on (or heading for), not the window. */
 function hudWorkAreaFor(bounds: Electron.Rectangle): Electron.Rectangle {

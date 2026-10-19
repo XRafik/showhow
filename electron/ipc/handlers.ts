@@ -68,6 +68,7 @@ import { LlmConfigStore } from "../ai-edition/llm-config-store";
 import { StylePresetService } from "../ai-edition/style-preset-service";
 import { AppSettingsStore } from "../app-settings";
 import { isDiagnosticModeEnabled, mainLogBuffer } from "../diagnostics/main-log-buffer";
+import { hudOwnUiBounds } from "../hudOwnUi";
 import { mainT } from "../i18n";
 import { getInstallChannel } from "../install-channel";
 import { RECORDINGS_DIR } from "../main";
@@ -164,7 +165,6 @@ import {
 } from "../showhow/recordingLibrary";
 import { restorePendingBundleTranscript } from "../showhow/resumeTranscript";
 import { requestBundleTranscript } from "../showhow/transcriptJob";
-import { getHudOwnUiRects } from "../windows";
 import { registerNativeBridgeHandlers } from "./nativeBridge";
 import { createNativeMacMidCaptureErrorWatch } from "./nativeMacMidCaptureErrorWatch";
 import { registerRecordingPrefsHandlers } from "./recordingPrefs";
@@ -1320,7 +1320,7 @@ async function startCursorRecording(recordingId?: number) {
 	cursorRecordingSession = createCursorRecordingSession({
 		getDisplayBounds: getSelectedSourceBounds,
 		// The recorder bar is inside a desktop capture; its Stop press must not become a step (#124).
-		getOwnUiBounds: getHudOwnUiRects,
+		getOwnUiBounds: hudOwnUiBounds,
 		maxSamples: MAX_CURSOR_SAMPLES,
 		platform: process.platform,
 		sampleIntervalMs: CURSOR_SAMPLE_INTERVAL_MS,
