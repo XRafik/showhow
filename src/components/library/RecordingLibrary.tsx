@@ -1,4 +1,4 @@
-import { CircleDot, FileText, Folder, Scissors, Search, Upload } from "lucide-react";
+import { CircleDot, FileText, Folder, Scissors, Search, Settings, Upload } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
 	AgentBriefPanel,
@@ -7,7 +7,6 @@ import {
 	useAgentBrief,
 } from "@/components/showhow/AgentBriefPanel";
 import { AiGuidePanel } from "@/components/showhow/AiGuidePanel";
-import { AiGuideSettings } from "@/components/showhow/AiGuideSettings";
 import { Button } from "@/components/showhow/Button";
 import { EmptyState } from "@/components/showhow/EmptyState";
 import { ExportPdfSheet } from "@/components/showhow/ExportPdfSheet";
@@ -16,6 +15,7 @@ import { GuideStep, Mosaic } from "@/components/showhow/GuideStep";
 import { ImportVideoSheet } from "@/components/showhow/ImportVideoSheet";
 import { LibraryRow } from "@/components/showhow/LibraryRow";
 import { Progress } from "@/components/showhow/Progress";
+import { SettingsView } from "@/components/showhow/SettingsView";
 import { Shell } from "@/components/showhow/Shell";
 import { Sidebar } from "@/components/showhow/Sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/showhow/Tabs";
@@ -733,6 +733,8 @@ export function RecordingLibrary() {
 	const [importOpen, setImportOpen] = useState(false);
 	const importButton = useRef<HTMLButtonElement>(null);
 	const [overview, setOverview] = useState(false);
+	// Settings replaces the detail pane; no recording reads as selected while it is open.
+	const [settingsOpen, setSettingsOpen] = useState(false);
 	const [loading, setLoading] = useState(true);
 	const [loadError, setLoadError] = useState(false);
 	useEffect(() => {
@@ -802,9 +804,22 @@ export function RecordingLibrary() {
 							{t("importVideo.title")}
 						</Button>
 					}
-					onLibrarySelect={() => setOverview(true)}
+					onLibrarySelect={() => {
+						setSettingsOpen(false);
+						setOverview(true);
+					}}
 					libraryLabel={`Library · ${entries.length}`}
-					footer={<AiGuideSettings />}
+					footer={
+						<Button
+							variant="sidebar"
+							icon={Settings}
+							aria-current={settingsOpen ? "page" : undefined}
+							className={settingsOpen ? "!bg-ds-on-panel-line" : undefined}
+							onClick={() => setSettingsOpen(true)}
+						>
+							{t("showhowSettings.title")}
+						</Button>
+					}
 				>
 					<label className="mb-1 flex items-center gap-2 rounded-[4px] border border-ds-on-panel-line bg-ds-on-panel-wash px-[10px] py-[9px] text-ds-on-panel-soft">
 						<Search size={14} aria-hidden="true" />
@@ -843,8 +858,9 @@ export function RecordingLibrary() {
 									</Tag>
 								}
 								processing={entry.guideStatus === "making" ? <Mosaic /> : undefined}
-								selected={!overview && entry.bundleDir === activeEntry?.bundleDir}
+								selected={!overview && !settingsOpen && entry.bundleDir === activeEntry?.bundleDir}
 								onSelect={() => {
+									setSettingsOpen(false);
 									setOverview(false);
 									setSelectedBundleDir(entry.bundleDir);
 								}}
@@ -876,56 +892,63 @@ export function RecordingLibrary() {
 					setSelectedBundleDir(entry.bundleDir);
 					setQuery("");
 					setOverview(false);
+					setSettingsOpen(false);
 					setLoadError(false);
 				}}
 			/>
 			<div className="mx-auto max-w-[928px] px-6 pb-16 pt-14 min-[1100px]:px-[54px]">
-				{loading && (
-					<div
-						role="status"
-						className="flex min-h-[420px] flex-col items-center justify-center gap-5"
-					>
-						<div className="h-[200px] w-full max-w-[440px] overflow-hidden rounded-[8px]">
-							<Mosaic />
-						</div>
-						<h1 className="font-ds-display text-[32px] font-semibold">
-							{t("showhowLibrary.loading")}
-						</h1>
-						<p className="text-ds-ink-soft">{t("showhowLibrary.finding")}</p>
-					</div>
-				)}
-				{!loading && loadError && <ErrorLibraryState />}
-				{!loading && !loadError && entries.length === 0 && <EmptyLibraryState />}
-				{!loading && !loadError && entries.length > 0 && visibleEntries.length === 0 && (
-					<div className="flex min-h-[420px] flex-col items-center justify-center gap-4 text-center">
-						<h1 className="font-ds-display text-[32px] font-semibold">
-							{t("showhowLibrary.noResults")}
-						</h1>
-						<p className="max-w-full break-words text-ds-ink-soft">
-							{t("showhowLibrary.noMatch", { query })}
-						</p>
-						<Button variant="secondary" onClick={() => setQuery("")}>
-							{t("showhowLibrary.clear")}
-						</Button>
-					</div>
-				)}
-				{!loading && !loadError && activeEntry && overview && (
-					<div className="flex min-h-[520px] flex-col items-center justify-center gap-5 [&>div]:bg-transparent [&_h3]:text-[32px]">
-						<div className="h-[200px] w-full max-w-[440px] overflow-hidden rounded-[8px]">
-							<Mosaic />
-						</div>
-						<EmptyState title={t("showhowLibrary.pick")} body={t("showhowLibrary.pickBody")} />
-					</div>
-				)}
-				{!loading && !loadError && activeEntry && !overview && (
-					<RecordingDetail
-						key={activeEntry.bundleDir}
-						entry={activeEntry}
-						onEntryChange={replaceEntry}
-						onTitleChange={updateTitle}
-						onStepsChange={updateSteps}
-						onGuideStatusChange={onGuideStatusChange}
-					/>
+				{settingsOpen ? (
+					<SettingsView />
+				) : (
+					<>
+						{loading && (
+							<div
+								role="status"
+								className="flex min-h-[420px] flex-col items-center justify-center gap-5"
+							>
+								<div className="h-[200px] w-full max-w-[440px] overflow-hidden rounded-[8px]">
+									<Mosaic />
+								</div>
+								<h1 className="font-ds-display text-[32px] font-semibold">
+									{t("showhowLibrary.loading")}
+								</h1>
+								<p className="text-ds-ink-soft">{t("showhowLibrary.finding")}</p>
+							</div>
+						)}
+						{!loading && loadError && <ErrorLibraryState />}
+						{!loading && !loadError && entries.length === 0 && <EmptyLibraryState />}
+						{!loading && !loadError && entries.length > 0 && visibleEntries.length === 0 && (
+							<div className="flex min-h-[420px] flex-col items-center justify-center gap-4 text-center">
+								<h1 className="font-ds-display text-[32px] font-semibold">
+									{t("showhowLibrary.noResults")}
+								</h1>
+								<p className="max-w-full break-words text-ds-ink-soft">
+									{t("showhowLibrary.noMatch", { query })}
+								</p>
+								<Button variant="secondary" onClick={() => setQuery("")}>
+									{t("showhowLibrary.clear")}
+								</Button>
+							</div>
+						)}
+						{!loading && !loadError && activeEntry && overview && (
+							<div className="flex min-h-[520px] flex-col items-center justify-center gap-5 [&>div]:bg-transparent [&_h3]:text-[32px]">
+								<div className="h-[200px] w-full max-w-[440px] overflow-hidden rounded-[8px]">
+									<Mosaic />
+								</div>
+								<EmptyState title={t("showhowLibrary.pick")} body={t("showhowLibrary.pickBody")} />
+							</div>
+						)}
+						{!loading && !loadError && activeEntry && !overview && (
+							<RecordingDetail
+								key={activeEntry.bundleDir}
+								entry={activeEntry}
+								onEntryChange={replaceEntry}
+								onTitleChange={updateTitle}
+								onStepsChange={updateSteps}
+								onGuideStatusChange={onGuideStatusChange}
+							/>
+						)}
+					</>
 				)}
 			</div>
 		</Shell>

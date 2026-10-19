@@ -10,6 +10,28 @@ regeneration skip tagged clicks, as they already skip `visible: false` (#66). Th
 the telemetry so the editor cursor overlay is unchanged; the editor's reader ignores the new field.
 Older recordings have no tag and keep their existing steps. Windows and Linux sessions are not
 changed (their helpers report points in other coordinate spaces); recorded as a follow-up.
+## 19 October 2026 — Showhow #144 Settings screens
+
+Built in a single Claude Code session (Codex weekly limit exhausted); reviewers were separate fresh
+agents. Settings replaces the Library detail pane; no recording row is selected while it is open.
+
+Frame inventory (working control / truthful exception):
+- Settings-01/02 AI connections: OpenRouter Connected / Not connected comes from the main-process key
+  check; Add API key / Manage key opens the existing key form. OpenRouter keys do not expire, so
+  Settings-02's "Session expired" has no OpenRouter equivalent and is not shown; a status-check
+  failure shows an error instead. ChatGPT is "Coming later" with a disabled sign-in and no account
+  details (#128 parked).
+- Settings-03 Recording: Hide desktop icons saves through the existing recording-preference store
+  and follows changes from other windows. The recordings folder (fixed ~/Showhow/Recordings) and the
+  countdown (fixed 3 s) are shown read-only with an explanation: neither has a preference today.
+- Settings-04 Transcription: names the bundled Whisper model (base q5_1, ~60 MB; a test ties it to
+  the bundle manifest). No "Ready" badge: development builds lack the helper, so it could be false.
+  Names and terms is a disabled field marked "Coming later".
+- Settings-05 Agents: the copy format is the single real format, shown as text rather than a menu;
+  MCP server is a disabled switch marked "Coming later".
+- Settings-06 Appearance: Light / Dark / System use the existing theme store; every window listens
+  to it, so open windows follow.
+The old Settings sheet (AiGuideSettings) is removed, and the key form loses its one-item fake tab bar.
 
 ## 19 October 2026 — Showhow #143 workflow PDF export
 
@@ -1099,3 +1121,23 @@ Scratch bootstrap isolates Electron/OS paths before main, sets only the real pic
 Both media journeys closed Electron but scratch driver exit13 occurred when reading app.process() after disposed transport. Original raw stacks/drivers remain. Independent process cleanup receipts confirm no owned descendants. The cached-child correction passes a separate short launch/close check with exit0/rootGone; it is not a repeated media-journey claim. BEFORE initial wrongURL setup failure is also retained; corrected paired native BEFORE/AFTER exit0. Full evidence roots are retained outside the worktree. Only notes changed after frozen code checks/native binding; production/test hashes remain equal.
 
 Windows/Linux runtime, macOS13 hardware, current packaging/install/signing and real speech/provider/clipboard acceptance are untested. Fresh independent review and exact-head hosted CI remain separate Ship gates; only owner merges in GitHub.
+
+## 19 October 2026 — Showhow #135 landing page build
+### What shipped
+
+`site/` is an Astro project (React islands) that builds a static page from the Task 1 design in `design/landing.pen`. Copy and states follow the approved prototype in `design/landing-prototype/`.
+
+### Where it differs from the ticket
+
+- **Not hand-written HTML/CSS/JS.** The owner asked for Interlude, Lenis, React Bits, itshover and interior.dev. They are React/Astro/GSAP libraries, so the page is an Astro build. The output is still static files on one origin: fonts are self-hosted, there is no third-party script, and no cookie is set (the spec asserts all three).
+- **Interlude is route-to-route.** It transitions between pages, and this page has one route. Its stack is used (Astro, GSAP, Lenis) and the intro shutter and scroll scenes follow its style, but no Interlude engine file is copied. Revisit if the site gains a second page.
+- **Spec files.** `playwright.config.ts` now has an `app` project (the existing specs, unchanged) and a `landing` project.
+- **RED was not observed.** The spec was written after the page. Tests were run green only.
+
+### Open items
+
+- itshover states no licence on its site; its icon sources are copied into `site/src/components/vendor/itshover/`. Confirm the licence before launch.
+- Shader opacity stays at the design's 0.3 (`--landing-shader-opacity`). The owner plans to tune it in code.
+- All loops are placeholders (Task 3).
+- The download button links to the repository until a release exists.
+- A DialKit tweak pane (`?tweak` or Shift+T, hidden by default) adjusts the shader, hero sizing, palette and scroll smoothness live. It is lazy-loaded and persists values in the owner's browser only.

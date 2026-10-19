@@ -7,7 +7,15 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"includes": ["**", "!**/*.css", "!design/**", "!Archive/design/**"]
+		"includes": [
+			"**",
+			"!**/*.css",
+			"!design/**",
+			"!Archive/design/**",
+			"!site/src/components/vendor/**",
+			"!site/**/*.astro",
+			"!site/.astro/**"
+		]
 	},
 	"formatter": {
 		"enabled": true,
