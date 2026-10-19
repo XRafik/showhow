@@ -201,6 +201,23 @@ describe("RecordingLibrary", () => {
 		expect(briefStatus).toHaveBeenCalledWith(desktopDocEntry.bundleDir);
 	});
 
+	it("shows Settings in the main pane with no recording selected, and leaves it on row click", async () => {
+		Object.assign(window.electronAPI, {
+			showhowAiGuideStatus: vi.fn(async () => ({ connected: false, model: "m" })),
+		});
+		mockShowhowListRecordings.mockResolvedValue([desktopEntry, browserEntry]);
+		render(<RecordingLibrary />);
+		await screen.findByRole("heading", { level: 1, name: desktopEntry.title });
+		const settings = screen.getByRole("button", { name: "Settings" });
+		await userEvent.click(settings);
+		expect(screen.getByRole("heading", { level: 1, name: "Settings" })).toBeVisible();
+		expect(settings).toHaveAttribute("aria-current", "page");
+		expect(screen.queryAllByRole("button", { pressed: true })).toHaveLength(0);
+		await userEvent.click(screen.getByText(browserEntry.title));
+		expect(screen.getByRole("heading", { level: 1, name: browserEntry.title })).toBeVisible();
+		expect(settings).not.toHaveAttribute("aria-current");
+	});
+
 	it("opens Export PDF from the guide actions only when the guide has steps", async () => {
 		Object.assign(window.electronAPI, {
 			showhowPdfDestination: vi.fn(async () => ({ display: "~/Downloads" })),

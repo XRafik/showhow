@@ -178,6 +178,7 @@ interface Window {
 			options: import("../src/lib/showhow/pdfExport").PdfExportOptions,
 		) => Promise<import("../src/lib/showhow/pdfExport").PdfExportResult>;
 		showhowPdfReveal: (revealId: string) => Promise<{ success: boolean }>;
+		showhowSettingsInfo: () => Promise<import("../src/lib/showhow/settings").ShowhowSettingsInfo>;
 		showhowOpenRecording: (bundleDir: string) => Promise<{ success: boolean }>;
 		showhowImportRecording: (
 			request: import("../src/lib/showhow/recordingLibrary").ImportRecordingRequest,

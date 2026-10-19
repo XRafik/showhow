@@ -147,6 +147,10 @@ contextBridge.exposeInMainWorld("electronAPI", {
 		>,
 	showhowPdfReveal: (revealId: string) =>
 		ipcRenderer.invoke("showhow:pdf-reveal", revealId) as Promise<{ success: boolean }>,
+	showhowSettingsInfo: () =>
+		ipcRenderer.invoke("showhow:settings-info") as Promise<
+			import("../src/lib/showhow/settings").ShowhowSettingsInfo
+		>,
 	showhowGetSystemTheme: () => ipcRenderer.invoke("showhow:get-system-theme") as Promise<boolean>,
 	showhowOnSystemThemeChanged: (callback: (isDark: boolean) => void) => {
 		const listener = (_event: unknown, isDark: boolean) => callback(isDark);

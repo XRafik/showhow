@@ -163,6 +163,7 @@ import {
 	regenerateRecordingDoc,
 } from "../showhow/recordingLibrary";
 import { restorePendingBundleTranscript } from "../showhow/resumeTranscript";
+import { registerShowhowSettingsHandlers } from "../showhow/settings";
 import { requestBundleTranscript } from "../showhow/transcriptJob";
 import { registerNativeBridgeHandlers } from "./nativeBridge";
 import { createNativeMacMidCaptureErrorWatch } from "./nativeMacMidCaptureErrorWatch";
@@ -3920,6 +3921,12 @@ export function registerIpcHandlers(
 			console.error("Showhow recording could not open:", error);
 			return { success: false };
 		}
+	});
+
+	registerShowhowSettingsHandlers({
+		handle: (channel, handler) => ipcMain.handle(channel, handler),
+		recordingsRoot: SHOWHOW_RECORDINGS_ROOT,
+		homeDir: app.getPath("home"),
 	});
 
 	registerPdfExportHandlers({
