@@ -205,7 +205,12 @@ jobs:
         run: npm run licenses:generate
 
       - name: Package .app bundle
-        run: npx electron-builder --mac --${{ matrix.arch }} --dir --publish never
+        run: |
+          SIGNING_ARGS=()
+          if [[ "$CSC_IDENTITY_AUTO_DISCOVERY" == 'false' ]]; then
+            SIGNING_ARGS+=(--config.mac.identity=-)
+          fi
+          npx electron-builder --mac --${{ matrix.arch }} --dir --publish never "${SIGNING_ARGS[@]}"
         env:
           CSC_NAME: ${{ secrets.MAC_CSC_NAME }}
           CSC_IDENTITY_AUTO_DISCOVERY: ${{ steps.signing.outputs.enabled == 'true' && 'true' || 'false' }}
@@ -229,7 +234,6 @@ jobs:
           echo "app_bundle=$APP_BUNDLE" >> "$GITHUB_OUTPUT"
 
       - name: Verify .app code signature
-        if: steps.signing.outputs.enabled == 'true'
         run: codesign --verify --deep --strict "${{ steps.find_app.outputs.app_bundle }}"
 
       - name: Create DMG

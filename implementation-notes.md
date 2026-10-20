@@ -1,5 +1,21 @@
 # Implementation notes
 
+## 21 October 2026 — macOS CI package signature repair
+
+Direct owner-approved repair, separate from stopped #148. The lockfile pins app-builder-lib
+26.15.3, which no longer automatically ad-hoc signs when identity discovery is disabled. With
+missing Apple credentials, CI left `mac.identity` unspecified and skipped signature verification;
+the renamed Electron bundle retained an invalid linker ad-hoc signature. The owner's downloaded
+DMG and installed app failed with "code has no resources but signature indicates they must be
+present" (BEFORE receipt: `~/dev/loop-evidence/showhow-148/owner-install-signature-20261021.json`).
+
+CI now passes `--config.mac.identity=-` only for the existing missing-credentials fallback and
+always runs strict deep codesign verification before creating the DMG. The Developer ID route
+and entitlements stay unchanged. Regression tests execute the workflow shell using fake packaging
+tools in scratch directories for both architectures and signing routes, including verification
+failure stopping DMG creation. These checks prove workflow behaviour, not an actual signed app,
+notarisation or Gatekeeper trust. Coordinator owns native scratch proof and fresh review.
+
 ## 20 October 2026 — Showhow #147 Final editor assistant, export and dialogs
 
 Built in a single Claude Code session; the reviewer was a separate fresh agent.
