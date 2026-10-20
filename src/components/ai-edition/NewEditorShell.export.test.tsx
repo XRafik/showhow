@@ -33,8 +33,15 @@ vi.mock("./LeftPanel", () => ({
 	ChatStripPanel: () => <div data-testid="chat-strip-panel" />,
 }));
 
+// A render in flight is reported through onBusyChange; the stub reports one from a button.
 vi.mock("./ExportDialog", () => ({
-	ExportDialog: () => <div data-testid="export-panel" />,
+	ExportDialog: ({ onBusyChange }: { onBusyChange?: (busy: boolean) => void }) => (
+		<div data-testid="export-panel">
+			<button type="button" onClick={() => onBusyChange?.(true)}>
+				start render
+			</button>
+		</div>
+	),
 }));
 
 import { NewEditorShell } from "./NewEditorShell";
@@ -118,5 +125,17 @@ describe("NewEditorShell export entry (Editor-04)", () => {
 		expect(screen.getByTestId("chat-strip-panel")).toBe(chat);
 		expect(chat).toBeVisible();
 		expect(screen.queryByTestId("export-panel")).toBeNull();
+	});
+
+	it("does not close export from the rail, a facet or the chat while a render runs", () => {
+		renderShell();
+		fireEvent.click(screen.getByRole("button", { name: "editor.topbar.export" }));
+		fireEvent.click(screen.getByRole("button", { name: "start render" }));
+		fireEvent.click(screen.getByRole("button", { name: "editor.inspector.export" }));
+		expect(screen.getByTestId("export-panel")).toBeVisible();
+		fireEvent.click(screen.getByRole("button", { name: "settings.layout.title" }));
+		expect(screen.getByTestId("export-panel")).toBeVisible();
+		fireEvent.click(screen.getByRole("button", { name: "editor.inspector.aiChat" }));
+		expect(screen.getByTestId("export-panel")).toBeVisible();
 	});
 });

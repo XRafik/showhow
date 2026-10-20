@@ -151,9 +151,12 @@ interface ExportDialogProps {
 	open: boolean;
 	onClose: () => void;
 	document: AxcutDocument | null;
+	/** True from the save picker to the end of the render: the inspector must not unmount the
+	 *  panel then, or an MP4 would keep encoding with nothing left to report it. */
+	onBusyChange?: (busy: boolean) => void;
 }
 
-export function ExportDialog({ open, onClose, document }: ExportDialogProps) {
+export function ExportDialog({ open, onClose, document, onBusyChange }: ExportDialogProps) {
 	const t = useScopedT("editor");
 	const ts = useScopedT("settings");
 	// No usable GPU: the export still applies every effect (output is identical), it
@@ -490,6 +493,10 @@ export function ExportDialog({ open, onClose, document }: ExportDialogProps) {
 	};
 
 	const isBusy = phase === "rendering" || phase === "writing" || phase === "configuring";
+	useEffect(() => {
+		onBusyChange?.(isBusy);
+	}, [isBusy, onBusyChange]);
+	useEffect(() => () => onBusyChange?.(false), [onBusyChange]);
 	const pct = progress?.percentage ?? 0;
 	const gifSizeLabel = GIF_SIZE_PRESETS[gifSize].label;
 	const qualityLabel = ts(
@@ -747,6 +754,7 @@ export function ExportDialog({ open, onClose, document }: ExportDialogProps) {
 				eyebrow={sheetSettings}
 				title={sheetTitle}
 				initialFocusRef={sheetActionRef}
+				focusKey={phase}
 			>
 				<SheetBody
 					phase={phase}

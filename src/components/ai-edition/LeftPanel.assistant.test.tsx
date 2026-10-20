@@ -154,6 +154,21 @@ describe("Edit with AI, Final (Editor-03)", () => {
 		expect(useProjectStore.getState().document?.zoomRanges).toEqual([zoom("z1")]);
 	});
 
+	it("lets Undo be tried again after its save failed, instead of calling it stale", async () => {
+		renderPanel();
+		await sendPrompt("Add zooms");
+		const card = await screen.findByRole("status", { name: 'chat.appliedTitleMany:{"count":2}' });
+		bridge.save.mockResolvedValueOnce({ success: false, error: "disk full" });
+		fireEvent.click(within(card).getByRole("button", { name: "chat.undoTurn" }));
+		const retry = await within(card).findByRole("button", { name: "chat.undoTurn" });
+		await waitFor(() => expect(retry).toBeEnabled());
+		expect(useProjectStore.getState().document?.zoomRanges).toHaveLength(2);
+		fireEvent.click(retry);
+		expect(await within(card).findByText("chat.turnUndone")).toBeInTheDocument();
+		expect(within(card).queryByText("chat.turnUndoStale")).toBeNull();
+		expect(useProjectStore.getState().document?.zoomRanges).toHaveLength(0);
+	});
+
 	it("shows no Applied card for a turn that changed nothing", async () => {
 		bridge.chatRun.mockImplementation(() =>
 			Promise.resolve({

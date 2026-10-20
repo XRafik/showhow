@@ -39,6 +39,10 @@ function useEscape(open: boolean, onClose: () => void) {
 const FOCUSABLE =
 	'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
+function focusInitial(target: HTMLElement | null | undefined, dialog: HTMLElement | null) {
+	(target?.isConnected && !target.matches(":disabled") ? target : dialog)?.focus();
+}
+
 /** Tab and Shift+Tab wrap inside the dialog: past its last control is its first, and back. */
 function trapTab(e: ReactKeyboardEvent<HTMLElement>) {
 	if (e.key !== "Tab") return;
@@ -72,6 +76,7 @@ export function ModalShell({
 	final,
 	dismissible = true,
 	initialFocusRef,
+	focusKey,
 	children,
 }: BaseModalProps & {
 	title: string;
@@ -84,8 +89,12 @@ export function ModalShell({
 	/** Off for a sheet whose own buttons are the only way out (a render in flight): no close
 	 *  button and no backdrop click. Escape still follows `closeOnEscape`. */
 	dismissible?: boolean;
-	/** Where focus lands as the dialog opens, instead of the dialog itself. */
+	/** Where focus lands as the dialog opens, instead of the dialog itself. A disabled target
+	 *  cannot hold focus, so the dialog takes it instead. */
 	initialFocusRef?: RefObject<HTMLElement | null>;
+	/** A change of this value while open moves focus as opening does: a sheet that swaps its
+	 *  actions (rendering, then Done) would otherwise leave focus on a button that is gone. */
+	focusKey?: unknown;
 	/** Off for a dialog that handles Escape itself — two listeners both fire for one
 	 *  keypress, and this one's `onClose` wins whatever order they registered in. */
 	closeOnEscape?: boolean;
@@ -106,11 +115,16 @@ export function ModalShell({
 		// the dialog mounts), in which case restoring is a no-op; the panel's gear is still
 		// there, and gets it back.
 		const opener = document.activeElement;
-		(initialFocusRef?.current ?? dialogRef.current)?.focus();
+		focusInitial(initialFocusRef?.current, dialogRef.current);
 		return () => {
 			if (opener instanceof HTMLElement && opener.isConnected) opener.focus();
 		};
 	}, [open, initialFocusRef]);
+	// biome-ignore lint/correctness/useExhaustiveDependencies: focusKey is the trigger itself; the refs are stable.
+	useEffect(() => {
+		if (!open) return;
+		focusInitial(initialFocusRef?.current, dialogRef.current);
+	}, [focusKey]);
 	if (!open) return null;
 	return (
 		<div

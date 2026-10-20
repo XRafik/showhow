@@ -268,6 +268,8 @@ export function NewEditorShell() {
 	// mounted per trigger site.
 	const [editClipTarget, setEditClipTarget] = useState<AxcutClip | null>(null);
 	const [exportOpen, setExportOpen] = useState(false);
+	// A render in flight keeps the export panel mounted: see ExportDialog's onBusyChange.
+	const [exportBusy, setExportBusy] = useState(false);
 	const [unsavedPrompt, setUnsavedPrompt] = useState<{
 		action: "close" | "new" | "open" | "record";
 		resolve: (choice: UnsavedChoice) => void;
@@ -1669,9 +1671,17 @@ export function NewEditorShell() {
 						</section>
 					}
 					exportOpen={exportOpen && hasAsset}
-					onToggleExport={() => (exportOpen ? setExportOpen(false) : handleExport())}
+					onToggleExport={() => {
+						if (!exportOpen) handleExport();
+						else if (!exportBusy) setExportOpen(false);
+					}}
 					exportPanel={
-						<ExportDialog open onClose={() => setExportOpen(false)} document={document} />
+						<ExportDialog
+							open
+							onClose={() => setExportOpen(false)}
+							document={document}
+							onBusyChange={setExportBusy}
+						/>
 					}
 				/>
 			) : null}

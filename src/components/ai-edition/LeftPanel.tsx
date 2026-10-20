@@ -790,9 +790,13 @@ export function ChatStripPanel() {
 		}
 	};
 
-	const setApplied = (key: string, state: AppliedTurn["state"]) =>
+	const setApplied = (key: string, state: AppliedTurn["state"], revision?: number) =>
 		setMessages((prev) =>
-			prev.map((m) => (m.applied?.key === key ? { ...m, applied: { ...m.applied, state } } : m)),
+			prev.map((m) =>
+				m.applied?.key === key
+					? { ...m, applied: { ...m.applied, state, revision: revision ?? m.applied.revision } }
+					: m,
+			),
 		);
 
 	// Undo restores the document from before the turn only while the store is still at the
@@ -803,6 +807,12 @@ export function ChatStripPanel() {
 		if (turn.state !== "applied") return;
 		setApplied(turn.key, "undoing");
 		const outcome = await applyAgentDocumentIfCurrent(turn.before, turn.revision);
+		if (outcome === "save-failed") {
+			// The failed write still moved the revision while it rolled the store back to the
+			// turn's document, so the retry checks against the revision it left, not the old one.
+			setApplied(turn.key, "applied", useProjectStore.getState().revision);
+			return;
+		}
 		setApplied(
 			turn.key,
 			outcome === "applied" ? "undone" : outcome === "conflict" ? "stale" : "applied",

@@ -179,6 +179,33 @@ describe("Rendering sheet (Editor-05)", () => {
 		expect(screen.getByRole("region", { name: "Export" })).toBeInTheDocument();
 	});
 
+	it("keeps keyboard focus inside the sheet while an MP4 renders, and moves it to Done", async () => {
+		const job = pendingMp4();
+		renderPanel();
+		fireEvent.click(screen.getByRole("button", { name: "Export MP4" }));
+		const sheet = await screen.findByRole("dialog", { name: "Rendering your video" });
+		// The only action is disabled, so focus belongs to the sheet itself.
+		expect(sheet.contains(document.activeElement)).toBe(true);
+		await act(async () => job.resolve(STATS));
+		const done = screen.getByRole("dialog", { name: "Video exported" });
+		expect(within(done).getByRole("button", { name: "Done" })).toHaveFocus();
+	});
+
+	it("says it is busy while a render runs, so the inspector can refuse to close it", async () => {
+		const job = pendingMp4();
+		const onBusyChange = vi.fn();
+		render(
+			<I18nProvider>
+				<ExportDialog open onClose={vi.fn()} document={DOC} onBusyChange={onBusyChange} />
+			</I18nProvider>,
+		);
+		fireEvent.click(screen.getByRole("button", { name: "Export MP4" }));
+		await screen.findByRole("dialog", { name: "Rendering your video" });
+		expect(onBusyChange).toHaveBeenLastCalledWith(true);
+		await act(async () => job.resolve(STATS));
+		expect(onBusyChange).toHaveBeenLastCalledWith(false);
+	});
+
 	it("reports a failure in the sheet, and Close returns to the panel", async () => {
 		const job = pendingMp4();
 		renderPanel();
