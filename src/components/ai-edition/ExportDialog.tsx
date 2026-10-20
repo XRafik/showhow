@@ -1,13 +1,14 @@
-// Export dialog for the new editor. Wires together:
+// Export for the new editor (Editor-04/05): the inspector's share panel, and the rendering sheet
+// it raises over the editor. Wires together:
 // 1. pickExportSavePath (native save dialog)
 // 2. the native D3D exporter (exportMultiNative / exportGifNative)
-// 3. per-job GIF cancellation, with native cleanup before returning to options
+// 3. per-job GIF cancellation, with native cleanup before returning to the panel
 //
-// Format/quality/GIF options live in the dialog's local state. The
-// dialog uses the new shell's modal style.
+// Format/quality/GIF options live in the panel's local state. The sheet says "exported" only
+// once the native call has resolved, i.e. once the file is written.
 
-import { Download, FileVideo, FolderOpen, Loader2, Star } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Download, FileVideo, FolderOpen, Loader2, Star, X } from "lucide-react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useScopedT } from "@/contexts/I18nContext";
 import {
@@ -150,9 +151,12 @@ interface ExportDialogProps {
 	open: boolean;
 	onClose: () => void;
 	document: AxcutDocument | null;
+	/** True from the save picker to the end of the render: the inspector must not unmount the
+	 *  panel then, or an MP4 would keep encoding with nothing left to report it. */
+	onBusyChange?: (busy: boolean) => void;
 }
 
-export function ExportDialog({ open, onClose, document }: ExportDialogProps) {
+export function ExportDialog({ open, onClose, document, onBusyChange }: ExportDialogProps) {
 	const t = useScopedT("editor");
 	const ts = useScopedT("settings");
 	// No usable GPU: the export still applies every effect (output is identical), it
@@ -174,6 +178,9 @@ export function ExportDialog({ open, onClose, document }: ExportDialogProps) {
 	const activeExport = useRef<ActiveExport | null>(null);
 	const [cancelPending, setCancelPending] = useState(false);
 	const pickerGeneration = useRef(0);
+	const titleId = useId();
+	// The sheet's one live action (Cancel export, Done or Close), where its focus starts.
+	const sheetActionRef = useRef<HTMLButtonElement>(null);
 
 	useEffect(
 		() => () => {
@@ -299,10 +306,8 @@ export function ExportDialog({ open, onClose, document }: ExportDialogProps) {
 
 	const handleCancel = async () => {
 		const job = activeExport.current;
-		if (phase !== "rendering" || !job?.id) {
-			handleClose();
-			return;
-		}
+		// Only a GIF job carries an id the native side can stop.
+		if (phase !== "rendering" || !job?.id) return;
 		if (job.cancelRequested) return;
 		job.cancelRequested = true;
 		setCancelPending(true);
@@ -488,170 +493,280 @@ export function ExportDialog({ open, onClose, document }: ExportDialogProps) {
 	};
 
 	const isBusy = phase === "rendering" || phase === "writing" || phase === "configuring";
+	useEffect(() => {
+		onBusyChange?.(isBusy);
+	}, [isBusy, onBusyChange]);
+	useEffect(() => () => onBusyChange?.(false), [onBusyChange]);
 	const pct = progress?.percentage ?? 0;
 	const gifSizeLabel = GIF_SIZE_PRESETS[gifSize].label;
+	const qualityLabel = ts(
+		QUALITY_OPTIONS.find((q) => q.value === quality)?.labelKey ?? "exportQuality.medium",
+	);
+	// The sheet covers the editor from the first frame to the last word on the export. The save
+	// picker ("configuring") is the OS's own window, so nothing of ours stands in front of it.
+	const sheetOpen =
+		phase === "rendering" || phase === "writing" || phase === "done" || phase === "error";
+	const sheetTitle =
+		phase === "done"
+			? format === "gif"
+				? t("exportDialog.exportedGif")
+				: t("exportDialog.exportedVideo")
+			: phase === "error"
+				? t("exportDialog.exportFailed")
+				: t("exportDialog.sheetRendering");
+	const sheetSettings = t("exportDialog.sheetSettings", {
+		format: format === "gif" ? ts("exportFormat.gif") : ts("exportFormat.mp4"),
+		quality: format === "gif" ? gifSizeLabel : qualityLabel,
+		fps: format === "gif" ? gifFrameRate : fps,
+	});
+	// What the panel promises before anything runs: the format, the frame it will be, how long
+	// it plays (speed regions counted, as the encoder counts them) and that the user picks the
+	// place. No file size: nothing here can know it before the encoder has run.
+	const summaryFps = format === "gif" ? gifFrameRate : fps;
+	const summaryDims = format === "gif" ? gifOutputDims(gifSize) : tierOutputDims(quality);
+	const summaryLengthS = document
+		? outputFrameCount(
+				buildNativeClipList(document),
+				buildSceneDescription(document).speedRegions,
+				summaryFps,
+			) / summaryFps
+		: 0;
+	// Back to the panel from a finished or failed export. Nothing to undo: a failed export
+	// left no file (native cleanup), a finished one is on disk where the sheet said.
+	const dismissSheet = () => {
+		if (phase !== "done" && phase !== "error") return;
+		pickerGeneration.current += 1;
+		setPhase("idle");
+		setProgress(null);
+		setError(null);
+		setSavedPath(null);
+		setStarPrompt(null);
+	};
 
 	return (
-		<ModalShell
-			open={open}
-			onClose={handleClose}
-			title={t("exportDialog.title")}
-			subtitle={t("exportDialog.subtitle")}
-		>
-			<div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-				<div
-					style={{
-						display: "grid",
-						gridTemplateColumns: "1fr 1fr",
-						gap: 8,
-					}}
-				>
-					<FormatToggle
-						active={format === "mp4"}
-						label={ts("exportFormat.mp4")}
-						icon={<FileVideo size={18} />}
-						onClick={() => setFormat("mp4")}
+		<>
+			<section className={styles.exportPanel} aria-labelledby={titleId}>
+				<header className={styles.exportHead}>
+					<div>
+						<span className={styles.sheetEyebrow}>{t("exportDialog.eyebrow")}</span>
+						<h2 id={titleId} className={styles.exportTitle}>
+							{t("exportDialog.title")}
+						</h2>
+					</div>
+					<button
+						type="button"
+						className={styles.exportClose}
+						aria-label={t("exportDialog.closePanel")}
+						onClick={handleClose}
 						disabled={isBusy}
-					/>
-					<FormatToggle
-						active={format === "gif"}
-						label={ts("exportFormat.gif")}
-						icon={<Download size={18} />}
-						onClick={() => setFormat("gif")}
-						disabled={isBusy}
-					/>
-				</div>
+					>
+						<X size={16} />
+					</button>
+				</header>
+				<div className={styles.exportBody}>
+					<div className={styles.exportChoices2}>
+						<FormatToggle
+							active={format === "mp4"}
+							label={ts("exportFormat.mp4")}
+							icon={<FileVideo size={16} />}
+							onClick={() => setFormat("mp4")}
+							disabled={isBusy}
+						/>
+						<FormatToggle
+							active={format === "gif"}
+							label={ts("exportFormat.gif")}
+							icon={<Download size={16} />}
+							onClick={() => setFormat("gif")}
+							disabled={isBusy}
+						/>
+					</div>
 
-				{format === "mp4" ? (
-					<section>
-						<div className={styles.groupLabel}>{t("exportDialog.quality")}</div>
-						<div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
-							{QUALITY_OPTIONS.map((q) => (
-								<button
-									type="button"
-									key={q.value}
-									disabled={isBusy}
-									onClick={() => setQuality(q.value)}
-									style={{
-										display: "flex",
-										flexDirection: "column",
-										gap: 2,
-										padding: "10px 12px",
-										...choiceStyle(quality === q.value),
-										color: "var(--fg-2)",
-										cursor: "pointer",
-										font: "500 13px/1 var(--font-body)",
-									}}
-								>
-									<span style={{ color: "var(--fg)", fontWeight: 600 }}>{ts(q.labelKey)}</span>
-									{(() => {
+					{format === "mp4" ? (
+						<>
+							<section>
+								<div className={styles.exportLabel}>{t("exportDialog.quality")}</div>
+								<div className={styles.exportChoices3}>
+									{QUALITY_OPTIONS.map((q) => {
 										const dims = tierOutputDims(q.value);
-										if (!dims) return null;
-										// Downscale badge removed everywhere — restated what picking a lower
-										// tier already means, not actionable. The upscale badge asks whether
-										// the clip has to be STRETCHED to fill this frame (`wouldUpscale`),
-										// which is a contain-fit question: a short-side compare read the
-										// letterbox rows a non-16:9 source gets in a 16:9 project as if they
-										// were stretched pixels, and flagged "1080p" on the very frame
-										// "Source" produced unflagged. No "Source" special case any more —
-										// its frame is the source's long side at the project ratio, so its
+										// The upscale badge asks whether the clip has to be STRETCHED to fill this
+										// frame (`wouldUpscale`), a contain-fit question: a short-side compare read
+										// the letterbox rows a non-16:9 source gets in a 16:9 project as stretched
+										// pixels. "Source" is the source's long side at the project ratio, so its
 										// contain scale is never above 1 and the general test covers it.
-										const isUpscale = smallestSource !== null && wouldUpscale(dims, smallestSource);
+										const isUpscale =
+											dims !== null &&
+											smallestSource !== null &&
+											wouldUpscale(dims, smallestSource);
 										return (
-											<span
-												style={{
-													font: "500 12px var(--font-body)",
-													fontVariantNumeric: "tabular-nums",
-													color: isUpscale ? "var(--warn)" : "var(--muted)",
-												}}
+											<button
+												type="button"
+												key={q.value}
+												disabled={isBusy}
+												aria-pressed={quality === q.value}
+												onClick={() => setQuality(q.value)}
+												className={styles.exportChoice}
 											>
-												{dims.width} × {dims.height}
-												{isUpscale ? ` · ${t("exportDialog.qualityUpscaleWarning")}` : ""}
-											</span>
+												<span className={styles.exportChoiceName}>{ts(q.labelKey)}</span>
+												{dims ? (
+													<span
+														className={styles.exportChoiceMeta}
+														data-warn={isUpscale || undefined}
+													>
+														{dims.width} × {dims.height}
+														{isUpscale ? ` · ${t("exportDialog.qualityUpscaleWarning")}` : ""}
+													</span>
+												) : null}
+											</button>
 										);
-									})()}
-								</button>
-							))}
-						</div>
-						<div style={{ marginTop: 12 }}>
-							<div className={styles.groupLabel}>{t("exportDialog.frameRate")}</div>
-							<div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
-								{([24, 30, 60] as const).map((r) => (
-									<button
-										type="button"
-										key={r}
-										disabled={isBusy}
-										onClick={() => setFps(r)}
-										style={segStyle(fps === r)}
-									>
-										{r}
-									</button>
-								))}
+									})}
+								</div>
+							</section>
+							<section>
+								<div className={styles.exportLabel}>{t("exportDialog.frameRate")}</div>
+								<div className={styles.exportChoices3}>
+									{([24, 30, 60] as const).map((r) => (
+										<button
+											type="button"
+											key={r}
+											disabled={isBusy}
+											aria-pressed={fps === r}
+											onClick={() => setFps(r)}
+											className={styles.exportChoice}
+										>
+											{r}
+										</button>
+									))}
+								</div>
+							</section>
+						</>
+					) : (
+						<>
+							<section>
+								<div className={styles.exportLabel}>{t("exportDialog.frameRate")}</div>
+								<div className={styles.exportChoices4}>
+									{GIF_FRAME_RATES.map((r) => (
+										<button
+											type="button"
+											key={r.value}
+											disabled={isBusy}
+											aria-pressed={gifFrameRate === r.value}
+											onClick={() => setGifFrameRate(r.value)}
+											className={styles.exportChoice}
+										>
+											{r.value} FPS
+										</button>
+									))}
+								</div>
+							</section>
+							<section>
+								<div className={styles.exportLabel}>{t("exportDialog.size")}</div>
+								<div className={styles.exportChoices2}>
+									{(Object.keys(GIF_SIZE_PRESETS) as GifSizePreset[]).map((s) => (
+										<button
+											type="button"
+											key={s}
+											disabled={isBusy}
+											aria-pressed={gifSize === s}
+											onClick={() => setGifSize(s)}
+											className={styles.exportChoice}
+										>
+											{GIF_SIZE_PRESETS[s].label}
+										</button>
+									))}
+								</div>
+							</section>
+							<div className={styles.paneRow} style={{ margin: 0 }}>
+								<span className={styles.label}>{t("exportDialog.loopGif")}</span>
+								<Toggle
+									checked={gifLoop}
+									ariaLabel={t("exportDialog.loopGif")}
+									disabled={isBusy}
+									onChange={setGifLoop}
+								/>
 							</div>
-						</div>
-					</section>
-				) : (
-					<section style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-						<div>
-							<div className={styles.groupLabel}>{t("exportDialog.frameRate")}</div>
-							<div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
-								{GIF_FRAME_RATES.map((r) => (
-									<button
-										type="button"
-										key={r.value}
-										disabled={isBusy}
-										onClick={() => setGifFrameRate(r.value)}
-										style={segStyle(gifFrameRate === r.value)}
-									>
-										{r.value} FPS
-									</button>
-								))}
-							</div>
-						</div>
-						<div>
-							<div className={styles.groupLabel}>{t("exportDialog.size")}</div>
-							<div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 6 }}>
-								{(Object.keys(GIF_SIZE_PRESETS) as GifSizePreset[]).map((s) => (
-									<button
-										type="button"
-										key={s}
-										disabled={isBusy}
-										onClick={() => setGifSize(s)}
-										style={segStyle(gifSize === s)}
-									>
-										{GIF_SIZE_PRESETS[s].label}
-									</button>
-								))}
-							</div>
-						</div>
-						<div className={styles.paneRow} style={{ margin: 0 }}>
-							<span className={styles.label}>{t("exportDialog.loopGif")}</span>
-							<Toggle
-								checked={gifLoop}
-								ariaLabel={t("exportDialog.loopGif")}
-								disabled={isBusy}
-								onChange={setGifLoop}
-							/>
-						</div>
-						<div
-							style={{
-								font: "500 12px/1.4 var(--font-body)",
-								fontVariantNumeric: "tabular-nums",
-								color: "var(--muted)",
-							}}
-						>
-							{gifFrameRate} FPS · {gifSizeLabel} ·{" "}
-							{gifLoop ? t("exportDialog.loopOn") : t("exportDialog.loopOff")}
-						</div>
-					</section>
-				)}
+						</>
+					)}
 
-				<ProgressBlock
+					<ul className={styles.exportSummary} aria-label={t("exportDialog.summaryLabel")}>
+						<li>
+							<span>{t("exportDialog.summaryFormat")}</span>
+							<span>
+								{format === "gif"
+									? `${ts("exportFormat.gif")} · ${gifFrameRate} FPS · ${gifLoop ? t("exportDialog.loopOn") : t("exportDialog.loopOff")}`
+									: `${ts("exportFormat.mp4")} · H.264 · ${fps} FPS`}
+							</span>
+						</li>
+						{summaryDims?.width && summaryDims.height ? (
+							<li>
+								<span>{t("exportDialog.size")}</span>
+								<span>
+									{summaryDims.width} × {summaryDims.height}
+								</span>
+							</li>
+						) : null}
+						<li>
+							<span>{t("exportDialog.summaryLength")}</span>
+							<span>{formatLength(summaryLengthS)}</span>
+						</li>
+						<li>
+							<span>{t("exportDialog.savedTo")}</span>
+							<span>{t("exportDialog.destinationChoose")}</span>
+						</li>
+					</ul>
+
+					{cpuCompositor && (
+						// Next to the export button, not in a toast: it has to land while the user is
+						// still deciding. A CPU export renders every effect correctly but takes minutes
+						// rather than seconds, and an unexplained ten-minute wait reads as a hang.
+						<p data-testid="export-cpu-warning" className={styles.exportWarning}>
+							{t("cpuCompositor.exportWarning")}
+						</p>
+					)}
+				</div>
+				<div className={styles.exportFoot}>
+					<button
+						type="button"
+						className={styles.sheetPrimary}
+						onClick={handleStart}
+						disabled={isBusy || !document}
+					>
+						{phase === "configuring" ? (
+							<>
+								<Loader2 size={14} className="animate-spin" />
+								{t("exportDialog.starting")}
+							</>
+						) : (
+							<>
+								<Download size={14} />
+								{format === "gif" ? t("exportDialog.exportGif") : t("exportDialog.exportMp4")}
+							</>
+						)}
+					</button>
+				</div>
+			</section>
+
+			<ModalShell
+				open={sheetOpen}
+				onClose={dismissSheet}
+				final
+				dismissible={false}
+				closeOnEscape={phase === "done" || phase === "error"}
+				eyebrow={sheetSettings}
+				title={sheetTitle}
+				initialFocusRef={sheetActionRef}
+				focusKey={phase}
+			>
+				<SheetBody
 					phase={phase}
+					format={format}
 					progress={progress}
 					error={error}
 					pct={pct}
 					savedPath={savedPath}
+					cancelPending={cancelPending}
+					actionRef={sheetActionRef}
+					onCancel={() => void handleCancel()}
+					onDismiss={dismissSheet}
 					starPrompt={starPrompt}
 					onAnswerStarPrompt={() => {
 						// Starring and declining are the same answer here: the ask is over. Cleared
@@ -662,74 +777,18 @@ export function ExportDialog({ open, onClose, document }: ExportDialogProps) {
 							.catch((err) => console.warn("[export] could not record the star answer:", err));
 					}}
 				/>
-
-				{cpuCompositor && phase !== "done" && (
-					// Placed next to the export button, not in a toast: it has to land while
-					// the user is still deciding. A CPU export renders every effect correctly
-					// but takes minutes rather than seconds, and an unexplained ten-minute
-					// wait reads as a hang.
-					<p
-						data-testid="export-cpu-warning"
-						// Amber as a tint, not as the text colour: --warn text is ~2:1 on the light theme.
-						style={{
-							margin: "0 0 4px",
-							padding: "10px 12px",
-							borderRadius: 10,
-							background: "var(--warn-soft)",
-							fontSize: "0.8125rem",
-							lineHeight: 1.4,
-							color: "var(--fg-2)",
-						}}
-					>
-						{t("cpuCompositor.exportWarning")}
-					</p>
-				)}
-
-				<div
-					style={{
-						display: "flex",
-						justifyContent: "flex-end",
-						gap: 8,
-						paddingTop: 12,
-						borderTop: "1px solid var(--border-soft)",
-					}}
-				>
-					<button
-						type="button"
-						className={`${styles.btn} ${styles.btnSecondary}`}
-						onClick={handleCancel}
-						disabled={isBusy && !(format === "gif" && phase === "rendering" && !cancelPending)}
-						aria-busy={cancelPending}
-					>
-						{cancelPending && <Loader2 size={14} className="animate-spin" />}
-						{phase === "done" ? t("exportDialog.close") : t("exportDialog.cancel")}
-					</button>
-					<button
-						type="button"
-						className={`${styles.btn} ${styles.btnPrimary}`}
-						onClick={handleStart}
-						disabled={isBusy || !document}
-					>
-						{isBusy ? (
-							<>
-								<Loader2 size={14} className="animate-spin" />
-								{phase === "rendering"
-									? t("exportDialog.rendering")
-									: phase === "writing"
-										? t("exportDialog.saving")
-										: t("exportDialog.starting")}
-							</>
-						) : (
-							<>
-								<Download size={14} />
-								{format === "gif" ? t("exportDialog.exportGif") : t("exportDialog.exportMp4")}
-							</>
-						)}
-					</button>
-				</div>
-			</div>
-		</ModalShell>
+			</ModalShell>
+		</>
 	);
+}
+
+/** m:ss, or h:mm:ss past the hour. */
+function formatLength(totalSeconds: number): string {
+	const s = Math.max(0, Math.round(totalSeconds));
+	const h = Math.floor(s / 3600);
+	const m = Math.floor((s % 3600) / 60);
+	const sec = (s % 60).toString().padStart(2, "0");
+	return h > 0 ? `${h}:${m.toString().padStart(2, "0")}:${sec}` : `${m}:${sec}`;
 }
 
 function FormatToggle({
@@ -749,22 +808,9 @@ function FormatToggle({
 		<button
 			type="button"
 			disabled={disabled}
+			aria-pressed={active}
 			onClick={onClick}
-			style={{
-				display: "flex",
-				alignItems: "center",
-				justifyContent: "center",
-				gap: 8,
-				padding: "12px 16px",
-				...choiceStyle(active),
-				// Selection is conveyed by border + tinted background (like the quality
-				// cards below), not by swapping text color -- `--accent-on` is meant
-				// for text on a SOLID accent fill, and paired with a near-transparent
-				// tint it read as near-invisible dark-on-dark text.
-				color: "var(--fg)",
-				cursor: "pointer",
-				font: "600 14px/1 var(--font-body)",
-			}}
+			className={`${styles.exportChoice} ${styles.exportFormat}`}
 		>
 			{icon}
 			{label}
@@ -772,20 +818,31 @@ function FormatToggle({
 	);
 }
 
-function ProgressBlock({
+/** Editor-05: the rendering sheet's body, from the first frame to the saved file or the error. */
+function SheetBody({
 	phase,
+	format,
 	progress,
 	error,
 	pct,
 	savedPath,
+	cancelPending,
+	actionRef,
+	onCancel,
+	onDismiss,
 	starPrompt,
 	onAnswerStarPrompt,
 }: {
 	phase: Phase;
+	format: ExportFormat;
 	progress: ExportProgress | null;
 	error: string | null;
 	pct: number;
 	savedPath: string | null;
+	cancelPending: boolean;
+	actionRef: React.RefObject<HTMLButtonElement>;
+	onCancel: () => void;
+	onDismiss: () => void;
 	starPrompt: { store: boolean } | null;
 	onAnswerStarPrompt: () => void;
 }) {
@@ -794,42 +851,13 @@ function ProgressBlock({
 	// rather than in the orphaned `settings.support` block because the main process only bundles
 	// `common` and `dialogs`, and one label split across two namespaces is one label that drifts.
 	const tCommon = useScopedT("common");
-	// Nothing to say before an export: the format is the first control on screen and
-	// already picked. The old "Pick a format and press Export to start" plate was written
-	// for the UI that hid the format toggle under Advanced, and stayed up through the save
-	// picker where it was simply false.
-	if (phase === "idle" || phase === "configuring") return null;
+	const noteId = useId();
 	if (phase === "done") {
 		return (
-			<div
-				style={{
-					padding: "16px",
-					border: "1px solid var(--brand)",
-					borderRadius: 12,
-					background: "var(--success-soft)",
-					color: "var(--fg-2)",
-					font: "500 12px var(--font-body)",
-					display: "flex",
-					flexDirection: "column",
-					alignItems: "flex-start",
-					gap: 12,
-				}}
-			>
-				<div>
-					{t("exportDialog.savedTo")}{" "}
-					<span style={{ fontFamily: "var(--font-mono)" }}>{savedPath}</span>
-				</div>
-				{savedPath ? (
-					<button
-						type="button"
-						data-testid="export-show-in-folder"
-						className={`${styles.btn} ${styles.btnSecondary}`}
-						onClick={() => revealExportedFile(savedPath)}
-					>
-						<FolderOpen size={14} />
-						{t("exportDialog.showInFolder")}
-					</button>
-				) : null}
+			<>
+				<p className={styles.sheetText}>
+					{t("exportDialog.savedTo")} <span className={styles.exportPath}>{savedPath}</span>
+				</p>
 				{starPrompt ? (
 					<div className={styles.starPrompt} data-testid="export-star-prompt">
 						<span className={styles.starPromptText}>{t("exportDialog.starPrompt")}</span>
@@ -837,7 +865,7 @@ function ProgressBlock({
 							<button
 								type="button"
 								data-testid="export-star-prompt-star"
-								className={`${styles.btn} ${styles.btnSecondary}`}
+								className={styles.sheetSecondary}
 								onClick={() => {
 									openRepoPage();
 									onAnswerStarPrompt();
@@ -847,13 +875,13 @@ function ProgressBlock({
 								{tCommon("actions.starOnGithub")}
 							</button>
 							{starPrompt.store ? (
-								// Deliberately NOT an answer: rating on the Store and starring the repo
-								// are different favours, and dismissing on the first would quietly cost
-								// the user the second.
+								// Deliberately NOT an answer: rating on the Store and starring the repo are
+								// different favours, and dismissing on the first would quietly cost the user
+								// the second.
 								<button
 									type="button"
 									data-testid="export-star-prompt-store"
-									className={`${styles.btn} ${styles.btnSecondary}`}
+									className={styles.sheetSecondary}
 									onClick={() => {
 										void window.electronAPI
 											?.openStoreReview?.()
@@ -874,111 +902,96 @@ function ProgressBlock({
 						</div>
 					</div>
 				) : null}
-			</div>
+				<div className={styles.sheetFoot}>
+					{savedPath ? (
+						<button
+							type="button"
+							data-testid="export-show-in-folder"
+							className={styles.sheetSecondary}
+							onClick={() => revealExportedFile(savedPath)}
+						>
+							<FolderOpen size={14} />
+							{t("exportDialog.showInFolder")}
+						</button>
+					) : null}
+					<span className={styles.sheetFootGap} />
+					<button ref={actionRef} type="button" className={styles.sheetPrimary} onClick={onDismiss}>
+						{t("exportDialog.done")}
+					</button>
+				</div>
+			</>
 		);
 	}
 	if (phase === "error") {
 		return (
-			<div
-				style={{
-					padding: "16px",
-					border: "1px solid var(--danger)",
-					borderRadius: 12,
-					background: "var(--danger-soft)",
-					color: "var(--danger)",
-					font: "500 12px var(--font-body)",
-				}}
-			>
-				{error ?? t("exportDialog.exportFailedGeneric")}
-			</div>
+			<>
+				<p role="alert" className={styles.exportError}>
+					{error ?? t("exportDialog.exportFailedGeneric")}
+				</p>
+				<div className={styles.sheetFoot}>
+					<span className={styles.sheetFootGap} />
+					<button
+						ref={actionRef}
+						type="button"
+						className={styles.sheetSecondary}
+						onClick={onDismiss}
+					>
+						{t("exportDialog.close")}
+					</button>
+				</div>
+			</>
 		);
 	}
 	const current = progress?.currentFrame ?? 0;
 	const total = progress?.totalFrames ?? 0;
 	const eta = progress?.estimatedTimeRemaining ?? 0;
+	const rounded = Math.round(Math.max(0, Math.min(100, pct)));
+	// Only a GIF job can be stopped: the MP4 encoder has no cancel. Say so, on the button, rather
+	// than offer a Cancel that does nothing.
+	const canCancel = format === "gif" && phase === "rendering" && !cancelPending;
 	return (
-		<div
-			style={{
-				padding: "12px 14px",
-				borderRadius: 12,
-				background: "color-mix(in oklab, var(--fg) 5%, transparent)",
-				display: "flex",
-				flexDirection: "column",
-				gap: 8,
-			}}
-		>
-			<div
-				style={{
-					display: "flex",
-					alignItems: "center",
-					justifyContent: "space-between",
-				}}
-			>
-				<span style={{ font: "500 13px var(--font-body)", color: "var(--fg-2)" }}>
+		<>
+			<div className={styles.renderHead}>
+				<span className={styles.renderPct}>{rounded}%</span>
+				<span className={styles.sheetNote}>
 					{phase === "writing" ? t("exportDialog.writingFile") : t("exportDialog.renderingFrames")}
 				</span>
-				<span
-					style={{
-						font: "600 13px/1 var(--font-body)",
-						fontVariantNumeric: "tabular-nums",
-						color: "var(--fg)",
-					}}
-				>
-					{Math.round(pct)}%
-				</span>
 			</div>
 			<div
-				style={{
-					position: "relative",
-					height: 8,
-					background: "var(--surface-3)",
-					borderRadius: 999,
-					overflow: "hidden",
-				}}
+				role="progressbar"
+				aria-label={t("exportDialog.renderingFrames")}
+				aria-valuemin={0}
+				aria-valuemax={100}
+				aria-valuenow={rounded}
+				className={styles.renderBar}
 			>
-				<div
-					style={{
-						position: "absolute",
-						inset: 0,
-						width: `${Math.max(0, Math.min(100, pct))}%`,
-						background: "var(--brand)",
-						transition: "width 200ms var(--ease)",
-					}}
-				/>
+				<div className={styles.renderFill} style={{ width: `${rounded}%` }} />
 			</div>
-			<div
-				style={{
-					font: "400 12px/1.4 var(--font-body)",
-					fontVariantNumeric: "tabular-nums",
-					color: "var(--muted)",
-				}}
-			>
+			<p className={styles.sheetNote}>
 				{total > 0
 					? t("exportDialog.framesEta", { current, total, eta: Math.max(0, Math.round(eta)) })
 					: t("exportDialog.preparingEncoder")}
+			</p>
+			{format === "mp4" ? (
+				<p id={noteId} className={styles.sheetNote}>
+					{t("exportDialog.mp4CannotCancel")}
+				</p>
+			) : null}
+			<div className={styles.sheetFoot}>
+				<span className={styles.sheetFootGap} />
+				<button
+					ref={actionRef}
+					type="button"
+					className={styles.sheetSecondary}
+					onClick={onCancel}
+					disabled={!canCancel}
+					aria-describedby={format === "mp4" ? noteId : undefined}
+					aria-busy={cancelPending}
+				>
+					{cancelPending && <Loader2 size={14} className="animate-spin" />}
+					{t("exportDialog.cancelExport")}
+				</button>
 			</div>
-		</div>
+		</>
 	);
-}
-
-/** The one selected look, shared by every choice in this dialog: accent border + accent-soft
- *  fill when picked, a soft fill otherwise. The segments used to go solid mint while the cards
- *  above them were tinted — two ways of saying "selected" on one screen. */
-function choiceStyle(active: boolean): React.CSSProperties {
-	return {
-		border: `1px solid ${active ? "var(--accent)" : "transparent"}`,
-		borderRadius: 10,
-		background: active ? "var(--accent-soft)" : "color-mix(in oklab, var(--fg) 5%, transparent)",
-	};
-}
-
-function segStyle(active: boolean): React.CSSProperties {
-	return {
-		padding: "10px 12px",
-		...choiceStyle(active),
-		color: active ? "var(--fg)" : "var(--fg-2)",
-		cursor: "pointer",
-		font: `${active ? 600 : 500} 13px/1 var(--font-body)`,
-		fontVariantNumeric: "tabular-nums",
-	};
 }

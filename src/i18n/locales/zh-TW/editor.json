@@ -206,7 +206,18 @@
 		"failedToWriteFile": "寫入檔案失敗",
 		"qualityUpscaleWarning": "放大",
 		"exportedVideoOf": "的影片已匯出，耗時",
-		"nothingToExport": "沒有可匯出的內容 — 時間軸為空。"
+		"nothingToExport": "沒有可匯出的內容 — 時間軸為空。",
+		"eyebrow": "分享",
+		"closePanel": "關閉匯出",
+		"summaryLabel": "匯出摘要",
+		"summaryFormat": "格式",
+		"summaryLength": "長度",
+		"destinationChoose": "由你選擇儲存位置",
+		"sheetRendering": "正在算繪影片",
+		"sheetSettings": "匯出 · {{format}} · {{quality}} · {{fps}} fps",
+		"cancelExport": "取消匯出",
+		"mp4CannotCancel": "MP4 匯出開始後無法停止。",
+		"done": "完成"
 	},
 	"inspector": {
 		"resetFocusPoint": "重設焦點",
@@ -222,7 +233,9 @@
 		"deleteRegion": "刪除區間",
 		"freehandRendersAsBox": "匯出時，手繪形狀會以其外接矩形遮蔽——寧可多遮，絕不少遮。",
 		"label": "檢查器",
-		"aiChat": "AI 聊天"
+		"aiChat": "AI 聊天",
+		"export": "匯出",
+		"exportTip": "匯出：MP4 或 GIF"
 	},
 	"chat": {
 		"changeProvider": "更換提供者",
@@ -294,7 +307,16 @@
 			"subtitle": "切換或新增工作階段",
 			"empty": "尚無對話。",
 			"msgsCount": "{{count}} 則訊息 · {{date}}"
-		}
+		},
+		"editWithAi": "用 AI 編輯",
+		"providerConnected": "已連線 · {{provider}}",
+		"providerNotConnected": "未連線",
+		"composerLabel": "傳訊息給 AI 編輯器",
+		"undoTurn": "復原",
+		"turnUndone": "已復原。專案已回到這一輪之前的狀態。",
+		"turnUndoStale": "無法復原：此後專案已有變更。請改用時間軸上的復原。",
+		"appliedTitleOne": "已套用 · 1 處變更",
+		"appliedTitleMany": "已套用 · {{count}} 處變更"
 	},
 	"newProjectDialog": {
 		"title": "新增專案",

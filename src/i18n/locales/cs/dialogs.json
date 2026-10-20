@@ -72,7 +72,10 @@
 			"notSavedYet": "Aktuální projekt ještě nebyl uložen na disk.",
 			"discard": "Zahodit",
 			"saveAndContinue": "Uložit a pokračovat",
-			"saving": "Ukládání…"
+			"saving": "Ukládání…",
+			"eyebrow": "Neuložené změny",
+			"originalSafe": "Původní záznam zůstane v každém případě v bezpečí.",
+			"save": "Uložit"
 		}
 	},
 	"fileDialogs": {
@@ -88,5 +91,9 @@
 		"audioFiles": "Zvukové soubory",
 		"allFiles": "Všechny soubory",
 		"showhowProject": "Projekt Showhow"
+	},
+	"shortcuts": {
+		"eyebrow": "Nápověda",
+		"openHint": "Tento seznam otevřete stisknutím ? v editoru."
 	}
 }

@@ -72,7 +72,10 @@
 			"notSavedYet": "現在のプロジェクトはまだディスクに保存されていません。",
 			"discard": "破棄",
 			"saveAndContinue": "保存して続行",
-			"saving": "保存中…"
+			"saving": "保存中…",
+			"eyebrow": "未保存の変更",
+			"originalSafe": "どちらを選んでも元の録画は失われません。",
+			"save": "保存"
 		}
 	},
 	"fileDialogs": {
@@ -88,5 +91,9 @@
 		"audioFiles": "オーディオファイル",
 		"allFiles": "すべてのファイル",
 		"showhowProject": "Showhow プロジェクト"
+	},
+	"shortcuts": {
+		"eyebrow": "ヘルプ",
+		"openHint": "エディタで ? を押すとこの一覧が開きます。"
 	}
 }

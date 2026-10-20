@@ -206,7 +206,18 @@
 		"failedToWriteFile": "写入文件失败",
 		"qualityUpscaleWarning": "放大",
 		"exportedVideoOf": "的视频已导出，用时",
-		"nothingToExport": "没有可导出的内容 — 时间轴为空。"
+		"nothingToExport": "没有可导出的内容 — 时间轴为空。",
+		"eyebrow": "分享",
+		"closePanel": "关闭导出",
+		"summaryLabel": "导出摘要",
+		"summaryFormat": "格式",
+		"summaryLength": "时长",
+		"destinationChoose": "由你选择保存位置",
+		"sheetRendering": "正在渲染视频",
+		"sheetSettings": "导出 · {{format}} · {{quality}} · {{fps}} fps",
+		"cancelExport": "取消导出",
+		"mp4CannotCancel": "MP4 导出开始后无法停止。",
+		"done": "完成"
 	},
 	"inspector": {
 		"resetFocusPoint": "重置焦点",
@@ -222,7 +233,9 @@
 		"deleteRegion": "删除区间",
 		"freehandRendersAsBox": "导出时，手绘形状会以其外接矩形遮挡——宁可多遮，绝不少遮。",
 		"label": "检查器",
-		"aiChat": "AI 聊天"
+		"aiChat": "AI 聊天",
+		"export": "导出",
+		"exportTip": "导出：MP4 或 GIF"
 	},
 	"chat": {
 		"changeProvider": "更换提供方",
@@ -294,7 +307,16 @@
 			"subtitle": "切换或新建会话",
 			"empty": "暂无对话。",
 			"msgsCount": "{{count}} 条消息 · {{date}}"
-		}
+		},
+		"editWithAi": "用 AI 编辑",
+		"providerConnected": "已连接 · {{provider}}",
+		"providerNotConnected": "未连接",
+		"composerLabel": "给 AI 编辑器发消息",
+		"undoTurn": "撤销",
+		"turnUndone": "已撤销。项目已恢复到这一轮之前的状态。",
+		"turnUndoStale": "无法撤销：此后项目已有更改。请改用时间线上的撤销。",
+		"appliedTitleOne": "已应用 · 1 处更改",
+		"appliedTitleMany": "已应用 · {{count}} 处更改"
 	},
 	"newProjectDialog": {
 		"title": "新建项目",

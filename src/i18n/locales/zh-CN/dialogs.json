@@ -72,7 +72,10 @@
 			"notSavedYet": "当前项目尚未保存到磁盘。",
 			"discard": "放弃",
 			"saveAndContinue": "保存并继续",
-			"saving": "正在保存…"
+			"saving": "正在保存…",
+			"eyebrow": "未保存的更改",
+			"originalSafe": "无论如何选择，原始录制都不会受影响。",
+			"save": "保存"
 		}
 	},
 	"fileDialogs": {
@@ -88,5 +91,9 @@
 		"audioFiles": "音频文件",
 		"allFiles": "所有文件",
 		"showhowProject": "Showhow 项目"
+	},
+	"shortcuts": {
+		"eyebrow": "帮助",
+		"openHint": "在编辑器中按 ? 打开此列表。"
 	}
 }

@@ -72,7 +72,10 @@
 			"notSavedYet": "The current project has not been saved to disk yet.",
 			"discard": "Discard",
 			"saveAndContinue": "Save & continue",
-			"saving": "Saving…"
+			"saving": "Saving…",
+			"eyebrow": "Unsaved changes",
+			"originalSafe": "Your original recording is safe either way.",
+			"save": "Save"
 		}
 	},
 	"fileDialogs": {
@@ -88,5 +91,9 @@
 		"audioFiles": "Audio files",
 		"allFiles": "All files",
 		"showhowProject": "Showhow project"
+	},
+	"shortcuts": {
+		"eyebrow": "Help",
+		"openHint": "Press ? in the editor to open this list."
 	}
 }

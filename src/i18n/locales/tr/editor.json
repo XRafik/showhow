@@ -206,7 +206,18 @@
 		"failedToWriteFile": "Dosya yazılamadı",
 		"qualityUpscaleWarning": "Upscale",
 		"exportedVideoOf": "video şu sürede dışa aktarıldı:",
-		"nothingToExport": "Dışa aktarılacak bir şey yok — zaman çizelgesi boş."
+		"nothingToExport": "Dışa aktarılacak bir şey yok — zaman çizelgesi boş.",
+		"eyebrow": "Paylaş",
+		"closePanel": "Dışa aktarmayı kapat",
+		"summaryLabel": "Dışa aktarma özeti",
+		"summaryFormat": "Biçim",
+		"summaryLength": "Süre",
+		"destinationChoose": "Yeri siz seçersiniz",
+		"sheetRendering": "Videonuz işleniyor",
+		"sheetSettings": "Dışa aktar · {{format}} · {{quality}} · {{fps}} fps",
+		"cancelExport": "Dışa aktarmayı iptal et",
+		"mp4CannotCancel": "MP4 dışa aktarma başladıktan sonra durdurulamaz.",
+		"done": "Bitti"
 	},
 	"inspector": {
 		"resetFocusPoint": "Odak noktasını sıfırla",
@@ -222,7 +233,9 @@
 		"deleteRegion": "Bölgeyi sil",
 		"freehandRendersAsBox": "Dışa aktarmada serbest çizim, sınırlayıcı dikdörtgeniyle kapatılır — eksik değil, fazla kapatır.",
 		"label": "Denetçi",
-		"aiChat": "Yapay zekâ sohbeti"
+		"aiChat": "Yapay zekâ sohbeti",
+		"export": "Dışa aktar",
+		"exportTip": "Dışa aktar: MP4 veya GIF"
 	},
 	"chat": {
 		"changeProvider": "Sağlayıcıyı değiştir",
@@ -294,7 +307,16 @@
 			"subtitle": "Oturum değiştir veya oluştur",
 			"empty": "Henüz konuşma yok.",
 			"msgsCount": "{{count}} mesaj · {{date}}"
-		}
+		},
+		"editWithAi": "Yapay zekâ ile düzenle",
+		"providerConnected": "Bağlı · {{provider}}",
+		"providerNotConnected": "Bağlı değil",
+		"composerLabel": "Yapay zekâ düzenleyicisine mesaj",
+		"undoTurn": "Geri al",
+		"turnUndone": "Geri alındı. Proje bu turdan önceki hâline döndü.",
+		"turnUndoStale": "Geri alınamıyor: proje o zamandan beri değişti. Bunun yerine zaman çizelgesindeki Geri al'ı kullanın.",
+		"appliedTitleOne": "Uygulandı · 1 değişiklik",
+		"appliedTitleMany": "Uygulandı · {{count}} değişiklik"
 	},
 	"newProjectDialog": {
 		"title": "Yeni proje",

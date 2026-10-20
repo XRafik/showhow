@@ -206,7 +206,18 @@
 		"exportFailed": "Échec de l'export",
 		"failedToWriteFile": "Échec de l'écriture du fichier",
 		"qualityUpscaleWarning": "Upscaling",
-		"nothingToExport": "Rien à exporter — la timeline est vide."
+		"nothingToExport": "Rien à exporter — la timeline est vide.",
+		"eyebrow": "Partager",
+		"closePanel": "Fermer l'export",
+		"summaryLabel": "Résumé de l'export",
+		"summaryFormat": "Format",
+		"summaryLength": "Durée",
+		"destinationChoose": "Vous choisissez où",
+		"sheetRendering": "Rendu de votre vidéo",
+		"sheetSettings": "Export · {{format}} · {{quality}} · {{fps}} i/s",
+		"cancelExport": "Annuler l'export",
+		"mp4CannotCancel": "Un export MP4 ne peut pas être arrêté une fois lancé.",
+		"done": "Terminé"
 	},
 	"inspector": {
 		"resetFocusPoint": "Réinitialiser le point de focus",
@@ -222,7 +233,9 @@
 		"deleteRegion": "Supprimer la zone",
 		"freehandRendersAsBox": "À l'export, un tracé libre est couvert par sa boîte englobante — on couvre trop, jamais trop peu.",
 		"label": "Inspecteur",
-		"aiChat": "Chat IA"
+		"aiChat": "Chat IA",
+		"export": "Exporter",
+		"exportTip": "Exporter : MP4 ou GIF"
 	},
 	"chat": {
 		"changeProvider": "Changer de fournisseur",
@@ -294,7 +307,16 @@
 			"subtitle": "Changer ou créer des sessions",
 			"empty": "Aucune conversation pour l'instant.",
 			"msgsCount": "{{count}} messages · {{date}}"
-		}
+		},
+		"editWithAi": "Modifier avec l'IA",
+		"providerConnected": "Connecté · {{provider}}",
+		"providerNotConnected": "Non connecté",
+		"composerLabel": "Écrire à l'éditeur IA",
+		"undoTurn": "Annuler",
+		"turnUndone": "Annulé. Le projet est revenu à son état d'avant ce tour.",
+		"turnUndoStale": "Impossible d'annuler : le projet a changé depuis. Utilisez plutôt Annuler dans la timeline.",
+		"appliedTitleOne": "Appliqué · 1 modification",
+		"appliedTitleMany": "Appliqué · {{count}} modifications"
 	},
 	"newProjectDialog": {
 		"title": "Nouveau projet",

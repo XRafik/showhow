@@ -72,7 +72,10 @@
 			"notSavedYet": "Das aktuelle Projekt wurde noch nicht auf der Festplatte gespeichert.",
 			"discard": "Verwerfen",
 			"saveAndContinue": "Speichern & fortfahren",
-			"saving": "Wird gespeichert…"
+			"saving": "Wird gespeichert…",
+			"eyebrow": "Ungespeicherte Änderungen",
+			"originalSafe": "Deine Originalaufnahme bleibt in jedem Fall erhalten.",
+			"save": "Speichern"
 		}
 	},
 	"fileDialogs": {
@@ -88,5 +91,9 @@
 		"audioFiles": "Audiodateien",
 		"allFiles": "Alle Dateien",
 		"showhowProject": "Showhow-Projekt"
+	},
+	"shortcuts": {
+		"eyebrow": "Hilfe",
+		"openHint": "Drücke ? im Editor, um diese Liste zu öffnen."
 	}
 }

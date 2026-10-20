@@ -72,7 +72,10 @@
 			"notSavedYet": "Le projet actuel n'a pas encore été enregistré sur le disque.",
 			"discard": "Ignorer",
 			"saveAndContinue": "Enregistrer et continuer",
-			"saving": "Enregistrement…"
+			"saving": "Enregistrement…",
+			"eyebrow": "Modifications non enregistrées",
+			"originalSafe": "Votre enregistrement d'origine reste intact dans tous les cas.",
+			"save": "Enregistrer"
 		}
 	},
 	"fileDialogs": {
@@ -88,5 +91,9 @@
 		"audioFiles": "Fichiers audio",
 		"allFiles": "Tous les fichiers",
 		"showhowProject": "Projet Showhow"
+	},
+	"shortcuts": {
+		"eyebrow": "Aide",
+		"openHint": "Appuyez sur ? dans l'éditeur pour ouvrir cette liste."
 	}
 }

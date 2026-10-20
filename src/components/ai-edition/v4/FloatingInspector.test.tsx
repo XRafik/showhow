@@ -668,3 +668,78 @@ describe("Final docked inspector and its AI seam (Editor-01)", () => {
 		expect(onFacetChange).toHaveBeenCalledWith("layout");
 	});
 });
+
+describe("Export as the inspector's share entry (Editor-04)", () => {
+	beforeEach(() => {
+		vi.stubGlobal("ResizeObserver", StubResizeObserver);
+	});
+	afterEach(() => {
+		vi.unstubAllGlobals();
+	});
+
+	function props(
+		overrides: Partial<React.ComponentProps<typeof FloatingInspector>> = {},
+	): React.ComponentProps<typeof FloatingInspector> {
+		return {
+			facet: "effects",
+			open: true,
+			onFacetChange: vi.fn(),
+			onToggleOpen: vi.fn(),
+			clips: [],
+			onEditClip: vi.fn(),
+			transcriptProps: {} as unknown as React.ComponentProps<
+				typeof FloatingInspector
+			>["transcriptProps"],
+			tl: {
+				selection: null,
+				clearSelection: vi.fn(),
+				selectedAudioTrackId: null,
+				selectAudioTrack: vi.fn(),
+			} as unknown as React.ComponentProps<typeof FloatingInspector>["tl"],
+			exportOpen: false,
+			onToggleExport: vi.fn(),
+			exportPanel: <div data-testid="export-panel">export</div>,
+			...overrides,
+		};
+	}
+
+	it("offers Export as a rail button, pressed while the panel shows", () => {
+		const onToggleExport = vi.fn();
+		const { rerender } = render(<FloatingInspector {...props({ onToggleExport })} />);
+		const share = screen.getByRole("button", { name: "editor.inspector.export" });
+		expect(share).toHaveAttribute("aria-pressed", "false");
+		fireEvent.click(share);
+		expect(onToggleExport).toHaveBeenCalledTimes(1);
+		rerender(<FloatingInspector {...props({ exportOpen: true })} />);
+		expect(screen.getByRole("button", { name: "editor.inspector.export" })).toHaveAttribute(
+			"aria-pressed",
+			"true",
+		);
+	});
+
+	it("shows the export panel in place of the facet while it is open", () => {
+		render(<FloatingInspector {...props({ exportOpen: true })} />);
+		expect(screen.getByTestId("export-panel")).toBeVisible();
+		expect(screen.queryByTestId("effects-pane")).toBeNull();
+	});
+
+	it("keeps the export panel mounted under a selection, so a render in flight keeps its sheet", () => {
+		const tl = {
+			selection: null,
+			clearSelection: vi.fn(),
+			selectedAudioTrackId: "track_1",
+			selectAudioTrack: vi.fn(),
+		} as unknown as React.ComponentProps<typeof FloatingInspector>["tl"];
+		render(<FloatingInspector {...props({ exportOpen: true, tl })} />);
+		expect(screen.getByTestId("export-panel")).not.toBeVisible();
+	});
+
+	it("leaves the export panel when a facet is picked", () => {
+		const onToggleExport = vi.fn();
+		const onFacetChange = vi.fn();
+		render(<FloatingInspector {...props({ exportOpen: true, onToggleExport, onFacetChange })} />);
+		fireEvent.click(screen.getByRole("button", { name: "settings.layout.title" }));
+		expect(onToggleExport).toHaveBeenCalledTimes(1);
+		expect(onFacetChange).toHaveBeenCalledWith("layout");
+	});
+});

@@ -125,14 +125,14 @@ describe("GIF export cancellation", () => {
 	it("enables Cancel immediately, waits for cleanup and returns to the same options", async () => {
 		const job = pendingExport();
 		const { id } = await start();
-		const cancel = screen.getByRole("button", { name: "Cancel" });
+		const cancel = screen.getByRole("button", { name: "Cancel export" });
 		expect(cancel).toBeEnabled();
 		fireEvent.click(cancel);
 		await waitFor(() => expect(cancelGifExportNative).toHaveBeenCalledWith(id));
 		expect(cancel).toBeDisabled();
 		fireEvent.click(cancel);
 		expect(cancelGifExportNative).toHaveBeenCalledOnce();
-		expect(screen.queryByRole("button", { name: "Export GIF" })).not.toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "Export GIF" })).toBeDisabled();
 		await act(async () =>
 			job.reject(
 				new NativeBridgeRequestError({
@@ -143,7 +143,9 @@ describe("GIF export cancellation", () => {
 			),
 		);
 		expect(screen.getByRole("button", { name: "Export GIF" })).toBeEnabled();
-		expect(screen.getByRole("dialog")).toBeVisible();
+		expect(screen.queryByRole("dialog")).toBeNull();
+		expect(screen.getByRole("region", { name: "Export" })).toBeVisible();
+		expect(screen.getByRole("button", { name: "GIF" })).toHaveAttribute("aria-pressed", "true");
 		expect(onClose).not.toHaveBeenCalled();
 		expect(toast.success).not.toHaveBeenCalled();
 		expect(toast.error).not.toHaveBeenCalled();
@@ -154,7 +156,7 @@ describe("GIF export cancellation", () => {
 		const first = pendingExport();
 		const { id } = await start();
 		const staleProgress = progress;
-		fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+		fireEvent.click(screen.getByRole("button", { name: "Cancel export" }));
 		await act(async () =>
 			first.reject(
 				new NativeBridgeRequestError({
@@ -189,7 +191,7 @@ describe("GIF export cancellation", () => {
 		vi.mocked(cancelGifExportNative).mockRejectedValueOnce(new Error("cancel ipc failed"));
 		pendingExport();
 		await start();
-		fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+		fireEvent.click(screen.getByRole("button", { name: "Cancel export" }));
 		await waitFor(() => expect(screen.getByText("cancel ipc failed")).toBeVisible());
 		expect(toast.error).toHaveBeenCalledWith("cancel ipc failed");
 		expect(toast.success).not.toHaveBeenCalled();
@@ -200,7 +202,7 @@ describe("GIF export cancellation", () => {
 		vi.mocked(cancelGifExportNative).mockResolvedValue({ accepted: false });
 		const job = pendingExport();
 		await start();
-		fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+		fireEvent.click(screen.getByRole("button", { name: "Cancel export" }));
 		await act(async () => job.resolve(STATS));
 		expect(screen.getByText("/tmp/result.gif")).toBeVisible();
 		expect(toast.success).toHaveBeenCalledOnce();
@@ -210,7 +212,7 @@ describe("GIF export cancellation", () => {
 	it("does not hide a real export error after a cancellation request", async () => {
 		const job = pendingExport();
 		await start();
-		fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+		fireEvent.click(screen.getByRole("button", { name: "Cancel export" }));
 		await act(async () => job.reject(new Error("disk full")));
 		expect(screen.getByText("disk full")).toBeVisible();
 		expect(toast.error).toHaveBeenCalledOnce();

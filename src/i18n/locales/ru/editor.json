@@ -206,7 +206,18 @@
 		"failedToWriteFile": "Не удалось записать файл",
 		"qualityUpscaleWarning": "Апскейл",
 		"exportedVideoOf": "видео экспортировано за",
-		"nothingToExport": "Нечего экспортировать — таймлайн пуст."
+		"nothingToExport": "Нечего экспортировать — таймлайн пуст.",
+		"eyebrow": "Поделиться",
+		"closePanel": "Закрыть экспорт",
+		"summaryLabel": "Сводка экспорта",
+		"summaryFormat": "Формат",
+		"summaryLength": "Длительность",
+		"destinationChoose": "Место выбираете вы",
+		"sheetRendering": "Рендеринг видео",
+		"sheetSettings": "Экспорт · {{format}} · {{quality}} · {{fps}} к/с",
+		"cancelExport": "Отменить экспорт",
+		"mp4CannotCancel": "Экспорт MP4 нельзя остановить после запуска.",
+		"done": "Готово"
 	},
 	"inspector": {
 		"resetFocusPoint": "Сбросить точку фокуса",
@@ -222,7 +233,9 @@
 		"deleteRegion": "Удалить участок",
 		"freehandRendersAsBox": "При экспорте произвольная форма закрывается своим ограничивающим прямоугольником — с запасом, а не с недостатком.",
 		"label": "Инспектор",
-		"aiChat": "ИИ-чат"
+		"aiChat": "ИИ-чат",
+		"export": "Экспорт",
+		"exportTip": "Экспорт: MP4 или GIF"
 	},
 	"chat": {
 		"changeProvider": "Сменить провайдера",
@@ -294,7 +307,16 @@
 			"subtitle": "Переключить или создать сессию",
 			"empty": "Пока нет бесед.",
 			"msgsCount": "{{count}} сообщ. · {{date}}"
-		}
+		},
+		"editWithAi": "Редактировать с ИИ",
+		"providerConnected": "Подключено · {{provider}}",
+		"providerNotConnected": "Не подключено",
+		"composerLabel": "Сообщение ИИ-редактору",
+		"undoTurn": "Отменить",
+		"turnUndone": "Отменено. Проект вернулся к состоянию до этого шага.",
+		"turnUndoStale": "Нельзя отменить: проект с тех пор изменился. Используйте отмену на таймлайне.",
+		"appliedTitleOne": "Применено · изменений: 1",
+		"appliedTitleMany": "Применено · изменений: {{count}}"
 	},
 	"newProjectDialog": {
 		"title": "Новый проект",

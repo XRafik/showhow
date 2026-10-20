@@ -206,7 +206,18 @@
 		"failedToWriteFile": "파일 쓰기에 실패했습니다",
 		"qualityUpscaleWarning": "업스케일",
 		"exportedVideoOf": "분량의 영상을 내보냈습니다. 소요 시간:",
-		"nothingToExport": "내보낼 항목이 없습니다 — 타임라인이 비어 있습니다."
+		"nothingToExport": "내보낼 항목이 없습니다 — 타임라인이 비어 있습니다.",
+		"eyebrow": "공유",
+		"closePanel": "내보내기 닫기",
+		"summaryLabel": "내보내기 요약",
+		"summaryFormat": "형식",
+		"summaryLength": "길이",
+		"destinationChoose": "저장 위치를 직접 선택",
+		"sheetRendering": "비디오 렌더링 중",
+		"sheetSettings": "내보내기 · {{format}} · {{quality}} · {{fps}} fps",
+		"cancelExport": "내보내기 취소",
+		"mp4CannotCancel": "MP4 내보내기는 시작한 후에는 멈출 수 없습니다.",
+		"done": "완료"
 	},
 	"inspector": {
 		"resetFocusPoint": "포커스 지점 재설정",
@@ -222,7 +233,9 @@
 		"deleteRegion": "구간 삭제",
 		"freehandRendersAsBox": "내보내기에서 자유형 도형은 외곽 사각형으로 덮입니다. 더 많이 덮되, 부족하게 덮지는 않습니다.",
 		"label": "인스펙터",
-		"aiChat": "AI 채팅"
+		"aiChat": "AI 채팅",
+		"export": "내보내기",
+		"exportTip": "내보내기: MP4 또는 GIF"
 	},
 	"chat": {
 		"changeProvider": "제공업체 변경",
@@ -294,7 +307,16 @@
 			"subtitle": "세션 전환 또는 새로 만들기",
 			"empty": "아직 대화가 없습니다.",
 			"msgsCount": "메시지 {{count}}개 · {{date}}"
-		}
+		},
+		"editWithAi": "AI로 편집",
+		"providerConnected": "연결됨 · {{provider}}",
+		"providerNotConnected": "연결 안 됨",
+		"composerLabel": "AI 편집기에 메시지 보내기",
+		"undoTurn": "실행 취소",
+		"turnUndone": "실행 취소했습니다. 프로젝트가 이 턴 이전 상태로 돌아갔습니다.",
+		"turnUndoStale": "실행 취소할 수 없음: 그 이후 프로젝트가 변경되었습니다. 타임라인의 실행 취소를 사용하세요.",
+		"appliedTitleOne": "적용됨 · 변경 1개",
+		"appliedTitleMany": "적용됨 · 변경 {{count}}개"
 	},
 	"newProjectDialog": {
 		"title": "새 프로젝트",

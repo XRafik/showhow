@@ -268,6 +268,8 @@ export function NewEditorShell() {
 	// mounted per trigger site.
 	const [editClipTarget, setEditClipTarget] = useState<AxcutClip | null>(null);
 	const [exportOpen, setExportOpen] = useState(false);
+	// A render in flight keeps the export panel mounted: see ExportDialog's onBusyChange.
+	const [exportBusy, setExportBusy] = useState(false);
 	const [unsavedPrompt, setUnsavedPrompt] = useState<{
 		action: "close" | "new" | "open" | "record";
 		resolve: (choice: UnsavedChoice) => void;
@@ -995,6 +997,8 @@ export function NewEditorShell() {
 			toast.info("Add a video to the project before exporting.");
 			return;
 		}
+		// Export is the inspector's share panel (Editor-04), an Edit-mode column.
+		setMode("edit");
 		setExportOpen(true);
 	}, [hasAsset]);
 
@@ -1666,6 +1670,19 @@ export function NewEditorShell() {
 							<ChatStripPanel />
 						</section>
 					}
+					exportOpen={exportOpen && hasAsset}
+					onToggleExport={() => {
+						if (!exportOpen) handleExport();
+						else if (!exportBusy) setExportOpen(false);
+					}}
+					exportPanel={
+						<ExportDialog
+							open
+							onClose={() => setExportOpen(false)}
+							document={document}
+							onBusyChange={setExportBusy}
+						/>
+					}
 				/>
 			) : null}
 
@@ -1750,7 +1767,6 @@ export function NewEditorShell() {
 				action={unsavedPrompt?.action ?? "new"}
 				onChoose={handleConfirmUnsaved}
 			/>
-			<ExportDialog open={exportOpen} onClose={() => setExportOpen(false)} document={document} />
 			<AddAudioLayerDialog
 				open={voiceoverFlow !== null}
 				maxDurationSec={voiceoverFlow?.maxDurationSec ?? 0}

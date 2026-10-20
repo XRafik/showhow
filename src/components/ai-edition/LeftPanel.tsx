@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useEditorDialogActions, useEditorDialogSection } from "@/contexts/EditorDialogsContext";
 import { useScopedT } from "@/contexts/I18nContext";
+import { countDocumentChanges } from "@/lib/ai-edition/document/changeCount";
+import type { AxcutDocument } from "@/lib/ai-edition/schema";
 import {
 	applyAgentDocumentIfCurrent,
 	runAgentTurn,
@@ -43,6 +45,19 @@ interface ChatDisplayMessage {
 	// above the answer. Ephemeral — only present for the turn that streamed it;
 	// reloading a session won't show past traces.
 	thinking?: string;
+	/** Set on the assistant message of a turn whose edits landed (Editor-03). */
+	applied?: AppliedTurn;
+}
+
+/** A turn's edits, as the Applied card shows them, and what its Undo needs: the document from
+ *  before the turn and the revision the turn left the store at. The Undo goes back through the
+ *  agent's own apply path against that revision, so any edit made since makes it refuse. */
+interface AppliedTurn {
+	key: string;
+	count: number;
+	before: AxcutDocument;
+	revision: number;
+	state: "applied" | "undoing" | "undone" | "stale";
 }
 
 // Quick-access model picker anchored to the composer's model pill — mirrors
@@ -419,6 +434,48 @@ function ThinkingBlock({
 	);
 }
 
+/** Editor-03's card under a turn whose edits landed: what changed, and a way back. */
+function AppliedCard({
+	turn,
+	content,
+	onUndo,
+}: {
+	turn: AppliedTurn;
+	content: string;
+	onUndo: () => void;
+}) {
+	const t = useScopedT("editor");
+	const titleId = `${turn.key}-title`;
+	return (
+		<div role="status" aria-labelledby={titleId} className={styles.appliedCard}>
+			<div className={styles.appliedHead}>
+				<span id={titleId} className={styles.appliedTitle}>
+					<Check size={12} aria-hidden />
+					{turn.count === 1
+						? t("chat.appliedTitleOne")
+						: t("chat.appliedTitleMany", { count: turn.count })}
+				</span>
+				{turn.state === "applied" || turn.state === "undoing" ? (
+					<button
+						type="button"
+						className={styles.appliedUndo}
+						onClick={onUndo}
+						disabled={turn.state === "undoing"}
+					>
+						{t("chat.undoTurn")}
+					</button>
+				) : null}
+			</div>
+			<div className={styles.msgBubble}>{content}</div>
+			{turn.state === "undone" ? (
+				<p className={styles.appliedNote}>{t("chat.turnUndone")}</p>
+			) : turn.state === "stale" ? (
+				<p className={styles.appliedNote}>{t("chat.turnUndoStale")}</p>
+			) : null}
+		</div>
+	);
+}
+
 export function ChatStripPanel() {
 	const t = useScopedT("editor");
 	const tc = useScopedT("common");
@@ -472,6 +529,18 @@ export function ChatStripPanel() {
 	const [connectedProviders, setConnectedProviders] = useState<string[] | null>(null);
 	// unknown ≠ none; see chatAvailability.ts.
 	const canChat = canSendChat(llmConfig, connectedProviders);
+	// The header names the provider a send would use, or says there is none. Nothing while the
+	// snapshot is still on its way: unknown is not "not connected".
+	const activeProvider =
+		llmConfig && connectedProviders?.includes(llmConfig.provider)
+			? (PROVIDER_DEFINITIONS.find((d) => d.id === llmConfig.provider)?.label ?? llmConfig.provider)
+			: null;
+	const providerLine =
+		connectedProviders === null
+			? null
+			: activeProvider
+				? t("chat.providerConnected", { provider: activeProvider })
+				: t("chat.providerNotConnected");
 	const sendDisabled = busy || !input.trim() || !canChat;
 	const [modelPopoverOpen, setModelPopoverOpen] = useState(false);
 	const modelButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -632,6 +701,7 @@ export function ChatStripPanel() {
 				nativeBridgeClient.aiEdition.chatRun(projectId, sessionId, text, documentSnapshot),
 			);
 			const assistant = result.assistantMessage;
+			let applied: AppliedTurn | undefined;
 			if (result.success && assistant) {
 				if (result.document) {
 					const applyEdits = async (options?: { ignoreConflict?: boolean }) => {
@@ -647,7 +717,22 @@ export function ChatStripPanel() {
 							return "malformed" as const;
 						}
 					};
+					const beforeApply = useProjectStore.getState().document;
 					const applyResult = await applyEdits();
+					if (applyResult === "applied" && beforeApply) {
+						const { document: afterApply, revision } = useProjectStore.getState();
+						const count = afterApply ? countDocumentChanges(beforeApply, afterApply) : 0;
+						// A turn that changed nothing gets no card: there is nothing to undo.
+						if (count > 0) {
+							applied = {
+								key: `turn_${Date.now()}`,
+								count,
+								before: beforeApply,
+								revision,
+								state: "applied",
+							};
+						}
+					}
 					if (applyResult === "save-failed") {
 						// The store has already said WHY the write failed, with the native error.
 						// This says what it COST, without a description so the two do not repeat
@@ -683,6 +768,7 @@ export function ChatStripPanel() {
 						// default, click-to-expand) instead of vanishing. The
 						// live accumulator is cleared in `finally`.
 						thinking: thinkingText || undefined,
+						applied,
 					},
 				]);
 				void refreshSessions(projectId);
@@ -702,6 +788,35 @@ export function ChatStripPanel() {
 			setThinkingText("");
 			setThinkingExpanded(false);
 		}
+	};
+
+	const setApplied = (key: string, state: AppliedTurn["state"], revision?: number) =>
+		setMessages((prev) =>
+			prev.map((m) =>
+				m.applied?.key === key
+					? { ...m, applied: { ...m.applied, state, revision: revision ?? m.applied.revision } }
+					: m,
+			),
+		);
+
+	// Undo restores the document from before the turn only while the store is still at the
+	// revision the turn left it at. Anything since (a manual edit, another turn, a Ctrl+Z) moves
+	// the revision and the apply answers "conflict": the card says so and the document is left
+	// alone. A failed save puts the Undo back; the store has reported the write error itself.
+	const undoTurn = async (turn: AppliedTurn) => {
+		if (turn.state !== "applied") return;
+		setApplied(turn.key, "undoing");
+		const outcome = await applyAgentDocumentIfCurrent(turn.before, turn.revision);
+		if (outcome === "save-failed") {
+			// The failed write still moved the revision while it rolled the store back to the
+			// turn's document, so the retry checks against the revision it left, not the old one.
+			setApplied(turn.key, "applied", useProjectStore.getState().revision);
+			return;
+		}
+		setApplied(
+			turn.key,
+			outcome === "applied" ? "undone" : outcome === "conflict" ? "stale" : "applied",
+		);
 	};
 
 	// Auto-send a prompt handed over by another part of the UI (e.g. the
@@ -995,6 +1110,15 @@ export function ChatStripPanel() {
 	return (
 		<aside className={styles.panel}>
 			<div className={styles.panelHeader}>
+				<div className={styles.chatTitleRow}>
+					<h2 className={styles.chatTitle}>{t("chat.editWithAi")}</h2>
+					{providerLine ? (
+						<span className={styles.chatProvider} data-connected={activeProvider !== null}>
+							<span className={styles.chatProviderDot} aria-hidden />
+							{providerLine}
+						</span>
+					) : null}
+				</div>
 				<div className={styles.chatStrip}>
 					<div className={styles.chatStripRow}>
 						<span
@@ -1284,15 +1408,23 @@ export function ChatStripPanel() {
 										label={t("chat.thinking")}
 									/>
 								) : null}
-								<div
-									className={
-										m.role === "user"
-											? `${styles.msgBubble} ${styles.msgBubbleUser}`
-											: styles.msgBubble
-									}
-								>
-									{m.content}
-								</div>
+								{m.applied ? (
+									<AppliedCard
+										turn={m.applied}
+										content={m.content}
+										onUndo={() => m.applied && void undoTurn(m.applied)}
+									/>
+								) : (
+									<div
+										className={
+											m.role === "user"
+												? `${styles.msgBubble} ${styles.msgBubbleUser}`
+												: styles.msgBubble
+										}
+									>
+										{m.content}
+									</div>
+								)}
 								<div
 									style={{
 										display: "flex",
@@ -1444,6 +1576,7 @@ export function ChatStripPanel() {
 
 			<div className={styles.chatInput}>
 				<textarea
+					aria-label={t("chat.composerLabel")}
 					placeholder={
 						canChat ? t("chat.composerPlaceholder") : t("chat.composerDisabledNoProvider")
 					}

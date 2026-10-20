@@ -206,7 +206,18 @@
 		"failedToWriteFile": "ファイルの書き込みに失敗しました",
 		"qualityUpscaleWarning": "アップスケール",
 		"exportedVideoOf": "の動画を書き出しました。所要時間:",
-		"nothingToExport": "書き出す内容がありません — タイムラインが空です。"
+		"nothingToExport": "書き出す内容がありません — タイムラインが空です。",
+		"eyebrow": "共有",
+		"closePanel": "書き出しを閉じる",
+		"summaryLabel": "書き出しの概要",
+		"summaryFormat": "形式",
+		"summaryLength": "長さ",
+		"destinationChoose": "保存先は選択できます",
+		"sheetRendering": "ビデオをレンダリング中",
+		"sheetSettings": "書き出し · {{format}} · {{quality}} · {{fps}} fps",
+		"cancelExport": "書き出しをキャンセル",
+		"mp4CannotCancel": "MP4 の書き出しは開始後に停止できません。",
+		"done": "完了"
 	},
 	"inspector": {
 		"resetFocusPoint": "フォーカスポイントをリセット",
@@ -222,7 +233,9 @@
 		"deleteRegion": "区間を削除",
 		"freehandRendersAsBox": "書き出しでは、フリーハンドの形は外接する矩形で覆われます。覆いすぎることはあっても、足りないことはありません。",
 		"label": "インスペクタ",
-		"aiChat": "AI チャット"
+		"aiChat": "AI チャット",
+		"export": "書き出し",
+		"exportTip": "書き出し: MP4 または GIF"
 	},
 	"chat": {
 		"changeProvider": "プロバイダーを変更",
@@ -294,7 +307,16 @@
 			"subtitle": "セッションを切り替えるか新規作成",
 			"empty": "まだ会話はありません。",
 			"msgsCount": "{{count}} 件のメッセージ · {{date}}"
-		}
+		},
+		"editWithAi": "AI で編集",
+		"providerConnected": "接続済み · {{provider}}",
+		"providerNotConnected": "未接続",
+		"composerLabel": "AI エディタへのメッセージ",
+		"undoTurn": "取り消す",
+		"turnUndone": "取り消しました。プロジェクトはこのターンの前の状態に戻りました。",
+		"turnUndoStale": "取り消せません: その後プロジェクトが変更されています。タイムラインの取り消しを使ってください。",
+		"appliedTitleOne": "適用済み · 1 件の変更",
+		"appliedTitleMany": "適用済み · {{count}} 件の変更"
 	},
 	"newProjectDialog": {
 		"title": "新規プロジェクト",

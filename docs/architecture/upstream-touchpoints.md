@@ -847,3 +847,17 @@ Presentation and layout over the existing stores; no decoder, compositor, projec
 | `src/components/ai-edition/v4/EditorShellV4.module.css`, `NewEditorShell.module.css` | Final tokens, grid placement, timeline gutter and colours, stage transport, Editor-06 page. |
 | `src/components/ai-edition/EditorEmptyState.tsx` | Bounded amendment (outside the listed files): its no-project branch is Editor-06, keeping its import, open-file (with legacy migration) and drop handling rather than duplicating them. |
 | `electron/showhow/openLibrary.ts`, `electron/main.ts`, `electron/preload.ts`, `electron/electron-env.d.ts` | Owner-approved bounded amendment: `showhow:open-library` swaps the editor window for the Library; refused for any other sender. |
+
+## Final editor assistant, export and dialogs (#147, 2026-10-20)
+
+Presentation over the existing agent apply path, native exporter and shortcut store; no main-process, IPC, exporter or project-store changes.
+
+| Path | Change |
+|------|--------|
+| `src/components/ai-edition/LeftPanel.tsx` | Editor-03: "Edit with AI" heading, provider line from the existing LLM snapshot, labelled composer. Agent edits still apply at once (owner decision); a turn that changed the document gets an "Applied · N changes" card whose Undo calls `applyAgentDocumentIfCurrent(before, revisionAfterTurn)`, so any edit since makes it refuse. |
+| `src/lib/ai-edition/document/changeCount.ts` | New: counts edits between two documents for the card. |
+| `src/components/ai-edition/ExportDialog.tsx` | Editor-04/05: the options become the inspector's export panel (region, not dialog) with a summary; rendering, done and failure are a Final sheet. MP4 Cancel is disabled with a reason (the MP4 encoder cannot be stopped); GIF Cancel is the existing native cancellation. "Exported" still waits for the native call to resolve. The Guide format is not offered. |
+| `src/components/ai-edition/v4/FloatingInspector.tsx`, `NewEditorShell.tsx` | Export rail entry and seam (`exportOpen`, `onToggleExport`, `exportPanel`), above the chat, which stays mounted underneath. The top bar's Export opens it; the modal mount is gone. |
+| `src/components/ai-edition/Modals.tsx` | `ModalShell`: Final variant (`final`, `eyebrow`), `dismissible`, `initialFocusRef`, a Tab focus trap, a per-instance title id, and Escape on `window`. Editor-07 unsaved sheet: Discard apart on the left, focus starts on Save. |
+| `src/components/video-editor/ShortcutsConfigDialog.tsx` | Editor-08 restyle (shared with the legacy editor); rows get "action: key" names and key chips; capture, conflicts, Save and Reset unchanged. |
+| `src/i18n/locales/*/editor.json`, `dialogs.json` | New keys in all 15 locales. |

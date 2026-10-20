@@ -206,7 +206,18 @@
 		"exportFailed": "Export selhal",
 		"failedToWriteFile": "Nepodařilo se zapsat soubor",
 		"qualityUpscaleWarning": "Zvýšení rozlišení",
-		"nothingToExport": "Není co exportovat, časová osa je prázdná."
+		"nothingToExport": "Není co exportovat, časová osa je prázdná.",
+		"eyebrow": "Sdílet",
+		"closePanel": "Zavřít export",
+		"summaryLabel": "Souhrn exportu",
+		"summaryFormat": "Formát",
+		"summaryLength": "Délka",
+		"destinationChoose": "Místo vyberete vy",
+		"sheetRendering": "Renderuje se vaše video",
+		"sheetSettings": "Export · {{format}} · {{quality}} · {{fps}} fps",
+		"cancelExport": "Zrušit export",
+		"mp4CannotCancel": "Export MP4 nelze po spuštění zastavit.",
+		"done": "Hotovo"
 	},
 	"inspector": {
 		"resetFocusPoint": "Obnovit bod zaostření",
@@ -222,7 +233,9 @@
 		"deleteRegion": "Smazat oblast",
 		"freehandRendersAsBox": "Při exportu je volně kreslený tvar pokryt svým ohraničujícím rámečkem: vždy překrytý, nikdy nepokrytý.",
 		"label": "Inspektor",
-		"aiChat": "AI chat"
+		"aiChat": "AI chat",
+		"export": "Export",
+		"exportTip": "Export: MP4 nebo GIF"
 	},
 	"chat": {
 		"changeProvider": "Změnit poskytovatele",
@@ -294,7 +307,16 @@
 			"subtitle": "Přepínání nebo vytváření relací",
 			"empty": "Zatím žádné konverzace.",
 			"msgsCount": "{{count}} zpráv · {{date}}"
-		}
+		},
+		"editWithAi": "Upravit s AI",
+		"providerConnected": "Připojeno · {{provider}}",
+		"providerNotConnected": "Nepřipojeno",
+		"composerLabel": "Napsat editoru AI",
+		"undoTurn": "Zpět",
+		"turnUndone": "Vráceno. Projekt je zpět ve stavu před tímto krokem.",
+		"turnUndoStale": "Nelze vrátit: projekt se mezitím změnil. Použijte Zpět na časové ose.",
+		"appliedTitleOne": "Použito · počet změn: 1",
+		"appliedTitleMany": "Použito · počet změn: {{count}}"
 	},
 	"newProjectDialog": {
 		"title": "Nový projekt",

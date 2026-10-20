@@ -206,7 +206,18 @@
 		"failedToWriteFile": "Không thể ghi tệp",
 		"qualityUpscaleWarning": "Upscale",
 		"exportedVideoOf": "video đã xuất trong",
-		"nothingToExport": "Không có gì để xuất — dòng thời gian trống."
+		"nothingToExport": "Không có gì để xuất — dòng thời gian trống.",
+		"eyebrow": "Chia sẻ",
+		"closePanel": "Đóng xuất",
+		"summaryLabel": "Tóm tắt xuất",
+		"summaryFormat": "Định dạng",
+		"summaryLength": "Thời lượng",
+		"destinationChoose": "Bạn chọn nơi lưu",
+		"sheetRendering": "Đang kết xuất video",
+		"sheetSettings": "Xuất · {{format}} · {{quality}} · {{fps}} fps",
+		"cancelExport": "Hủy xuất",
+		"mp4CannotCancel": "Không thể dừng xuất MP4 sau khi đã bắt đầu.",
+		"done": "Xong"
 	},
 	"inspector": {
 		"resetFocusPoint": "Đặt lại điểm lấy nét",
@@ -222,7 +233,9 @@
 		"deleteRegion": "Xóa vùng",
 		"freehandRendersAsBox": "Khi xuất, hình vẽ tay được che bằng khung bao của nó — che dư, không bao giờ che thiếu.",
 		"label": "Trình kiểm tra",
-		"aiChat": "Trò chuyện AI"
+		"aiChat": "Trò chuyện AI",
+		"export": "Xuất",
+		"exportTip": "Xuất: MP4 hoặc GIF"
 	},
 	"chat": {
 		"changeProvider": "Đổi nhà cung cấp",
@@ -294,7 +307,16 @@
 			"subtitle": "Chuyển đổi hoặc tạo phiên",
 			"empty": "Chưa có cuộc trò chuyện nào.",
 			"msgsCount": "{{count}} tin nhắn · {{date}}"
-		}
+		},
+		"editWithAi": "Chỉnh sửa bằng AI",
+		"providerConnected": "Đã kết nối · {{provider}}",
+		"providerNotConnected": "Chưa kết nối",
+		"composerLabel": "Nhắn cho trình chỉnh sửa AI",
+		"undoTurn": "Hoàn tác",
+		"turnUndone": "Đã hoàn tác. Dự án đã trở lại như trước lượt này.",
+		"turnUndoStale": "Không thể hoàn tác: dự án đã thay đổi kể từ đó. Hãy dùng Hoàn tác trên dòng thời gian.",
+		"appliedTitleOne": "Đã áp dụng · 1 thay đổi",
+		"appliedTitleMany": "Đã áp dụng · {{count}} thay đổi"
 	},
 	"newProjectDialog": {
 		"title": "Dự án mới",

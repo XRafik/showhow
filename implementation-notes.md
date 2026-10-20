@@ -1,5 +1,26 @@
 # Implementation notes
 
+## 20 October 2026 — Showhow #147 Final editor assistant, export and dialogs
+
+Built in a single Claude Code session; the reviewer was a separate fresh agent.
+
+Owner decisions (2026-10-19, `.agents/decisions.md`) and what they mean on screen:
+- Editor-02 (review a proposal before it applies) is not built. Agent edits apply at once, as before.
+  Editor-03's card follows a turn that changed the document; its Undo restores the document from
+  before the turn only while nothing has changed it since, and says so when it cannot.
+- Export lives in the inspector (Editor-04) with a summary that names format, frame, length and
+  "You choose where", but no file size: nothing can know it before the encoder runs. Rendering,
+  done and failure are one sheet (Editor-05). The Guide format and "update the guide's video" are
+  left out. MP4 cannot be cancelled, so its Cancel is disabled and says why.
+
+Other adaptations:
+- The unsaved-changes sheet (Editor-07) shows no list of changed items: there is no saved baseline
+  to compare against, only a dirty flag.
+- The change count is one per region, clip, annotation or track added, removed or altered, plus one
+  for any other difference. A turn that changed nothing shows no card.
+- A turn applied through the conflict toast's "Apply anyway" shows no card (its Undo would have no
+  safe revision to check against).
+
 ## 19 October 2026 — Showhow #124 Stop on the recorder bar is not a step
 
 On macOS the cursor session tags a click whose screen point lies inside the HUD's drawn controls
