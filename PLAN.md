@@ -1314,3 +1314,43 @@ Scan of every, all, any and valid in the requirements and DONE WHEN:
 
 ## Implementation notes
 Append each deviation to `implementation-notes.md` under "Deviations".
+
+
+# Showhow #172 launcher camera and microphone previews Plan
+
+## Goal
+A user can see the selected camera working and microphone input responding from the launcher before pressing Record, without opening device settings.
+
+## Context and decisions
+Owner invoked Ticket172 then explicitly approved the proposed plan with normal review on2026-10-22: "apprive with normal review". Approved proposal: small camera self-view beside/above launcher when Camera is on; live levels beside mic button when Mic is on; reuse existing preview/meter hooks and device selection; stop previews on toggle-off, recording start or launcher close; preserve horizontal/vertical HUD and accessibility; focused lifecycle/layout tests, before/after, packaged synthetic macOS proof, fresh review. This is a contained enhancement to existing UI, not recorder-engine work. Existing HudDeviceSettings already owns camera/self-view and level presentation; use those patterns without a parallel capture engine.
+
+## Bounded requirements
+- Camera ON in idle launcher shows selected-camera live muted self-view without opening gear menu; Camera OFF has no active preview acquisition.
+- Mic ON where microphone is supported shows live level feedback beside/on its own button without opening gear menu; OFF and unsupported macOS13/14 paths do not acquire mic or show misleading live state.
+- Preserve chosen device identities, default-mic handling, existing gear settings and quality controls. Coordinate preview ownership so opening/closing settings does not leave duplicate or stale capture streams.
+- Stop owned preview streams/analysers when toggled off, recording starts, launcher unmounts, and when stale async acquisition resolves. Preview cleanup must not stop recorder-owned streams. No camera preview audio playback.
+- Error/unavailable feedback truthfully uses existing settings/error copy and does not silently claim device success. No permission grant automation.
+- Horizontal and vertical HUD layouts: visible self-view/meter, reachable keyboard controls, no native resize feedback loop, correct interactive overlay bounds and mouse pass-through; existing recording exclusion policy unchanged.
+
+## Architecture
+Extend the existing renderer launch components, hooks and tokens. No new dependency, settings store, recorder/native/IPC contract or capture-engine change. Reuse existing camera/meter components/hooks where possible rather than clone them. New modules only if needed for one shared preview seam.
+
+### Task 1: Surface camera self-view and microphone levels — existing issue172
+**Priority:** no, explicit owner normal-review approval; no Greptile.
+**Labels:** feature, ui. **Milestone:** none. **Depends on:** none;171 merged eebe7073.
+**Files:** src/components/launch/LaunchWindow.tsx; LaunchWindow.module.css; HudControls.tsx; HudDeviceSettings.tsx; corresponding LaunchWindow.test.tsx/HudControls.test.tsx/HudDeviceSettings.quality.test.tsx; new focused src/components/launch/ launcher-preview component/browser test only if needed. src/hooks/useAudioLevelMeter.ts and useCameraPreviewStream.ts plus same-package tests only for demonstrated preview lifecycle sharing/cleanup needs. Existing locale keys preferred; affected locale files only if needed for truthful accessible/error labels, with15locale validation. PLAN.md append and implementation-notes.md. No Electron/main/native files; return for scope resolution before extending there.
+**Interfaces:** current toggle/device prefs, canRecordMicrophone, preview and analyser hooks; existing HUD layout/bounds API unchanged.
+**Constraints and reasons:** preserve #170 owner frontend work,171 dirtygeneratedbinary/lane,148 frozen docs/gates,128 parked,134 cache, protected/untracked designs, owner media/auth. No new OS permissions, personal camera/mic capture, .env/credentials or private vault access. Tests/proof use explicit fake/synthetic media. A real physical device smoke remains separately owner-only, not asserted from mocks.
+- [ ] Capture actual existing launcher BEFORE; meaningful missing-preview/lifecycle RED before production edits.
+- [ ] Minimal component/hook changes; avoid duplicate camera/mic sessions and preserve recorder handoff.
+- [ ] GREEN same behavior; both layouts; on/off/device switch/unmount/stale-resolution cleanup, microphone unsupported/default cases and settings coexistence.
+- [ ] Appropriate full suites/common checks; observed packaged macOS proof with synthetic camera/audio inputs and complete owned cleanup; fresh independent review; one unmergedPR and exacthead CI green.
+**Verification:** focused unit/real-browser tests using productionCSS, full affected unit/browser suites, app/test TypeScript, Biome, i18n/branding as applicable. Project resource scheduling. BEFORE/AFTER pixels with cameraON/OFF, micON/OFF, settings closed/open, horizontal/vertical. Packaged explicitapp/isPackaged/archive hashes/runtime isolation, synthetic input visible/responsive, recorder transition cleanup via existing test seams, source fixture hashes/owned processroot cleanup. Do not change package guards/tools/profiles to pass. Rust1.99.1 is already installed by explicit ownerapproval; use RUSTUP_TOOLCHAIN=1.99.1. Existing172 normal review must not rerun broad suites when unchanged proof suffices.
+**DONE WHEN:** named camera/mic states are directly discoverable; lifecycle/input/default/unsupported cases and both layouts pass; synthetic packagedmacOS UI proof and cleanup green; independent Standards/Requirements PASS; one reviewreadyPR open with currenthead hostedCI green.
+**Outside cases/follow-ups:** physical ownerdevice acceptance, recording-engine fixes, Linux installer, Windows/Linux runtime, macOS13hardware, #170, #148 and ChatGPT integration. No release/tag/merge.
+
+## Self-review
+Requirements and DONE WHEN are bounded to named preview states/layouts and lifecycle cases; no unlimited promises.
+
+## Implementation notes
+Append deviations to implementation-notes.md. Preserve raw failures and candidate bindings; broaden ownership only after coordinator resolution.

@@ -56,7 +56,7 @@ const recorderState = vi.hoisted(() => ({
 		setMicrophoneDeviceName: vi.fn(),
 		webcamEnabled: false,
 		setWebcamEnabled: vi.fn(async () => true),
-		webcamDeviceId: undefined,
+		webcamDeviceId: undefined as string | undefined,
 		setWebcamDeviceId: vi.fn(),
 		setWebcamDeviceName: vi.fn(),
 		webcamQuality: "2160p",
@@ -116,16 +116,27 @@ vi.mock("../../hooks/useCameraDevices", () => ({
 	}),
 }));
 
-const audioLevelMeter = vi.hoisted(() => ({ call: vi.fn() }));
+const audioLevelMeter = vi.hoisted(() => ({ call: vi.fn(), level: 0, error: false }));
 vi.mock("../../hooks/useAudioLevelMeter", () => ({
-	useAudioLevelMeter: (options: unknown) => {
+	useAudioLevelMeter: (options: { enabled: boolean }) => {
 		audioLevelMeter.call(options);
-		return { level: 0 };
+		return {
+			level: options.enabled ? audioLevelMeter.level : 0,
+			error: options.enabled && audioLevelMeter.error,
+		};
 	},
 }));
 
+const cameraPreview = vi.hoisted(() => ({
+	call: vi.fn(),
+	stream: null as MediaStream | null,
+	error: null as string | null,
+}));
 vi.mock("../../hooks/useCameraPreviewStream", () => ({
-	useCameraPreviewStream: () => ({ stream: null, error: null }),
+	useCameraPreviewStream: (options: { enabled: boolean }) => {
+		cameraPreview.call(options);
+		return { stream: options.enabled ? cameraPreview.stream : null, error: cameraPreview.error };
+	},
 }));
 
 vi.mock("../../lib/requestCameraAccess", () => ({
@@ -375,10 +386,15 @@ function resetLaunchMocks() {
 	recorderState.value.recordingPrefsLoaded = true;
 	cameraDevicesState.isReady = true;
 	cameraDevicesState.devices = [];
+	cameraPreview.call.mockClear();
+	cameraPreview.stream = null;
+	cameraPreview.error = null;
 	micDevicesState.value = [];
 	micDevicesState.enabled = undefined;
 	systemVersionState.value = "15.5";
 	audioLevelMeter.call.mockClear();
+	audioLevelMeter.level = 0;
+	audioLevelMeter.error = false;
 	hudCursorListeners = [];
 	selectedSourceChangedListeners = [];
 	sourceSelectorClosedListeners = [];
@@ -1363,6 +1379,34 @@ describe("LaunchWindow overlay sizing", () => {
 		expect(window.electronAPI.setHudOverlaySize).not.toHaveBeenCalled();
 	});
 
+	it("does not resize the overlay when the launcher camera preview appears", async () => {
+		cameraDevicesState.devices = [{ deviceId: "camera-a", label: "Camera A" }];
+		const view = renderLaunchWindow();
+
+		const bar = (await screen.findByTestId("hud-drag-handle")).closest(
+			"[data-tray-layout]",
+		) as HTMLElement;
+		stubBox(bar, 400, 56);
+		await flushResizeObservers();
+
+		const sizeMock = window.electronAPI.setHudOverlaySize as unknown as {
+			mockClear: () => void;
+		};
+		sizeMock.mockClear();
+
+		recorderState.value.webcamEnabled = true;
+		cameraPreview.stream = { getTracks: () => [] } as unknown as MediaStream;
+		view.rerender(
+			<TooltipProvider>
+				<LaunchWindow />
+			</TooltipProvider>,
+		);
+		await screen.findByTestId("launch-camera-preview");
+		await flushResizeObservers();
+
+		expect(window.electronAPI.setHudOverlaySize).not.toHaveBeenCalled();
+	});
+
 	it("reports an opened popover as part of the rect kept on screen", async () => {
 		renderLaunchWindow();
 
@@ -1452,6 +1496,30 @@ describe("LaunchWindow language menu", () => {
 		expect(menu.parentElement?.parentElement).toContainElement(
 			screen.getByTestId("hud-drag-handle"),
 		);
+	});
+
+	it("keeps language options in the reserved vertical HUD bounds with camera on", async () => {
+		cameraDevicesState.devices = [{ deviceId: "camera-a", label: "Camera A" }];
+		recorderState.value.webcamDeviceId = "camera-a";
+		recorderState.value.webcamEnabled = true;
+		const stream = { getTracks: () => [] } as unknown as MediaStream;
+		cameraPreview.stream = stream;
+
+		renderLaunchWindow();
+		fireEvent.click(await screen.findByTestId("launch-tray-layout-button"));
+		expect(screen.getByRole("button", { name: "Use horizontal tray" })).toBeInTheDocument();
+		cameraPreview.call.mockClear();
+
+		fireEvent.click(screen.getByRole("button", { name: "Language: English" }));
+		const menu = await screen.findByTestId("hud-language-menu");
+
+		expect(within(menu).getAllByRole("menuitemradio").length).toBeGreaterThan(0);
+		expect(screen.queryByTestId("launch-camera-preview")).not.toBeInTheDocument();
+		expect(cameraPreview.call).toHaveBeenLastCalledWith({ enabled: true, deviceId: "camera-a" });
+
+		fireEvent.keyDown(window, { key: "Escape" });
+		const preview = await screen.findByTestId("launch-camera-preview");
+		expect(within(preview).getByLabelText("Camera")).toHaveProperty("srcObject", stream);
 	});
 });
 
@@ -1751,6 +1819,130 @@ describe("LaunchWindow device buttons", () => {
 		expect(screen.queryByTestId("hud-device-settings")).not.toBeInTheDocument();
 	});
 
+	it("shows the selected camera in the launcher when enabled and settings are closed", async () => {
+		cameraDevicesState.devices = [{ deviceId: "camera-a", label: "Camera A" }];
+		recorderState.value.webcamDeviceId = "camera-a";
+		recorderState.value.webcamEnabled = true;
+		cameraPreview.stream = { getTracks: () => [] } as unknown as MediaStream;
+
+		renderLaunchWindow();
+
+		expect(await screen.findByTestId("launch-camera-preview")).toBeVisible();
+		expect(cameraPreview.call).toHaveBeenLastCalledWith({ enabled: true, deviceId: "camera-a" });
+		expect(screen.queryByTestId("hud-device-settings")).not.toBeInTheDocument();
+	});
+
+	it("attaches the selected camera stream when it becomes available", async () => {
+		cameraDevicesState.devices = [{ deviceId: "camera-a", label: "Camera A" }];
+		recorderState.value.webcamDeviceId = "camera-a";
+		recorderState.value.webcamEnabled = true;
+		const view = renderLaunchWindow();
+		const preview = await screen.findByTestId("launch-camera-preview");
+		expect(within(preview).queryByLabelText("Camera")).toBeNull();
+
+		const stream = { getTracks: () => [] } as unknown as MediaStream;
+		cameraPreview.stream = stream;
+		view.rerender(
+			<TooltipProvider>
+				<LaunchWindow />
+			</TooltipProvider>,
+		);
+
+		const video = within(preview).getByLabelText("Camera") as HTMLVideoElement;
+		expect(video.srcObject).toBe(stream);
+		expect(video.muted).toBe(true);
+		expect(video.playsInline).toBe(true);
+	});
+
+	it("shows the live microphone level with its button when enabled and settings are closed", async () => {
+		recorderState.value.microphoneEnabled = true;
+		micDevicesState.value = [{ deviceId: "mic-a", label: "Mic A", groupId: "g" }];
+		audioLevelMeter.level = 64;
+
+		const view = renderLaunchWindow();
+
+		const meter = await screen.findByRole("meter", { name: "Input level" });
+		expect(meter).toHaveAttribute("aria-valuenow", "64");
+		expect(screen.getByTestId("launch-microphone-button")).toHaveAttribute("aria-pressed", "true");
+		expect(screen.queryByTestId("hud-device-settings")).not.toBeInTheDocument();
+
+		audioLevelMeter.level = 12;
+		view.rerender(
+			<TooltipProvider>
+				<LaunchWindow />
+			</TooltipProvider>,
+		);
+		expect(meter).toHaveAttribute("aria-valuenow", "12");
+	});
+
+	it("reports unavailable microphone preview instead of a silent meter on acquisition failure", async () => {
+		micDevicesState.value = [{ deviceId: "mic-a", label: "Mic A", groupId: "g" }];
+		recorderState.value.microphoneEnabled = true;
+		audioLevelMeter.error = true;
+
+		renderLaunchWindow();
+		expect(await screen.findByRole("status")).toHaveTextContent("Preview unavailable");
+		expect(screen.queryByRole("meter", { name: "Input level" })).not.toBeInTheDocument();
+
+		fireEvent.click(screen.getByTestId("launch-device-settings-button"));
+		const panel = await screen.findByTestId("hud-device-settings");
+		expect(within(panel).getByRole("status")).toHaveTextContent("Preview unavailable");
+		expect(within(panel).queryByRole("meter", { name: "Input level" })).not.toBeInTheDocument();
+		expect(within(panel).queryByText("Speak to check your microphone")).toBeNull();
+	});
+
+	it("reuses enabled previews inside settings without acquiring a second stream", async () => {
+		cameraDevicesState.devices = [{ deviceId: "camera-a", label: "Camera A" }];
+		micDevicesState.value = [{ deviceId: "mic-a", label: "Mic A", groupId: "g" }];
+		recorderState.value.webcamDeviceId = "camera-a";
+		recorderState.value.webcamEnabled = true;
+		recorderState.value.microphoneEnabled = true;
+		const stream = { getTracks: () => [] } as unknown as MediaStream;
+		cameraPreview.stream = stream;
+
+		renderLaunchWindow();
+		await screen.findByTestId("launch-camera-preview");
+		cameraPreview.call.mockClear();
+		audioLevelMeter.call.mockClear();
+
+		fireEvent.click(screen.getByTestId("launch-device-settings-button"));
+		const panel = await screen.findByTestId("hud-device-settings");
+
+		expect(cameraPreview.call).toHaveBeenCalledTimes(1);
+		expect(audioLevelMeter.call).toHaveBeenCalledTimes(1);
+		expect(within(panel).getByLabelText("Preview")).toHaveProperty("srcObject", stream);
+		expect(within(panel).getByRole("meter", { name: "Input level" })).toBeInTheDocument();
+		expect(screen.queryByTestId("launch-camera-preview")).not.toBeInTheDocument();
+	});
+
+	it("stops both launcher previews when recording starts", async () => {
+		cameraDevicesState.devices = [{ deviceId: "camera-a", label: "Camera A" }];
+		micDevicesState.value = [{ deviceId: "mic-a", label: "Mic A", groupId: "g" }];
+		recorderState.value.webcamEnabled = true;
+		recorderState.value.microphoneEnabled = true;
+		const view = renderLaunchWindow();
+		await screen.findByTestId("launch-camera-preview");
+		await screen.findByRole("meter", { name: "Input level" });
+		cameraPreview.call.mockClear();
+		audioLevelMeter.call.mockClear();
+
+		recorderState.value.recording = true;
+		view.rerender(
+			<TooltipProvider>
+				<LaunchWindow />
+			</TooltipProvider>,
+		);
+
+		expect(cameraPreview.call).toHaveBeenLastCalledWith(
+			expect.objectContaining({ enabled: false }),
+		);
+		expect(audioLevelMeter.call).toHaveBeenLastCalledWith(
+			expect.objectContaining({ enabled: false }),
+		);
+		expect(screen.queryByTestId("launch-camera-preview")).not.toBeInTheDocument();
+		expect(screen.queryByRole("meter", { name: "Input level" })).not.toBeInTheDocument();
+	});
+
 	it("does not store the camera as on when it cannot be turned on (#967)", async () => {
 		recorderState.value.setWebcamEnabled.mockResolvedValueOnce(false);
 
@@ -1833,6 +2025,7 @@ describe("LaunchWindow device settings", () => {
 
 	it("uses an unconstrained meter request for the default microphone pseudo-device", async () => {
 		micDevicesState.value = [{ deviceId: "default", label: "System default", groupId: "g" }];
+		recorderState.value.microphoneEnabled = true;
 		renderLaunchWindow();
 		fireEvent.click(await screen.findByTestId("launch-device-settings-button"));
 		await screen.findByTestId("hud-device-settings");
@@ -1840,6 +2033,25 @@ describe("LaunchWindow device settings", () => {
 			enabled: true,
 			deviceId: undefined,
 		});
+	});
+
+	it("does not acquire disabled input previews when device settings open", async () => {
+		cameraDevicesState.devices = [{ deviceId: "camera-a", label: "Camera A" }];
+		micDevicesState.value = [{ deviceId: "mic-a", label: "Mic A", groupId: "g" }];
+		renderLaunchWindow();
+
+		fireEvent.click(await screen.findByTestId("launch-device-settings-button"));
+		const panel = await screen.findByTestId("hud-device-settings");
+
+		expect(cameraPreview.call).toHaveBeenLastCalledWith(
+			expect.objectContaining({ enabled: false }),
+		);
+		expect(audioLevelMeter.call).toHaveBeenLastCalledWith(
+			expect.objectContaining({ enabled: false }),
+		);
+		expect(within(panel).queryByLabelText("Preview")).toBeNull();
+		expect(within(panel).queryByRole("meter")).toBeNull();
+		expect(within(panel).queryByText("Speak to check your microphone")).toBeNull();
 	});
 
 	// The gear is disabled while recording, but a panel that was already open stays mounted —
@@ -1979,6 +2191,7 @@ describe("LaunchWindow microphone before macOS 15", () => {
 
 	it("offers no microphone on macOS 14: no button, no picker, no meter", async () => {
 		systemVersionState.value = "14.6.1";
+		recorderState.value.microphoneEnabled = true;
 
 		const panel = await openDeviceSettings();
 
@@ -2171,6 +2384,29 @@ describe("LaunchWindow Final HUD states and recovery sheets", () => {
 			reason: "screen-access-required",
 		})) as typeof window.electronAPI.openSourceSelector;
 	}
+
+	it("hides the launcher camera preview while a recovery sheet is open", async () => {
+		cameraDevicesState.devices = [{ deviceId: "camera-a", label: "Camera A" }];
+		recorderState.value.webcamDeviceId = "camera-a";
+		recorderState.value.webcamEnabled = true;
+		const stream = { getTracks: () => [] } as unknown as MediaStream;
+		cameraPreview.stream = stream;
+		denyScreenAccess();
+
+		renderLaunchWindow();
+		await screen.findByTestId("launch-camera-preview");
+		cameraPreview.call.mockClear();
+
+		fireEvent.click(await screen.findByTestId("launch-record-button"));
+		const sheet = await screen.findByRole("dialog", { name: "Allow screen recording" });
+
+		expect(screen.queryByTestId("launch-camera-preview")).not.toBeInTheDocument();
+		expect(cameraPreview.call).toHaveBeenLastCalledWith({ enabled: true, deviceId: "camera-a" });
+
+		fireEvent.click(within(sheet).getByRole("button", { name: "Cancel" }));
+		const preview = await screen.findByTestId("launch-camera-preview");
+		expect(within(preview).getByLabelText("Camera")).toHaveProperty("srcObject", stream);
+	});
 
 	it("shows the permission sheet when Record needs screen access, focused on Open Settings", async () => {
 		denyScreenAccess();

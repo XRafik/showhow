@@ -6,8 +6,10 @@ import { offersEditableCursor } from "@/lib/editableCursorAvailability";
 import { loadUserPreferences, saveUserPreferences } from "@/lib/userPreferences";
 import { nativeBridgeClient } from "@/native";
 import { canRecordMicrophone } from "@/utils/platformUtils";
+import { useAudioLevelMeter } from "../../hooks/useAudioLevelMeter";
 import { type CameraDevice } from "../../hooks/useCameraDevices";
 import { useCameraHudSync } from "../../hooks/useCameraHudSync";
+import { useCameraPreviewStream } from "../../hooks/useCameraPreviewStream";
 import {
 	isPlaceholderMicrophoneLabel,
 	type MicrophoneDevice,
@@ -41,7 +43,12 @@ import {
 	HudTrayLayoutButton,
 	HudWindowControls,
 } from "./HudControls";
-import { HudDeviceSettings, type HudDeviceSettingsLabels } from "./HudDeviceSettings";
+import {
+	HudCameraPreview,
+	HudDeviceSettings,
+	type HudDeviceSettingsLabels,
+	HudLevelMeter,
+} from "./HudDeviceSettings";
 import { getIcon } from "./HudIcons";
 import {
 	computeHudBarMaxHeight,
@@ -245,6 +252,31 @@ export function LaunchWindow() {
 		microphoneDeviceId,
 		microphoneDeviceName,
 	);
+	const activeCameraId = webcamDeviceId || selectedCameraId;
+	const activeMicId = microphoneDeviceId || selectedMicId;
+	const cameraPreviewEnabled =
+		!controlsLocked &&
+		webcamEnabled &&
+		!isCameraDevicesLoading &&
+		!cameraDevicesError &&
+		cameraDevices.length > 0;
+	const { stream: cameraPreviewStream, error: cameraPreviewError } = useCameraPreviewStream({
+		enabled: cameraPreviewEnabled,
+		deviceId: activeCameraId,
+	});
+	const microphonePreviewEnabled =
+		!controlsLocked &&
+		microphoneOffered &&
+		microphoneEnabled &&
+		micDevicesReady &&
+		micDevices.length > 0;
+	const { level: microphonePreviewLevel, error: microphonePreviewError } = useAudioLevelMeter({
+		enabled: microphonePreviewEnabled,
+		deviceId: activeMicId && activeMicId !== "default" ? activeMicId : undefined,
+	});
+	const showLauncherCameraPreview =
+		webcamEnabled && !controlsLocked && !isDeviceSettingsOpen && !isLanguageMenuOpen && !sheet;
+	const showLauncherMicrophonePreview = microphonePreviewEnabled && !isDeviceSettingsOpen;
 
 	useEffect(() => {
 		if (selectedMicId && selectedMicId !== "default") {
@@ -1371,13 +1403,29 @@ export function LaunchWindow() {
 							className={`${styles.hudControlGroup} ${isVertical ? styles.hudControlGroupVertical : ""}`}
 						>
 							{microphoneOffered && (
-								<HudMicButton
-									enabled={microphoneEnabled}
-									locked={controlsLocked}
-									name={t("audio.microphone")}
-									tooltip={t("tooltips.microphone")}
-									onClick={toggleMicrophone}
-								/>
+								<div className={styles.hudMicControl}>
+									<HudMicButton
+										enabled={microphoneEnabled}
+										locked={controlsLocked}
+										name={t("audio.microphone")}
+										tooltip={t("tooltips.microphone")}
+										onClick={toggleMicrophone}
+									/>
+									{showLauncherMicrophonePreview ? (
+										microphonePreviewError ? (
+											<span className={styles.launchMicUnavailable} role="status">
+												{deviceSettingsLabels.previewUnavailable}
+											</span>
+										) : (
+											<div className={styles.launchMicMeter}>
+												<HudLevelMeter
+													level={microphonePreviewLevel}
+													label={deviceSettingsLabels.micLevel}
+												/>
+											</div>
+										)
+									) : null}
+								</div>
 							)}
 							<HudCameraButton
 								enabled={webcamEnabled}
@@ -1490,9 +1538,32 @@ export function LaunchWindow() {
 					</div>
 				</HudLayoutProvider>
 
-				{(isPopoverOpen || hasNotices || sheet) && (
+				{(isPopoverOpen || hasNotices || sheet || showLauncherCameraPreview) && (
 					// column-reverse: first child sits closest to the bar.
 					<div className={styles.hudAbove}>
+						{showLauncherCameraPreview && (
+							<div
+								data-testid="launch-camera-preview"
+								data-hud-interactive="true"
+								className={`${styles.launchCameraPreview} ${styles.electronNoDrag}`}
+							>
+								{isCameraDevicesLoading ? (
+									<span role="status">{t("webcam.searching")}</span>
+								) : cameraDevicesError ? (
+									<span role="status">{t("webcam.unavailable")}</span>
+								) : cameraDevices.length === 0 ? (
+									<span role="status">{t("webcam.noneFound")}</span>
+								) : (
+									<HudCameraPreview
+										stream={cameraPreviewStream}
+										error={cameraPreviewError}
+										previewLabel={t("webcam.camera")}
+										unavailableLabel={t("deviceSettings.previewUnavailable")}
+									/>
+								)}
+							</div>
+						)}
+
 						{sheet?.kind === "screen" && (
 							<HudSheet
 								eyebrow={t("sheets.eyebrow")}
@@ -1535,12 +1606,18 @@ export function LaunchWindow() {
 						{isDeviceSettingsOpen && (
 							<HudDeviceSettings
 								showMicrophone={microphoneOffered}
+								showMicrophonePreview={microphonePreviewEnabled}
+								microphonePreviewLevel={microphonePreviewLevel}
+								microphonePreviewError={microphonePreviewError}
 								micDevices={micDevices}
 								cameraDevices={cameraDevices}
-								activeMicId={microphoneDeviceId || selectedMicId}
-								activeCameraId={webcamDeviceId || selectedCameraId}
+								activeMicId={activeMicId}
+								activeCameraId={activeCameraId}
 								cameraLoading={isCameraDevicesLoading}
 								cameraError={cameraDevicesError}
+								cameraPreviewStream={cameraPreviewStream}
+								cameraPreviewError={cameraPreviewError}
+								showCameraPreview={cameraPreviewEnabled}
 								labels={deviceSettingsLabels}
 								versionLabel={versionLabel}
 								// `canCheckForUpdates` is the install channel's answer, fixed for the
