@@ -1103,3 +1103,214 @@ Requirements and DONE WHEN use bounded named clips, sizes and controls; no unlim
 
 ## Implementation notes
 Append deviations to implementation-notes.md. Widened source ownership requires coordinator/owner scope resolution before edits.
+
+# Showhow 2026-10-22 test notes Plan
+
+## Goal
+Fix the problems and gaps the owner found while testing the built app on 2026-10-22: two bugs, faster movement between the Library, editor and HUD, a menu bar shortcut, a model picker, deleting recordings, choosing a recordings folder, AI-named recordings, and a hover and transition audit. The user is the owner recording on macOS.
+
+## Context and decisions
+- Source: owner test notes `~/Brain/inbox/2026-10-22 Showhow testnotes.md` (four screenshots). The 2026-10-21 notes are already #169 to #172.
+- Approved mock: `design/mocks/2026-10-22-test-notes/index.html`, screens A to G (owner: "All of these work really well"; dither bar: "This works really well").
+- Owner decisions, 2026-10-22:
+  - The recordings folder stays `~/Showhow/Recordings` by default. Settings can change it. When the folder changes, Showhow offers to move the existing recordings. If the owner keeps them, they stay on disk but leave the Library.
+  - Clicking the menu bar icon opens the HUD launcher.
+  - Recordings get an AI title only when an OpenRouter key is connected. Without a key the title stays as it is today.
+  - The model picker is a curated list plus "Other…".
+  - Progress bars are fully dithered pixel bars, not smooth fills (see the mock's `ditherBar()`).
+  - No ticket in this set is priority.
+- Confirmed assumptions:
+  - Deleting a recording moves its whole bundle to the macOS Trash. Undo is available for 6 s. This replaces #55.
+  - AI naming runs by default once a key is saved, and a setting turns it off.
+  - An AI title never replaces a title the user changed.
+  - A partial folder move deletes nothing.
+  - #148 runs after this set.
+- Code facts:
+  - `showhow:copy-path` rejects any path that does not start with `SHOWHOW_RECORDINGS_ROOT + sep` (`electron/ipc/handlers.ts`).
+  - The import sheet sets `phase: "picking"` with no value, so `Progress` draws a full bar.
+  - The menu bar icon (`createTray`, `electron/main.ts`) opens the main window.
+  - `SHOWHOW_RECORDINGS_ROOT` is a constant used at 17 sites.
+  - The Settings Recording tab shows the folder but cannot change it.
+  - The default title is `Recording YYYY-MM-DD HH:MM` (`electron/showhow/bundle.ts`).
+  - `showhow:open-library` already exists.
+
+## Bounded requirements
+- macOS only. Windows and Linux behaviour is unchanged and untested.
+- A failed documentation step never removes or alters a valid recording.
+- New strings are added to the `en` locale. Other locales fall back to it, and `npm run i18n:check` passes.
+
+## Architecture
+- T7 adds one main-process resolver, `getRecordingsRoot()`, in `electron/showhow/bundle.ts`, backed by the Showhow settings file. All 17 `SHOWHOW_RECORDINGS_ROOT` sites read it. The path checks in copy-path, Trash and the media protocol use `isInsideRecordingsRoot(path)`.
+- T8 adds `titleSource: "default" | "ai" | "user"` and an optional `summary` to `meta.json`. A missing `titleSource` reads as `"user"` when the title does not match the default pattern, otherwise `"default"`.
+
+### Task 1: Copy path copies the recording folder
+**Priority:** no (owner)  **Labels:** bug  **Milestone:** none  **Depends on:** none
+**Files:** `electron/ipc/handlers.ts`, `electron/showhow/bundle.ts`, `src/components/library/RecordingLibrary.tsx` and their tests, `implementation-notes.md`
+**Requirements:** Diagnose first (diagnosing-bugs). BEFORE reproduces the owner's failure: COPY PATH in the Library guide header leaves the clipboard unchanged. The fix makes COPY PATH write the bundle's absolute folder path for (a) a fresh recording, (b) an imported MP4 and (c) a recording whose root resolves through a symlink. A path outside the root is still refused.
+**Constraints and reasons:** Keep the root check, because it stops the renderer from copying arbitrary paths.
+- [ ] RED: a handler test for the reproduced cause, plus cases (a) to (c).
+- [ ] Implement. GREEN: the same cases pass, and the outside-root refusal test passes.
+- [ ] Prove natively with a real clipboard read. Get an independent review, then open the PR.
+**DONE WHEN:** cases (a) to (c) copy the exact path on built macOS (`pbpaste` matches `bundleDir`); the outside-root case returns `{success:false}`; the "Copied" feedback is visible.
+**Outside cases / follow-ups:** Copy for agent is unchanged.
+
+### Task 2: Import progress bar stays empty until a video is chosen, then fills as a dither bar
+**Priority:** no  **Labels:** bug, ui  **Milestone:** none  **Depends on:** none
+**Files:** `src/components/showhow/Progress.tsx`, `src/components/showhow/ImportVideoSheet.tsx` and their tests, `implementation-notes.md`
+**Requirements:**
+- In the `picking` phase the bar is empty (value 0, no animation).
+- During `copying` the fill follows `bytesCopied/totalBytes`.
+- During `validating` and `saving` the bar is full.
+- `Progress` draws mock screen G's dither bar: cells on a 4 px pitch with 3 px squares, 3 rows, 11 px tall; solid `#82B09A` cells behind the edge; a 96 px 4×4 Bayer frontier with `#C4DBCE` cells; `#FFFCF71F` 1 px dots ahead of the edge.
+- The frontier jitters only while the value changes. Under reduced motion it is static.
+- The failed state keeps the current failure colours.
+- Other `Progress` users get the same drawing.
+**Constraints and reasons:** Keep `role="progressbar"` and the `aria-value*` attributes, because screen readers depend on them.
+- [ ] RED: tests for the picking phase (`aria-valuenow=0`, no full fill) and copying (value equals the byte ratio).
+- [ ] Implement. GREEN: these tests pass, and the existing Progress and ImportVideoSheet tests pass.
+- [ ] Browser test or native screenshot at 0 %, mid-copy and 100 %. Get an independent review, then open the PR.
+**DONE WHEN:** screenshots at the three points match mock G; the unit tests pass; reduced-motion shows no jitter.
+**Outside cases / follow-ups:** The making-guide and export progress UIs are reviewed in T9.
+
+### Task 3: Move between the Library, editor and HUD in one click
+**Priority:** no  **Labels:** feature, ui  **Milestone:** none  **Depends on:** none
+**Files:** `src/components/library/RecordingLibrary.tsx`, `src/components/ai-edition/v4/EditorTopBar.tsx`, `src/components/launch/HudControls.tsx`, `src/components/launch/LaunchWindow.tsx`, their tests, the `en` locale, `implementation-notes.md`
+**Requirements:**
+- Library: EDIT VIDEO uses the primary variant (mock A).
+- Editor top bar: a "← LIBRARY" secondary button sits in the left group after the logo and before the file name, with a 1 × 16 px divider; LIBRARY is removed from the right links (mock C).
+- HUD idle bar: the logo is a button labelled "Open Library", with a tooltip after a 400 ms delay. It calls `showhowOpenLibrary()` (mock D). While recording, the logo stays inert.
+**Constraints and reasons:** Keep the logo inert while recording, so a click during a take cannot hide the HUD.
+- [ ] RED: tests for the primary EDIT VIDEO variant, the Library button in the top bar calling the existing open-library handler, and the HUD logo calling `showhowOpenLibrary` when idle but not while recording.
+- [ ] Implement. GREEN.
+- [ ] Native screenshots of the three surfaces. Get an independent review, then open the PR.
+**DONE WHEN:** the three tests pass; the native screenshots match mocks A, C and D; the keyboard reaches each new control.
+
+### Task 4: Clicking the menu bar icon opens the HUD launcher
+**Priority:** no  **Labels:** feature  **Milestone:** none  **Depends on:** none
+**Files:** `electron/main.ts` (`createTray`), a new `electron/showhow/trayClick.ts` plus test, `implementation-notes.md`
+**Requirements:**
+- When idle, clicking the menu bar icon shows the HUD launcher window and focuses it, creating it if needed.
+- While recording, a click does nothing new: the existing recording menu with Stop stays.
+- Right-click keeps the existing menu.
+- [ ] RED: a unit test of the click decision for idle-with-HUD, idle-without-HUD and recording.
+- [ ] Implement. GREEN. Run a native smoke test with a real menu bar click.
+**DONE WHEN:** the three cases pass; on a built app, clicking the icon from the Library shows the HUD.
+**Outside cases / follow-ups:** Starting a recording straight from the menu bar is not in scope.
+
+### Task 5: Choose the AI model from a list
+**Priority:** no  **Labels:** feature, ui  **Milestone:** none  **Depends on:** none
+**Files:** `src/components/showhow/AiConnections.tsx` plus test, a new `src/lib/showhow/aiModels.ts`, the `en` locale, `implementation-notes.md`
+**Requirements:**
+- The "Model slug" field becomes a select (mock E) listing Claude Haiku 5.5 (default), Claude Sonnet 5.5, Claude Opus 5.5, one OpenAI model and one Google model.
+- Before merge, confirm each ID against openrouter.ai/models.
+- "Other…" reveals a text input with the helper "Any model ID from openrouter.ai/models".
+- A saved slug that is not in the list opens as Other with its value.
+- The duplicate "Use your own OpenRouter API key." line is removed.
+- [ ] RED: tests for the default selection, choosing a listed model and saving its slug, choosing Other and saving custom text, and loading an unknown saved slug.
+- [ ] Implement. GREEN. Native screenshot.
+**DONE WHEN:** the four tests pass; the saved slug reaches `aiGuide` unchanged (existing test); the screenshot matches mock E.
+
+### Task 6: Move a recording to the Trash from the Library or the editor
+**Priority:** no  **Labels:** feature, ui  **Milestone:** none  **Depends on:** none (replaces #55)
+**Files:** a new `electron/showhow/trashRecording.ts` plus test, `electron/ipc/handlers.ts`, `electron/preload.ts`, `electron/electron-env.d.ts`, `src/components/library/RecordingLibrary.tsx`, `src/components/ai-edition/v4/EditorTopBar.tsx`, their tests, the `en` locale, `implementation-notes.md`
+**Requirements:**
+- Entry points:
+  - the Library ⋯ menu item "Move to Trash…";
+  - right-clicking a sidebar row;
+  - ⌘⌫ on the selected row;
+  - the editor top bar ⋯ menu.
+- Each entry point opens the confirm sheet with mock A's copy.
+- On confirm, main validates that the path is a complete bundle inside the root, then calls `shell.trashItem`. The Library updates only after Trash succeeds: the row collapses and the next row is selected.
+- A toast reads "Moved to Trash" with UNDO for 6 s. UNDO restores the bundle from the Trash to its original path.
+- If the restore fails, the toast says "Couldn't restore — it's still in your Trash".
+- Deleting the open project in the editor returns to the Library.
+- A failed Trash leaves the row and shows an error.
+**Constraints and reasons:**
+- Nothing is ever deleted permanently. A move to the Trash is recoverable.
+- A path outside the root, or a folder without `meta.json`, is refused, because the renderer path is untrusted.
+- [ ] RED: main tests for trashing a valid bundle, refusing an outside path, refusing a folder that is not a bundle, Trash failure, and Undo restore. Renderer tests for the menu, sheet, ⌘⌫ and the toast.
+- [ ] Implement. GREEN. Prove natively with a real Trash and Undo, using a scratch root.
+**DONE WHEN:** the listed tests pass; native evidence shows the bundle in `~/.Trash` and restored by Undo; the editor path returns to the Library.
+**Outside cases / follow-ups:** Multi-select delete is not in scope.
+
+### Task 7: Choose the recordings folder and move existing recordings
+**Priority:** no  **Labels:** feature, ui  **Milestone:** none  **Depends on:** T1, T6
+**Files:**
+- `electron/showhow/bundle.ts`
+- `electron/showhow/settings.ts`
+- a new `electron/showhow/moveRecordings.ts` plus test
+- the 17 `SHOWHOW_RECORDINGS_ROOT` call sites
+- `electron/ipc/handlers.ts`, `electron/preload.ts`
+- `src/components/showhow/SettingsView.tsx` plus tests
+- the `en` locale
+- `implementation-notes.md`
+**Requirements:**
+- The Settings Recording tab gets a CHANGE… button that opens a folder picker.
+- Choosing a different folder opens mock F's sheet with the N recordings in the current root: MOVE N RECORDINGS or KEEP THEM THERE.
+- MOVE runs `fs.rename`, with copy-then-delete across volumes, one bundle at a time. It shows the dither progress "Moving k of N…".
+- If a bundle fails, the move stops there. Moved bundles stay in the new root and the rest stay in the old one. A report names them. Nothing is deleted before its copy is verified.
+- KEEP switches the root; old recordings stay on disk and leave the Library.
+- New recordings save to the chosen root. The root survives a restart.
+- Picking the same folder, or a folder inside the current root, is refused with a message.
+**Constraints and reasons:** Only copy-then-delete may remove a source, and only after a verified copy, because that data cannot be re-recorded.
+- [ ] RED: tests for the resolver default, a persisted custom root, moving 2 bundles, a failure on the 2nd of 3 bundles, KEEP, and refusing a nested folder. Path checks (copy-path, Trash, media) use the new root.
+- [ ] Implement. GREEN. Native: move 2 synthetic bundles into a scratch folder, restart, and confirm they are listed.
+**DONE WHEN:** the listed tests pass; native evidence of move, keep and restart; the Library shows the moved recordings and plays them.
+**Outside cases / follow-ups:** Listing several roots at once is not in scope.
+
+### Task 8: Name each recording with AI when it finishes
+**Priority:** no  **Labels:** feature, ui  **Milestone:** none  **Depends on:** T5
+**Files:**
+- `electron/showhow/bundle.ts`
+- a new `electron/showhow/aiTitle.ts` plus test
+- `electron/showhow/finishRecording.ts`
+- `electron/showhow/settings.ts`
+- `electron/ipc/handlers.ts`, `electron/preload.ts`
+- `src/components/library/RecordingLibrary.tsx`
+- `src/components/showhow/SettingsView.tsx`
+- their tests
+- the `en` locale
+- `implementation-notes.md`
+**Requirements:**
+- When a recording's transcript is ready and an OpenRouter key is connected, main sends the transcript and the click list to the selected model. It asks for a title of at most 60 characters and a summary of at most 140 characters.
+- The result is written to `meta.json` (`title`, `summary`, `titleSource:"ai"`) only if `titleSource` is still `"default"`.
+- A user rename sets `titleSource:"user"`.
+- The Library row and header show NAMING… with the mosaic strip, then the crossfade title and the summary line (mock B).
+- Without a key, or with the setting off, nothing is sent and the title is unchanged.
+- An AI failure leaves the default title and shows no error toast.
+- A Settings › AI connections switch, "Name recordings with AI", defaults to on.
+**Constraints and reasons:** The recording is saved before any AI call, because naming must never risk the recording.
+- [ ] RED: tests for no key (no request), the setting off (no request), success writing title and summary, a rename during the request (the AI result is dropped), provider failure, and a legacy meta without `titleSource`.
+- [ ] Implement. GREEN. Native: run with a faked OpenRouter endpoint and capture the NAMING → titled sequence.
+**DONE WHEN:** the six tests pass; native screenshots match mock B for the key and no-key cases.
+**Outside cases / follow-ups:**
+- Imported MP4s keep their file-name title.
+- Re-naming existing recordings in bulk is not in scope.
+- A live-key run is owed to the owner.
+
+### Task 9: Audit hover states and screen transitions
+**Priority:** no  **Labels:** feature, ui  **Milestone:** none  **Depends on:** T3
+**Files:** `docs/design/2026-10-22-hover-and-transitions-audit.md`, `implementation-notes.md`
+**Requirements:**
+- A read-only audit (improve-animations and better-ui) of icon buttons in four surfaces: Library sidebar and header, editor top bar and rail, HUD bar, and Settings tabs.
+- It also covers transitions between Library ↔ editor, Library ↔ Settings, and HUD → Library.
+- Each finding lists the element, its current state, and the proposed hover or transition with exact values (property, duration, curve, distance).
+- The progress UIs that T2 did not convert are listed for dither treatment.
+- No source changes.
+**DONE WHEN:** the document covers the four surfaces and three transitions, and each finding has values; the owner picks which findings become tickets.
+
+## Superseded issues
+- #55 "Add recoverable recording deletion": closed as not planned, superseded by T6, which adds the editor entry point, ⌘⌫ and Undo.
+
+## Order
+T1 → T2 → T3 → T4 → T5 → T6 → T7 → T8 → T9, then #148.
+
+## Self-review
+Scan of every, all, any and valid in the requirements and DONE WHEN:
+- T2: "Other `Progress` users" means the current imports of `Progress`.
+- T7: "the 17 call sites" is a counted set.
+- T9: the audit covers four named surfaces and three named transitions.
+- The task blocks contain no other unbounded promises.
+
+## Implementation notes
+Append each deviation to `implementation-notes.md` under "Deviations".
