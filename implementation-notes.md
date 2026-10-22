@@ -1464,6 +1464,15 @@ the actual `EditorTopBar` and verifies the Library button's effective 1px solid 
 token color. Production and test TypeScript, lint, i18n, branding and the final renderer build passed.
 Lint retains 27 repository warnings. Exact current receipts are listed in the executor transfer.
 
+PR188 CI then exposed a stale integration assertion in
+`src/components/ai-edition/NewEditorShell.finalShell.test.tsx`: it looked for Library inside the
+right navigation, which now contains only New recording and Open. With coordinator clearance, that
+test alone was updated to assert Library beside the brand, absent from right navigation, and still
+routes through the same `showhowOpenLibrary` IPC. The old assertion failed in the focused RED run;
+the new assertion passed focused GREEN. The subsequent full unit run passed 4,946 tests across 383
+files with 2 skipped. Production/test TypeScript and lint passed. Include
+`NewEditorShell.finalShell.test.tsx` in future affected navigation coverage; no product code changed.
+
 The first native AFTER (`/Users/mohamedb/dev/loop-evidence/showhow-177/after-native-1792698332820/03-editor-0.png`)
 failed to show the Library outline and is retained. The lead's final native observation is in
 `/Users/mohamedb/dev/loop-evidence/showhow-177/after-native-1792698702155`: see `01-library-0.png`,

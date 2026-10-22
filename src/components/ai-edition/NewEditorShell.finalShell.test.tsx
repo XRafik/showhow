@@ -137,10 +137,18 @@ describe("Editor-06: no project open", () => {
 		}
 	});
 
-	it("keeps the Final top bar's Library link on the same IPC", async () => {
+	it("keeps the Final top bar's Library button in the left group and uses the same IPC", async () => {
 		renderShell();
 		const nav = await screen.findByRole("navigation", { name: "editor.topbar.navigation" });
-		fireEvent.click(within(nav).getByRole("button", { name: "editor.topbar.library" }));
+		const topbar = nav.closest("header");
+		if (!topbar) throw new Error("Final top bar header was not rendered");
+		const library = within(topbar).getByRole("button", { name: "editor.topbar.library" });
+		const brand = within(topbar).getByRole("button", { name: "Showhow" });
+		expect(brand.parentElement?.nextElementSibling).toBe(library);
+		expect(
+			within(nav).queryByRole("button", { name: "editor.topbar.library" }),
+		).not.toBeInTheDocument();
+		fireEvent.click(library);
 		await waitFor(() => expect(openLibrary).toHaveBeenCalledTimes(1));
 	});
 });
