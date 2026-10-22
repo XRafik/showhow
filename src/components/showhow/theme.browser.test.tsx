@@ -2,7 +2,7 @@
 import "@/index.css";
 import "@/lib/showhow/upstreamTheme.css";
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { userEvent } from "vitest/browser";
 import editorStyles from "@/components/ai-edition/v4/EditorShellV4.module.css";
 import {
@@ -409,8 +409,8 @@ it("renders Final sheet, fields, tabs and failed progress in both themes with ke
 				expect(input.getAttribute("aria-invalid")).toBe("true");
 				const progress = getByRole("progressbar", { name: "Failed generation" });
 				expect(progress.getAttribute("aria-valuenow")).toBe("38");
-				expect(getComputedStyle(progress.firstElementChild as HTMLElement).backgroundColor).toBe(
-					theme === "light" ? "rgb(179, 67, 31)" : "rgb(242, 139, 107)",
+				expect(canvasColors(progressCanvas(progress))).toContain(
+					theme === "light" ? "179,67,31,255" : "242,139,107,255",
 				);
 				const guide = getByRole("tab", { name: "Guide output" });
 				expect(getComputedStyle(guide).borderBottomWidth).toBe("2px");
@@ -762,8 +762,11 @@ it("keeps all enabled button and tag variants readable on their intended surface
 	}
 });
 
-it("keeps active and failed progress graphics at 3:1 against the track in both themes", () => {
+it("renders the approved active palette and keeps failed progress graphics at 3:1", () => {
 	const prior = document.documentElement.getAttribute("data-sh-theme");
+	const failureSample = document.createElement("div");
+	failureSample.className = "bg-ds-rec-ink";
+	document.body.append(failureSample);
 	try {
 		for (const theme of ["light", "dark"]) {
 			document.documentElement.setAttribute("data-sh-theme", theme);
@@ -774,19 +777,19 @@ it("keeps active and failed progress graphics at 3:1 against the track in both t
 				</>,
 			);
 			try {
-				for (const label of ["Active graphical contrast", "Failed graphical contrast"]) {
-					const track = getByRole("progressbar", { name: label });
-					const fill = track.firstElementChild as HTMLElement;
-					const fillColor = getComputedStyle(fill).backgroundColor;
-					const trackColor = getComputedStyle(track).backgroundColor;
-					expect
-						.soft(
-							textContrast(fillColor, trackColor),
-							`${theme}: ${label}, ${fillColor} on ${trackColor}`,
-						)
-						.toBeGreaterThanOrEqual(3);
-					expect(track.getAttribute("aria-valuenow")).toBe("38");
-				}
+				const active = getByRole("progressbar", { name: "Active graphical contrast" });
+				const failed = getByRole("progressbar", { name: "Failed graphical contrast" });
+				const activeColors = canvasColors(progressCanvas(active));
+				const failedColors = canvasColors(progressCanvas(failed));
+				const failureColor = getComputedStyle(failureSample).backgroundColor;
+				const trackColor = getComputedStyle(failed).backgroundColor;
+				const failureChannels = (failureColor.match(/[\d.]+/g) ?? []).slice(0, 3).join(",");
+				expect(activeColors).toContain("130,176,154,255");
+				expect(activeColors).toContain("196,219,206,255");
+				expect(failedColors).toContain(`${failureChannels},255`);
+				expect(textContrast(failureColor, trackColor)).toBeGreaterThanOrEqual(3);
+				expect(active.getAttribute("aria-valuenow")).toBe("38");
+				expect(failed.getAttribute("aria-valuenow")).toBe("38");
 			} finally {
 				unmount();
 			}
@@ -794,5 +797,141 @@ it("keeps active and failed progress graphics at 3:1 against the track in both t
 	} finally {
 		if (prior === null) document.documentElement.removeAttribute("data-sh-theme");
 		else document.documentElement.setAttribute("data-sh-theme", prior);
+		failureSample.remove();
 	}
 });
+
+it("draws the 11 px Bayer bar at zero, halfway, and full progress without reduced-motion jitter", async () => {
+	const matchMedia = vi.spyOn(window, "matchMedia").mockReturnValue(mediaPreference(true));
+	const { getByRole, rerender, unmount } = render(
+		<div style={{ width: "300px" }}>
+			<Progress label="Dither geometry" value={0} />
+		</div>,
+	);
+	try {
+		const track = getByRole("progressbar", { name: "Dither geometry" });
+		const canvas = progressCanvas(track);
+		expect(getComputedStyle(track).height).toBe("11px");
+		expect(track.getAttribute("aria-valuenow")).toBe("0");
+		expect(canvasColors(canvas)).not.toContain("130,176,154,255");
+		expect(canvasColors(canvas)).toContain("255,255,247,31");
+
+		rerender(
+			<div style={{ width: "300px" }}>
+				<Progress label="Dither geometry" value={50} />
+			</div>,
+		);
+		const halfway = canvasColors(canvas);
+		const snapshot = canvasPixels(canvas);
+		expect(halfway).toContain("130,176,154,255");
+		expect(halfway).toContain("196,219,206,255");
+		expect(halfway).toContain("255,255,247,31");
+		expect(colorAt(canvas, 101, 1)).toBe("130,176,154,255");
+		expect(colorAt(canvas, 105, 1)).toBe("130,176,154,255");
+		expect(colorAt(canvas, 193, 1)).toBe("196,219,206,255");
+		expect(colorAt(canvas, 201, 1)).toBe("255,255,247,31");
+		await nextFrame();
+		expect(canvasPixels(canvas)).toEqual(snapshot);
+
+		rerender(
+			<div style={{ width: "300px" }}>
+				<Progress label="Dither geometry" value={100} />
+			</div>,
+		);
+		expect(colorAt(canvas, 1, 1)).toBe("130,176,154,255");
+		expect(colorAt(canvas, 3, 1)).toBe("0,0,0,0");
+		expect(colorAt(canvas, 4, 1)).toBe("130,176,154,255");
+		expect(colorAt(canvas, 1, 3)).toBe("0,0,0,0");
+		expect(colorAt(canvas, 1, 5)).toBe("130,176,154,255");
+		expect(colorAt(canvas, 1, 7)).toBe("0,0,0,0");
+		expect(colorAt(canvas, 1, 9)).toBe("130,176,154,255");
+	} finally {
+		unmount();
+		matchMedia.mockRestore();
+	}
+});
+
+it("jitters the frontier only while progress changes", async () => {
+	const matchMedia = vi.spyOn(window, "matchMedia").mockReturnValue(mediaPreference(false));
+	const random = vi.spyOn(Math, "random");
+	const { getByRole, rerender, unmount } = render(
+		<div style={{ width: "300px" }}>
+			<Progress label="Moving dither" value={0} />
+		</div>,
+	);
+	try {
+		const canvas = progressCanvas(getByRole("progressbar", { name: "Moving dither" }));
+		const idle = canvasPixels(canvas);
+		await nextFrame();
+		await nextFrame();
+		expect(canvasPixels(canvas)).toEqual(idle);
+		expect(random).not.toHaveBeenCalled();
+
+		rerender(
+			<div style={{ width: "300px" }}>
+				<Progress label="Moving dither" value={50} />
+			</div>,
+		);
+		await nextFrame();
+		await nextFrame();
+		expect(random).toHaveBeenCalled();
+		for (let frame = 0; frame < 60; frame++) await nextFrame();
+		const settled = canvasPixels(canvas);
+		const randomCallsAtRest = random.mock.calls.length;
+		await nextFrame();
+		await nextFrame();
+		expect(canvasPixels(canvas)).toEqual(settled);
+		expect(random).toHaveBeenCalledTimes(randomCallsAtRest);
+	} finally {
+		unmount();
+		matchMedia.mockRestore();
+		random.mockRestore();
+	}
+});
+
+function progressCanvas(track: HTMLElement) {
+	const canvas = track.querySelector("canvas");
+	if (!canvas) throw new Error("Progress did not render its dither canvas");
+	return canvas;
+}
+
+function canvasPixels(canvas: HTMLCanvasElement) {
+	const context = canvas.getContext("2d");
+	if (!context) throw new Error("Progress canvas has no 2D context");
+	return Array.from(context.getImageData(0, 0, canvas.width, canvas.height).data);
+}
+
+function canvasColors(canvas: HTMLCanvasElement) {
+	const pixels = canvasPixels(canvas);
+	const colors = new Set<string>();
+	for (let offset = 0; offset < pixels.length; offset += 4) {
+		if (pixels[offset + 3] > 0) colors.add(pixels.slice(offset, offset + 4).join(","));
+	}
+	return colors;
+}
+
+function colorAt(canvas: HTMLCanvasElement, x: number, y: number) {
+	const context = canvas.getContext("2d");
+	if (!context) throw new Error("Progress canvas has no 2D context");
+	const scale = window.devicePixelRatio || 1;
+	return Array.from(
+		context.getImageData(Math.floor(x * scale), Math.floor(y * scale), 1, 1).data,
+	).join(",");
+}
+
+function mediaPreference(matches: boolean): MediaQueryList {
+	return {
+		matches,
+		media: "(prefers-reduced-motion: reduce)",
+		onchange: null,
+		addListener: () => undefined,
+		removeListener: () => undefined,
+		addEventListener: () => undefined,
+		removeEventListener: () => undefined,
+		dispatchEvent: () => true,
+	} as MediaQueryList;
+}
+
+function nextFrame() {
+	return new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+}
