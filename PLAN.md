@@ -1354,3 +1354,106 @@ Requirements and DONE WHEN are bounded to named preview states/layouts and lifec
 
 ## Implementation notes
 Append deviations to implementation-notes.md. Preserve raw failures and candidate bindings; broaden ownership only after coordinator resolution.
+
+# Showhow on-brand permissions window Plan
+
+## Goal
+The macOS permissions window (first run, app menu, missing-permission path) uses the Showhow house
+style in light and dark, so a first-time user's first screen matches the Library, HUD and sheets.
+
+## Context and decisions
+- Owner report 2026-10-22: the window still uses the inherited look (emerald `#10b981`, slate
+  `#0b0c0f` surface, rounded per-row cards, sans buttons). Screenshot:
+  `~/Brain/inbox/attachments/Screenshot 2026-10-22 at 20.45.44.png`.
+- Approved mock (owner confirmed 2026-10-22): `design/mocks/2026-10-22-permissions-window/`
+  (`index.html`, `SPEC.md`, `shots/`). Scenarios A–F cover the states below. Brand reference is the
+  approved HUD-07 sheet, `design/mocks/2026-10-15-house-style/pen-final/HUD-07-screen-recording-permission.png`.
+- Confirmed decisions:
+  1. The window follows the app theme (`src/lib/showhow/theme.ts`; default `system`), light and dark.
+  2. Copy is unchanged except one new key, `permissions.footer.restart` = "Restart Showhow to finish.",
+     shown when Screen Recording is granted but needs a relaunch (today that state wrongly reads
+     "You're all set."). Added to the 15 locale directories.
+  3. The Screen Recording icon is `--ds-rec` while that row is REQUIRED; other icons are `--ds-ink-soft`.
+  4. Native macOS title bar stays; no offset shadow on the window.
+  5. Behaviour (polling, row selection, action labels, help-line rules, IPC) is unchanged.
+  6. Priority: no (owner answer 2026-10-22).
+- Correction to the mock spec: the mock names Tabler icons, but `src/components/showhow/Button.tsx`
+  takes a `LucideIcon` and the merged house components use Lucide. Keep Lucide
+  (`MonitorPlay`, `Volume2`, `Accessibility`, `Mic`, `Video`, `Check`, `ExternalLink`, `RotateCw`).
+- Tokens: use the existing `--ds-*` variables and `ds-*` Tailwind utilities from `src/index.css`
+  (`DS_TOKENS` in `src/lib/showhow/designTokens.ts`). The old `src/styles/design-tokens.css` mint set
+  is not used.
+
+## Bounded requirements
+Supported states (each must render in light and dark): mock scenarios A first run (own picker),
+B screen denied, C needs restart, D all set on macOS 15 with camera restricted, E Apple picker with
+system audio not requested, F system audio requested. Row statuses: `not-requested`, `requested`,
+`denied`, `granted`, `restricted`; `busy` while an action runs.
+Excluded: Windows/Linux (the window is macOS-only), new permissions, copy rewrites beyond the one key,
+the HUD-07 in-recorder permission sheet (already on brand).
+
+## Architecture
+Restyle inside `src/components/permissions/PermissionsWindow.tsx`; keep its exported
+`PermissionsWindow` and `PERMISSIONS_POLL_MS`, its `data-testid`s and `data-status` attributes.
+Reuse `Button` (`secondary` for row actions; footer primary = `dark` in light theme, `primary` in dark
+theme). The window's `BrowserWindow` `backgroundColor` in `electron/windows.ts`
+(`createPermissionsWindow`) follows `nativeTheme.shouldUseDarkColors` (`#2F2F2F` / `#FFFCF7`) so the
+first paint does not flash slate.
+
+### Task 1: The permissions window uses the house style in light and dark
+
+**Priority:** no
+**Labels:** bug, ui
+**Milestone:** none
+**Depends on:** none
+**Files:** `src/components/permissions/PermissionsWindow.tsx`,
+`src/components/permissions/PermissionsWindow.test.tsx`, `electron/windows.ts` (permissions window
+`backgroundColor` only), `src/i18n/locales/*/launch.json` (one key, 15 directories),
+`implementation-notes.md`
+**Requirements:**
+- Layout per mock `SPEC.md` "Window layout": mono eyebrow "SHOWHOW" (reuse `sheets.eyebrow`),
+  Inter Tight 600 22px title, muted subtitle; one list card (radius 8, `ds-surface-raised`, 1px
+  `ds-line`) with hairline-separated rows; footer with hairline, status dot and primary button.
+- Level tags: mono 10px uppercase, radius 3 — REQUIRED `ds-rec-wash`/rec ink, RECOMMENDED
+  `ds-accent-tint`/`ds-accent-strong`, OPTIONAL `ds-chip`/`ds-muted`.
+- Granted status: mono 11px uppercase "Allowed" with `Check`, `ds-accent-strong`. Restricted: muted text,
+  no button. Row buttons: `Button variant="secondary"`; Open Settings carries `ExternalLink`.
+- Help lines align with the row's text column, hairline above, `ds-ink-soft`.
+- Footer dot: `ds-accent` when ready, `ds-rec` when Screen Recording is required or a relaunch is
+  needed. Relaunch state shows `permissions.footer.restart` and "Restart Showhow" with `RotateCw`.
+- The loading placeholder and window background use the theme surface, not `#0b0c0f`.
+- No literal `#10b981`, `#0b0c0f`, `#121419`, `#20232a`, `#8b93a1`, `#a9b0bc`, `#1c1f26` or `#1f232b`
+  remains in `PermissionsWindow.tsx`.
+**Interfaces:** unchanged — `window.electronAPI.permissions.{get,request,openSettings,relaunch,close}`.
+**Constraints and reasons:** keep test IDs and `data-status` because the e2e and unit tests drive the
+window through them; keep `disabled` semantics on Get started because it gates the first recording;
+keep the Continue/Allow/Open Settings label rule because macOS' Screen Recording prompt has no Allow.
+
+- [ ] RED: unit test — in the needs-relaunch state the footer reads "Restart Showhow to finish." (fails today:
+  it reads "You're all set."); and a test that the window root carries no `#0b0c0f`/`#10b981` classes.
+- [ ] Implement the restyle, the new key in the 15 locales, and the themed `backgroundColor`.
+- [ ] GREEN: the new tests and the existing 12 `PermissionsWindow.test.tsx` cases pass unchanged in intent.
+- [ ] Prove (native screenshots of scenarios E, B and C in light and dark) and obtain independent review,
+  then open the PR to main.
+
+**Verification:** `npx vitest run src/components/permissions`, `npx tsc --noEmit`, `npm run lint`,
+`npm run i18n:check`, `npm run branding:check`. Native: open the window from the app menu in light and in
+dark appearance; screenshot E (real state on the owner's Mac) and B/C (synthetic snapshot via the test
+seam or a dev stub), compare with `design/mocks/2026-10-22-permissions-window/shots/`.
+**DONE WHEN:** the six commands pass; six native screenshots (E, B, C × light, dark) match the mock's
+layout, tokens and type; the relaunch footer copy test passes; the forbidden-hex grep on
+`PermissionsWindow.tsx` returns nothing.
+**Outside cases / follow-ups:** first-paint colour when the app theme preference differs from the macOS
+appearance (background follows macOS, React then applies the app theme); Tabler icon migration across the
+app, if ever wanted.
+
+## Superseded issues
+None.
+
+## Self-review
+Scanned requirements and DONE WHEN for every/all/any/valid: "15 locale directories" is the named set the
+i18n check enforces; states are bounded to scenarios A–F and the five statuses; forbidden-hex list is
+explicit. No unbounded promises.
+
+## Implementation notes
+Append each deviation to `implementation-notes.md` under "Deviations" and commit it with the ticket.

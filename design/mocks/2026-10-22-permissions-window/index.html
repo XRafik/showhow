@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Permissions window mock (prototype)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Inter+Tight:wght@600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}
+body{font-family:Inter,system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column;background:#D9D6CF;color:#2F2F2F;-webkit-font-smoothing:antialiased}
+body[data-mode="dark"]{background:#151515;color:#FFFCF7}
+.bar{display:flex;gap:24px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:12px 20px;font:400 12px Inter,sans-serif;position:relative;z-index:2}
+.bar .proto{font:500 10px 'JetBrains Mono',monospace;letter-spacing:1px;text-transform:uppercase;opacity:.55}
+.grp{display:flex;gap:4px;flex-wrap:wrap}
+.bar button{font:400 12px Inter,sans-serif;color:inherit;background:transparent;border:1px solid #8884;border-radius:4px;padding:5px 10px;cursor:pointer}
+.bar button[aria-pressed="true"]{background:#8883;border-color:#8888;font-weight:500}
+body[data-mode="split"]{background:linear-gradient(90deg,#D9D6CF 50%,#151515 50%)}
+body[data-mode="split"] .bar .grp{background:#D9D6CF;color:#2F2F2F;padding:4px;border-radius:6px}
+body[data-mode="split"] .bar .proto{color:#2F2F2F;position:fixed;left:12px;bottom:12px;background:#D9D6CF;padding:6px 10px;border-radius:6px;opacity:1}
+.stage{flex:1;display:flex;gap:24px;justify-content:center;align-items:flex-start;padding:16px 20px 40px;flex-wrap:wrap}
+body[data-mode="split"] .stage{gap:0;flex-wrap:nowrap;justify-content:stretch;padding:16px 0 40px}
+body[data-mode="split"] .cell{flex:1;display:flex;justify-content:center;min-width:0}
+
+.win{--surface:#FFFCF7;--raised:#F9F5EC;--ink:#2F2F2F;--ink-soft:#2F2F2FB3;--muted:#2F2F2F8C;--faint:#2F2F2F66;--line:#2F2F2F24;--wash:#2F2F2F14;--chip:#E8E4DC;
+ --accent-tint:#82B09A33;--accent-tag:#33564A;--accent-ok:#33564A;--rec:#E3582D;--rec-wash:#E3582D1F;--rec-tag:#B3431F;
+ --pbg:#2F2F2F;--pink:#FFFCF7;--phover:#3A3A3A;
+ width:540px;min-height:560px;flex:none;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:10px;box-shadow:0 20px 50px #0000002E;overflow:hidden;display:flex;flex-direction:column}
+.win[data-theme="dark"]{--surface:#2F2F2F;--raised:#363636;--ink:#FFFCF7;--ink-soft:#FFFCF7B3;--muted:#FFFCF78C;--faint:#FFFCF766;--line:#FFFCF724;--wash:#FFFCF714;--chip:#3A3A3A;
+ --accent-tag:#82B09A;--accent-ok:#82B09A;--rec-tag:#F28B6B;--pbg:#82B09A;--pink:#2F2F2F;--phover:#8FBBA6}
+.tb{height:28px;flex:none;display:flex;align-items:center;gap:8px;padding-left:12px;background:var(--surface);border-bottom:1px solid var(--line)}
+.tb i{width:12px;height:12px;border-radius:50%;display:block}
+.body{flex:1;display:flex;flex-direction:column;padding:24px 28px}
+.eyebrow{font:500 10px 'JetBrains Mono',monospace;letter-spacing:1px;color:var(--faint);text-transform:uppercase}
+h1{font:600 22px 'Inter Tight',sans-serif;letter-spacing:-.02em;color:var(--ink);margin-top:6px}
+.sub{font:400 13px/20px Inter,sans-serif;color:var(--muted);margin-top:6px;max-width:440px}
+.list{margin-top:20px;border-radius:8px;background:var(--raised);border:1px solid var(--line);overflow:hidden}
+.row{padding:14px 16px;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.main{display:grid;grid-template-columns:18px 1fr auto;gap:14px;align-items:center}
+.ico{color:var(--ink-soft);display:flex}
+.row.req .ico{color:var(--rec)}
+svg{stroke-width:1.75;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.nm{display:flex;align-items:center;flex-wrap:wrap;row-gap:4px}
+.name{font:500 14px Inter,sans-serif;color:var(--ink)}
+.tag{margin-left:8px;font:500 10px 'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.6px;padding:2px 6px;border-radius:3px}
+.tag.required{background:var(--rec-wash);color:var(--rec-tag)}
+.tag.recommended{background:var(--accent-tint);color:var(--accent-tag)}
+.tag.optional{background:var(--chip);color:var(--muted)}
+.desc{font:400 12.5px/18px Inter,sans-serif;color:var(--muted);margin-top:2px}
+.ok{display:inline-flex;align-items:center;gap:6px;font:500 11px 'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.6px;color:var(--accent-ok)}
+.restricted{font:400 12px Inter,sans-serif;color:var(--muted);text-align:right;max-width:120px}
+.btn{display:inline-flex;align-items:center;gap:6px;font:500 11px 'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.6px;cursor:pointer;white-space:nowrap;transition:background-color 120ms,transform 160ms cubic-bezier(.2,0,0,1),opacity 120ms}
+.btn:active:not(:disabled){transform:scale(.96)}
+.btn.sec{background:transparent;color:var(--ink);border:1px solid var(--line);padding:8px 12px;border-radius:4px}
+.btn.sec.busy{opacity:.5;pointer-events:none}
+.btn.pri{background:var(--pbg);color:var(--pink);border:0;padding:10px 16px;border-radius:4px}
+.btn.pri:disabled{opacity:.4;cursor:not-allowed}
+@media (hover:hover) and (pointer:fine){
+ .btn.sec:hover{background:var(--wash)}
+ .btn.pri:hover:not(:disabled){background:var(--phover)}
+ .bar button:hover{background:#8882}
+}
+.help{margin:12px 0 0 32px;padding-top:10px;border-top:1px solid var(--line);font:400 12.5px/18px Inter,sans-serif;color:var(--ink-soft)}
+.help p+p{margin-top:4px}
+.help p.m{color:var(--muted)}
+.foot{margin-top:auto;padding-top:16px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px}
+.body .listwrap{margin-bottom:24px}
+.st{display:flex;align-items:center;gap:8px;font:400 13px Inter,sans-serif;color:var(--muted)}
+.dot{width:6px;height:6px;border-radius:50%;background:#82B09A;flex:none}
+.dot.rec{background:var(--rec)}
+.foot-wrap{margin-top:auto}
+@media (prefers-reduced-motion:reduce){.btn{transition:none}}
+</style>
+</head>
+<body data-mode="split">
+<div class="bar">
+ <div class="grp" id="themes"></div>
+ <span class="proto">Prototype · fake data</span>
+ <div class="grp" id="states"></div>
+</div>
+<div class="stage" id="stage"></div>
+
+<script>
+const I={
+ desktop:'<path d="M3 5a1 1 0 0 1 1 -1h16a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-16a1 1 0 0 1 -1 -1v-10z"/><path d="M7 20h10"/><path d="M9 16v4"/><path d="M15 16v4"/>',
+ volume:'<path d="M15 8a5 5 0 0 1 0 8"/><path d="M17.7 5a9 9 0 0 1 0 14"/><path d="M6 15h-2a1 1 0 0 1 -1 -1v-4a1 1 0 0 1 1 -1h2l3.5 -4.5a.8 .8 0 0 1 1.5 .5v14a.8 .8 0 0 1 -1.5 .5l-3.5 -4.5"/>',
+ access:'<path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/><path d="M10 16.5l2 -3l2 3m-2 -3v-2l3 -1m-6 0l3 1"/><circle cx="12" cy="7.5" r=".5" fill="currentColor"/>',
+ mic:'<path d="M9 2m0 3a3 3 0 0 1 3 -3h0a3 3 0 0 1 3 3v5a3 3 0 0 1 -3 3h0a3 3 0 0 1 -3 -3z"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M8 21l8 0"/><path d="M12 17l0 4"/>',
+ video:'<path d="M15 10l4.553 -2.276a1 1 0 0 1 1.447 .894v6.764a1 1 0 0 1 -1.447 .894l-4.553 -2.276v-4z"/><path d="M3 6m0 2a2 2 0 0 1 2 -2h8a2 2 0 0 1 2 2v8a2 2 0 0 1 -2 2h-8a2 2 0 0 1 -2 -2z"/>',
+ check:'<path d="M5 12l5 5l10 -10"/>',
+ ext:'<path d="M12 6h-6a2 2 0 0 0 -2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-6"/><path d="M11 13l9 -9"/><path d="M15 4h5v5"/>',
+ refresh:'<path d="M20 11a8.1 8.1 0 0 0 -15.5 -2m-.5 -4v4h4"/><path d="M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/>'
+};
+const svg=(n,s=18)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" aria-hidden="true">${I[n]}</svg>`;
+const T={
+ sub:"macOS asks you to grant each one once. You can change them at any time in System Settings.",
+ rows:{
+  screen:["Screen & system audio","To record your screen and the sound your Mac plays.","desktop"],
+  systemAudio:["System audio","To record the sound your Mac plays. Choosing a screen or window needs no permission.","volume"],
+  accessibility:["Accessibility","To show the right cursor (pointer, text) in your recordings.","access"],
+  microphone:["Microphone","To record your voice.","mic"],
+  camera:["Camera","To add your webcam to your recordings.","video"]},
+ help:{
+  screenPrompt:["macOS will then ask you to turn on Showhow in System Settings."],
+  screenSettings:["In System Settings, turn on Showhow. If macOS offers to quit and reopen it, accept: this window will come back.","Showhow isn’t in the list? Click +, then choose Showhow in Applications."],
+  screenRestart:["Allowed. Showhow needs to restart before it can use it."],
+  screenRecurring:["On your first recording, macOS will ask whether Showhow may access your screen directly, without the system picker. Click Allow. macOS asks again from time to time; that’s expected."],
+  systemAudioPrompt:["macOS will ask you to allow Showhow to record the sound your Mac plays."],
+  systemAudioRequested:["If you said no, turn on Showhow under “System Audio Recording Only” in System Settings."]}
+};
+const R=(id,level,status,help,extra={})=>({id,level,status,help,...extra});
+const SCEN={
+ A:{label:"A First run",rows:()=>[R('screen','required','none','screenPrompt'),R('accessibility','recommended','none'),R('microphone','optional','none'),R('camera','optional','none')]},
+ B:{label:"B Screen denied",rows:()=>[R('screen','required','denied','screenSettings'),R('accessibility','recommended','granted'),R('microphone','optional','granted'),R('camera','optional','none')]},
+ C:{label:"C Needs restart",rows:()=>[R('screen','required','granted','screenRestart',{relaunch:true}),R('accessibility','recommended','granted'),R('microphone','optional','granted'),R('camera','optional','granted')]},
+ D:{label:"D All set",rows:()=>[R('screen','required','granted','screenRecurring'),R('accessibility','recommended','granted'),R('microphone','optional','granted'),R('camera','optional','restricted')]},
+ E:{label:"E Apple picker",rows:()=>[R('systemAudio','optional','none','systemAudioPrompt'),R('accessibility','recommended','granted'),R('microphone','optional','granted'),R('camera','optional','granted')]},
+ F:{label:"F System audio asked",rows:()=>[R('systemAudio','optional','requested','systemAudioRequested'),R('accessibility','recommended','granted'),R('microphone','optional','granted'),R('camera','optional','granted')]}
+};
+let scen='E',mode='split',rows=SCEN[scen].rows(),busy=new Set();
+const LV={required:'Required',recommended:'Recommended',optional:'Optional'};
+
+function rowHTML(r){
+ const [name,desc,icon]=T.rows[r.id];
+ let act='';
+ if(r.status==='granted')act=`<span class="ok">${svg('check',14)}Allowed</span>`;
+ else if(r.status==='restricted')act=`<span class="restricted">Managed by your organization</span>`;
+ else{
+  const settings=r.status==='denied'||r.status==='requested';
+  const label=settings?`Open Settings${svg('ext',14)}`:(r.id==='screen'?'Continue':'Allow');
+  act=`<button class="btn sec${busy.has(r.id)?' busy':''}" data-act="${settings?'':r.id}" ${busy.has(r.id)?'aria-busy="true"':''}>${label}</button>`;
+ }
+ const showHelp=r.help&&r.status!=='restricted'&&(r.status!=='granted'||r.help==='screenRestart'||r.help==='screenRecurring');
+ const help=showHelp?`<div class="help">${T.help[r.help].map((t,i)=>`<p${i&&r.status==='denied'?' class="m"':''}>${t}</p>`).join('')}</div>`:'';
+ return `<div class="row${r.level==='required'?' req':''}"><div class="main"><span class="ico">${svg(icon)}</span><div><div class="nm"><span class="name">${name}</span><span class="tag ${r.level}">${LV[r.level]}</span></div><div class="desc">${desc}</div></div><div>${act}</div></div>${help}</div>`;
+}
+function winHTML(theme){
+ const relaunch=rows.some(r=>r.relaunch);
+ const screen=rows.find(r=>r.id==='screen');
+ const screenOk=!screen||screen.status==='granted';
+ const ready=screenOk&&!relaunch;
+ let dot,txt;
+ if(relaunch){dot='rec';txt='Restart Showhow to finish.'}
+ else if(ready){dot='';txt="You’re all set."}
+ else{dot='rec';txt='Screen recording is needed to record.'}
+ const btn=relaunch?`${svg('refresh',14)}Restart Showhow`:'Get started';
+ return `<div class="win" data-theme="${theme}"><div class="tb"><i style="background:#FF5F57"></i><i style="background:#FEBC2E"></i><i style="background:#28C840"></i></div>
+ <div class="body"><div class="eyebrow">Showhow</div><h1>Showhow needs a few permissions</h1><p class="sub">${T.sub}</p>
+ <div class="list listwrap">${rows.map(rowHTML).join('')}</div>
+ <div class="foot"><div class="st"><span class="dot ${dot}"></span>${txt}</div><button class="btn pri" ${ready||relaunch?'':'disabled'}>${btn}</button></div></div></div>`;
+}
+function render(){
+ document.body.dataset.mode=mode;
+ const themes=mode==='split'?['light','dark']:[mode];
+ document.getElementById('stage').innerHTML=themes.map(t=>`<div class="cell">${winHTML(t)}</div>`).join('');
+ document.getElementById('themes').innerHTML=[['light','Light'],['dark','Dark'],['split','Side by side']].map(([k,l])=>`<button data-mode="${k}" aria-pressed="${mode===k}">${l}</button>`).join('');
+ document.getElementById('states').innerHTML=Object.entries(SCEN).map(([k,s])=>`<button data-scen="${k}" aria-pressed="${scen===k}">${s.label}</button>`).join('');
+}
+document.addEventListener('click',e=>{
+ const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.mode){mode=b.dataset.mode;render()}
+ else if(b.dataset.scen){scen=b.dataset.scen;rows=SCEN[scen].rows();busy.clear();render()}
+ else if(b.dataset.act){
+  const id=b.dataset.act;busy.add(id);render();
+  setTimeout(()=>{busy.delete(id);const r=rows.find(x=>x.id===id);if(r){r.status='granted';r.help=null}render()},700);
+ }
+});
+render();
+</script>
+</body>
+</html>
