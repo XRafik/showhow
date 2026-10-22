@@ -1,5 +1,18 @@
 # Implementation notes
 
+## 22 October 2026 — Showhow #176 Import progress dither
+
+The import sheet now reports 0 while the picker is open, the copied-byte ratio while copying,
+and 100 while validating or saving. Shared `Progress` draws the approved 11 px Bayer bar on a
+canvas; its frontier moves only while the value changes and stays static with reduced motion. The
+ARIA progressbar values and failure colors remain, and the existing `frontier` prop is accepted
+without drawing its decorative node.
+
+The approved active palette is 1.92:1 for solid cells and 1.15:1 for frontier cells against the
+light `ds-chip` track. The browser test checks those specified pixels and retains the 3:1 contrast
+check for failure colors in both themes. Occupied cells are pale only below amount 0.6; cells at
+or above 0.6 use solid green, matching mock G.
+
 ## 22 October 2026 — Showhow #171 Library video preview sizing
 
 The Library caller fixed the player height at 240 px (340 px above 1100 px). At 800×600, that

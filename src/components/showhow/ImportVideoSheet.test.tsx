@@ -47,13 +47,16 @@ const pending = () => {
 };
 
 describe("ImportVideoSheet", () => {
-	it("shows actual byte progress, ignores another request and stays indeterminate while validating", async () => {
+	it("shows numeric progress from picking through saving and ignores another request", async () => {
 		const done = pending();
 		mount();
 		await userEvent.click(screen.getByRole("button", { name: "Choose MP4" }));
 		const requestId = start.mock.calls[0][0].requestId;
+		expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "0");
 		act(() => progress({ requestId: "stale", phase: "copying", bytesCopied: 99, totalBytes: 100 }));
-		expect(screen.getByRole("progressbar")).not.toHaveAttribute("aria-valuenow");
+		expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "0");
+		act(() => progress({ requestId, phase: "copying", bytesCopied: 0, totalBytes: 100 }));
+		expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "0");
 		act(() =>
 			progress({
 				requestId,
@@ -66,8 +69,10 @@ describe("ImportVideoSheet", () => {
 		expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "25");
 		expect(screen.getByText("25 / 100 bytes copied")).toBeInTheDocument();
 		act(() => progress({ requestId, phase: "validating", bytesCopied: 100, totalBytes: 100 }));
-		expect(screen.getByRole("progressbar")).not.toHaveAttribute("aria-valuenow");
+		expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "100");
 		expect(screen.getByRole("status")).toHaveTextContent("Checking video…");
+		act(() => progress({ requestId, phase: "saving", bytesCopied: 100, totalBytes: 100 }));
+		expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "100");
 		await done({ status: "cancelled" });
 	});
 

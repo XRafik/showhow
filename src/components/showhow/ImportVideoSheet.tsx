@@ -6,7 +6,6 @@ import type {
 	RecordingLibraryEntry,
 } from "@/lib/showhow/recordingLibrary";
 import { Button } from "./Button";
-import { Mosaic } from "./GuideStep";
 import { Progress } from "./Progress";
 import { Sheet } from "./Sheet";
 
@@ -121,11 +120,14 @@ export function ImportVideoSheet({
 					<Progress
 						label={phase}
 						value={
-							progress.phase === "copying" && progress.totalBytes > 0
-								? (progress.bytesCopied / progress.totalBytes) * 100
-								: undefined
+							progress.phase === "picking"
+								? 0
+								: progress.phase === "copying" && progress.totalBytes > 0
+									? (progress.bytesCopied / progress.totalBytes) * 100
+									: progress.phase === "validating" || progress.phase === "saving"
+										? 100
+										: undefined
 						}
-						frontier={<Mosaic />}
 					/>
 					{progress.totalBytes > 0 && (
 						<p className="font-ds-label text-xs tabular-nums text-ds-ink-soft">
