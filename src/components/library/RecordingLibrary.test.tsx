@@ -1298,6 +1298,15 @@ it("opens the selected bundle in the v2 editor", async () => {
 	await waitFor(() => expect(mockOpenRecording).toHaveBeenCalledWith(desktopEntry.bundleDir));
 });
 
+it("makes Edit video the primary action for a recording with video", async () => {
+	mockShowhowListRecordings.mockResolvedValue([{ ...desktopEntry, video: "video.webm" }]);
+	render(<RecordingLibrary />);
+
+	const edit = await screen.findByRole("button", { name: "Open in editor" });
+	expect(edit).toHaveClass("bg-ds-accent");
+	expect(edit).not.toHaveClass("bg-transparent");
+});
+
 it("integrates Make guide and Showhow AI connections without requiring a key to view recordings", async () => {
 	mockShowhowListRecordings.mockResolvedValue([desktopDocEntry]);
 	render(<RecordingLibrary />);

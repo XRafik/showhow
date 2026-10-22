@@ -103,12 +103,30 @@ export const HudDivider = memo(function HudDivider({ vertical }: { vertical: boo
 	);
 });
 
-/** The Showhow mark at the bar's start: decoration, not a control. */
-export const HudLogoMark = memo(function HudLogoMark() {
-	return (
+/** The Showhow mark returns to the Library while idle and stays decorative during a take. */
+export const HudLogoMark = memo(function HudLogoMark({
+	recording,
+	label,
+	onClick,
+}: {
+	recording: boolean;
+	label: string;
+	onClick: () => void;
+}) {
+	const mark = (
 		<span data-testid="hud-logo-mark" className={styles.hudLogoMark} aria-hidden="true">
 			<CursorIcon />
 		</span>
+	);
+
+	if (recording) return mark;
+
+	return (
+		<HudTooltip content={label}>
+			<button type="button" aria-label={label} className={iconButton} onClick={onClick}>
+				{mark}
+			</button>
+		</HudTooltip>
 	);
 });
 

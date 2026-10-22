@@ -450,7 +450,7 @@ function RecordingDetail({
 							{entry.video && (
 								<Button
 									aria-label="Open in editor"
-									variant="secondary"
+									variant="primary"
 									icon={Scissors}
 									onClick={() => void openInEditor()}
 								>

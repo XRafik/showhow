@@ -1440,3 +1440,62 @@ Outside-root IPC returned `{success:false}` on both root layouts. The symlink-ro
 only one native file selection with the exact committed synthetic MP4 path; import, Copy Path and
 clipboard stayed real. No installer, physical capture, provider or other-platform acceptance is claimed.
 Evidence: `/Users/mohamedb/dev/loop-evidence/showhow-174/PROVE.md`.
+
+## 22 October 2026 — Showhow #177 One-click navigation
+
+Coordinator/owner clearance superseded the earlier main-process scope stop. Executor ownership now
+includes `electron/showhow/openLibrary.ts`, its same-package test, and the minimal
+`isRecording` callback in `electron/main.ts`. The handler retains current-main sender identity and
+the editor URL check; the editor's existing unsaved-changes prompt remains in the renderer. It
+admits only the idle HUD and refuses the HUD while recording. No player/aspect-ratio files changed.
+
+The focused UI and handler regressions failed before production edits in
+`focused-red-final` (five intended failures, 232 passing). The handler suite now covers editor
+preservation, foreign sender rejection, idle current HUD acceptance, foreign HUD rejection,
+recording refusal and unrelated window-type rejection. The lead's native AFTER confirmed all three
+keyboard routes and actual HUD-to-Library IPC, but `after-native-1792698332820/03-editor-0.png`
+showed no Library outline: `.navLink { border: 0 }` also resets border style, so `!border` alone
+was insufficient. The back button now sets `!border-solid`, and a browser test checks its effective
+computed width, style and color.
+
+The final affected unit suite, including the style-presets caller suite, passed 261/261 across six
+files. The final browser suite passed 28/28 across seven files; its computed-style regression renders
+the actual `EditorTopBar` and verifies the Library button's effective 1px solid border and visible
+token color. Production and test TypeScript, lint, i18n, branding and the final renderer build passed.
+Lint retains 27 repository warnings. Exact current receipts are listed in the executor transfer.
+
+PR188 CI then exposed a stale integration assertion in
+`src/components/ai-edition/NewEditorShell.finalShell.test.tsx`: it looked for Library inside the
+right navigation, which now contains only New recording and Open. With coordinator clearance, that
+test alone was updated to assert Library beside the brand, absent from right navigation, and still
+routes through the same `showhowOpenLibrary` IPC. The old assertion failed in the focused RED run;
+the new assertion passed focused GREEN. The subsequent full unit run passed 4,946 tests across 383
+files with 2 skipped. Production/test TypeScript and lint passed. Include
+`NewEditorShell.finalShell.test.tsx` in future affected navigation coverage; no product code changed.
+
+The first native AFTER (`/Users/mohamedb/dev/loop-evidence/showhow-177/after-native-1792698332820/03-editor-0.png`)
+failed to show the Library outline and is retained. The lead's final native observation is in
+`/Users/mohamedb/dev/loop-evidence/showhow-177/after-native-1792698702155`: see `01-library-0.png`,
+`03-editor-0.png`, `05-hud-idle-0.png` and `06-hud-keyboard-tooltip-0.png`. The Library button
+measured solid 1px with `rgba(255,252,247,.12)`, its no-drag behavior held, the divider measured
+1x16px, and keyboard focus showed a 2px sage ring. The rendered order was Library then Edit video.
+Tab 7 → Enter opened Editor from Library, Tab 2 → Enter returned to Library from Editor, and
+Tab 1 → Enter opened Library from the idle HUD through production IPC.
+
+The decisive same-root comparison is documented in
+`/Users/mohamedb/dev/loop-evidence/showhow-177/MEDIA-COMPARISON.md` and
+`/Users/mohamedb/dev/loop-evidence/showhow-177/MEDIA-COMPARISON.json`. Baseline `4dd318ec0042015fb84b9e0f5899dcfbb4b1969c`
+and candidate used the same Electron binary, runtime roots, synthetic fixture and Library → Editor
+→ Library sequence. Both initial and returned videos had `error: null`, `readyState: 4`,
+`networkState: 1` and duration 2s. The media request returned 206 for the full 23,869 bytes, editor
+file requests returned 200, no requests failed, and screenshots rendered the synthetic pattern.
+Baseline and candidate bundle bytes matched fixture SHA256
+`34e62f67d3d9dd50ea7fa0b76cbfe7ed568ddb4be2d6b0a63513d2a97dda95d6`.
+
+The reported “Unable to play media” was the native accessibility container name immediately after
+the window swap, not a visible error or `MediaError`; the same AX name appeared on baseline. This
+comparison did not reproduce a media failure introduced by #177 in the tested sequence. The origin
+of the transient AX label remains unknown; do not call it a fixed player bug or claim all playback
+regressions are excluded. No player files changed and no follow-up idea was created. Both native
+apps closed with their PIDs gone and the fixture unchanged. The lead proceeds with fresh independent
+Review after final candidate binding; executor did not launch review or commit/push.

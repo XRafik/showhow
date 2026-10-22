@@ -184,6 +184,7 @@ vi.mock("@/contexts/I18nContext", () => ({
 			"tooltips.useVerticalTray": "Use vertical tray",
 			"tooltips.useHorizontalTray": "Use horizontal tray",
 			"tooltips.changeSource": "Choose another screen or window",
+			"noProjectOpen.openLibrary": "Open Library",
 			"tooltips.systemAudio": "System audio: records the sound your computer plays",
 			"tooltips.microphone": "Microphone: records your voice",
 			"tooltips.camera": "Camera: records you as a separate layer you can move in the editor",
@@ -2598,12 +2599,26 @@ describe("LaunchWindow Final HUD states and recovery sheets", () => {
 		expect(screen.getByTestId("launch-cancel-button")).toBeDisabled();
 	});
 
-	it("shows the decorative logo mark without adding a tab stop", async () => {
+	it("opens the Library from the idle logo through the main-process route", async () => {
+		const showhowOpenLibrary = vi.fn(async () => ({ opened: true }));
+		window.electronAPI.showhowOpenLibrary = showhowOpenLibrary;
 		renderLaunchWindow();
-		await screen.findByTestId("launch-record-button");
-		const mark = screen.getByTestId("hud-logo-mark");
-		expect(mark).toHaveAttribute("aria-hidden", "true");
-		expect(mark.querySelector("button, [tabindex]")).toBeNull();
+
+		fireEvent.click(await screen.findByRole("button", { name: "Open Library" }));
+
+		await waitFor(() => expect(showhowOpenLibrary).toHaveBeenCalledTimes(1));
+	});
+
+	it("keeps the Library logo inert during a recording", async () => {
+		const showhowOpenLibrary = vi.fn(async () => ({ opened: true }));
+		window.electronAPI.showhowOpenLibrary = showhowOpenLibrary;
+		recorderState.value.recording = true;
+		renderLaunchWindow();
+
+		const mark = await screen.findByTestId("hud-logo-mark");
+		expect(screen.queryByRole("button", { name: "Open Library" })).not.toBeInTheDocument();
+		fireEvent.click(mark);
+		expect(showhowOpenLibrary).not.toHaveBeenCalled();
 	});
 
 	it("lets Stop through again after 2s when saving never started, so Stop is never lost", async () => {

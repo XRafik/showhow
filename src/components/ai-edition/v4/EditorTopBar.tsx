@@ -1,4 +1,5 @@
 import {
+	ArrowLeft,
 	ChevronDown,
 	CircleDot,
 	Download,
@@ -7,7 +8,6 @@ import {
 	Info,
 	Keyboard,
 	Languages,
-	Library,
 	Moon,
 	MousePointer2,
 	RefreshCw,
@@ -50,8 +50,7 @@ interface EditorTopBarProps {
 	actions: TopBarActions;
 }
 
-// Record is not a tab any more: the Final bar reaches it as New recording, beside Library and
-// Open, because starting a take leaves the project rather than showing another view of it.
+// Record is not a tab any more: New recording starts a take, while Library stays beside the brand.
 const MODES: Array<{ id: EditorMode; labelKey: string }> = [
 	{ id: "media", labelKey: "topbar.modes.media" },
 	{ id: "edit", labelKey: "topbar.modes.edit" },
@@ -71,6 +70,16 @@ export function EditorTopBar({
 	return (
 		<header className={styles.topbar}>
 			<AppMenu actions={actions} />
+			<button
+				type="button"
+				className={`${styles.navLink} !border !border-solid !border-[var(--ds-on-panel-line)]`}
+				aria-label={t("topbar.library")}
+				onClick={actions.openLibrary}
+			>
+				<ArrowLeft size={14} aria-hidden />
+				<span className={styles.navLabel}>{t("topbar.library")}</span>
+			</button>
+			<span aria-hidden="true" className="h-4 w-px bg-[var(--ds-on-panel-line)]" />
 			<span className={styles.projectSlot}>
 				<ProjectNameField title={projectTitle} onRename={actions.renameProject} />
 				{/* The saved state, in words right after the name it is about (Editor-01 "· SAVED").
@@ -106,10 +115,6 @@ export function EditorTopBar({
 			</div>
 
 			<nav className={styles.topbarNav} aria-label={t("topbar.navigation")}>
-				<button type="button" className={styles.navLink} onClick={actions.openLibrary}>
-					<Library size={14} aria-hidden />
-					<span className={styles.navLabel}>{t("topbar.library")}</span>
-				</button>
 				<button
 					type="button"
 					className={styles.navLink}

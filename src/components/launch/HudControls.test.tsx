@@ -79,10 +79,22 @@ describe("HudRecordingTimer", () => {
 });
 
 describe("HudLogoMark", () => {
-	it("is decoration only", () => {
-		const { container } = render(<HudLogoMark />);
-		expect(container.firstElementChild).toHaveAttribute("aria-hidden", "true");
-		expect(screen.queryByRole("button")).toBeNull();
+	it("offers an accessible Library action while idle", () => {
+		const onClick = vi.fn();
+		renderWithTooltips(<HudLogoMark recording={false} label="Open Library" onClick={onClick} />);
+		const button = screen.getByRole("button", { name: "Open Library" });
+		fireEvent.click(button);
+		expect(onClick).toHaveBeenCalledTimes(1);
+	});
+
+	it("is decorative and inert while recording", () => {
+		const onClick = vi.fn();
+		renderWithTooltips(<HudLogoMark recording label="Open Library" onClick={onClick} />);
+		const mark = screen.getByTestId("hud-logo-mark");
+		expect(mark).toHaveAttribute("aria-hidden", "true");
+		expect(screen.queryByRole("button", { name: "Open Library" })).toBeNull();
+		fireEvent.click(mark);
+		expect(onClick).not.toHaveBeenCalled();
 	});
 });
 

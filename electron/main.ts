@@ -1404,6 +1404,7 @@ appReady?.then(async () => {
 	registerOpenLibraryHandler({
 		ipcMain,
 		getMainWindow: () => mainWindow,
+		isRecording: () => isRecording,
 		showLibrary: () => {
 			if (mainWindow) {
 				isForceClosing = true;
