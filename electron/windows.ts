@@ -1,6 +1,6 @@
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { app, BrowserWindow, ipcMain, screen } from "electron";
+import { app, BrowserWindow, ipcMain, nativeTheme, screen } from "electron";
 import {
 	clampRectToWorkArea,
 	loadEditorWindowState,
@@ -689,14 +689,14 @@ export function createCountdownOverlayWindow(): BrowserWindow {
  */
 export function createPermissionsWindow(): BrowserWindow {
 	const win = new BrowserWindow({
-		width: 520,
-		height: 640,
+		width: 540,
+		height: 680,
 		resizable: false,
 		minimizable: false,
 		maximizable: false,
 		fullscreenable: false,
 		title: "Showhow",
-		backgroundColor: "#0b0c0f",
+		backgroundColor: nativeTheme.shouldUseDarkColors ? "#2F2F2F" : "#FFFCF7",
 		show: false,
 		webPreferences: {
 			preload: path.join(__dirname, "preload.mjs"),

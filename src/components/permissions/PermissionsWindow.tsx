@@ -1,5 +1,15 @@
-import { Accessibility, Check, Mic, MonitorPlay, Video, Volume2 } from "lucide-react";
+import {
+	Accessibility,
+	Check,
+	ExternalLink,
+	Mic,
+	MonitorPlay,
+	RotateCw,
+	Video,
+	Volume2,
+} from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Button } from "@/components/showhow/Button";
 import { useScopedT } from "@/contexts/I18nContext";
 
 type PermissionsApi = Window["electronAPI"]["permissions"];
@@ -102,7 +112,7 @@ export function PermissionsWindow() {
 	);
 
 	if (!snapshot) {
-		return <div className="h-screen bg-[#0b0c0f]" />;
+		return <div className="h-screen bg-ds-surface" />;
 	}
 
 	const screenReady =
@@ -110,11 +120,18 @@ export function PermissionsWindow() {
 	const needsRelaunch = snapshot.screen === "granted" && snapshot.screenRequiresRelaunch;
 
 	return (
-		<div className="flex h-screen flex-col bg-[#0b0c0f] px-7 pt-7 pb-6 text-white select-none">
-			<h1 className="text-[17px] font-semibold">{t("permissions.title")}</h1>
-			<p className="mt-1.5 text-[13px] leading-5 text-[#8b93a1]">{t("permissions.subtitle")}</p>
+		<div className="flex h-screen flex-col bg-ds-surface px-7 pt-6 pb-6 font-ds-body text-ds-ink select-none">
+			<p className="font-ds-label text-[10px] leading-[normal] font-medium uppercase tracking-[1px] text-ds-ink-faint">
+				{t("sheets.eyebrow")}
+			</p>
+			<h1 className="mt-[6px] font-ds-display text-[22px] leading-[normal] font-semibold tracking-[-0.02em] text-ds-ink">
+				{t("permissions.title")}
+			</h1>
+			<p className="mt-[6px] max-w-[440px] text-[13px] leading-5 text-ds-muted">
+				{t("permissions.subtitle")}
+			</p>
 
-			<ul className="mt-5 flex flex-col gap-2.5">
+			<ul className="mt-5 mb-6 shrink-0 overflow-hidden rounded-[8px] border border-ds-line bg-ds-surface-raised">
 				{rowsFor(snapshot).map(({ kind, level, Icon }) => {
 					const status = snapshot[kind];
 					return (
@@ -122,20 +139,31 @@ export function PermissionsWindow() {
 							key={kind}
 							data-testid={`permission-${kind}`}
 							data-status={status}
-							className="rounded-xl border border-[#20232a] bg-[#121419] px-4 py-3"
+							className="border-t border-ds-line px-4 py-[14px] first:border-t-0"
 						>
-							<div className="flex items-center gap-3">
-								<Icon className="h-5 w-5 shrink-0 text-[#10b981]" aria-hidden />
-								<div className="min-w-0 flex-1">
-									<div className="flex items-center gap-2">
-										<span className="text-[13px] font-medium">
+							<div className="grid grid-cols-[18px_minmax(0,1fr)_auto] items-center gap-[14px]">
+								<Icon
+									className={`h-[18px] w-[18px] shrink-0 stroke-[1.75] ${level === "required" ? "text-ds-rec" : "text-ds-ink-soft"}`}
+									aria-hidden
+								/>
+								<div className="min-w-0">
+									<div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+										<span className="font-ds-body text-[14px] leading-[normal] font-medium text-ds-ink">
 											{t(`permissions.rows.${kind}.name`)}
 										</span>
-										<span className="rounded-full bg-[#1c1f26] px-2 py-px text-[11px] text-[#8b93a1]">
+										<span
+											className={`rounded-[3px] px-[6px] py-[2px] font-ds-label text-[10px] leading-[normal] font-medium uppercase tracking-[0.6px] ${
+												level === "required"
+													? "bg-ds-rec-wash text-ds-rec-ink dark:text-ds-rec-soft"
+													: level === "recommended"
+														? "bg-ds-accent-tint text-ds-accent-strong dark:text-ds-accent"
+														: "bg-ds-chip text-ds-muted"
+											}`}
+										>
 											{t(`permissions.level.${level}`)}
 										</span>
 									</div>
-									<p className="mt-0.5 text-[12.5px] leading-[18px] text-[#8b93a1]">
+									<p className="mt-[2px] font-ds-body text-[12.5px] leading-[18px] text-ds-muted">
 										{t(`permissions.rows.${kind}.description`)}
 									</p>
 								</div>
@@ -156,29 +184,40 @@ export function PermissionsWindow() {
 				})}
 			</ul>
 
-			<div className="mt-auto flex items-center justify-between gap-4 pt-5">
-				<p className="text-[12.5px] leading-[18px] text-[#8b93a1]">
-					{screenReady ? t("permissions.footer.ready") : t("permissions.footer.screenRequired")}
+			<div className="mt-auto flex items-center justify-between gap-4 border-t border-ds-line pt-4">
+				<p className="flex min-w-0 items-center gap-2 text-[13px] leading-[18px] text-ds-muted">
+					<span
+						aria-hidden
+						className={`h-[6px] w-[6px] shrink-0 rounded-full ${screenReady && !needsRelaunch ? "bg-ds-accent" : "bg-ds-rec"}`}
+					/>
+					{needsRelaunch
+						? t("permissions.footer.restart")
+						: screenReady
+							? t("permissions.footer.ready")
+							: t("permissions.footer.screenRequired")}
 				</p>
 				{needsRelaunch ? (
-					<button
+					<Button
+						variant="dark"
 						type="button"
 						data-testid="permissions-relaunch"
 						onClick={() => void window.electronAPI.permissions.relaunch()}
-						className="h-9 shrink-0 rounded-[9px] bg-[#10b981] px-5 text-[13px] font-semibold text-[#08090d] hover:bg-[#10b981]/85"
+						icon={RotateCw}
+						className="shrink-0 px-4 py-2.5 leading-[normal] disabled:pointer-events-auto disabled:cursor-not-allowed disabled:opacity-40 dark:bg-ds-accent dark:text-ds-on-accent dark:hover:bg-[var(--showhow-accent-hover)]"
 					>
 						{t("permissions.actions.restart")}
-					</button>
+					</Button>
 				) : (
-					<button
+					<Button
+						variant="dark"
 						type="button"
 						data-testid="permissions-start"
 						disabled={!screenReady}
 						onClick={() => void window.electronAPI.permissions.close()}
-						className="h-9 shrink-0 rounded-[9px] bg-[#10b981] px-5 text-[13px] font-semibold text-[#08090d] hover:bg-[#10b981]/85 disabled:cursor-not-allowed disabled:opacity-50"
+						className="shrink-0 px-4 py-2.5 leading-[normal] disabled:pointer-events-auto disabled:cursor-not-allowed disabled:opacity-40 dark:bg-ds-accent dark:text-ds-on-accent dark:hover:bg-[var(--showhow-accent-hover)]"
 					>
 						{t("permissions.actions.start")}
-					</button>
+					</Button>
 				)}
 			</div>
 		</div>
@@ -202,15 +241,15 @@ function PermissionAction({
 }) {
 	if (status === "granted") {
 		return (
-			<span className="flex shrink-0 items-center gap-1 text-[13px] font-medium text-[#10b981]">
-				<Check className="h-4 w-4" aria-hidden />
+			<span className="flex shrink-0 items-center gap-1.5 font-ds-label text-[11px] leading-[normal] font-medium tracking-[0.6px] text-ds-accent-strong uppercase dark:text-ds-accent">
+				<Check className="h-[14px] w-[14px] stroke-[1.75]" aria-hidden />
 				{t("permissions.status.granted")}
 			</span>
 		);
 	}
 	if (status === "restricted") {
 		return (
-			<span className="max-w-[120px] shrink-0 text-right text-[12.5px] leading-[18px] text-[#8b93a1]">
+			<span className="max-w-[120px] shrink-0 text-right font-ds-body text-[12px] leading-[18px] text-ds-muted">
 				{t("permissions.status.restricted")}
 			</span>
 		);
@@ -228,15 +267,17 @@ function PermissionAction({
 				: t("permissions.actions.allow");
 
 	return (
-		<button
+		<Button
+			variant="secondary"
 			type="button"
 			data-testid={`permission-${kind}-action`}
 			disabled={busy}
 			onClick={onAct}
-			className="h-8 shrink-0 rounded-[8px] bg-[#1f232b] px-3.5 text-[13px] font-medium text-white hover:bg-[#2a2f39] disabled:opacity-50"
+			icon={status === "denied" || status === "requested" ? ExternalLink : undefined}
+			className="shrink-0 gap-1 px-3 py-2 leading-[normal]"
 		>
 			{label}
-		</button>
+		</Button>
 	);
 }
 
@@ -270,9 +311,12 @@ function ScreenHelp({
 		return null;
 	}
 	return (
-		<div className="mt-2.5 space-y-1 border-t border-[#20232a] pt-2.5 pl-8">
-			{lines.map((line) => (
-				<p key={line} className="text-[12.5px] leading-[18px] text-[#a9b0bc]">
+		<div className="mt-3 ml-8 space-y-1 border-t border-ds-line pt-2.5">
+			{lines.map((line, index) => (
+				<p
+					key={line}
+					className={`font-ds-body text-[12.5px] leading-[18px] ${snapshot.screen === "denied" && index > 0 ? "text-ds-muted" : "text-ds-ink-soft"}`}
+				>
 					{line}
 				</p>
 			))}
@@ -291,8 +335,8 @@ function SystemAudioHelp({ status, t }: { status: Status; t: T }) {
 		return null;
 	}
 	return (
-		<div className="mt-2.5 border-t border-[#20232a] pt-2.5 pl-8">
-			<p className="text-[12.5px] leading-[18px] text-[#a9b0bc]">{line}</p>
+		<div className="mt-3 ml-8 border-t border-ds-line pt-2.5">
+			<p className="font-ds-body text-[12.5px] leading-[18px] text-ds-ink-soft">{line}</p>
 		</div>
 	);
 }

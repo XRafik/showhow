@@ -159,7 +159,8 @@
 		},
 		"footer": {
 			"screenRequired": "Zum Aufnehmen ist die Bildschirmaufnahme erforderlich.",
-			"ready": "Alles bereit."
+			"ready": "Alles bereit.",
+			"restart": "Starte Showhow neu, um fortzufahren."
 		}
 	},
 	"countdown": {

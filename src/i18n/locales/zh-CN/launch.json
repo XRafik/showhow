@@ -159,7 +159,8 @@
 		},
 		"footer": {
 			"screenRequired": "录制需要屏幕录制权限。",
-			"ready": "一切就绪。"
+			"ready": "一切就绪。",
+			"restart": "重新启动 Showhow 以完成。"
 		}
 	},
 	"countdown": {

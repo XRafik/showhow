@@ -5,8 +5,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PERMISSIONS_POLL_MS, PermissionsWindow } from "./PermissionsWindow";
 
 vi.mock("@/contexts/I18nContext", () => ({
-	// Keys come back verbatim, so the assertions read as the contract, not as copy.
-	useScopedT: () => (key: string) => key,
+	// Keep the new footer copy literal so its user-facing wording is covered.
+	useScopedT: () => (key: string) =>
+		key === "permissions.footer.restart" ? "Restart Showhow to finish." : key,
 }));
 
 type PermissionsApi = Window["electronAPI"]["permissions"];
@@ -101,8 +102,36 @@ describe("PermissionsWindow", () => {
 
 		expect(screen.queryByTestId("permissions-start")).not.toBeInTheDocument();
 		expect(screen.getByText("permissions.help.screenRestart")).toBeInTheDocument();
+		expect(screen.getByText("Restart Showhow to finish.")).toBeInTheDocument();
 		fireEvent.click(screen.getByTestId("permissions-relaunch"));
 		expect(api.relaunch).toHaveBeenCalled();
+	});
+
+	it("uses the theme surface without the retired literal colours", async () => {
+		const { container } = render(<PermissionsWindow />);
+		await screen.findByTestId("permission-accessibility");
+
+		const root = container.firstElementChild;
+		expect(root).toHaveClass("bg-ds-surface");
+		expect(root?.outerHTML).not.toMatch(/#(?:0b0c0f|10b981)/i);
+	});
+
+	it("keeps the loading surface in the app theme", async () => {
+		let resolveGet: (snapshot: Snapshot) => void = () => {};
+		api.get.mockImplementation(
+			() =>
+				new Promise((resolve) => {
+					resolveGet = resolve;
+				}),
+		);
+
+		const { container } = render(<PermissionsWindow />);
+		const loading = container.firstElementChild;
+		expect(loading).toHaveClass("bg-ds-surface");
+		expect(loading).not.toHaveClass("bg-[#0b0c0f]");
+
+		await act(async () => resolveGet(current));
+		await screen.findByTestId("permission-accessibility");
 	});
 
 	it("warns about macOS' recurring confirmation only from macOS 15", async () => {

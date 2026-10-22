@@ -1564,3 +1564,41 @@ showed one attached Stop Recording menu. After resetting recording state, real r
 This proves the built app on the tested macOS setup; recording state was synthetic. No installer,
 Windows/Linux run or actual capture was tested. Cleanup was still finishing when the lead reported
 the PASS. Executor did not drive GUI/input.
+
+## 23 October 2026 — Showhow #187 Permissions window house style
+
+The permissions window now uses the Showhow surface tokens, typography, shared `Button`, and Lucide
+icons while preserving the permission IPC calls, row `data-testid`/`data-status`, disabled Get started
+gate, and existing Continue/Allow/Open Settings rules. The list is non-shrinking with a 24 px gap
+before the footer; granted status is uppercase; disabled footer opacity is 40%. Text whose mock
+font shorthand resets line height uses `leading-[normal]`; help dividers start at the text column.
+
+The original 520x640 native window clipped scenario B: the captured viewport was 608 px high,
+`scrollHeight` was 631 px, and the disabled Get started button ended at y=630.89. The exact approved
+mock measured 664 px for B at both 520 and 540 px widths. The failed capture and metrics remain at
+`/Users/mohamedb/dev/loop-evidence/showhow-187/after-native-1792710532563/`; no permission state was
+changed. The baseline C footer also reported “Screen recording is needed to record” and was not
+treated as evidence of a ready state.
+
+Supervisor w5N:pX approved the bounded geometry exception in
+`/Users/mohamedb/dev/loop-evidence/showhow-187/SUPERVISOR-GEOMETRY-APPROVAL.txt`: permissions
+window 540x680, keep `resizable: false`, and keep every other window option unchanged apart from
+the previously approved theme-aware background. This is the only deviation from the original
+window-size boundary. The original `STOP.md` and failed native result remain unchanged; the approval
+supersedes the stop. The lead's rebuilt native AFTER PASS is recorded at
+`/Users/mohamedb/dev/loop-evidence/showhow-187/after-native-1792710807947/result.json`: required
+E/B/C light and dark captures all measured a 540x648 viewport with scrollWidth/scrollHeight 540/648;
+footer buttons ended at y=624, leaving 24 px below. The real E snapshot reported Screen Recording,
+Accessibility, microphone, and camera granted, with system audio not requested. Additional A/D/F
+light and dark captures also had no overflow. The lead visually inspected the native screenshots,
+opened the menu through CUA, and saw keyboard focus in
+`13-keyboard-focus-native.png`. No permission actions were taken. The earlier clipped B capture
+remains preserved unchanged.
+
+Executor receipts are preserved under
+`/Users/mohamedb/dev/loop-evidence/showhow-187/executor/`: `RED-001` (exit 1, three intended
+regression failures), `GREEN-003` (14/14), `TSC-003` (scheduler exit 75, command not started),
+`TSC-004` (exit 0), `LINT-002` (exit 0, 28 repository warnings, none in owned files),
+`I18N-002` (exit 0), and `BRANDING-002` (exit 0). `TSC-003` is retained as NOT RUN; `TSC-004` is
+the queued successful retry. Lead's full unit run is in progress; lead owns browser and test-TypeScript
+checks, followed by fresh independent review. No commit or push was made.

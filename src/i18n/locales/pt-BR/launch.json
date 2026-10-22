@@ -159,7 +159,8 @@
 		},
 		"footer": {
 			"screenRequired": "A gravação de tela é necessária para gravar.",
-			"ready": "Tudo pronto."
+			"ready": "Tudo pronto.",
+			"restart": "Reinicie o Showhow para concluir."
 		}
 	},
 	"countdown": {
