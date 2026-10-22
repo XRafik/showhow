@@ -1281,3 +1281,125 @@ Carried as follow-ups, not changed: (4) cream STOP on `--ds-rec` is 3.6:1 for 11
 | 7 Strings left without a reader | Removed from all 15 locales: `topbar.modes.rec`, `topbar.toggleChatPanel`, `topbar.noProject`, `shell.resizeChatPanel` and five `emptyState` strings. |
 
 Not changed: (6) during a ruler drag the stage timecode follows the store, one frame behind the playhead; the #125 play/callback path (`togglePlay`, `NativePlaybackSync`) is unchanged. (8) The Library link reuses the "close" unsaved prompt ("Save changes before closing?"), which is accurate since the editor window closes. In Record mode the MEDIA/EDIT tablist has no selected tab; New recording carries `aria-current="page"`.
+
+## 22 October 2026 — Showhow #172 coordinator receipt correction
+
+- The preserved `settings-off-red.stdout` and `settings-off-red.stderr` show the Vitest OFF/settings assertion failed: the camera preview hook received `enabled: true` after opening settings.
+- The Vitest process exit was not captured because the zsh wrapper failed after the run while assigning to its reserved `status` variable. The observed wrapper error is preserved in `settings-off-red.wrapper-error.txt`.
+- `settings-off-red.exit.superseded-inferred` preserves the manually written `1`; it is superseded/inferred and is not captured process-exit evidence. No replacement exit receipt was written and no rerun was done for this correction.
+
+## 22 October 2026 — Showhow #172 launcher camera and microphone previews
+
+`LaunchWindow` owns one selected-camera preview and one microphone level meter for the idle
+launcher. Settings reuses those same inputs. Camera OFF/settings-open and mic OFF/unsupported
+paths do not acquire preview media. Recording start disables both. The camera video is muted,
+inline and attached when its stream arrives; the mic level is exposed as an accessible meter beside
+the mic control. Acquisition errors use the existing “Preview unavailable” label instead of a
+misleading zero meter. No locale, dependency, recorder, main-process, native or IPC code changed.
+
+The audio hook now retains its context before awaiting `resume()`, checks that it is still mounted
+after that await, and closes the stream/context on cleanup or active acquisition failure. Tests pin
+selected/default mic constraints, disabled/unsupported paths, settings reuse without a second
+acquisition, recording transition, null-to-live video attachment, meter updates, cleanup after
+toggle-off/unmount/late acquisition, truthful mic failure, and no native overlay resize when the
+camera card appears. The camera hook itself needed no production edit; its current cleanup behavior
+is covered by the new tests.
+
+### RED chronology and corrections
+
+- Lead-owned BEFORE evidence is `before-layouts-1792651971018` (exit 0); horizontal and vertical
+  production screenshots were inspected. The lead’s launcher behavior RED was 107 tests with two
+  intended missing-preview failures and 105 passing, before launcher production edits.
+- `audio-resume-red.*` is a setup failure: the `AudioContext` constructor mock was invalid. It is
+  not behavioral RED. `audio-resume-red-valid.*` ran later as a replay against the base hook after
+  hook production edits. Its missing `error` assertion is meaningful RED; its lifecycle failures
+  were setup failures because they waited on an unused context instance.
+- After correcting the mock to retain the instance created by the hook’s constructor, the base-hook
+  check was replayed again. `audio-resume-base-replay-corrected-instance.*` is explicitly a replay,
+  not a pre-edit RED. Against the base hook it observed the missing error state and the unclosed
+  context on disable and unmount (three intended failures; the OFF/no-acquisition case passed).
+  Python captured return code 1. The candidate hook was snapshotted before and after the temporary
+  base-hook replay; both copies are byte-identical, 2,985 bytes, SHA-256
+  `b15eb465444ade1cb7490c7ada38de7b216e1565aea16f7115d627d2845059c3`.
+- The first production-CSS browser attempt failed because its fixture imported only the module CSS,
+  omitting app `index.css` and Tailwind preflight. It measured 176 px (160 px content plus 16 px
+  padding). The failure screenshot was copied before rerun to
+  `/Users/mohamedb/dev/loop-evidence/showhow-172/launcher-preview-browser-green-failure.png`
+  (SHA-256 `0a157c250dcc942cb0f7ff7b76b82b83ead2517b136b5e9ec2ca4f08242cf3dd`). The browser test
+  now imports the existing production `@/index.css`; no production size was changed and the bound
+  remains 160 px.
+
+### Executor verification and handoff
+
+- `launcher-preview-unit-final.*`: 4 files, 130 tests passed, Python-captured exit 0.
+- `launcher-preview-browser-final.*`: 1 browser file, 2 tests passed with production global and
+  module CSS, Python-captured exit 0.
+- `launcher-preview-biome-green.*`: scoped Biome check of the changed source/test/style files,
+  exit 0 after formatting. The earlier failed check and formatter receipts are retained.
+- `launcher-preview-tsc.*`: `npx tsc --noEmit`, exit 0. The repo tsconfig checks `src` and
+  `electron` and excludes `*.test.ts(x)`; test files were executed by Vitest and checked by Biome.
+- Focused proof only. The lead owns full affected suites, actual-app AFTER screenshots and behavior,
+  final macOS package/signature checks and synthetic native-input proof. None of those are claimed
+  complete here. The lead-owned generated compositor binary was preserved. The lead relocated this
+  executor's BEFORE-generated `.vite-cache/` from the worktree to
+  `/Users/mohamedb/dev/loop-evidence/showhow-172/before-vite-cache`; `VITE-CACHE-MOVE.json` records
+  the move. Nothing was deleted, and the browser AFTER runner now uses an external cache. The move
+  made no product or configuration changes.
+
+The initial hook lifecycle replay was necessarily after the hook edit because its earlier mock setup
+was invalid. This chronology is recorded explicitly; the replay is not represented as a pre-edit
+RED. The original invalid receipts and the coordinator-corrected `settings-off-red` metadata remain
+preserved.
+
+### Test-project typecheck repair
+
+Lead Prove reported 4,934 unit tests passed, one skipped, and 25 browser tests passed. Its test-project
+TypeScript check then failed with TS2322 at `LaunchWindow.test.tsx` lines 1800, 1813, and 1873:
+the hoisted recorder mock inferred `webcamDeviceId` as only `undefined`. The fixture now declares
+`webcamDeviceId: undefined as string | undefined`. The preserved `tsc-tests.*` failure remains the
+before receipt. Test-project TypeScript and scoped Biome both pass after the annotation; it is erased
+by TypeScript and changes no emitted or production runtime behavior. The full suites were not rerun.
+
+### Packaged vertical language-menu clipping follow-up
+
+The lead's packaged Camera ON repro opened `Language: English` on a vertical HUD at 848x963; the
+first two language buttons were above the viewport at y=-53.875 and y=-20.375. The original
+`PROVE-LANGUAGE-CLIPPING.json` and `packaged-1792653699669/05-language-open.png` remain preserved.
+`PACKAGED-02-QUALIFICATION.md` classifies the raw native script exit 0 as commanded close/cleanup;
+the interaction remains a UI FAIL, not acceptance evidence.
+
+Before editing production code, two focused regressions failed in
+`launcher-language-clipping-red-test.*` (exit 1, 2 failed, 113 skipped): with camera ON, the
+launcher card remained mounted beside the vertical language menu and beside a recovery sheet. The
+visibility gate now suppresses only that launcher card while the language menu or recovery sheet is
+open. Camera acquisition stays enabled, settings continues to show the shared stream, and closing
+the menu or sheet restores the launcher video with the same stream. Native sizing and main/native/IPC
+code are unchanged.
+
+After the repair, `LaunchWindow.test.tsx` passed 115/115; the launcher browser test passed 2/2;
+`npx tsc --noEmit -p tsconfig.test.json` passed; and scoped Biome passed. The first Biome receipt is
+preserved as a formatting failure, followed by the clean scoped check. Lead Prove had previously
+reported 4,934 unit tests passed, one skipped, and 25 browser tests passed. The lead owns updated
+packaging and packaged reproof; independent review has not started.
+
+### Lead Prove — final candidate
+
+Actual browser AFTER: `after-final-1792654224449`, seven preview/layout/cleanup assertions passed.
+The browser dev shim omits native geometry methods; the proof records no-op geometry methods so
+production screen-derived CSS caps execute. Packaged Electron proves real geometry separately.
+
+Final normal `build:mac` and strict deep signature verification passed. The fresh local compositor
+uses Rust 1.99.1; only22 unchanged, independently hashed STT files came from the retained hosted
+artifact. Native `packaged-1792654292528` passed19 layout/lifecycle checks including language bounds,
+no duplicate acquisition, OFF cleanup and recorder-stream preservation. Its later assertion expected
+the wrong Cancel label; that raw failure remains. The bounded `packaged-1792654435066` run uses the
+existing cancel test ID and passes recording→discard→idle. Both bind the same archive SHA-256
+`52002e2602f0c6aabddf5890190f343cc695fbfd99ed04f22136f6670f2e18c9`; fixture/archive hashes stayed
+unchanged and all owned PID/birthtime processes and private roots were removed. Synthetic media and
+capture acknowledgements only: no physical device or real screen-recording acceptance is claimed.
+
+Full suites before the bounded menu repair passed4,934 unit tests (one skipped) and25 browser tests.
+Final affected launcher115/115, browser2/2 and whole test TypeScript passed. Unchanged hooks/CSS/other
+modules retain their full-suite proof; the two new visibility cases ran before and after the repair.
+Full lint/i18n/branding passed; final changed code also passed scoped Biome. See external `PROVE.md`
+for command receipts, source bindings, failure qualifications and owner-only limits.

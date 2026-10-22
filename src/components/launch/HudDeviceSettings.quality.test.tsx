@@ -5,13 +5,6 @@ import { WEBCAM_QUALITY_IDS } from "../../hooks/webcamCaptureTarget";
 import { TooltipProvider } from "../ui/tooltip";
 import { HudDeviceSettings, type HudDeviceSettingsLabels } from "./HudDeviceSettings";
 
-vi.mock("../../hooks/useAudioLevelMeter", () => ({
-	useAudioLevelMeter: () => ({ level: 0 }),
-}));
-vi.mock("../../hooks/useCameraPreviewStream", () => ({
-	useCameraPreviewStream: () => ({ stream: null, error: null }),
-}));
-
 const labels: HudDeviceSettingsLabels = {
 	title: "Device settings",
 	close: "Close",
@@ -43,12 +36,18 @@ function renderPanel(overrides: Partial<Parameters<typeof HudDeviceSettings>[0]>
 		<TooltipProvider>
 			<HudDeviceSettings
 				showMicrophone
+				showMicrophonePreview={false}
+				microphonePreviewLevel={0}
+				microphonePreviewError={false}
 				micDevices={[]}
 				cameraDevices={[{ deviceId: "cam-1", label: "Logitech BRIO", groupId: "group-1" }]}
 				activeMicId={undefined}
 				activeCameraId="cam-1"
 				cameraLoading={false}
 				cameraError={null}
+				cameraPreviewStream={null}
+				cameraPreviewError={null}
+				showCameraPreview
 				labels={labels}
 				versionLabel={null}
 				canCheckForUpdates={false}

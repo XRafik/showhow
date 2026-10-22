@@ -8,6 +8,7 @@ export interface AudioLevelMeterOptions {
 
 export function useAudioLevelMeter(options: AudioLevelMeterOptions) {
 	const [level, setLevel] = useState(0);
+	const [error, setError] = useState(false);
 	const audioContextRef = useRef<AudioContext | null>(null);
 	const analyserRef = useRef<AnalyserNode | null>(null);
 	const streamRef = useRef<MediaStream | null>(null);
@@ -33,10 +34,13 @@ export function useAudioLevelMeter(options: AudioLevelMeterOptions) {
 		if (!options.enabled) {
 			cleanup();
 			setLevel(0);
+			setError(false);
 			return;
 		}
 
 		let mounted = true;
+		setLevel(0);
+		setError(false);
 
 		const startMonitoring = async () => {
 			try {
@@ -55,10 +59,11 @@ export function useAudioLevelMeter(options: AudioLevelMeterOptions) {
 				streamRef.current = stream;
 
 				const audioContext = new AudioContext();
+				audioContextRef.current = audioContext;
 				if (audioContext.state === "suspended") {
 					await audioContext.resume();
 				}
-				audioContextRef.current = audioContext;
+				if (!mounted) return;
 
 				const analyser = audioContext.createAnalyser();
 				analyser.fftSize = 256;
@@ -88,10 +93,11 @@ export function useAudioLevelMeter(options: AudioLevelMeterOptions) {
 
 				updateLevel();
 			} catch (err) {
+				if (!mounted) return;
 				console.error("Error starting audio level monitoring:", err);
-				if (mounted) {
-					setLevel(0);
-				}
+				cleanup();
+				setLevel(0);
+				setError(true);
 			}
 		};
 
@@ -103,5 +109,5 @@ export function useAudioLevelMeter(options: AudioLevelMeterOptions) {
 		};
 	}, [options.enabled, options.deviceId, options.smoothingFactor, cleanup]);
 
-	return { level };
+	return { level, error };
 }

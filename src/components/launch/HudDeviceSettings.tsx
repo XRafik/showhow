@@ -1,8 +1,6 @@
 import { Check, X } from "lucide-react";
 import { memo, useEffect, useRef } from "react";
-import { useAudioLevelMeter } from "../../hooks/useAudioLevelMeter";
 import type { CameraDevice } from "../../hooks/useCameraDevices";
-import { useCameraPreviewStream } from "../../hooks/useCameraPreviewStream";
 import type { MicrophoneDevice } from "../../hooks/useMicrophoneDevices";
 import { WEBCAM_QUALITY_IDS, type WebcamQualityId } from "../../hooks/webcamCaptureTarget";
 import { Tooltip } from "../ui/tooltip";
@@ -32,10 +30,23 @@ export interface HudDeviceSettingsLabels {
 }
 
 /** Segmented input-level bar, driven by the live analyser. */
-const LevelMeter = memo(function LevelMeter({ level }: { level: number }) {
+export const HudLevelMeter = memo(function HudLevelMeter({
+	level,
+	label,
+}: {
+	level: number;
+	label: string;
+}) {
 	const lit = Math.round((Math.min(100, Math.max(0, level)) / 100) * LEVEL_SEGMENTS);
 	return (
-		<div className={styles.levelMeter} role="meter" aria-valuenow={Math.round(level)}>
+		<div
+			className={styles.levelMeter}
+			role="meter"
+			aria-label={label}
+			aria-valuemin={0}
+			aria-valuemax={100}
+			aria-valuenow={Math.round(level)}
+		>
 			{LEVEL_SEGMENT_KEYS.map((key, index) => (
 				<span
 					key={key}
@@ -46,13 +57,15 @@ const LevelMeter = memo(function LevelMeter({ level }: { level: number }) {
 	);
 });
 
-function CameraPreview({
+export function HudCameraPreview({
 	stream,
 	error,
+	previewLabel,
 	unavailableLabel,
 }: {
 	stream: MediaStream | null;
 	error: string | null;
+	previewLabel: string;
 	unavailableLabel: string;
 }) {
 	const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -75,7 +88,16 @@ function CameraPreview({
 	}
 
 	// No <track>: this is a live self-view with no audio and nothing to caption.
-	return <video ref={videoRef} className={styles.cameraPreview} autoPlay muted playsInline />;
+	return (
+		<video
+			ref={videoRef}
+			className={styles.cameraPreview}
+			aria-label={previewLabel}
+			autoPlay
+			muted
+			playsInline
+		/>
+	);
 }
 
 /**
@@ -84,18 +106,23 @@ function CameraPreview({
  * Picking a device here never turns anything on: the HUD's mic and camera
  * buttons are plain on/off toggles that use whatever is selected here, which is
  * what separates "choose my hardware" from "start capturing it". While this
- * panel is open it holds its own preview stream and analyser so the user can
- * confirm the device actually works before recording — those are torn down with
- * the panel and are entirely separate from the recorder's capture streams.
+ * panel is open it reuses the launcher's preview stream and analyser, so the
+ * settings view and launcher never acquire duplicate preview sessions.
  */
 export const HudDeviceSettings = memo(function HudDeviceSettings({
 	showMicrophone,
+	showMicrophonePreview,
+	microphonePreviewLevel,
+	microphonePreviewError,
 	micDevices,
 	cameraDevices,
 	activeMicId,
 	activeCameraId,
 	cameraLoading,
 	cameraError,
+	cameraPreviewStream,
+	cameraPreviewError,
+	showCameraPreview,
 	labels,
 	versionLabel,
 	canCheckForUpdates,
@@ -110,12 +137,18 @@ export const HudDeviceSettings = memo(function HudDeviceSettings({
 }: {
 	/** False where a take cannot record the microphone (see `canRecordMicrophone`). */
 	showMicrophone: boolean;
+	showMicrophonePreview: boolean;
+	microphonePreviewLevel: number;
+	microphonePreviewError: boolean;
 	micDevices: MicrophoneDevice[];
 	cameraDevices: CameraDevice[];
 	activeMicId: string | undefined;
 	activeCameraId: string | undefined;
 	cameraLoading: boolean;
 	cameraError: string | null;
+	cameraPreviewStream: MediaStream | null;
+	cameraPreviewError: string | null;
+	showCameraPreview: boolean;
 	labels: HudDeviceSettingsLabels;
 	/** Already interpolated ("Version 1.9.6"), or null while the main process has not
 	 *  answered — the About block stays out rather than reading "Version undefined". */
@@ -130,17 +163,8 @@ export const HudDeviceSettings = memo(function HudDeviceSettings({
 	onClose: () => void;
 	panelRef: (el: HTMLDivElement | null) => void;
 }) {
-	// Only reach for hardware that is actually there — otherwise opening the panel
-	// on a machine with no webcam fires a getUserMedia that can only fail.
+	// Only show controls that apply to hardware that is actually there.
 	const hasCamera = cameraDevices.length > 0 && !cameraError && !cameraLoading;
-	const { level } = useAudioLevelMeter({
-		enabled: showMicrophone && micDevices.length > 0,
-		deviceId: activeMicId && activeMicId !== "default" ? activeMicId : undefined,
-	});
-	const { stream, error: previewError } = useCameraPreviewStream({
-		enabled: hasCamera,
-		deviceId: activeCameraId,
-	});
 
 	return (
 		<div
@@ -192,11 +216,21 @@ export const HudDeviceSettings = memo(function HudDeviceSettings({
 							);
 						})
 					)}
-					<div className={styles.hudModalMeterRow}>
-						<span className={styles.hudModalMeterLabel}>{labels.micLevel}</span>
-						<LevelMeter level={level} />
-					</div>
-					<div className={styles.hudModalHint}>{labels.micHint}</div>
+					{showMicrophonePreview ? (
+						microphonePreviewError ? (
+							<div className={styles.hudModalEmpty} role="status">
+								{labels.previewUnavailable}
+							</div>
+						) : (
+							<>
+								<div className={styles.hudModalMeterRow}>
+									<span className={styles.hudModalMeterLabel}>{labels.micLevel}</span>
+									<HudLevelMeter level={microphonePreviewLevel} label={labels.micLevel} />
+								</div>
+								<div className={styles.hudModalHint}>{labels.micHint}</div>
+							</>
+						)
+					) : null}
 				</>
 			) : null}
 
@@ -254,14 +288,19 @@ export const HudDeviceSettings = memo(function HudDeviceSettings({
 							</button>
 						);
 					})}
-					<div className={styles.hudModalMeterRow}>
-						<span className={styles.hudModalMeterLabel}>{labels.preview}</span>
-					</div>
-					<CameraPreview
-						stream={stream}
-						error={previewError}
-						unavailableLabel={labels.previewUnavailable}
-					/>
+					{showCameraPreview ? (
+						<>
+							<div className={styles.hudModalMeterRow}>
+								<span className={styles.hudModalMeterLabel}>{labels.preview}</span>
+							</div>
+							<HudCameraPreview
+								stream={cameraPreviewStream}
+								error={cameraPreviewError}
+								previewLabel={labels.preview}
+								unavailableLabel={labels.previewUnavailable}
+							/>
+						</>
+					) : null}
 				</>
 			) : null}
 

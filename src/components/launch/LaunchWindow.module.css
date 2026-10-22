@@ -264,6 +264,30 @@
 	flex-direction: column;
 }
 
+.hudMicControl {
+	display: flex;
+	flex-shrink: 0;
+	flex-direction: column;
+	align-items: center;
+	gap: 1px;
+}
+
+.launchMicMeter {
+	width: 24px;
+}
+
+.launchMicMeter .levelMeter {
+	height: 4px;
+	gap: 1px;
+}
+
+.launchMicUnavailable {
+	max-width: 76px;
+	font-size: 9px;
+	line-height: 1.1;
+	text-align: center;
+}
+
 .hudCluster {
 	display: flex;
 	align-items: center;
@@ -624,6 +648,29 @@
 	font-size: 12px;
 	color: var(--ds-on-panel-muted);
 	transform: scaleX(-1);
+}
+
+.launchCameraPreview {
+	pointer-events: auto;
+	width: 168px;
+	padding: 4px;
+	border: 1px solid var(--ds-on-panel-line);
+	border-radius: calc(var(--ds-radius, 8) * 1px);
+	background: var(--ds-panel);
+	box-shadow: 4px 4px 0 var(--ds-accent);
+	color: var(--ds-on-panel-muted);
+}
+
+.launchCameraPreview .cameraPreview {
+	margin-top: 0;
+}
+
+.launchCameraPreview [role="status"] {
+	display: flex;
+	min-height: 90px;
+	align-items: center;
+	justify-content: center;
+	font-size: 12px;
 }
 
 /* Fixed width (not `100vw - 1rem`) for the same no-viewport-dependency reason. */
