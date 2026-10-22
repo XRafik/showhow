@@ -1499,3 +1499,68 @@ of the transient AX label remains unknown; do not call it a fixed player bug or 
 regressions are excluded. No player files changed and no follow-up idea was created. Both native
 apps closed with their PIDs gone and the fixture unchanged. The lead proceeds with fresh independent
 Review after final candidate binding; executor did not launch review or commit/push.
+
+## 22 October 2026 — Showhow #175 Menu-bar HUD
+
+On macOS, idle tray clicks now focus an existing HUD or create one after the current window closes.
+The close observer leaves the existing editor confirmation/save path in control. The same-package
+tests cover ready-to-show focus, the null-window decision, cancellation, save failure and waiting
+for a successful save's `closed` event so an unsaved editor cannot be replaced. macOS detaches the
+context menu while idle and opens the stored menu on right-click; recording keeps the attached Stop
+menu. Other platforms retain their existing tray routing.
+
+The lead's native AFTER at
+`/Users/mohamedb/dev/loop-evidence/showhow-175/after-native-1792707822314/result.json` confirmed
+the tray event created a visible HUD, but settled snapshots showed it unfocused. Tray-created HUDs
+now focus after `ready-to-show`; non-tray creation keeps its prior behavior. The later minimized-HUD
+repeat attempts in that run did not reach the app. The subsequent native route and restore results
+are documented below.
+
+The initial three-case RED is in
+`/Users/mohamedb/dev/loop-evidence/showhow-175/lead-commands/20261022T221505.692806Z-executor-tray-red`;
+the initial six-case GREEN is in
+`/Users/mohamedb/dev/loop-evidence/showhow-175/lead-commands/20261022T222139.805451Z-executor-tray-green-caller`;
+the follow-up focus RED/GREEN are in `executor-focus-red` and `executor-focus-green`. The post-focus
+full unit run, production and test TypeScript, full Biome check and `build-vite` receipts are in
+`executor-focus-unit-full`, `executor-focus-tsc-prod`, `executor-focus-tsc-test`,
+`executor-focus-lint` and `executor-focus-build-vite`. The lead-owned final native result is
+documented below; no full installer or executor GUI check was run.
+
+### Bounded macOS tray routing repair
+
+The lead's second native AFTER at
+`/Users/mohamedb/dev/loop-evidence/showhow-175/after-native-1792708215229/result.json`
+captured a real status-item mouse-down at `1792708231046` and mouse-up at `1792708231130`,
+with `clicks: 0`, `rights: 0`, no double-click, and `menuAttached: false`. Library window 1
+remained visible and focused; the expected tray activation count was 1. This isolates the missed
+route to relying on `click`/`double-click` for an idle macOS status item. macOS now registers only
+Electron's `mouse-up` activation event. Non-macOS still registers `click` and `double-click`; the
+existing right-click popup handler and attached recording Stop menu remain in place. The focused
+same-package test exercises the registration seam that `createTray` calls, including the absence
+of macOS click/double-click listeners, so a single native activation cannot be routed twice.
+
+The intended routing RED is recorded at
+`/Users/mohamedb/dev/loop-evidence/showhow-175/lead-commands/20261022T223218.466900Z-executor-routing-red`
+(exit 1: macOS mouse-up listener expected 1, observed 0). GREEN is at
+`/Users/mohamedb/dev/loop-evidence/showhow-175/lead-commands/20261022T223317.591708Z-executor-routing-green`
+(exit 0, 9/9 tests). The post-repair full checks are recorded as follows; each receipt directory
+contains the exact `command.json`, `stdout`, `stderr`, and `exit`:
+
+- Full unit suite: `20261022T223322.077029Z-executor-routing-unit-full` (exit 0; 384 files,
+  4,955 passed, 2 skipped).
+- Production TypeScript: `20261022T223406.859556Z-executor-routing-tsc-prod` (exit 0).
+- Test TypeScript: `20261022T223414.370532Z-executor-routing-tsc-test` (exit 0).
+- Full Biome lint: `20261022T223423.553899Z-executor-routing-lint` (exit 0; 27 warnings).
+- Renderer and Electron `build-vite`: `20261022T223426.459092Z-executor-routing-build-vite`
+  (exit 0; no installer).
+
+The lead's final native AFTER PASS is recorded at
+`/Users/mohamedb/dev/loop-evidence/showhow-175/after-native-1792708502565/result.json`. Real
+status-item left mouse-up from Library created a focused HUD; a minimized existing HUD restored and
+focused; and an absent HUD was recreated and focused. With synthetic recording state set through
+`setRecordingState(true, undefined, system)`, a real left-click kept existing HUD window 5 and
+showed one attached Stop Recording menu. After resetting recording state, real right-click reported
+`rights: 1` and `popupCount: 1` with the original seven-item menu. No recording capture started.
+This proves the built app on the tested macOS setup; recording state was synthetic. No installer,
+Windows/Linux run or actual capture was tested. Cleanup was still finishing when the lead reported
+the PASS. Executor did not drive GUI/input.

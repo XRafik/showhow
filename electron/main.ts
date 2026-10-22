@@ -72,6 +72,12 @@ import { setDisplaySleepBlocked } from "./recording/displaySleepBlocker";
 import { fetchShowhowMedia, SHOWHOW_MEDIA_SCHEME } from "./showhow/mediaProtocol";
 import { registerOpenLibraryHandler } from "./showhow/openLibrary";
 import { acquireStableInstanceLock } from "./showhow/singleInstanceLock";
+import {
+	closeWindowForTrayHud,
+	decideTrayClick,
+	focusHudWindowWhenReady,
+	registerTrayActivationHandler,
+} from "./showhow/trayClick";
 import { offersStarPrompt, REPO_URL, storeReviewUrl } from "./star-prompt";
 import { registerSttIpc, shutdownStt } from "./stt";
 import { registerThemeIpc } from "./themeIpc";
@@ -170,6 +176,8 @@ let sourceSelectorWindow: BrowserWindow | null = null;
 let countdownOverlayWindow: BrowserWindow | null = null;
 let notesWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
+let trayMenu: Menu | null = null;
+let hudWindow: BrowserWindow | null = null;
 let selectedSourceName = "";
 const isMac = process.platform === "darwin";
 const trayIconSize = isMac ? 16 : 24;
@@ -197,6 +205,16 @@ function showMainWindow() {
 	}
 
 	createWindow();
+}
+
+function createHudWindow(focusWhenReady = false) {
+	const window = createHudOverlayWindow();
+	hudWindow = window;
+	window.once("closed", () => {
+		if (hudWindow === window) hudWindow = null;
+	});
+	if (focusWhenReady) focusHudWindowWhenReady(window);
+	return window;
 }
 
 // CLI runs skip the single-instance lock so `openscreen export/record` works
@@ -454,11 +472,44 @@ function setupApplicationMenu() {
 
 function createTray() {
 	tray = new Tray(defaultTrayIcon);
-	tray.on("click", () => {
-		showMainWindow();
-	});
-	tray.on("double-click", () => {
-		showMainWindow();
+	let hudClosePending = false;
+	const handleClick = () => {
+		if (!isMac) {
+			showMainWindow();
+			return;
+		}
+
+		const currentWindow = mainWindow && !mainWindow.isDestroyed() ? mainWindow : null;
+		const action = decideTrayClick(isRecording, currentWindow, hudWindow);
+		if (action === "ignore") return;
+		if (action === "focus") {
+			if (currentWindow?.isMinimized()) currentWindow.restore();
+			currentWindow?.show();
+			currentWindow?.focus();
+			return;
+		}
+		if (!currentWindow) {
+			mainWindow = createHudWindow(true);
+			return;
+		}
+		if (isCloseConfirmInFlight || hudClosePending) return;
+
+		hudClosePending = true;
+		closeWindowForTrayHud(
+			currentWindow,
+			ipcMain,
+			() => {
+				hudClosePending = false;
+				if (mainWindow === currentWindow) mainWindow = createHudWindow(true);
+			},
+			() => {
+				hudClosePending = false;
+			},
+		);
+	};
+	registerTrayActivationHandler(tray, isMac, handleClick);
+	tray.on("right-click", () => {
+		if (isMac && !isRecording && trayMenu) tray?.popUpContextMenu(trayMenu);
 	});
 }
 
@@ -994,7 +1045,8 @@ function updateTrayMenu(recording: boolean = false) {
 			];
 	tray.setImage(trayIcon);
 	tray.setToolTip(trayToolTip);
-	tray.setContextMenu(Menu.buildFromTemplate(menuTemplate));
+	trayMenu = Menu.buildFromTemplate(menuTemplate);
+	tray.setContextMenu(isMac && !recording ? null : trayMenu);
 }
 
 let editorHasUnsavedChanges = false;
@@ -1396,7 +1448,7 @@ appReady?.then(async () => {
 			isForceClosing = false;
 			mainWindow = null;
 		}
-		mainWindow = createHudOverlayWindow();
+		mainWindow = createHudWindow();
 	}
 
 	// The editor's Library link. Its renderer has already asked about unsaved changes, so the
