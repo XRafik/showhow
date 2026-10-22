@@ -112,6 +112,7 @@ const STOP_REPEAT_GUARD_MS = 2000;
 /** Launches the floating recording HUD and its recorder controls. */
 export function LaunchWindow() {
 	const t = useScopedT("launch");
+	const tEditor = useScopedT("editor");
 	// The update-check label is shared with the app menu and the tray, which read it from
 	// `common`. A second copy under `launch` drifted from it in en and ar before it ever shipped.
 	const tCommon = useScopedT("common");
@@ -983,6 +984,12 @@ export function LaunchWindow() {
 	const sendHudOverlayClose = useCallback(() => {
 		window.electronAPI?.hudOverlayClose?.();
 	}, []);
+	const openLibrary = useCallback(() => {
+		if (controlsLocked) return;
+		void window.electronAPI?.showhowOpenLibrary?.().catch((error) => {
+			console.warn("[hud] failed to open the library:", error);
+		});
+	}, [controlsLocked]);
 	const openStudio = useCallback(() => {
 		if (!saving) window.electronAPI.switchToEditor();
 	}, [saving]);
@@ -1355,7 +1362,11 @@ export function LaunchWindow() {
 							onPointerEnd={handleHudDragPointerEnd}
 						/>
 
-						<HudLogoMark />
+						<HudLogoMark
+							recording={controlsLocked}
+							label={tEditor("noProjectOpen.openLibrary")}
+							onClick={openLibrary}
+						/>
 
 						<HudDivider vertical={isVertical} />
 

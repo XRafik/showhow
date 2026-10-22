@@ -371,10 +371,21 @@ describe("EditorTopBar responsive affordances and tooltips", () => {
 		expect(screen.getByTestId("topbar-save-state")).toHaveTextContent("topbar.unsaved");
 	});
 
-	it("navigates to the Library, a new recording and a project from the Final bar", () => {
+	it("places Library before the project name and keeps other destinations in the Final bar", () => {
 		const { onOpenLibrary, onNewRecording, onOpenProject } = renderTopBar("Demo Project");
+		const library = screen.getByRole("button", { name: "topbar.library" });
+		const projectName = screen.getByRole("button", { name: "topbar.renameProject" });
+		expect(library.textContent).toContain("topbar.library");
+		expect(library).toHaveClass("!border", "!border-solid", "!border-[var(--ds-on-panel-line)]");
+		expect(
+			library.compareDocumentPosition(projectName) & Node.DOCUMENT_POSITION_FOLLOWING,
+		).toBeTruthy();
+		expect(library.nextElementSibling).toHaveAttribute("aria-hidden", "true");
+		expect(library.nextElementSibling).toHaveClass("h-4", "w-px");
+
 		const nav = screen.getByRole("navigation", { name: "topbar.navigation" });
-		fireEvent.click(within(nav).getByRole("button", { name: "topbar.library" }));
+		expect(within(nav).queryByRole("button", { name: "topbar.library" })).not.toBeInTheDocument();
+		fireEvent.click(library);
 		fireEvent.click(within(nav).getByRole("button", { name: "topbar.newRecording" }));
 		fireEvent.click(within(nav).getByRole("button", { name: "topbar.open" }));
 		expect(onOpenLibrary).toHaveBeenCalledTimes(1);
@@ -414,7 +425,7 @@ describe("EditorTopBar responsive affordances and tooltips", () => {
 			"title",
 			"Demo Project",
 		);
-		for (const name of ["topbar.library", "topbar.newRecording", "topbar.open"]) {
+		for (const name of ["topbar.newRecording", "topbar.open"]) {
 			expect(screen.getByRole("button", { name })).not.toHaveAttribute("title");
 		}
 	});
