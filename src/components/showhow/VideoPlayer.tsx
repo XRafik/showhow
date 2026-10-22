@@ -99,7 +99,7 @@ function VideoPlayerInstance({
 		>
 			<video
 				{...videoProps}
-				className="min-h-0 w-full flex-1 object-contain"
+				className="aspect-video w-full object-contain"
 				ref={(video) => {
 					videoRef.current = video;
 					onVideoReady?.(video);

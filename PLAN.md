@@ -1064,3 +1064,42 @@ Owner merged #139 PR #151 at `dd98eab42f8d9a4de44f9ac8a1328e2946a8315e` (reviewe
 ## #141 execution binding — 2026-10-18
 
 Owner merged #140 PR #152 on 2026-10-18T18:38:28Z as `9eb781dcbc1d46528d2cfe387d1285bae7fab40b`; reviewed head `d3c22394d74279d695b01166c1abd55d063117f5` had ten successful CI checks and fresh separate PASS verdicts. T2 #140 is Done. T3 #141 is active from that merge in `ticket/141-library-mp4-import`, lane w74. Next is #142 only after the owner merges #141; no dependent dispatch by this lead. Preserve the published requirements and landing plan above. Authority remains `/Users/mohamedb/dev/loop-evidence/showhow-final-design-shape/AUTONOMY.json`: routine bounded implementation/test/review repairs are authorised, recorded before edits; only owner reviews/merges in GitHub. Evidence is external `~/dev/loop-evidence/showhow-141/`. Keep #128 parked; no release, auth, permissions or personal-data work.
+
+
+# Showhow #171 preview sizing Plan
+
+## Goal
+Make the Library recording fill the available preview area while preserving its aspect ratio and reachable controls.
+
+## Context and decisions
+Owner explicitly approved this scope and normal review on 2026-10-22: “Approve — normal review”. Issue #170 remains owner-owned frontend practice. #172 follows #171. #148 remains frozen at Prove; no active implementation worker, no implied waiver of its separate proof/tool gates. #169 is closed after owner playback confirmation and decoded-audio checks.
+Reuse the existing Library/VideoPlayer design. No redesign or new feature. The current VideoPlayer uses flex layout/object-contain, and RecordingLibrary provides 240px/340px fixed heights. These are observations, not a proved cause.
+
+## Bounded requirements
+For synthetic landscape full-screen, portrait and square clips, scale the Library preview to the largest image contained in its available video viewport. Preserve aspect ratio, with unused space only on the axis required by that ratio. Keep Play/Pause, seek and time controls visible and usable at the supported minimum Library window size and at 1200px reference width. Preserve source switching and seeking.
+
+## Architecture
+Use the existing VideoPlayer and its Library caller. No alternate player, new dependency, recorder/native changes, persistence or personal-media access.
+
+### Task 1: Fix the Library recording preview — existing issue #171
+**Priority:** no, explicit owner answer.
+**Labels:** bug, ui.
+**Milestone:** none.
+**Depends on:** none; #148 stays paused while this bounded bug is fixed.
+**Files:** src/components/showhow/VideoPlayer.tsx; src/components/library/RecordingLibrary.tsx only if diagnosis requires its sizing seam; src/components/showhow/VideoPlayer.test.tsx; new src/components/showhow/VideoPlayer.browser.test.tsx for actual layout; src/components/library/RecordingLibrary.test.tsx only if caller behavior changes; PLAN.md (append this plan); implementation-notes.md.
+**Requirements:** the bounded layout and playback behavior above.
+**Interfaces:** existing VideoPlayer props and Library media source/seek callbacks.
+**Constraints and reasons:** reproduce actual displayed image geometry before editing; source inspection alone is not RED. Use synthetic scratch media, preserve failed receipts, leave #170/#172/#148 source untouched. No credentials, .env files, private vault/screenshots or owner recordings. No OS permission changes.
+- [ ] Capture observed layout RED and BEFORE screenshot.
+- [ ] Smallest fix at the demonstrated shared seam.
+- [ ] Same actual geometry check GREEN and AFTER screenshot, plus playback/seek/source-switch regressions.
+- [ ] Packaged macOS proof, fresh independent Standards and Requirements review, one unmerged PR.
+**Verification:** targeted real-browser geometry tests with production CSS and synthetic clips; affected unit/browser suites, production/test TypeScript, Biome, branding and i18n when applicable. Build and test under project resource scheduling. Verify full-screen synthetic clip in explicitly bound packaged macOS app with isolated profile. Preserve source hashes; observe cleanup. Distinguish browser/source from packaged/native proof. The existing export recipe has pinned-tool restrictions; do not weaken its doctor or change tools/profiles automatically. A packaging proof blocker returns to coordinator.
+**DONE WHEN:** landscape/portrait/square browser geometry and playback checks pass; a full-screen synthetic recording fills its preview area in the packaged macOS app; controls stay reachable; fresh independent Standards/Requirements PASS and applicable current-head hosted CI pass on one review-ready PR. No agent merge.
+**Outside cases / follow-ups:** #170 logo, #172 launcher previews, #148 integrated acceptance, Linux packaging and Windows/Linux runtime.
+
+## Self-review
+Requirements and DONE WHEN use bounded named clips, sizes and controls; no unlimited promises.
+
+## Implementation notes
+Append deviations to implementation-notes.md. Widened source ownership requires coordinator/owner scope resolution before edits.

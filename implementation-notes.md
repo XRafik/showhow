@@ -1,5 +1,21 @@
 # Implementation notes
 
+## 22 October 2026 — Showhow #171 Library video preview sizing
+
+The Library caller fixed the player height at 240 px (340 px above 1100 px). At 800×600, that
+left a 452×182 px video box inside the 480 px player; at 1200×800, the box was 792×282 px inside
+an 820 px player. A 16:9 landscape clip consequently rendered only 324×182 px and 501×282 px.
+`object-contain` preserved the source ratio; the fixed player height limited the preview.
+
+The Library no longer supplies a fixed height. The shared player gives its video element a 16:9
+box, while `object-contain` keeps portrait and square clips inside it. The real-browser regression
+renders the Library with production CSS and synthetic landscape, portrait and square WebM clips,
+checks rendered geometry and control visibility at 800×600 and 1200×800, then exercises playback,
+seeking and source switching. At 800×600 the landscape preview fills 452×254 px and the control
+row ends at y=475; at 1200×800 it fills 792×446 px. BEFORE and AFTER screenshots, geometry and
+command receipts are private under `/Users/mohamedb/dev/loop-evidence/showhow-171/`. The lead owns
+packaged macOS proof and fresh independent review.
+
 ## 21 October 2026 — macOS CI package signature repair
 
 Direct owner-approved repair, separate from stopped #148. The lockfile pins app-builder-lib
