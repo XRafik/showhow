@@ -498,7 +498,6 @@ function RecordingDetail({
 						videoRef.current = video;
 					}}
 					onLoadedMetadata={applyPendingSeek}
-					className="h-[240px] min-[1100px]:h-[340px]"
 				/>
 			)}
 			{editorError && (
