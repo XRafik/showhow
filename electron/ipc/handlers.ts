@@ -3971,12 +3971,22 @@ export function registerIpcHandlers(
 		return listRecordings();
 	});
 
-	ipcMain.handle("showhow:copy-path", (_, bundleDir: unknown) => {
+	ipcMain.handle("showhow:copy-path", async (_, bundleDir: unknown) => {
 		if (typeof bundleDir !== "string") {
 			return { success: false };
 		}
 		const resolved = path.resolve(bundleDir);
-		if (!resolved.startsWith(`${SHOWHOW_RECORDINGS_ROOT}${path.sep}`)) {
+		let root: string;
+		let realBundleDir: string;
+		try {
+			[root, realBundleDir] = await Promise.all([
+				fs.realpath(SHOWHOW_RECORDINGS_ROOT),
+				fs.realpath(resolved),
+			]);
+		} catch {
+			return { success: false };
+		}
+		if (!realBundleDir.startsWith(`${root}${path.sep}`)) {
 			console.error("showhow:copy-path rejected path outside recordings root:", resolved);
 			return { success: false };
 		}

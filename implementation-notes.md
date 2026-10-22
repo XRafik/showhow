@@ -1403,3 +1403,27 @@ Final affected launcher115/115, browser2/2 and whole test TypeScript passed. Unc
 modules retain their full-suite proof; the two new visibility cases ran before and after the repair.
 Full lint/i18n/branding passed; final changed code also passed scoped Biome. See external `PROVE.md`
 for command receipts, source bindings, failure qualifications and owner-only limits.
+
+## 22 October 2026 — Showhow #174 Copy path
+
+The import pipeline returns canonical bundle paths while the Library list uses the configured root
+spelling. Under a symlinked root, `showhow:copy-path` rejected the canonical imported path because it
+compared it lexically against the configured root. The handler now
+resolves both root and bundle before enforcing containment, then copies the original absolute path.
+This also rejects an in-root symlink that escapes the recordings root. The renderer caller, preload,
+clipboard helper and `Copy for agent` remain unchanged.
+
+The registered-handler test failed 3/9 cases before the fix: imported and symlink-root bundles were
+rejected, and an escaping symlink was accepted. It passed 9/9 after the fix; the existing Library
+caller tests passed 7 cases. Full unit passed 4,940 tests (2 skipped), browser passed 25, test-project
+TypeScript passed, repository lint passed with 27 warnings, and `build-vite` passed. The lead owns
+native AFTER; the executor did not run native UI acceptance.
+
+Lead native proof used the production `build-vite` outputs with Electron 41.2.1 on macOS, private
+runtime paths and synthetic media. Actual COPY PATH clicks showed “Path copied”; real `pbpaste`
+matched exact `bundleDir` for a fresh bundle from `createRecordingBundle`, an imported MP4, and a
+canonical imported path under a symlinked root. Each read followed a synthetic sentinel write.
+Outside-root IPC returned `{success:false}` on both root layouts. The symlink-root AFTER run replaced
+only one native file selection with the exact committed synthetic MP4 path; import, Copy Path and
+clipboard stayed real. No installer, physical capture, provider or other-platform acceptance is claimed.
+Evidence: `/Users/mohamedb/dev/loop-evidence/showhow-174/PROVE.md`.
