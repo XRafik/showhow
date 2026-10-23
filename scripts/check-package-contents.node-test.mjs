@@ -171,12 +171,13 @@ test("a native addon packed inside ASAR fails", async (t) => {
 test("referenced recording tray and Showhow icons are allowed", async (t) => {
 	const { status, report } = await audit(t);
 	assert.equal(status, 0, JSON.stringify(report.failures));
-	assert.equal(report.referencedPublicImages["rec-button.png"].path, "dist/rec-button.png");
-	assert.ok(report.referencedPublicImages["rec-button.png"].size > 0);
+	assert.equal(report.referencedPublicImages["trayTemplate.png"].path, "dist/trayTemplate.png");
+	assert.ok(report.referencedPublicImages["trayTemplate.png"].size > 0);
+	assert.ok(report.referencedPublicImages["tray-recording@2x.png"].size > 0);
 	assert.ok(report.referencedPublicImages["showhow.png"].size > 0);
 });
 
-for (const missing of ["showhow.png", "rec-button.png"]) {
+for (const missing of ["showhow.png", "trayTemplate.png", "tray-recording.png"]) {
 	test(`missing runtime-referenced ${missing} fails the audit`, async (t) => {
 		const { status, report } = await audit(t, {
 			icons: fixture.icons.filter((icon) => icon !== missing),

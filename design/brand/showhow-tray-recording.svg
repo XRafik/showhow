@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 18" role="img" aria-labelledby="title">
+	<title id="title">Showhow menu bar icon while recording</title>
+	<defs>
+		<mask id="cursor">
+			<rect width="18" height="18" fill="#fff"/>
+			<path transform="translate(6.2 5.2) scale(0.2)" d="M0 0l31 22-13 1 7 13-7 4-7-14-11 8z" fill="#000"/>
+		</mask>
+	</defs>
+	<rect x="2" y="2" width="14" height="14" rx="2" fill="#E4572E" mask="url(#cursor)"/>
+</svg>

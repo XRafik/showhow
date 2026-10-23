@@ -79,6 +79,7 @@ import {
 	focusHudWindowWhenReady,
 	registerTrayActivationHandler,
 } from "./showhow/trayClick";
+import { type TrayIconSpec, trayIconSpecs } from "./showhow/trayIcon";
 import { offersStarPrompt, REPO_URL, storeReviewUrl } from "./star-prompt";
 import { registerSttIpc, shutdownStt } from "./stt";
 import { registerThemeIpc } from "./themeIpc";
@@ -182,11 +183,11 @@ let trayMenu: Menu | null = null;
 let hudWindow: BrowserWindow | null = null;
 let selectedSourceName = "";
 const isMac = process.platform === "darwin";
-const trayIconSize = isMac ? 16 : 24;
 
 // Tray Icons
-const defaultTrayIcon = getTrayIcon("showhow.png", trayIconSize);
-const recordingTrayIcon = getTrayIcon("rec-button.png", trayIconSize);
+const trayIcons = trayIconSpecs(process.platform);
+const defaultTrayIcon = getTrayIcon(trayIcons.idle);
+const recordingTrayIcon = getTrayIcon(trayIcons.recording);
 
 function createWindow() {
 	if (mainWindow && !mainWindow.isDestroyed()) {
@@ -515,14 +516,17 @@ function createTray() {
 	});
 }
 
-function getTrayIcon(filename: string, size: number) {
-	return nativeImage
-		.createFromPath(path.join(process.env.VITE_PUBLIC || RENDERER_DIST, filename))
-		.resize({
-			width: size,
-			height: size,
-			quality: "best",
-		});
+function getTrayIcon(spec: TrayIconSpec) {
+	// createFromPath also loads the @2x file beside it; resizing would drop that representation.
+	const image = nativeImage.createFromPath(
+		path.join(process.env.VITE_PUBLIC || RENDERER_DIST, spec.file),
+	);
+	const sized =
+		spec.size === null
+			? image
+			: image.resize({ width: spec.size, height: spec.size, quality: "best" });
+	sized.setTemplateImage(spec.template);
+	return sized;
 }
 
 let updateCheckInFlight = false;

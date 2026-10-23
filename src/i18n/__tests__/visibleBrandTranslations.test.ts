@@ -54,7 +54,11 @@ describe("visible Showhow translations", () => {
 		expect(fs.readFileSync(path.resolve("electron/about.ts"), "utf8")).toContain(
 			'PRODUCT_NAME = "Showhow"',
 		);
-		expect(electronMain).toContain('getTrayIcon("showhow.png"');
+		// Tray icons are chosen in showhow/trayIcon.ts; the non-macOS idle icon is the Showhow mark.
+		expect(electronMain).toContain("trayIconSpecs(process.platform)");
+		expect(fs.readFileSync(path.resolve("electron/showhow/trayIcon.ts"), "utf8")).toContain(
+			'file: "showhow.png"',
+		);
 		expect(electronMain).not.toMatch(/OpenScreen|openscreen\.png/);
 		expect(electronHandlers).toContain("`showhow-diagnostic-${Date.now()}.json`");
 		expect(electronHandlers).not.toContain("`openscreen-diagnostic-${Date.now()}.json`");

@@ -56,5 +56,11 @@
 		"thumbs/wallpaper17.jpg",
 		"thumbs/wallpaper18.jpg"
 	],
-	"icons": ["showhow.png", "rec-button.png"]
+	"icons": [
+		"showhow.png",
+		"trayTemplate.png",
+		"trayTemplate@2x.png",
+		"tray-recording.png",
+		"tray-recording@2x.png"
+	]
 }
