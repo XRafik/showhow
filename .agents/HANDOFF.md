@@ -1,6 +1,6 @@
 # Project handoff
 
-Updated: 2026-10-20
+Updated: 2026-10-23
 
 ## In flight
 
@@ -12,7 +12,7 @@ Updated: 2026-10-20
   - **#145 HUD and recording sheets:** PR #164, head `5b871349`, merge `6d4b9876`.
   - **#146 Editor shell, inspector and timeline:** PR #165, head `f2d3443e`, merge `44fcd1a4`.
   - **#147 Editor assistant, export and dialogs:** PR #166, head `4402d254`, merge `cba41f83`. Owner decisions are in `.agents/decisions.md` (2026-10-19): agent edits auto-apply, with an "Applied · N changes" card and a guarded Undo (Editor-02 is not built); export is the inspector's share panel with a rendering sheet; the Guide format is left out; MP4 Cancel is disabled with its reason. Two fresh reviews: round 1 failed on keyboard focus in the export sheet, which was fixed; round 2 passed with no blocking findings.
-  - **Remaining: #148 integrated acceptance** ("T10: Verify the implemented Final design journey"), open and undispatched.
+  - **#148 integrated acceptance:** current candidate `e1fab9047b6cd7c797a9ade025749d4c9cfa4d3e`, branch `ticket/148-final-design-acceptance`, fresh executor w79:p3 on 2026-10-23. The old `498151af` package/tool STOP is HISTORICAL. Documentation reconciles all 49 frames against current source; Journey A retains the explicit supervisor-approved owner-owed source-selection limitation, with dependent completed-take/#175 rows unverified. The candidate is ready for one fresh independent review, then a conventional documentation PR if passed. Failed-review count 0, no verdict. Current receipts are under `~/dev/loop-evidence/showhow-148/`; supervisor alone merges.
   - Issues are closed. Evidence: `~/dev/loop-evidence/showhow-{142,143,144,145,146,147}/`.
 - **#147 follow-ups, not yet fixed** (non-blocking, listed under Follow-ups in PR #166). A proposed session card, "Harden #147 export and Undo edge cases", covers 1-3; it starts only when the owner starts it.
   1. The native File menu (Cmd/Ctrl+N, Cmd/Ctrl+O) or switching to a screen-recording project can unmount the export panel mid-render and orphan the job.
@@ -38,7 +38,7 @@ The move onto upstream v2 is shaped and published: milestone "Move onto upstream
 
 ## Next action
 
-Dispatch #148 (integrated acceptance of the Final design journey) as one ticket and one PR. Use the Herdr Codex lane after the Codex limit resets on 24 Oct, or the single-session route if the owner asks. Before or alongside it, the owner may start the proposed "Harden #147 export and Undo edge cases" session.
+The approved replacement pass is complete for this seat: w79:p3 used the exact private Electron runtime and documented native CUA, retained all earlier failures, and reconciled the three owned docs to e1fab904. Journey B, fixture-backed guide failure/Retry, import cancel, validated brief/copy through a private clipboard adapter, real GIF cancellation and independent 2-second GIF decode, independent 2-second MP4 decode, writable 2-page PDF decode, editor Undo, keyboard focus movement, and app-only Light→Dark pixel propagation are observed. Journey A remains blocked at corrected safe source selection: the exact readonly Alpha/Beta/Gamma TextEdit fixture was bound by unique file URL, all three helper/addon overrides were active, capture controls were OFF, but the selector never exposed that exact target and no safe Record/Stop action became available. Per supervisor authority this is an accepted owner-owed limitation; a missing Screen Recording grant is hypothesis only. Dependent completed-take/#175 rows, owner clipboard/provider, reduced-motion, reference, and minimum-size remain unverified. The fixture was closed normally with its hash unchanged; the private Showhow tree was empty after normal Quit. Next: lead performs one fresh independent review, then the conventional documentation PR if passed. No native/CUA retry, tool change, product fix, staging, commit, push or merge.
 
 Owed native checks:
 - The isolated GIF verification recipe (`docs/testing/verification-recipe.md`) for #146 and #147. Its doctor pins Codex 0.160.0/0.162.1 and this machine has 0.163.0. Do not "fix" it by changing tools.
@@ -68,6 +68,10 @@ Keep #128 parked and the #134 worktree intact for pen.dev cache safety.
 - A permanent sidebar dither floor. Mosaic dither appears only where content is not real yet.
 
 ## Test state
+
+CURRENT 2026-10-23, #148 candidate `e1fab904`: frozen renderer/main/preload build binding PASS, 308/308 outputs, no rerun. Platform is macOS 26.6.2 build 25G83 arm64 (`PLATFORM-METADATA-20261023.json`). Helper/addon files exist and are hash-bound; external child-launch overrides correct the private `app.getAppPath()` discovery root. Journey B is the actual MP4 import → Library → editor path; Import Cancel returns unchanged Library; editor trim → Undo is observed; fixture fake-provider guide failure → Retry and actual validated #142 brief shape → native Copy for agent/Copy path through a private clipboard adapter are observed. Final unique-path outputs independently decode as PDF 2 pages, GIF 608×480/15 FPS/30 frames/2 s, and MP4 H.264/AAC 608×480/24 FPS/2 s; real GIF Cancel returned to the export sheet with no cancelled output. Journey A remains blocked: the exact readonly Alpha/Beta/Gamma TextEdit file was verified by AX/file URL, but native source selection did not expose that exact target, so Record/countdown, harmless click/selection, Stop/save-to-Library and all later guide/edit-step/brief/PDF/editor/export/return substeps are unverified as Journey A; separate fixtures are not substitutes. Per supervisor authority this is owner-owed and no retry is authorized. App-only Light→Dark pixel propagation and Tab focus movement were observed; reduced motion, reference/minimum, owner provider/clipboard, and #175 remain unverified. Carried followups are individually explicit: #175 completed take → last-window tray switch/countdown/window-all-closed without background harness unverified/blocked; #179 Trash-cancel focus for each Library/editor entry and context-menu opening/movement/activation/Escape/focus return unverified; #180 folder-sheet close/cancel → Recording CHANGE button focus unverified; #180 moveFile EXDEV copy/delete is source risk with runtime unverified and supervisor-owned filing; #181 delayed initial list → newer NAMING/title ordering unverified. Exact fixture hash and private-root cleanup receipts are under `~/dev/loop-evidence/showhow-148/`; the fixture hash was unchanged and no private Showhow processes remained after normal Quit. No current review or CI run; failed-review count 0; no broad suite or product/harness change.
+
+HISTORICAL 2026-10-21 baseline `498151af`: the package/tool STOP, exact-base DMG observations, recipe/tool mismatch, hosted build results and incomplete pre-launch cleanup remain below as retained evidence only; they do not describe the current candidate.
 
 2026-10-20, #147 at `4402d254`, each command run locally:
 - `npx tsc --noEmit` and `npx tsc -p tsconfig.test.json --noEmit`: exit 0.
@@ -104,8 +108,28 @@ No tests were rerun for this handoff. Historical: the #122 real-key macOS smoke 
 
 ## Cloud blockers
 
-None. Native macOS acceptance stays manual.
+Historical #148 package/tool STOP is superseded by the 23 October supervisor-approved alternate route. Current Journey A limitation is owner-owed under `SUPERVISOR-JOURNEY-A-LIMIT-APPROVAL.txt`; do not rerun native/CUA/source selection, doctor or tools. Preserve `STOP.md` and all failed receipts. One fresh review then a conventional documentation PR is authorized; owner-only provider/clipboard and permission changes remain separate.
 
+### HISTORICAL pre-override checkpoint — #148 w79:p3 — 2026-10-23
+
+Fresh native CUA replacement is working and is bound only to the exact Electron.app path in the external checkpoint. The ambiguous `com.bedarstudios.showhow` bundle lookup was rejected. Helper presence was checked; the approved heavy macOS native helper build exited 0 and its exact hashes are in the external receipts.
+
+Historical pre-override observations: repository MP4 import → Library → editor, trim → Undo, no-credential connection sheet, and app-only Appearance/Recording settings were seen. The first synthetic-title attempt was absent from the 14-window selector and was cancelled without choosing an owner window; export was only opened in that run. This checkpoint is superseded by the later current continuation below; its failed records remain external and unchanged.
+
+
+### HISTORICAL pre-override #148 continuation — 2026-10-23 — w79:p3
+
+The source selector later showed the unique visible synthetic target `Showhow 148 Visible Synthetic Target 20261023`; AX confirmed system audio, microphone, and camera OFF before the recording attempt. The app reported `Native macOS capture helper is not available.` No recording, click-only guide, or Journey A completion is claimed. Picker images were returned transiently by CUA, but no picker or owner frame was exported into ticket evidence; no owner window was used and no #175 last-window/tray/all-closed assertion was run. A later external child-launch override receipt binds the helpers/addon to worktree files; the earlier private-root discovery failure remains harness-path-limited, while this run's native availability failure remains unpromoted.
+
+The seeded #142 fixture independently proved the actual PDF readonly-destination failure after prior bytes were seeded at the real PDF path: the app said the recording was unchanged and the prior-byte SHA-256 remained `24f89a977970dff5f7ae39ae4e0f3bc0fc148fa10711e067d1cb4bb016946041`. The real GIF editor route reached native export but reported the compositor cancellation unavailable; no GIF/export-cancel pass is claimed. The helper's save override is filter-scoped so the readonly PDF path cannot contaminate writable GIF/video outputs; this run logged the PDF call only.
+
+Six exact safe owned-app JPEGs were extracted from retained native CUA output without a new capture or image edit: `native-artifacts-20261023/01-safe-library.jpg` through `06-safe-recording-settings.jpg`. Their manifest and lead assertions are `native-artifacts-20261023/NATIVE-CUA-IMAGE-EXTRACTION.json` and `native-artifacts-20261023/LEAD-IMAGE-ASSERTIONS.md`. They do not replace 1200px/light/current-loaded-addon/minimum proof. Picker images existed transiently in tool output, but no picker or ambiguous-owner frame was exported into ticket evidence. Detailed receipts, source hashes, helper hashes, exact PID tree and cleanup are external under `~/dev/loop-evidence/showhow-148/`. The three approved repository docs are the only dirty paths; no product or harness source was changed.
+
+### HISTORICAL intermediate #148 corrected native continuation — 2026-10-23 — w79:p3
+
+The private child launch explicitly bound the existing worktree ScreenCaptureKit helper, cursor helper, and compositor addon by absolute path; their hashes and the Node 22 addon export probe are in `NATIVE-CONTINUATION-20261023.md`. The earlier private-root discovery failures remain harness-path-limited. The exact Electron executable was used; no ambiguous Showhow bundle, owner window, permission, or clipboard interaction was used.
+
+This intermediate record is superseded by the later corrected addon outputs and final TextEdit-host source-selection receipt below. Import Cancel, real GIF Cancel, separate decoded GIF/MP4/PDF outputs, keyboard focus and app-only theme propagation are current in the later receipts; the old zero-byte GIF and ret-22 attempt remain preserved historical failures. Journey A still has no take, and no #175 observation was run. No source, build, or tool change.
 
 ### Session close-out: design delivery and bug #124 - 2026-10-19
 

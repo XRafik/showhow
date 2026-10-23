@@ -1776,3 +1776,78 @@ the untracked audit also passed `git diff --no-index --check` with no diagnostic
 expected result for a non-empty new file). No review was requested or run; failed review count
 remains 0. #179 and #180 are merged in this base; their #148 external E2E notes and #147 handoff
 records remain separate and unchanged.
+
+## HISTORICAL — 21 October 2026 — Showhow #148 documentation Build reconciliation
+
+Approved documentation/evidence scope only: `docs/testing/final-design-acceptance.md`, retained
+`.agents/HANDOFF.md` sections and this append. No product, harness or E2E changes; no staging,
+commit, push or reviewer launch. BEFORE snapshots and the clean base/index/status/diffs are under
+`~/dev/loop-evidence/showhow-148/build-20261021/`. Base: `498151aff667636aede63c6a3f92f0f1ea454f35`.
+
+Build decisions: map 49 named states to literal current source lines and manifest frame IDs/PNGs;
+keep every current integrated outcome untested/blocked; preserve all predecessor receipts as
+historical. SHA256 compares complete ticket base→reviewed source/test ranges against this base,
+with individual paths and raw git command receipts external. No old binary is asserted equal to
+the exact-base DMG. All 50 design PNG hashes match their manifest; HUD-06 remains excluded.
+Library's historical 800×600 evidence and Editor's separately established 800×600 minimum are
+identified individually; neither establishes HUD geometry or fresh integrated reachability.
+
+### Deviations and missing proof — #148
+
+- No new behaviour means no invented RED/GREEN or code test. Bounded documentation consistency,
+  source-anchor/link/hash and diff checks replace redundant broad suites for this Build pass.
+- Lead installed locked dependencies only for the packaged helper. Its exact-base DMG attempt
+  failed before the inspector endpoint, exit 1, no returned app or native UI evidence; cause
+  unknown and inspector fuse enabled. Do not retry or modify tools/profile/doctor/product.
+- Fresh recipe doctor failed solely Codex 0.163.0 versus accepted 0.160.0/0.162.1 (missing=[]),
+  exit 1 before launch. Its cleanup PASS is pre-launch only, not native shutdown proof.
+- Lead's unchanged sample.webm hashes and source-only VP9 decode do not prove either journey or
+  exported media. Executable absence and clean DMG detach do not prove a complete tracked PID
+  tree or unchanged-after archive hash. Exact-base Mac/Windows jobs passed but Linux failed and
+  Publish was skipped; whole build red, no current documentation-candidate CI.
+- Both integrated journeys, four recoveries, theme/keyboard/reduced-motion/reference comparisons,
+  exported PDF/video decode, journey fixture hashes and complete native cleanup remain blocked.
+  Detailed evidence and bounded follow-ups are in the acceptance document and external
+  `LEAD-PROOF.md`, `STOP.md`, `BUILD-RETURN.md`. No READY or PR; Standards/Requirements no verdict,
+  failed-review count 0. Coordinator clearance precedes any resumed Prove or review.
+- Owner-approved unavailable capabilities remain explicit: Editor-02 review-before-apply,
+  Guide export, MP4 cancel, unsupported Settings fields and parked ChatGPT/MCP. #145 STOP
+  contrast is still an owner decision, not an exception approved by this reconciliation.
+
+The first external draft generator stopped on a nonexistent function-name anchor before writing
+repository files. That failed check is retained externally; corrected literal anchors resolve.
+No product failure or native acceptance is inferred from this documentation check.
+
+## HISTORICAL pre-override — 23 October 2026 — Showhow #148 fresh native checkpoint (w79:p3)
+
+The supervisor-approved replacement seat successfully initialized native CUA and used only the
+exact Electron.app executable under the fresh isolated runtime. The ambiguous bundle-id lookup was
+rejected. Helper presence was checked and the approved heavy macOS native helper build exited 0;
+helper and launch receipts are external under `~/dev/loop-evidence/showhow-148/`.
+
+The bounded native observations are retained in `NATIVE-CHECKPOINT-20261023.md`: repository MP4
+import through Library, Library-card open into editor, reversible trim and Undo, no-credential guide
+failure and Cancel recovery, and app-only Settings Appearance/Recording observations. The source
+fixture and imported proof video match SHA-256
+`ddddd9d1df19c56772e1f6d4074e2740e1e43a109a25277d9e7d969c317fadf6`. A dedicated harmless browser
+page was created, but its exact title did not appear in Showhow's 14-window source selector; no
+owner window was selected and no recording was fabricated. Export was only opened. PDF/video
+outputs and importcancel/PDFwritefailure/exportcancel remain unverified. Exact owned PID birth-time
+cleanup is recorded externally. No product, test, harness, or configuration source changed.
+
+## CURRENT — 23 October 2026 — w79:p3 native continuation
+
+Keep the native result split by seam. The external bootstrap used the inherited #142 fixture and fake provider only; it is not a completed take or Journey A. The exact visible synthetic window was present in the source selector, with system audio/microphone/camera all OFF by AX state, but recording stopped at the runtime notification `Native macOS capture helper is not available.` The external bootstrap now records child-launch overrides for the exact worktree helper/addon files because the private `app.getAppPath()` discovery root hid them; old path-limited failures remain retained and are not product failures.
+
+The corrected continuation preserved the actual `pdfPath` seed unchanged. The final external seam selected extensions from native filters/defaultPath and allocated unique private paths per call. A final writable PDF produced a 2-page decoded artifact; a separate 2-second GIF produced a 608×480/15 FPS/30-frame decoded artifact; and a separate 2-second Source/24 FPS MP4 produced decoded H.264/AAC output. Real GIF Cancel returned to the export sheet and left no cancelled output. The earlier MP4/GIF path contamination and `write_header a échoué (ret=-22)` remain retained failures and are not relabelled.
+
+The final fake-provider run used the validated #142 brief response shape separately from the guide JSON. The native brief rendered its requested/observed/expected/actual/evidence/unknowns fields; Copy for agent and Copy path returned their success UI through an external private clipboard-write log installed before production imports. This proves requested payload/control behaviour only; no owner clipboard/provider acceptance is claimed and the real OS clipboard was not touched.
+
+The final corrected take attempt used all three absolute native helper/addon overrides and verified system audio, microphone and camera OFF. A new readonly exact TextEdit fixture was launched only through `/usr/bin/open -a /System/Applications/TextEdit.app`; AX verified its unique `file:///` URL and Alpha/Beta/Gamma-only contents before any further CUA action. The native selector still did not expose that exact TextEdit target to the owned HUD, so no Record/Stop action was issued because selecting the desktop would risk private capture. This is the current concrete source-selection barrier, not the older pre-override helper-unavailable notification or the earlier Showhow-owned helper-window seam. The private helper window was closed by exact title. App-only Light→Dark propagation and `Tab` focus movement were observed. The exact fixture was closed normally, its hash remained unchanged, and the private Showhow root was empty after normal Quit; raw receipts are under `final-textedit-*`. Per current supervisor authority, no further native/CUA/source-chooser retry is authorized; the limitation is owner-owed, and a missing Screen Recording grant is hypothesis only. Dependent completed-take/#175 rows remain unverified.
+Journey A substeps after source selection—Record/countdown, harmless source click/selection, Stop/save-to-Library, guide, edit-step, brief/copy, PDF, editor edit/Undo, video export and return to Library—remain unverified as one named chain because the take never existed. The seeded fixture observations in the native receipts are separate and are not promoted into Journey A. Carried followups are preserved individually from their exact receipts: #175 completed take → last-window tray switch, countdown and window-all-closed without background harness is UNVERIFIED/BLOCKED; #179 Trash-cancel focus for each Library/editor entry point and context-menu opening, movement, activation, Escape and focus return are UNVERIFIED; #180 folder-sheet close/cancel → Recording CHANGE button focus is UNVERIFIED; #180 moveFile EXDEV copy/delete verification is SOURCE RISK with runtime UNVERIFIED and supervisor-owned filing; #181 delayed initial list → newer NAMING/title ordering is UNVERIFIED.
+
+Six exact safe owned-app JPEGs were extracted from retained native CUA output without a new capture or image edit: `native-artifacts-20261023/01-safe-library.jpg` through `06-safe-recording-settings.jpg`. The manifest `native-artifacts-20261023/NATIVE-CUA-IMAGE-EXTRACTION.json` binds call IDs, timestamps, arguments, source-prefix hash and image hashes; `LEAD-IMAGE-ASSERTIONS.md` records only narrow visual observations. They do not replace 1200px/light/current-loaded-addon/minimum proof. Picker images were returned transiently in tool output, but no picker or ambiguous-owner frame was exported into ticket evidence. App-only Light then Dark propagation was observed in owned Library/sidebar and Settings pixels; keyboard labels, reduced-motion, reference and minimum remain unverified. Exact source/runtime hashes and child-PID birth-time cleanup are in the external #148 receipts.
+
+## HISTORICAL authorisation record — 23 October 2026 — #148 resume and documentation refresh
+
+Supervisor DISPATCH.txt / SUPERVISOR-RESUME-AUTHORITY.txt supersede the old package/tool STOP for a fresh-build native Computer Use route, without tool changes. Frozen three-file hashes matched archive/live. Retained stash ff4b6aa336c721d2ea63b9dc1484e0580658d8c0; same branch fast-forwarded to e1fab9047b6cd7c797a9ade025749d4c9cfa4d3e. Original archive and all failed receipts retained. This authorisation record is historical; the current w79:p3 result and documentation state are in the CURRENT sections above and in the current external snapshot/return receipts.
