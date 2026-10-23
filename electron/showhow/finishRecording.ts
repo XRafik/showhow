@@ -11,6 +11,7 @@ export async function finishShowhowRecording(
 	session: RecordingSession,
 	durationMs?: number,
 	stepCaptureReason?: StepCaptureReason,
+	onTranscriptReady?: (bundleDir: string) => void | Promise<void>,
 ): Promise<RecordingSession> {
 	const recordingsRoot = getRecordingsRoot();
 	try {
@@ -28,7 +29,7 @@ export async function finishShowhowRecording(
 			.catch((error: NodeJS.ErrnoException) => {
 				if (error.code !== "EEXIST") throw error;
 			});
-		void requestBundleTranscript(bundle.bundleDir, bundle.screenVideoPath);
+		void requestBundleTranscript(bundle.bundleDir, bundle.screenVideoPath, onTranscriptReady);
 		return {
 			...session,
 			...bundle,

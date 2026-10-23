@@ -9,13 +9,18 @@ const jobs = new Map<string, Promise<void>>();
 let queue = Promise.resolve();
 
 /** Main-process job: survives renderer transitions and never holds up saving valid media. */
-export function requestBundleTranscript(bundleDir: string, sourcePath: string): Promise<void> {
+export function requestBundleTranscript(
+	bundleDir: string,
+	sourcePath: string,
+	onTranscriptReady?: (bundleDir: string) => void | Promise<void>,
+): Promise<void> {
 	const active = jobs.get(bundleDir);
 	if (active) return active;
 	const job = queue
 		.then(async () => {
 			const manager = new SttManager();
 			let content = "(transcription failed)\n";
+			let transcriptReady = false;
 			try {
 				await manager.init({
 					bundledModelsDir: path.join(
@@ -25,6 +30,7 @@ export function requestBundleTranscript(bundleDir: string, sourcePath: string): 
 				});
 				const result = await manager.transcribe({ sourcePath });
 				content = formatTranscript(result.segments);
+				transcriptReady = true;
 			} catch (error) {
 				console.error("Showhow native transcript generation failed:", error);
 			} finally {
@@ -35,7 +41,12 @@ export function requestBundleTranscript(bundleDir: string, sourcePath: string): 
 					);
 			}
 			await fs.writeFile(path.join(bundleDir, "transcript.txt"), content, "utf8");
-			await regenerateDocArtifacts(bundleDir);
+			try {
+				await regenerateDocArtifacts(bundleDir);
+			} catch (error) {
+				console.error("Showhow transcript doc regeneration failed:", error);
+			}
+			if (transcriptReady) await onTranscriptReady?.(bundleDir);
 		})
 		.catch((error: unknown) => {
 			console.error("Showhow transcript job failed; keeping valid recording:", error);

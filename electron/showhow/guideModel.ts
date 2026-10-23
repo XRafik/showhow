@@ -1,7 +1,7 @@
 import { DEFAULT_GUIDE_MODEL } from "../../src/lib/showhow/aiGuide";
 import type { GuideMessage } from "./aiGuide";
 
-export type StructuredPayload = "guide" | "brief";
+export type StructuredPayload = "guide" | "brief" | "title";
 export type StructuredModel = (messages: GuideMessage[], signal?: AbortSignal) => Promise<string>;
 
 export const GUIDE_SCHEMA = {
@@ -23,6 +23,17 @@ export const GUIDE_SCHEMA = {
 		},
 	},
 	required: ["title", "steps"],
+	additionalProperties: false,
+};
+
+export const RECORDING_TITLE_SCHEMA = {
+	title: "ShowhowRecordingTitle",
+	type: "object",
+	properties: {
+		title: { type: "string", maxLength: 60 },
+		summary: { type: "string", maxLength: 140 },
+	},
+	required: ["title", "summary"],
 	additionalProperties: false,
 };
 
@@ -79,7 +90,11 @@ export function createStructuredModelFactory<Message>(deps: {
 	): Promise<StructuredModel> => {
 		const chat = await deps.loadChat(apiKey, model);
 		const structured = chat.withStructuredOutput(
-			payload === "brief" ? AGENT_BRIEF_SCHEMA : GUIDE_SCHEMA,
+			payload === "brief"
+				? AGENT_BRIEF_SCHEMA
+				: payload === "title"
+					? RECORDING_TITLE_SCHEMA
+					: GUIDE_SCHEMA,
 			{ method: "jsonSchema" },
 		);
 		return async (messages, signal) =>

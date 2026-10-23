@@ -14,7 +14,7 @@ import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { BUNDLED_TRANSCRIPTION } from "../../src/lib/showhow/settings";
 import { BUNDLED_STT_FILES } from "../stt/modelManager";
-import { getRecordingsRoot } from "./bundle";
+import { getRecordingsRoot, saveNameRecordingsWithAi, saveRecordingsRoot } from "./bundle";
 import { listRecordings } from "./recordingLibrary";
 import { registerShowhowSettingsHandlers } from "./settings";
 
@@ -40,7 +40,38 @@ describe("Showhow settings info", () => {
 		});
 		expect(await handlers.get("showhow:settings-info")!()).toEqual({
 			recordingsFolder: "~/Showhow/Recordings",
+			nameRecordingsWithAi: true,
 		});
+	});
+
+	it("persists the name-recordings preference through its IPC handler", async () => {
+		const home = await mkdtemp(path.join(os.tmpdir(), "showhow-settings-title-pref-"));
+		const settingsFile = path.join(home, "showhow-settings.json");
+		const handlers = new Map<string, (...args: unknown[]) => Promise<unknown>>();
+		try {
+			await writeFile(
+				settingsFile,
+				JSON.stringify({ recordingsRoot: path.join(home, "Recordings") }),
+			);
+			registerShowhowSettingsHandlers({
+				handle: (channel, handler) => handlers.set(channel, handler),
+				recordingsRoot: path.join(home, "Recordings"),
+				homeDir: home,
+				settingsFile,
+			});
+			expect(await handlers.get("showhow:set-name-recordings-with-ai")?.(undefined, false)).toEqual(
+				{
+					success: true,
+					nameRecordingsWithAi: false,
+				},
+			);
+			expect(JSON.parse(await readFile(settingsFile, "utf8")).nameRecordingsWithAi).toBe(false);
+			expect(await handlers.get("showhow:settings-info")?.()).toMatchObject({
+				nameRecordingsWithAi: false,
+			});
+		} finally {
+			await rm(home, { recursive: true, force: true });
+		}
 	});
 
 	it("reports the persisted recordings folder on the next app start", async () => {
@@ -61,9 +92,29 @@ describe("Showhow settings info", () => {
 
 			expect(await handlers.get("showhow:settings-info")!()).toEqual({
 				recordingsFolder: "~/Client work",
+				nameRecordingsWithAi: true,
 			});
 		} finally {
 			await rm(userData, { recursive: true, force: true });
+		}
+	});
+
+	it("preserves the folder and AI naming toggle during concurrent settings patches", async () => {
+		const home = await mkdtemp(path.join(os.tmpdir(), "showhow-settings-concurrent-"));
+		const settingsFile = path.join(home, "showhow-settings.json");
+		const recordingsRoot = path.join(home, "Client work");
+		await writeFile(settingsFile, JSON.stringify({ recordingsRoot: path.join(home, "Old") }));
+		try {
+			await Promise.all([
+				saveRecordingsRoot(recordingsRoot, settingsFile),
+				saveNameRecordingsWithAi(false, settingsFile),
+			]);
+			expect(JSON.parse(await readFile(settingsFile, "utf8"))).toMatchObject({
+				recordingsRoot,
+				nameRecordingsWithAi: false,
+			});
+		} finally {
+			await rm(home, { recursive: true, force: true });
 		}
 	});
 

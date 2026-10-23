@@ -27,15 +27,20 @@ import { GuideStep, Mosaic } from "@/components/showhow/GuideStep";
 import { ImportVideoSheet } from "@/components/showhow/ImportVideoSheet";
 import { LibraryRow } from "@/components/showhow/LibraryRow";
 import { MoveRecordingToTrashSheet } from "@/components/showhow/MoveRecordingToTrashSheet";
+import { NamingProgressStrip } from "@/components/showhow/NamingProgressStrip";
 import { Progress } from "@/components/showhow/Progress";
 import { SettingsView } from "@/components/showhow/SettingsView";
 import { Shell } from "@/components/showhow/Shell";
 import { Sidebar } from "@/components/showhow/Sidebar";
+import { SwapText } from "@/components/showhow/SwapText";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/showhow/Tabs";
 import { Tag } from "@/components/showhow/Tag";
 import { VideoPlayer } from "@/components/showhow/VideoPlayer";
 import { useScopedT } from "@/contexts/I18nContext";
-import type { RecordingLibraryEntry } from "@/lib/showhow/recordingLibrary";
+import type {
+	RecordingLibraryEntry,
+	RecordingTitleStatusEvent,
+} from "@/lib/showhow/recordingLibrary";
 import type { WorkflowDocumentUpdate } from "@/lib/showhow/workflowDocument";
 import { isMac } from "@/utils/platformUtils";
 import { filterRecordings } from "./library-search";
@@ -462,7 +467,10 @@ function RecordingDetail({
 				) : (
 					<>
 						<h1 className="min-w-0 flex-1 break-words font-ds-display text-[32px] font-semibold leading-[1.15] tracking-[-0.64px]">
-							{entry.title}
+							<SwapText
+								value={entry.title}
+								className={`transition-opacity duration-300 ${entry.titleStatus === "naming" ? "opacity-40" : "opacity-100"}`}
+							/>
 						</h1>
 						<div className="flex flex-wrap gap-2">
 							{entry.video && (
@@ -534,6 +542,19 @@ function RecordingDetail({
 				· {entry.durationMs !== undefined && `${formatDuration(entry.durationMs)} · `}
 				{formatWhen(entry.createdAt)}
 			</p>
+			{entry.titleStatus === "naming" ? (
+				<div
+					aria-hidden="true"
+					className="mb-5 h-[12px] w-[360px] max-w-full animate-pulse rounded-[3px] bg-ds-line motion-reduce:animate-none"
+				/>
+			) : entry.summary ? (
+				<p
+					key={entry.summary}
+					className="mb-5 max-w-[640px] line-clamp-2 animate-in fade-in slide-in-from-bottom-1 [animation-duration:240ms] [animation-timing-function:cubic-bezier(0.23,1,0.32,1)] font-ds-body text-[14px] leading-[1.5] text-ds-ink-soft motion-reduce:animate-none"
+				>
+					{entry.summary}
+				</p>
+			) : null}
 			{videoSrc && (
 				<VideoPlayer
 					src={videoSrc}
@@ -820,6 +841,21 @@ export function RecordingLibrary() {
 			loadRequest.current += 1;
 		};
 	}, [reloadRecordings]);
+	useEffect(() => {
+		return window.electronAPI.showhowOnRecordingTitleStatus?.(
+			(event: RecordingTitleStatusEvent) => {
+				setEntries((current) =>
+					current.map((entry) => {
+						if (entry.bundleDir !== event.bundleDir) return entry;
+						if (event.status === "naming") return { ...entry, titleStatus: "naming" };
+						if (event.entry) return event.entry;
+						const { titleStatus: _titleStatus, ...settled } = entry;
+						return settled;
+					}),
+				);
+			},
+		);
+	}, []);
 	const restoreRecording = useCallback(
 		async (undoToken: string) => {
 			try {
@@ -1028,19 +1064,29 @@ export function RecordingLibrary() {
 								title={entry.title}
 								meta={`${entry.source === "imported" ? t("importVideo.imported") : entry.source === "browser" ? "Browser" : "Desktop"}${entry.durationMs === undefined ? "" : ` · ${formatDuration(entry.durationMs)}`}`}
 								trailing={
-									<Tag
-										variant={
-											entry.guideStatus === "ready"
-												? "accent"
-												: entry.guideStatus === "failed"
-													? "failed"
-													: "neutral"
-										}
-									>
-										{t(`showhowLibrary.${entry.guideStatus ?? "none"}`)}
-									</Tag>
+									entry.titleStatus === "naming" ? (
+										<Tag variant="progress">{t("showhowLibrary.naming")}</Tag>
+									) : (
+										<Tag
+											variant={
+												entry.guideStatus === "ready"
+													? "accent"
+													: entry.guideStatus === "failed"
+														? "failed"
+														: "neutral"
+											}
+										>
+											{t(`showhowLibrary.${entry.guideStatus ?? "none"}`)}
+										</Tag>
+									)
 								}
-								processing={entry.guideStatus === "making" ? <Mosaic /> : undefined}
+								processing={
+									entry.titleStatus === "naming" ? (
+										<NamingProgressStrip />
+									) : entry.guideStatus === "making" ? (
+										<Mosaic />
+									) : undefined
+								}
 								onContextMenu={
 									mac
 										? (event) => {

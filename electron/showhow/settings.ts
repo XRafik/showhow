@@ -2,7 +2,12 @@ import { randomUUID } from "node:crypto";
 import { promises as fs, realpathSync } from "node:fs";
 import path from "node:path";
 import type { ShowhowSettingsInfo } from "../../src/lib/showhow/settings";
-import { getRecordingsRoot, saveRecordingsRoot } from "./bundle";
+import {
+	getNameRecordingsWithAi,
+	getRecordingsRoot,
+	saveNameRecordingsWithAi,
+	saveRecordingsRoot,
+} from "./bundle";
 import { moveRecordings, type RecordingMoveProgress } from "./moveRecordings";
 import { listRecordings } from "./recordingLibrary";
 
@@ -40,6 +45,7 @@ export function registerShowhowSettingsHandlers(deps: {
 	recordingsRoot: string | (() => string);
 	homeDir: string;
 	settingsFile?: string;
+	nameRecordingsWithAi?: () => boolean;
 	chooseFolder?: (defaultPath: string) => Promise<string | null>;
 	onMoveProgress?: (event: unknown, progress: RecordingMoveProgress) => void;
 }) {
@@ -56,7 +62,18 @@ export function registerShowhowSettingsHandlers(deps: {
 		const home = path.resolve(deps.homeDir);
 		return {
 			recordingsFolder: displayFolder(root, home),
+			nameRecordingsWithAi:
+				deps.nameRecordingsWithAi?.() ?? getNameRecordingsWithAi(deps.settingsFile),
 		};
+	});
+	deps.handle("showhow:set-name-recordings-with-ai", async (_event, enabled) => {
+		if (typeof enabled !== "boolean") return { success: false };
+		try {
+			await saveNameRecordingsWithAi(enabled, deps.settingsFile);
+			return { success: true, nameRecordingsWithAi: enabled };
+		} catch {
+			return { success: false };
+		}
 	});
 
 	if (deps.chooseFolder) {

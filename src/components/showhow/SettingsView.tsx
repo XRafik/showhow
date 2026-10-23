@@ -147,19 +147,42 @@ function SettingLine({
 function Connections() {
 	const t = useScopedT("common");
 	const [connected, setConnected] = useState<boolean>();
+	const [namingEnabled, setNamingEnabled] = useState<boolean>();
+	const [namingSaving, setNamingSaving] = useState(false);
+	const [namingError, setNamingError] = useState(false);
 	const [error, setError] = useState(false);
 	const [editing, setEditing] = useState(false);
 	const active = useRef(true);
 	const refresh = useCallback(async () => {
 		try {
-			const status = await window.electronAPI.showhowAiGuideStatus();
+			const [status, info] = await Promise.all([
+				window.electronAPI.showhowAiGuideStatus(),
+				window.electronAPI.showhowSettingsInfo(),
+			]);
 			if (!active.current) return;
 			setConnected(status.connected);
+			setNamingEnabled(info.nameRecordingsWithAi);
 			setError(false);
 		} catch {
 			if (active.current) setError(true);
 		}
 	}, []);
+	const saveNaming = async (enabled: boolean) => {
+		const previous = namingEnabled;
+		setNamingEnabled(enabled);
+		setNamingSaving(true);
+		setNamingError(false);
+		try {
+			const result = await window.electronAPI.showhowSetNameRecordingsWithAi(enabled);
+			if (!result.success) throw new Error("Could not save title preference");
+			setNamingEnabled(result.nameRecordingsWithAi ?? enabled);
+		} catch {
+			setNamingEnabled(previous);
+			setNamingError(true);
+		} finally {
+			setNamingSaving(false);
+		}
+	};
 	useEffect(() => {
 		active.current = true;
 		void refresh();
@@ -222,6 +245,24 @@ function Connections() {
 							onRemoved={() => void refresh()}
 						/>
 					</div>
+				)}
+				<SettingLine
+					name={t("showhowSettings.nameRecordingsWithAi")}
+					note={t("showhowSettings.nameRecordingsWithAiNote")}
+					control={(noteId) => (
+						<Switch
+							name={t("showhowSettings.nameRecordingsWithAi")}
+							describedBy={noteId}
+							checked={namingEnabled ?? true}
+							disabled={namingEnabled === undefined || namingSaving}
+							onChange={(enabled) => void saveNaming(enabled)}
+						/>
+					)}
+				/>
+				{namingError && (
+					<p role="alert" className="mt-3 text-sm text-ds-rec-ink">
+						{t("showhowSettings.nameRecordingsWithAiError")}
+					</p>
 				)}
 			</Row>
 		</>
@@ -312,7 +353,10 @@ function Recording({
 			setFolderChange(result);
 			if (result.recordingsFolder) {
 				setInfo((current) => ({
-					...(current ?? { recordingsFolder: folderSelection.currentRecordingsFolder }),
+					...(current ?? {
+						recordingsFolder: folderSelection.currentRecordingsFolder,
+						nameRecordingsWithAi: true,
+					}),
 					recordingsFolder: result.recordingsFolder!,
 				}));
 				await onRecordingsFolderChanged?.();

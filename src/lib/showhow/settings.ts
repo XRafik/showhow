@@ -11,6 +11,12 @@ export const RECORDING_COUNTDOWN_SECONDS = 3;
 
 export interface ShowhowSettingsInfo {
 	recordingsFolder: string;
+	nameRecordingsWithAi: boolean;
+}
+
+export interface ShowhowNameRecordingsWithAiResult {
+	success: boolean;
+	nameRecordingsWithAi?: boolean;
 }
 
 export interface RecordingsFolderSelection {

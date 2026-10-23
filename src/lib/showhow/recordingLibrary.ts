@@ -63,10 +63,14 @@ export interface StepCaptureStatus {
 export interface RecordingLibraryEntry {
 	/** Validated optional existing guide status, absent on legacy bundles. */
 	guideStatus?: "none" | "making" | "ready" | "failed";
+	/** Present only while a new title is being requested. */
+	titleStatus?: "naming";
 	/** Absolute path to the bundle directory. */
 	bundleDir: string;
 	/** Human-readable title from meta.json. */
 	title: string;
+	/** Optional generated summary stored with the title in meta.json. */
+	summary?: string;
 	/** Recording source: desktop capture, browser companion, or imported local video. */
 	source: "desktop" | "browser" | "imported";
 	/** Unix epoch ms when the recording started (from meta.json). */
@@ -82,6 +86,10 @@ export interface RecordingLibraryEntry {
 	/** Step-capture availability from meta.json, when present. */
 	stepCapture?: StepCaptureStatus;
 }
+
+export type RecordingTitleStatusEvent =
+	| { bundleDir: string; status: "naming" }
+	| { bundleDir: string; status: "settled"; entry: RecordingLibraryEntry | null };
 
 export interface ImportRecordingRequest {
 	requestId: string;

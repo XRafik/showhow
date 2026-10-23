@@ -76,6 +76,7 @@ describe("buildMeta", () => {
 		expect(meta).toEqual({
 			schemaVersion: 1,
 			title: "Recording 2026-07-11 16:42",
+			titleSource: "default",
 			source: "desktop",
 			createdAt,
 			durationMs: 12_500,
@@ -590,6 +591,9 @@ describe("updateWorkflowDocument", () => {
 
 		expect(JSON.parse(await readFile(path.join(bundleDir, "meta.json"), "utf-8")).title).toBe(
 			"Renamed recording",
+		);
+		expect(JSON.parse(await readFile(path.join(bundleDir, "meta.json"), "utf-8")).titleSource).toBe(
+			"user",
 		);
 		await expect(access(path.join(bundleDir, "steps.json"))).rejects.toThrow();
 		await expect(access(path.join(bundleDir, "steps.md"))).rejects.toThrow();

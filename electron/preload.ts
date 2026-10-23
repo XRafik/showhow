@@ -154,6 +154,10 @@ contextBridge.exposeInMainWorld("electronAPI", {
 		ipcRenderer.invoke("showhow:settings-info") as Promise<
 			import("../src/lib/showhow/settings").ShowhowSettingsInfo
 		>,
+	showhowSetNameRecordingsWithAi: (enabled: boolean) =>
+		ipcRenderer.invoke("showhow:set-name-recordings-with-ai", enabled) as Promise<
+			import("../src/lib/showhow/settings").ShowhowNameRecordingsWithAiResult
+		>,
 	showhowChooseRecordingsFolder: () =>
 		ipcRenderer.invoke("showhow:choose-recordings-folder") as Promise<
 			import("../src/lib/showhow/settings").RecordingsFolderSelectionResult
@@ -176,6 +180,18 @@ contextBridge.exposeInMainWorld("electronAPI", {
 		) => callback(progress);
 		ipcRenderer.on("showhow:recordings-folder-move-progress", listener);
 		return () => ipcRenderer.removeListener("showhow:recordings-folder-move-progress", listener);
+	},
+	showhowOnRecordingTitleStatus: (
+		callback: (
+			event: import("../src/lib/showhow/recordingLibrary").RecordingTitleStatusEvent,
+		) => void,
+	) => {
+		const listener = (
+			_event: Electron.IpcRendererEvent,
+			payload: import("../src/lib/showhow/recordingLibrary").RecordingTitleStatusEvent,
+		) => callback(payload);
+		ipcRenderer.on("showhow:recording-title-status", listener);
+		return () => ipcRenderer.removeListener("showhow:recording-title-status", listener);
 	},
 	showhowGetSystemTheme: () => ipcRenderer.invoke("showhow:get-system-theme") as Promise<boolean>,
 	showhowOnSystemThemeChanged: (callback: (isDark: boolean) => void) => {

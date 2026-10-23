@@ -5,6 +5,30 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes showhow-naming-progress {
+	to {
+		background-position: 42px 0;
+	}
+}
+
+.naming-progress-strip {
+	background: repeating-linear-gradient(
+		90deg,
+		#82B09A 0 6px,
+		#82B09A40 6px 12px,
+		#82B09A99 12px 15px,
+		#82B09A26 15px 21px
+	);
+	background-size: 42px 3px;
+	animation: showhow-naming-progress 900ms steps(7) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.naming-progress-strip {
+		animation: none;
+	}
+}
+
 @layer base {
 	:root {
 		--background: 0 0% 100%;

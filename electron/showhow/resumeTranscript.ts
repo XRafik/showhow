@@ -8,6 +8,7 @@ import { requestBundleTranscript } from "./transcriptJob";
 export async function restorePendingBundleTranscript(
 	session: RecordingSession,
 	bundleDir: string,
+	onTranscriptReady?: (bundleDir: string) => void | Promise<void>,
 ): Promise<RecordingSession> {
 	// A flat or older manifest can retain stale job fields. The bundle marker is the
 	// persisted work request; a completed transcript must never be replaced on open.
@@ -17,7 +18,7 @@ export async function restorePendingBundleTranscript(
 	try {
 		const transcript = await fs.readFile(path.join(bundleDir, "transcript.txt"), "utf8");
 		if (transcript.trim() === "(transcription pending)") {
-			void requestBundleTranscript(bundleDir, restored.screenVideoPath);
+			void requestBundleTranscript(bundleDir, restored.screenVideoPath, onTranscriptReady);
 			restored.showhowBundleDir = bundleDir;
 			restored.showhowVideoFileUrl = pathToFileURL(restored.screenVideoPath).toString();
 		}

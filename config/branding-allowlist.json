@@ -267,6 +267,20 @@
 			"reason": "Legacy fixture naming"
 		},
 		{
+			"file": "electron/showhow/aiTitle.test.ts",
+			"reason": "Exercises the inherited internal chat-model API in title-provider tests; allow only the two references required by that test",
+			"lines": [
+				{
+					"text": "import { createOpenScreenChatModel } from \"../ai-edition/deep-agent/chat-model\";",
+					"count": 1
+				},
+				{
+					"text": "const chat = await createOpenScreenChatModel({",
+					"count": 1
+				}
+			]
+		},
+		{
 			"file": "electron/singleInstanceLock.test.ts",
 			"reason": "Covers the legacy single-instance lock directory"
 		},

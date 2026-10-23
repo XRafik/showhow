@@ -1,5 +1,6 @@
 import type { MouseEventHandler, ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { SwapText } from "./SwapText";
 
 export interface LibraryRowProps {
 	title: string;
@@ -34,9 +35,10 @@ export function LibraryRow({
 			onClick={onSelect}
 			onContextMenu={onContextMenu}
 		>
-			<span className="font-ds-body text-[13px] font-medium leading-[1.3] text-ds-on-panel">
-				{title}
-			</span>{" "}
+			<SwapText
+				value={title}
+				className="font-ds-body text-[13px] font-medium leading-[1.3] text-ds-on-panel"
+			/>{" "}
 			<span className="flex items-center gap-2 font-ds-label text-[10px] tracking-[0.6px] uppercase text-ds-on-panel-muted">
 				{meta}
 				{isNew && <span className="text-ds-accent">· NEW</span>}

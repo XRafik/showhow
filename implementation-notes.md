@@ -1,5 +1,80 @@
 # Implementation notes
 
+## 23 October 2026 — Showhow #181 AI recording titles
+
+`aiTitle.ts` runs after a completed transcript has been durably written, both from the native
+transcript job callback and from `showhow:write-transcript`. It reuses the single structured-model
+factory already created in the IPC handler and resolves the configured model through the existing
+guide model resolver. The service sends no request when naming is disabled, the OpenRouter key is
+missing, the bundle is imported, the transcript is pending/failed/empty, or the title source is not
+explicitly `default`. It bounds transcript, click, response and provider time, validates the
+structured title and summary, and re-reads `meta.json` inside the per-bundle serialized write before
+promoting an atomic temporary file. Provider and persistence failures stay silent and leave the
+recording media intact. User renames set `titleSource: "user"`; imports keep their filename title.
+
+The Library header and row share a 240 ms overlapping title swap: opacity and 4 px blur ease out,
+the incoming title stays in place, and the outgoing title is removed after the transition. Summary
+text enters from 4 px below over 240 ms with mock B's cubic-bezier(0.23,1,0.32,1) curve. Both use
+explicit CSS timing values and honor reduced motion. The naming strip follows mock B's full-width
+repeating 42 px background scroll in 900 ms steps(7); reduced motion leaves it static. The Settings
+switch defaults on and uses one serialized settings patch writer shared with recordings-folder
+updates, preventing concurrent read-modify-write loss.
+
+New localization keys use English placeholder copy in all 15 locales. The i18n checker and locale
+key parity remain in place; this is not a translation-quality claim.
+
+### Deviations
+
+- Compatibility is conservative: a missing or unknown `titleSource` is preserved as user intent,
+  even when the title resembles the generated date format. Only an explicit `"default"` marker is
+  eligible for AI replacement. This follows the lead's clarification that title text cannot prove
+  a legacy title was untouched.
+- The approved plan called the Library indicator a mosaic strip. Lead comparison against approved
+  mock B identified its stepped repeating 3 px background strip; the guide-processing mosaic stays
+  unchanged.
+
+### Build evidence and outstanding proof
+
+- The numbered executor receipts are retained under
+  `/Users/mohamedb/dev/loop-evidence/showhow-181/executor/` with the outer heavy-runner command,
+  stdout, stderr and exit code recorded.
+- The initial baseline contract and settings REDs in `executor/01-red-baseline-contract` and
+  `executor/02-red-settings-default` were direct `npm` invocations without the heavy runner. They
+  exited 1 on the expected missing metadata marker and setting. The same assertions were repeated
+  under `ruby ~/.local/bin/bedar-runtime.rb run --resource heavy --` in receipts 03 and 04 and still
+  exited 1 before implementation.
+- Receipt 05 (`red-service-actual-adapter`) was interrupted with exit 130 while waiting on an
+  unbounded fake-server arrival promise. It did not reach a product assertion and is not a RED;
+  later service tests use a bounded fake-endpoint wait. Receipt 06 has four meaningful assertion
+  failures for ineligible `isNaming`, legacy-title replacement, and concurrent settings patches.
+  Vitest's exit 1 and streams are retained; its outer zsh wrapper then also complained that the
+  script tried to assign the read-only `status` variable. Receipt 07 is the corrected legacy fixture
+  (the marker is deleted and absence asserted before the call), which observed one request instead
+  of zero.
+- Post-implementation receipt 08 records the settled event carrying a null entry after provider
+  failure. The service now refreshes the current entry before settlement. Receipt 09 passes 12
+  focused service cases; receipt 10 passes all 13 service/adapter cases, including the 20-second
+  timeout, custom exact model slug, final serialized rename race, bounded parse and atomic-write
+  failure. Receipt 11 passes 116 bundle, settings, import, transcript-job and IPC tests.
+- Typecheck receipt 14 found two implementation typing errors; receipt 16 passes `npx tsc
+  --noEmit`. Receipt 15 passes the i18n check across all 15 locales. Renderer receipt 18 first had
+  one incorrect expected translation (17 other tests passed); receipt 19 passes all 18 SettingsView
+  tests, including persistence and failed-write rollback. Receipt 20 repeats typecheck after those
+  test additions and passes; receipt 21 passes a targeted Biome check over changed files. The failed
+  outputs remain alongside their corrected runs.
+- Browser receipt 12 is a setup failure: Chromium exited with SIGTERM during Vitest's dependency
+  scan and zero tests ran. The browser test covers real overlapping old/new title geometry, old
+  text removal, and strip sizing/animation values, but this local run is not behavioral evidence;
+  the lead will rerun the browser suite.
+- BEFORE and the pre-edit IPC RED are retained separately at
+  `/Users/mohamedb/dev/loop-evidence/showhow-181/before-native-quwdzm` and
+  `/Users/mohamedb/dev/loop-evidence/showhow-181/red-native-qkFjZT`. The latter saved a synthetic
+  transcript with a fake key configured, then timed out with zero fake requests and no NAMING.
+  This is baseline evidence only. The lead owns the final native build and paired after run, full
+  suites, Biome, branding and final i18n/build checks. No live-key or owner-recording run was made.
+
+No commit or push was made.
+
 ## 23 October 2026 — Showhow #180 recordings folder
 
 The new folder picker, confirmation sheet, and move-progress messages use English placeholder copy
