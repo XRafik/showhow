@@ -65,6 +65,12 @@ it("shows the default model in a labelled picker and marks it in the options", a
 	);
 	expect(screen.getAllByRole("option")).toHaveLength(6);
 	expect(screen.getByText("anthropic/claude-opus-5.5")).toBeVisible();
+	const gptOption = screen.getByRole("option", { name: "GPT-6.1 Sol" });
+	expect(gptOption).toHaveTextContent("openai/gpt-6.1-sol");
+	expect(gptOption).toHaveAttribute("aria-label", "GPT-6.1 Sol, openai/gpt-6.1-sol");
+	const geminiOption = screen.getByRole("option", { name: "Gemini 4 Argon" });
+	expect(geminiOption).toHaveTextContent("google/gemini-4-argon");
+	expect(geminiOption).toHaveAttribute("aria-label", "Gemini 4 Argon, google/gemini-4-argon");
 });
 
 it("saves a listed model using its exact OpenRouter slug", async () => {
@@ -74,14 +80,14 @@ it("saves a listed model using its exact OpenRouter slug", async () => {
 		</I18nProvider>,
 	);
 	await openModelPicker();
-	fireEvent.keyDown(await screen.findByRole("option", { name: /Claude Sonnet 5\.5/ }), {
+	fireEvent.keyDown(await screen.findByRole("option", { name: "GPT-6.1 Sol" }), {
 		key: "Enter",
 	});
 	fireEvent.click(screen.getByRole("button", { name: "Save connection" }));
 	await waitFor(() =>
 		expect(nativeBridgeClient.aiEdition.llmSetConfig).toHaveBeenCalledWith({
 			provider: "openrouter",
-			model: "anthropic/claude-sonnet-5.5",
+			model: "openai/gpt-6.1-sol",
 		}),
 	);
 });
