@@ -42,6 +42,23 @@ await sharp(svg, { density: 384 })
 	.png({ compressionLevel: 9, adaptiveFiltering: false, palette: false })
 	.toFile(path.join(publicDirectory, "showhow.png"));
 
+// macOS menu bar: a template image (black + alpha, 16 pt with @2x) and an orange recording state.
+for (const [svgName, baseName] of [
+	["showhow-tray-template.svg", "trayTemplate"],
+	["showhow-tray-recording.svg", "tray-recording"],
+]) {
+	const traySvg = fs.readFileSync(path.join(root, "design/brand", svgName));
+	for (const [suffix, size] of [
+		["", 16],
+		["@2x", 32],
+	]) {
+		await sharp(traySvg, { density: 1152 })
+			.resize(size, size, { fit: "fill" })
+			.png({ compressionLevel: 9, adaptiveFiltering: false, palette: false })
+			.toFile(path.join(publicDirectory, `${baseName}${suffix}.png`));
+	}
+}
+
 const icoSizes = [16, 24, 32, 48, 64, 128, 256];
 const ico = await pngToIco(icoSizes.map((size) => path.join(pngDirectory, `${size}x${size}.png`)));
 fs.writeFileSync(path.join(windowsDirectory, "icon.ico"), ico);

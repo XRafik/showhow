@@ -15,6 +15,10 @@ const deterministicFiles = [
 	"icons/icons/win/icon.ico",
 	"icons/icons/mac/icon.icns",
 	"public/showhow.png",
+	"public/trayTemplate.png",
+	"public/trayTemplate@2x.png",
+	"public/tray-recording.png",
+	"public/tray-recording@2x.png",
 ];
 
 const hash = (file) => createHash("sha256").update(fs.readFileSync(file)).digest("hex");
@@ -148,10 +152,16 @@ function icnsPayloadOffset(buffer, wantedType) {
 function makeRoot() {
 	const root = fs.mkdtempSync(path.join(os.tmpdir(), "showhow-icons-"));
 	fs.mkdirSync(path.join(root, "design/brand"), { recursive: true });
-	fs.copyFileSync(
-		path.join(repoRoot, "design/brand/showhow-app-icon.svg"),
-		path.join(root, "design/brand/showhow-app-icon.svg"),
-	);
+	for (const name of [
+		"showhow-app-icon.svg",
+		"showhow-tray-template.svg",
+		"showhow-tray-recording.svg",
+	]) {
+		fs.copyFileSync(
+			path.join(repoRoot, "design/brand", name),
+			path.join(root, "design/brand", name),
+		);
+	}
 	return root;
 }
 
@@ -267,13 +277,40 @@ describe("Showhow icon generation", () => {
 			expect(second).toEqual(first);
 
 			const source = path.join(root, "design/brand/showhow-app-icon.svg");
-			fs.writeFileSync(source, fs.readFileSync(source, "utf8").replace("#6BFF7E", "#6AFF7D"));
+			fs.writeFileSync(source, fs.readFileSync(source, "utf8").replace("#E4572E", "#E4572F"));
 			generate(root);
 			expect(hash(path.join(root, "icons/icons/png/1024x1024.png"))).not.toBe(
 				first["icons/icons/png/1024x1024.png"],
 			);
 		},
 	);
+
+	it("renders the macOS menu bar icon as a 16 pt template with an orange recording state", async () => {
+		for (const [file, size] of [
+			["public/trayTemplate.png", 16],
+			["public/trayTemplate@2x.png", 32],
+			["public/tray-recording.png", 16],
+			["public/tray-recording@2x.png", 32],
+		]) {
+			const { data, info } = await sharp(path.join(repoRoot, file))
+				.ensureAlpha()
+				.raw()
+				.toBuffer({ resolveWithObject: true });
+			expect([info.width, info.height]).toEqual([size, size]);
+			let opaque = 0;
+			for (let index = 0; index < data.length; index += 4) {
+				const alpha = data[index + 3];
+				if (alpha === 0) continue;
+				const rgb = [data[index], data[index + 1], data[index + 2]];
+				// Template images must be pure black at every visible pixel; the recording state is
+				// the brand orange wherever it is fully opaque (edges round when unpremultiplied).
+				if (file.includes("Template")) expect(rgb).toEqual([0, 0, 0]);
+				else if (alpha === 255) expect(rgb).toEqual([0xe4, 0x57, 0x2e]);
+				if (alpha === 255) opaque += 1;
+			}
+			expect(opaque).toBeGreaterThan(size * size * 0.3);
+		}
+	});
 
 	it("fails clearly instead of retaining a stale ICNS when iconutil is unavailable", () => {
 		const root = makeRoot();

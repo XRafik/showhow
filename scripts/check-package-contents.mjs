@@ -87,10 +87,17 @@ async function main() {
 		.map((entry) => entry.name);
 	for (const name of excludedPublicImages)
 		failures.push(`R3: unreferenced public image must not ship: ${name}`);
-	// main.ts getTrayIcon loads both filenames from VITE_PUBLIC (packaged: dist).
-	// showhow.png is also the renderer favicon/logo; rec-button.png marks recording.
+	// main.ts getTrayIcon loads these from VITE_PUBLIC (packaged: dist); see showhow/trayIcon.ts.
+	// showhow.png is also the renderer favicon/logo; trayTemplate is the macOS menu bar icon and
+	// tray-recording marks recording.
 	const referencedPublicImages = Object.fromEntries(
-		["showhow.png", "rec-button.png"].map((name) => {
+		[
+			"showhow.png",
+			"trayTemplate.png",
+			"trayTemplate@2x.png",
+			"tray-recording.png",
+			"tray-recording@2x.png",
+		].map((name) => {
 			const iconPath = `dist/${name}`;
 			const entry = archived.find((item) => item.name === iconPath && !item.directory);
 			const size = entry ? statFile(archive, iconPath).size : 0;

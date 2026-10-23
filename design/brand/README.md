@@ -1,47 +1,48 @@
-# Showhow application icon
+# Showhow application icons
 
 ## Chosen concept
 
-The canonical icon is **Candidate B: the folded three-step path**. A forest recording bracket begins
-at the lower left, then flows through three connected step tiles toward a squared forward terminal.
-The ascending rhythm represents Showhow's core transformation: record an action, organize it into
-steps, and move the work forward. The terminal deliberately avoids a generic play triangle, while
-the tiles avoid camera and lens imagery.
+The canonical icon is the Showhow logo mark, owner-picked as **option B (dark, full size)** on
+23 October 2026. It replaces the earlier folded three-step path icon. The same mark is the in-app
+`Logo` component (`src/components/showhow/Logo.tsx`): a cream cursor clicking inside an ink
+square, with sage click marks, an orange recording dot and a sage offset shadow.
 
-The source of truth is [`showhow-app-icon.svg`](./showhow-app-icon.svg). It is original flat vector
-geometry with no text, external fonts, embedded raster data, gradients, filters, or shadows.
+Sources of truth:
+
+- [`showhow-app-icon.svg`](./showhow-app-icon.svg): the application icon (macOS, Windows, Linux).
+- [`showhow-tray-template.svg`](./showhow-tray-template.svg): the macOS menu bar icon, a template
+  image.
+- [`showhow-tray-recording.svg`](./showhow-tray-recording.svg): the menu bar icon while recording.
+
+They are flat vector geometry with no text, external fonts, embedded raster data, gradients or
+filters.
 
 ## Palette roles
 
-- Cream `#FFFCF7` is the quiet, warm application-tile background.
-- Forest `#142F18` anchors the recording corner, folds, and terminal motion.
-- Sage `#82B09A` identifies the first step and one intermediate fold.
-- Ink `#2F2F2F` gives the middle step enough visual weight to hold the sequence together.
-- Signal green `#6BFF7E` marks the final step and the active transition into it.
+- Ink `#2F2F2F` is the icon tile.
+- Sage `#82B09A` is the offset shadow and the click marks.
+- Cream `#FFFCF7` is the cursor.
+- Orange `#E4572E` is the recording dot, and the whole menu bar icon while recording, because orange
+  means recording everywhere in Showhow.
 
-## Geometry and clear space
+## Geometry
 
-The artwork uses a `1024 × 1024` view box. The cream background begins 32 units inside that box and
-has a 224-unit corner radius. Keep at least 64 units of uninterrupted cream between the foreground
-mark and every edge of the cream background; the canonical geometry provides at least 72 units.
-Do not enlarge, rotate, crop, or rearrange the mark within the tile.
+The application icon uses a `1024 × 1024` view box. The ink tile is 824 units square at (100, 100)
+with a 185-unit corner radius, following the macOS icon grid. The sage shadow is the same tile
+offset 28 units right and down. The mark inside is the 50-unit logo artwork scaled by 22.4 from its
+inner ink square, so the cursor, click marks and dot keep the logo's proportions. Do not enlarge,
+rotate or rearrange the mark within the tile.
 
-The cream rounded square is part of the icon, not a presentation mockup. Platform generators may
-add their required transparent canvas or mask outside it, but must not replace its color, radius, or
-internal spacing. On macOS, preserve the complete rounded-square treatment and let the operating
-system apply its standard icon mask. On Windows and Linux, preserve the same composition on a
-transparent square canvas.
+The menu bar icon uses an `18 × 18` view box: a 14-unit rounded square (radius 2) with the logo's
+cursor cut out. It renders at 16 pt with an @2x pair. The template is pure black with alpha, so macOS
+recolours it for light and dark menu bars; the recording state is orange and is not a template.
 
-## Small-size rules
+## Generated files
 
-The canonical geometry uses three 144-unit tiles, 48-unit diagonal connectors, and a 64-unit start
-and terminal stroke so that the parts remain independently recognizable in a direct 16 px render.
-The SVG should be rendered unchanged at 32 px and above. At 16 px, pixel-grid fitting may be used
-only in generated derivatives: keep the recording bracket at least one solid pixel wide, keep all
-three tiles visibly distinct, and preserve the cream gaps that separate the bracket, steps, and
-terminal. Do not add outlines, remove a step, introduce a play triangle, or change palette colors.
-At 32 px, retain the three fold corners and rounded tile silhouettes; do not preserve subpixel
-corner detail at the expense of the ascending rhythm.
+Run `npm run icons:generate` on macOS. It writes `icons/icons/png/*`, `icons/icons/win/icon.ico`,
+`icons/icons/mac/icon.icns`, `public/showhow.png` (also the renderer favicon and the non-macOS tray
+icon) and `public/trayTemplate*.png` / `public/tray-recording*.png`. These are generated artifacts:
+regenerate them from the SVGs rather than editing them by hand.
 
-Platform PNG, ICO, and ICNS files are generated artifacts. They must be regenerated from the
-canonical SVG rather than edited by hand.
+The landing page favicon is `site/public/favicon.svg`, the logo artwork itself, with
+`site/public/assets/logo.png` as the PNG fallback and navigation logo.
