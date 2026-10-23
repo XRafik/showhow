@@ -1679,3 +1679,25 @@ Electron 41.2.1 on macOS and only harness-owned synthetic bundles and their exac
 No Trash enumeration or owner recordings, auth, settings, or installed app state was touched.
 Windows/Linux, packaged or installed builds, and macOS 13 hardware remain untested. No commit or
 push was made.
+
+## 23 October 2026 — Showhow #182 hover and transition audit
+
+Added `docs/design/2026-10-22-hover-and-transitions-audit.md` from source at actual base
+`f1a462c002bdcbf68c6ee3ad2d4899bb275753bc`. Scope and clean BEFORE state are backed by the current
+issue, dependency, PR, and BEFORE receipts plus the approved Task 9 extract under
+`/Users/mohamedb/dev/loop-evidence/showhow-182/`. The audit inventories the approved Library,
+Editor, HUD, Settings, route, and progress surfaces, separates current source behavior from exact
+motion proposals, and records the native observation limit. Documentation only: no source,
+configuration, tests, build, native app, ticket, or commit was changed or run.
+
+### Deviations
+
+The first citation check failed because the bare basename `Tabs.tsx` resolved to two files; that
+failed receipt is retained here. A later strict check also caught stale `v4/` path prefixes on
+`RightPanes.tsx` and `Modals.tsx`; both were corrected to their actual paths. The corrected check
+resolved all 58 full-path citations and verified every referenced line range. These were
+documentation reference failures, not product or review failures. Final `git diff --check` passed;
+the untracked audit also passed `git diff --no-index --check` with no diagnostics (exit 1 is the
+expected result for a non-empty new file). No review was requested or run; failed review count
+remains 0. #179 and #180 are merged in this base; their #148 external E2E notes and #147 handoff
+records remain separate and unchanged.
