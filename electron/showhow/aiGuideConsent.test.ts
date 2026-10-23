@@ -529,3 +529,23 @@ describe("agent brief IPC boundary", () => {
 		expect(await readFile(path.join(s.bundle, "agent-brief.json"), "utf8")).toBe(saved);
 	});
 });
+
+describe("no-input bundle (#200)", () => {
+	const noInputBundle = async (s: Awaited<ReturnType<typeof setup>>) => {
+		await writeFile(path.join(s.bundle, "steps.json"), serializeStepsJson([]));
+		await writeFile(path.join(s.bundle, "transcript.txt"), "(no speech detected)\n");
+	};
+
+	it("reports noInput on both the guide and the brief status", async () => {
+		const s = await setup();
+		await noInputBundle(s);
+		expect(await s.call("status", s.bundle)).toMatchObject({ noInput: true });
+		expect(await s.brief("status", s.bundle)).toMatchObject({ noInput: true });
+	});
+
+	it("does not report noInput when the transcript carries speech", async () => {
+		const s = await setup();
+		expect(await s.call("status", s.bundle)).toMatchObject({ noInput: false });
+		expect(await s.brief("status", s.bundle)).toMatchObject({ noInput: false });
+	});
+});

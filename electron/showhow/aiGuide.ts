@@ -270,14 +270,19 @@ export async function runAiGuide(
 			});
 			return { success: true };
 		} catch (error) {
+			// A pre-model "nothing to build from" is not a bad model response: keep that
+			// message for responses that genuinely failed validation.
+			const noInput =
+				error instanceof GuideValidationError && error.message === "No source steps or narration";
 			const failed = {
 				...source.meta,
 				guide: {
 					...meta.guide,
 					status: "failed",
 					editedSinceAi: false,
-					error:
-						error instanceof GuideValidationError
+					error: noInput
+						? "No source steps or narration"
+						: error instanceof GuideValidationError
 							? "The guide response could not be validated."
 							: "Couldn’t make the guide. Check your connection and try again.",
 				},

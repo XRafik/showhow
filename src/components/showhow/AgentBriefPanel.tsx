@@ -157,6 +157,9 @@ export function useAgentBrief(bundleDir: string) {
 	};
 	const begin = async ({ copyAfter = false, reviewOnly = false } = {}) => {
 		if (busy || state.view === "making") return;
+		// A recording with no clicks and no speech has nothing to build a brief from; a retry
+		// cannot fix it, so the empty state stays instead of a run that fails at the guard.
+		if (status?.noInput && !state.hasBrief) return;
 		setBusy(true);
 		setError(undefined);
 		setCopy("idle");
@@ -230,7 +233,11 @@ export function useAgentBrief(bundleDir: string) {
 		run,
 		changeOptions,
 		copyForAgent: () =>
-			state.hasBrief && state.view !== "making" ? writeClipboard() : begin({ copyAfter: true }),
+			state.hasBrief && state.view !== "making"
+				? writeClipboard()
+				: status?.noInput
+					? undefined
+					: begin({ copyAfter: true }),
 		cancel: () => void cancel().catch(() => undefined),
 		close: () => {
 			setPreview(undefined);
@@ -249,6 +256,8 @@ export function CopyForAgentButton({ brief }: { brief: AgentBriefController }) {
 	const making =
 		brief.state.view === "making" ||
 		(brief.state.copyAfter && brief.busy && brief.copy !== "copied");
+	// No clicks and no speech: a brief cannot be made, so the copy button is disabled.
+	const noInput = Boolean(brief.status?.noInput) && !brief.state.hasBrief;
 	const idle = !making && brief.copy !== "copied";
 	// Keep the label swap from shifting the action row: hold the idle width.
 	useLayoutEffect(() => {
@@ -261,8 +270,8 @@ export function CopyForAgentButton({ brief }: { brief: AgentBriefController }) {
 			variant="dark"
 			icon={making ? LoaderCircle : idle ? Copy : undefined}
 			// A run keeps the solid label (Library-23) and focus; clicks are ignored until it ends.
-			disabled={brief.busy && !making}
-			aria-disabled={making || undefined}
+			disabled={(brief.busy && !making) || noInput}
+			aria-disabled={making || noInput || undefined}
 			aria-busy={making}
 			style={!idle && idleWidth.current ? { minWidth: `${idleWidth.current}px` } : undefined}
 			className={cn(
@@ -436,6 +445,9 @@ function BriefCard({ brief }: { brief: AgentBriefController }) {
 export function AgentBriefPanel({ brief }: { brief: AgentBriefController }) {
 	const t = useScopedT("common");
 	const { view, phase, hasBrief } = brief.state;
+	// No clicks and no speech: there is nothing to turn into a brief (an empty state, not a
+	// run that fails at the pre-model guard).
+	const noInput = Boolean(brief.status?.noInput) && !hasBrief;
 	const failedAt: BriefPhase =
 		brief.error === "save"
 			? "evidence"
@@ -444,17 +456,19 @@ export function AgentBriefPanel({ brief }: { brief: AgentBriefController }) {
 				: "writing";
 	return (
 		<section aria-label={t("showhowBrief.panel")} className="font-ds-body text-ds-ink">
-			<button
-				type="button"
-				disabled={brief.busy || view === "making"}
-				className="mb-4 text-sm text-ds-ink-soft underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2"
-				onClick={(event) => {
-					brief.invoker.current = event.currentTarget;
-					void brief.begin({ reviewOnly: true });
-				}}
-			>
-				{t("showhowBrief.check")}
-			</button>
+			{!noInput && (
+				<button
+					type="button"
+					disabled={brief.busy || view === "making"}
+					className="mb-4 text-sm text-ds-ink-soft underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2"
+					onClick={(event) => {
+						brief.invoker.current = event.currentTarget;
+						void brief.begin({ reviewOnly: true });
+					}}
+				>
+					{t("showhowBrief.check")}
+				</button>
+			)}
 			{view === "making" && (
 				<>
 					<div
@@ -540,7 +554,13 @@ export function AgentBriefPanel({ brief }: { brief: AgentBriefController }) {
 				</>
 			)}
 			{hasBrief && <BriefCard brief={brief} />}
-			{!hasBrief && view !== "making" && view !== "failed" && (
+			{!hasBrief && noInput && view !== "making" && (
+				<div className="rounded-[8px] border border-ds-line bg-ds-surface-raised p-5">
+					<Label>{t("showhowBrief.nextStep")}</Label>
+					<p className="text-[15px] leading-relaxed">{t("showhowBrief.noInput")}</p>
+				</div>
+			)}
+			{!hasBrief && !noInput && view !== "making" && view !== "failed" && (
 				<>
 					<div className="rounded-[8px] border border-ds-line bg-ds-surface-raised p-5">
 						<Label>{t("showhowBrief.nextStep")}</Label>
@@ -689,7 +709,7 @@ export function AgentBriefSheets({ brief }: { brief: AgentBriefController }) {
 						</Button>
 						<Button
 							type="button"
-							disabled={!preview}
+							disabled={!preview || (preview.wordCount === 0 && preview.frames.length === 0)}
 							onClick={() => {
 								if (preview) void brief.run(preview, true, copyAfter);
 							}}

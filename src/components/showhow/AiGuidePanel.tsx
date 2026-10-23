@@ -138,6 +138,9 @@ export function AiGuidePanel({
 	}
 	async function begin(confirmed = false, reviewOnly = false) {
 		if (busy || state.view === "making") return;
+		// A recording with no clicks and no speech has nothing to build from; a retry cannot
+		// fix it, so the empty state stays instead of a run that fails at the pre-model guard.
+		if (status?.noInput && state.view !== "ready") return;
 		const id = ++requestId.current;
 		statusRequestId.current++;
 		setBusy(true);
@@ -183,6 +186,8 @@ export function AiGuidePanel({
 	const isReady = status?.guide?.status === "ready" || state.view === "ready";
 	const failed =
 		state.view === "failed" || (state.view === "idle" && status?.guide?.status === "failed");
+	// Nothing to build from (no clicks, no speech): show the empty state and stop offering Make.
+	const noInput = Boolean(status?.noInput) && !isReady;
 	return (
 		<section aria-label={t("showhowGuide.panel")} className="my-7 font-ds-body text-ds-ink">
 			<div className="mb-3 flex flex-wrap items-center justify-between gap-3">
@@ -196,7 +201,7 @@ export function AiGuidePanel({
 						<Button
 							type="button"
 							variant="secondary"
-							disabled={busy || state.view === "making"}
+							disabled={busy || state.view === "making" || noInput}
 							onClick={(event) => {
 								invoker.current = event.currentTarget;
 								void begin();
@@ -210,7 +215,7 @@ export function AiGuidePanel({
 			</div>
 			{selected && (
 				<>
-					{!isReady && (
+					{!isReady && !noInput && (
 						<button
 							type="button"
 							disabled={busy || state.view === "making"}
@@ -223,7 +228,15 @@ export function AiGuidePanel({
 							{t("showhowGuide.check")}
 						</button>
 					)}
-					{!isReady && state.view !== "making" && !failed && (
+					{noInput && (
+						<div className="rounded-[8px] border border-ds-line bg-ds-surface-raised p-6">
+							<h3 className="mb-2 text-xl font-medium">{t("showhowGuide.noInputTitle")}</h3>
+							<p className="max-w-xl text-sm leading-relaxed text-ds-ink-soft">
+								{t("showhowGuide.noInputBody")}
+							</p>
+						</div>
+					)}
+					{!isReady && !noInput && state.view !== "making" && !failed && (
 						<div className="rounded-[8px] border border-ds-line bg-ds-surface-raised p-6">
 							<h3 className="mb-2 text-xl font-medium">{t("showhowGuide.turnInto")}</h3>
 							<p className="max-w-xl text-sm leading-relaxed text-ds-ink-soft">
@@ -267,7 +280,7 @@ export function AiGuidePanel({
 							<p className="mt-4 text-xs text-ds-ink-soft">{t("showhowGuide.keepUsing")}</p>
 						</div>
 					)}
-					{failed && (
+					{failed && !noInput && (
 						<div
 							role="alert"
 							className="overflow-hidden rounded-[8px] border border-ds-rec bg-ds-rec-wash p-6"
@@ -424,7 +437,13 @@ export function AiGuidePanel({
 								</Button>
 								<Button
 									type="button"
-									disabled={busy || !preview}
+									disabled={
+										busy ||
+										!preview ||
+										(preview.wordCount === 0 &&
+											preview.frames.length === 0 &&
+											preview.steps.length === 0)
+									}
 									onClick={() => {
 										if (preview) void run(preview, true);
 									}}

@@ -38,6 +38,8 @@ export interface AgentBriefStatus {
 	options: GuideOptions;
 	state: BriefState;
 	phase?: BriefPhase;
+	/** True when the bundle has no steps and no transcript: there is nothing to make a brief from. */
+	noInput?: boolean;
 	brief?: AgentBrief;
 	error?: string;
 }

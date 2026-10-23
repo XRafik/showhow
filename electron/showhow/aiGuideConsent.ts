@@ -137,6 +137,9 @@ export function registerAiGuideHandlers(deps: {
 			guide,
 			narrationOnly: source?.inputSteps[0]?.kind === "narration",
 			noSpeech: source ? source.segments.length === 0 : undefined,
+			// No steps and no narration: nothing to build a guide from (a pre-model failure the
+			// UI should surface as an empty state, not a retryable validation error).
+			noInput: source ? source.inputSteps.length === 0 && source.segments.length === 0 : undefined,
 		};
 	});
 	handle("preview", async (event, bundle, rawOptions) => {
@@ -251,6 +254,10 @@ export function registerAiGuideHandlers(deps: {
 		const brief = await readAgentBrief(resolved);
 		const run = briefRuns.get(resolved);
 		const failure = briefFailures.get(resolved);
+		// Same evidence the run would build from: no steps and no narration means there is
+		// nothing to turn into a brief (an empty state, not a retryable failure).
+		const source = await readBriefSources(resolved);
+		const noInput = source.steps.length === 0 && source.segments.length === 0;
 		return {
 			connected: Boolean(deps.getStore().getApiKey("openrouter")),
 			model: getModel(),
@@ -259,6 +266,7 @@ export function registerAiGuideHandlers(deps: {
 			options: consent?.options ?? { transcript: true, frames: true },
 			state: run ? "making" : failure ? "failed" : brief ? "ready" : "none",
 			phase: run?.phase,
+			noInput,
 			brief,
 			error: run ? undefined : failure,
 		} satisfies AgentBriefStatus;

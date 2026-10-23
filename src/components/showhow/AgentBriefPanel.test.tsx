@@ -390,3 +390,29 @@ describe("Agent brief states", () => {
 		expect(await screen.findByText("Step 2 of 3")).toBeVisible();
 	});
 });
+
+it("#200 a recording with no clicks and no speech shows an empty state, not a copy action", async () => {
+	current = { ...base, noInput: true };
+	render(<Harness bundleDir="/scratch/one" />);
+	expect(
+		await screen.findByText(
+			"This recording has no clicks or speech, so there is nothing to turn into a brief. Record again with the microphone on, or narrate while you click.",
+		),
+	).toBeVisible();
+	// Copy for agent is disabled; a brief cannot be made from nothing.
+	expect(screen.getByRole("button", { name: /copy for agent/i })).toBeDisabled();
+	expect(screen.queryByRole("button", { name: "Check what's sent" })).toBeNull();
+	// The normal make card is not shown alongside the empty state.
+	expect(screen.queryByRole("heading", { name: "Make a brief for your agent" })).toBeNull();
+});
+
+it("#200 the brief review sheet does not send a payload with no transcript and no frames", async () => {
+	// status has no input flag, but the built payload is empty: the sheet gate must refuse.
+	current = { ...base, reviewed: false, alwaysSend: false };
+	preview.mockResolvedValue({ ...payload, wordCount: 0, transcript: [], frames: [] });
+	render(<Harness bundleDir="/scratch/one" />);
+	await userEvent.click(await screen.findByRole("button", { name: "Copy for agent" }));
+	await screen.findByText("Transcript \u00b7 0 words");
+	const makeBtn = screen.getByRole("button", { name: "Make brief and copy" });
+	expect(makeBtn).toBeDisabled();
+});

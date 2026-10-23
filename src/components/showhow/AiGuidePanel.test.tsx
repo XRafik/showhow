@@ -337,3 +337,35 @@ it.each([
 	await user.click(screen.getByRole("button", { name: "Cancel" }));
 	await waitFor(() => expect(make).toHaveFocus());
 });
+
+it("#200 a recording with no clicks and no speech shows an empty state, not a make action", async () => {
+	status.mockResolvedValue({ ...connected, noInput: true });
+	render(<AiGuidePanel entry={entry} onEntryChange={onChange} />);
+	expect(
+		await screen.findByRole("heading", { name: "No clicks or speech to turn into a guide" }),
+	).toBeVisible();
+	expect(
+		screen.getByText(
+			"This recording has no clicks and no speech, so there is nothing to turn into a guide. Record again with the microphone on, or narrate while you click.",
+		),
+	).toBeVisible();
+	// Make guide is offered as disabled, never a run that fails at the pre-model guard.
+	expect(screen.getByRole("button", { name: "Make guide" })).toBeDisabled();
+	expect(screen.queryByRole("button", { name: "Check what gets sent" })).toBeNull();
+	fireEvent.click(screen.getByRole("button", { name: "Make guide" }));
+	expect(preview).not.toHaveBeenCalled();
+	expect(run).not.toHaveBeenCalled();
+	// The normal intro card is not shown alongside the empty state.
+	expect(screen.queryByRole("heading", { name: "Turn this recording into a guide" })).toBeNull();
+});
+
+it("#200 the guide review sheet does not send a payload with no transcript, no frames and no steps", async () => {
+	// status has no input flag, but the built payload is empty: the sheet gate must refuse.
+	status.mockResolvedValue({ ...connected, reviewed: false });
+	preview.mockResolvedValue({ ...payload, wordCount: 0, transcript: [], frames: [], steps: [] });
+	render(<AiGuidePanel entry={entry} onEntryChange={onChange} />);
+	fireEvent.click(screen.getByRole("button", { name: "Make guide" }));
+	const dialog = await screen.findByRole("dialog", { name: "Check what gets sent" });
+	expect(screen.getByText("Transcript \u00b7 0 words")).toBeVisible();
+	expect(within(dialog).getByRole("button", { name: "Make guide" })).toBeDisabled();
+});

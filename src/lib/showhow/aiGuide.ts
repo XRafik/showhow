@@ -26,6 +26,8 @@ export interface GuideStatus {
 	alwaysSend?: boolean;
 	narrationOnly?: boolean;
 	noSpeech?: boolean;
+	/** True when the bundle has no steps and no transcript: there is nothing to make a guide from. */
+	noInput?: boolean;
 	connected: boolean;
 	model: string;
 	reviewed: boolean;
