@@ -159,7 +159,8 @@
 		},
 		"footer": {
 			"screenRequired": "録画には画面収録が必要です。",
-			"ready": "準備が整いました。"
+			"ready": "準備が整いました。",
+			"restart": "完了するには Showhow を再起動してください。"
 		}
 	},
 	"countdown": {

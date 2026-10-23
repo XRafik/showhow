@@ -159,7 +159,8 @@
 		},
 		"footer": {
 			"screenRequired": "K nahrávání je potřeba nahrávání obrazovky.",
-			"ready": "Vše je připraveno."
+			"ready": "Vše je připraveno.",
+			"restart": "Dokončete restartováním Showhow."
 		}
 	},
 	"countdown": {

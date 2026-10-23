@@ -159,7 +159,8 @@
 		},
 		"footer": {
 			"screenRequired": "Kayıt için ekran kaydı gereklidir.",
-			"ready": "Her şey hazır."
+			"ready": "Her şey hazır.",
+			"restart": "Tamamlamak için Showhow'i yeniden başlatın."
 		}
 	},
 	"countdown": {

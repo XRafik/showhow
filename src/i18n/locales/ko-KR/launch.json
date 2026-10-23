@@ -159,7 +159,8 @@
 		},
 		"footer": {
 			"screenRequired": "녹화하려면 화면 기록 권한이 필요합니다.",
-			"ready": "모든 준비가 끝났습니다."
+			"ready": "모든 준비가 끝났습니다.",
+			"restart": "완료하려면 Showhow를 다시 시작하세요."
 		}
 	},
 	"countdown": {

@@ -159,7 +159,8 @@
 		},
 		"footer": {
 			"screenRequired": "تسجيل الشاشة مطلوب للتسجيل.",
-			"ready": "كل شيء جاهز."
+			"ready": "كل شيء جاهز.",
+			"restart": "أعد تشغيل Showhow لإكمال ذلك."
 		}
 	},
 	"countdown": {

@@ -159,7 +159,8 @@
 		},
 		"footer": {
 			"screenRequired": "L'enregistrement de l'écran est nécessaire pour enregistrer.",
-			"ready": "Tout est prêt."
+			"ready": "Tout est prêt.",
+			"restart": "Redémarrez Showhow pour terminer."
 		}
 	},
 	"countdown": {

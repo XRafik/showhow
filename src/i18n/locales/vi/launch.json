@@ -159,7 +159,8 @@
 		},
 		"footer": {
 			"screenRequired": "Cần quyền ghi màn hình để ghi.",
-			"ready": "Mọi thứ đã sẵn sàng."
+			"ready": "Mọi thứ đã sẵn sàng.",
+			"restart": "Khởi động lại Showhow để hoàn tất."
 		}
 	},
 	"countdown": {
