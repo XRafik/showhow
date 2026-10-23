@@ -121,10 +121,11 @@ export function AiConnections({
 						</Select.Icon>
 					</Select.Trigger>
 					<Select.Portal>
+						{/* Keep the portal menu above Showhow sheets (z-10000). */}
 						<Select.Content
 							position="popper"
 							sideOffset={4}
-							className="z-50 max-h-[var(--radix-select-content-available-height)] min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded border border-ds-line bg-ds-surface text-ds-ink shadow-lg"
+							className="z-[10001] max-h-[var(--radix-select-content-available-height)] min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded border border-ds-line bg-ds-surface text-ds-ink shadow-lg"
 						>
 							<Select.Viewport className="p-1">
 								{SHOWHOW_AI_MODELS.map((option) => (
