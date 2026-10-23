@@ -10,18 +10,29 @@ import {
 	within,
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { toast } from "sonner";
+import { ShowhowToaster } from "@/components/showhow/Toast";
 import { I18nProvider } from "@/contexts/I18nContext";
 
 const render = (node: ReactNode, options?: RenderOptions) =>
 	rtlRender(node, { wrapper: I18nProvider, ...options });
 
 import { type ReactNode, StrictMode } from "react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { RecordingLibraryEntry } from "@/lib/showhow/recordingLibrary";
 import { RecordingLibrary } from "./RecordingLibrary";
 
 // Mock window.electronAPI
 const mockShowhowListRecordings = vi.fn<() => Promise<RecordingLibraryEntry[]>>();
+const mockShowhowTrashRecording = vi.fn();
+const mockShowhowConsumeTrashNotice =
+	vi.fn<
+		() => Promise<{
+			undoToken: string;
+			expiresAt: number;
+		} | null>
+	>();
+const mockShowhowRestoreRecording = vi.fn();
 const mockOpenRecording = vi.fn();
 const mockImportRecording = vi.fn();
 const mockCancelImport = vi.fn();
@@ -41,6 +52,11 @@ const mockShowhowRegenerateDoc =
 		}>
 	>();
 
+afterEach(() => {
+	toast.dismiss();
+	vi.useRealTimers();
+});
+
 beforeEach(() => {
 	vi.resetAllMocks();
 	mockSwitchToHud.mockResolvedValue();
@@ -56,9 +72,16 @@ beforeEach(() => {
 		transcriptAvailable: false,
 		entry: null,
 	});
+	mockShowhowConsumeTrashNotice.mockResolvedValue(null);
+	mockShowhowTrashRecording.mockResolvedValue({ success: false, error: "Trash unavailable" });
+	mockShowhowRestoreRecording.mockResolvedValue({ success: false, error: "Undo expired" });
 	Object.defineProperty(window, "electronAPI", {
 		value: {
+			getPlatform: () => "darwin",
 			showhowListRecordings: mockShowhowListRecordings,
+			showhowTrashRecording: mockShowhowTrashRecording,
+			showhowConsumeTrashNotice: mockShowhowConsumeTrashNotice,
+			showhowRestoreRecording: mockShowhowRestoreRecording,
 			showhowImportRecording: mockImportRecording,
 			showhowCancelImport: mockCancelImport,
 			showhowOnImportProgress: mockOnImportProgress,
@@ -151,6 +174,181 @@ const browserDocEntry: WorkflowDocumentEntry = {
 };
 
 describe("RecordingLibrary", () => {
+	it("does not offer an expired Undo after the editor-to-Library window swap", async () => {
+		vi.useFakeTimers();
+		vi.setSystemTime(new Date("2026-10-23T12:00:00.000Z"));
+		const expiresAt = Date.now() + 6_000;
+		vi.advanceTimersByTime(6_001);
+		mockShowhowListRecordings.mockResolvedValue([desktopEntry]);
+		mockShowhowConsumeTrashNotice.mockResolvedValue({ undoToken: "expired-token", expiresAt });
+
+		render(
+			<>
+				<RecordingLibrary />
+				<ShowhowToaster />
+			</>,
+		);
+		await act(async () => {
+			await Promise.resolve();
+			await Promise.resolve();
+		});
+
+		expect(mockShowhowConsumeTrashNotice).toHaveBeenCalledOnce();
+		expect(screen.queryByText("Moved to Trash")).not.toBeInTheDocument();
+		expect(screen.queryByRole("button", { name: "UNDO" })).not.toBeInTheDocument();
+		expect(mockShowhowRestoreRecording).not.toHaveBeenCalled();
+	});
+
+	it("dismisses Undo independently of Sonner and ignores a stale action", async () => {
+		vi.useFakeTimers();
+		vi.setSystemTime(new Date("2026-10-23T12:00:00.000Z"));
+		mockShowhowListRecordings.mockResolvedValue([desktopEntry]);
+		mockShowhowConsumeTrashNotice.mockResolvedValue({
+			undoToken: "paused-toast-token",
+			expiresAt: Date.now() + 6_000,
+		});
+
+		render(<RecordingLibrary />);
+		await act(async () => {
+			await Promise.resolve();
+			await Promise.resolve();
+		});
+
+		expect(mockShowhowConsumeTrashNotice).toHaveBeenCalledOnce();
+		const toastEntry = toast
+			.getToasts()
+			.find((entry) => "action" in entry && entry.title === "Moved to Trash");
+		expect(toastEntry).toBeDefined();
+		if (!toastEntry || !("action" in toastEntry)) {
+			throw new Error("expected the Undo toast action");
+		}
+		const action = toastEntry.action;
+		if (
+			typeof action !== "object" ||
+			action === null ||
+			!("onClick" in action) ||
+			typeof action.onClick !== "function"
+		) {
+			throw new Error("expected a clickable Undo toast action");
+		}
+		const dismissSpy = vi.spyOn(toast, "dismiss");
+		try {
+			await act(async () => {
+				await vi.advanceTimersByTimeAsync(6_000);
+			});
+			expect(dismissSpy).toHaveBeenCalledWith(toastEntry.id);
+			render(
+				<button type="button" onClick={(event) => action.onClick(event)}>
+					Stale Undo
+				</button>,
+			);
+			fireEvent.click(screen.getByRole("button", { name: "Stale Undo" }));
+			expect(mockShowhowRestoreRecording).not.toHaveBeenCalled();
+		} finally {
+			dismissSpy.mockRestore();
+		}
+	});
+
+	it("shows the approved confirmation copy from the Library ellipsis", async () => {
+		mockShowhowListRecordings.mockResolvedValue([desktopEntry]);
+		render(<RecordingLibrary />);
+		await screen.findByRole("heading", { level: 1, name: desktopEntry.title });
+		await userEvent.click(screen.getByRole("button", { name: "More actions" }));
+		await userEvent.click(await screen.findByRole("menuitem", { name: "Move to Trash…" }));
+
+		const dialog = await screen.findByRole("dialog", { name: "Move to Trash?" });
+		expect(dialog).toHaveTextContent("YOUR LIBRARY");
+		expect(dialog).toHaveTextContent(
+			`“${desktopEntry.title}” and everything in its folder — video, guide, brief and screenshots — goes to the macOS Trash. You can put it back from there.`,
+		);
+		expect(within(dialog).getByRole("button", { name: "Cancel" })).toBeVisible();
+		expect(within(dialog).getByRole("button", { name: "Move to Trash" })).toBeVisible();
+	});
+
+	it("opens the same confirmation from a sidebar row context menu", async () => {
+		mockShowhowListRecordings.mockResolvedValue([desktopEntry]);
+		render(<RecordingLibrary />);
+		await screen.findByRole("heading", { level: 1, name: desktopEntry.title });
+		const row = within(screen.getByRole("complementary"))
+			.getByText(desktopEntry.title)
+			.closest("button");
+		if (!row) throw new Error("expected the recording sidebar row");
+		fireEvent.contextMenu(row, { clientX: 35, clientY: 48 });
+		await userEvent.click(await screen.findByRole("menuitem", { name: "Move to Trash…" }));
+		expect(await screen.findByRole("dialog", { name: "Move to Trash?" })).toBeVisible();
+	});
+
+	it("opens the confirmation with Cmd+Backspace and ignores the search field", async () => {
+		mockShowhowListRecordings.mockResolvedValue([desktopEntry]);
+		render(<RecordingLibrary />);
+		await screen.findByRole("heading", { level: 1, name: desktopEntry.title });
+		const search = screen.getByRole("searchbox", { name: "Search recordings" });
+		fireEvent.keyDown(search, { key: "Backspace", metaKey: true });
+		expect(screen.queryByRole("dialog", { name: "Move to Trash?" })).not.toBeInTheDocument();
+		fireEvent.keyDown(window, { key: "Backspace", metaKey: true });
+		expect(await screen.findByRole("dialog", { name: "Move to Trash?" })).toBeVisible();
+	});
+
+	it("removes a recording only after success and restores it from the Undo toast", async () => {
+		mockShowhowListRecordings.mockResolvedValue([desktopEntry, browserEntry]);
+		mockShowhowTrashRecording.mockResolvedValue({
+			success: true,
+			undoToken: "undo-desktop",
+			expiresAt: Date.now() + 6_000,
+		});
+		mockShowhowRestoreRecording.mockResolvedValue({
+			success: true,
+			bundleDir: desktopEntry.bundleDir,
+		});
+		render(
+			<>
+				<RecordingLibrary />
+				<ShowhowToaster />
+			</>,
+		);
+		await screen.findByRole("heading", { level: 1, name: desktopEntry.title });
+		await userEvent.click(screen.getByRole("button", { name: "More actions" }));
+		await userEvent.click(await screen.findByRole("menuitem", { name: "Move to Trash…" }));
+		const dialog = await screen.findByRole("dialog", { name: "Move to Trash?" });
+		await userEvent.click(within(dialog).getByRole("button", { name: "Move to Trash" }));
+
+		expect(mockShowhowTrashRecording).toHaveBeenCalledWith(desktopEntry.bundleDir);
+		expect(
+			await screen.findByRole("heading", { level: 1, name: browserEntry.title }),
+		).toBeVisible();
+		expect(await screen.findByText("Moved to Trash")).toBeVisible();
+		fireEvent.click(await screen.findByRole("button", { name: "UNDO" }));
+		await waitFor(() => expect(mockShowhowRestoreRecording).toHaveBeenCalledWith("undo-desktop"));
+		expect(
+			await screen.findByRole("heading", { level: 1, name: desktopEntry.title }),
+		).toBeVisible();
+	});
+
+	it("keeps the Library row when moving a recording fails", async () => {
+		mockShowhowListRecordings.mockResolvedValue([desktopEntry]);
+		mockShowhowTrashRecording.mockResolvedValue({ success: false, error: "EACCES" });
+		render(
+			<>
+				<RecordingLibrary />
+				<ShowhowToaster />
+			</>,
+		);
+		await screen.findByRole("heading", { level: 1, name: desktopEntry.title });
+		await userEvent.click(screen.getByRole("button", { name: "More actions" }));
+		await userEvent.click(await screen.findByRole("menuitem", { name: "Move to Trash…" }));
+		const dialog = await screen.findByRole("dialog", { name: "Move to Trash?" });
+		await userEvent.click(within(dialog).getByRole("button", { name: "Move to Trash" }));
+
+		expect(await screen.findByText("EACCES")).toBeVisible();
+		expect(screen.getByRole("dialog", { name: "Move to Trash?" })).toBeVisible();
+		await userEvent.click(
+			within(screen.getByRole("dialog")).getByRole("button", { name: "Cancel" }),
+		);
+		expect(
+			await screen.findByRole("heading", { level: 1, name: desktopEntry.title }),
+		).toBeVisible();
+	});
+
 	it("places the real Copy path action beside guide actions and retains the exact folder", async () => {
 		mockShowhowListRecordings.mockResolvedValue([desktopDocEntry]);
 		render(<RecordingLibrary />);

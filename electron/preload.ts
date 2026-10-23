@@ -162,6 +162,20 @@ contextBridge.exposeInMainWorld("electronAPI", {
 	},
 	showhowOpenRecording: (bundleDir: string) =>
 		ipcRenderer.invoke("showhow:open-recording", bundleDir) as Promise<{ success: boolean }>,
+	showhowTrashRecording: (bundleDir: string, returnToLibrary = false) =>
+		ipcRenderer.invoke("showhow:trash-recording", bundleDir, returnToLibrary) as Promise<
+			| import("./showhow/trashRecording").RecordingTrashResult
+			| import("./showhow/trashRecording").RecordingTrashFailure
+		>,
+	showhowRestoreRecording: (undoToken: string) =>
+		ipcRenderer.invoke("showhow:restore-recording", undoToken) as Promise<
+			import("./showhow/trashRecording").RecordingRestoreResult
+		>,
+	showhowConsumeTrashNotice: () =>
+		ipcRenderer.invoke("showhow:consume-trash-notice") as Promise<{
+			undoToken: string;
+			expiresAt: number;
+		} | null>,
 	showhowImportRecording: (
 		request: import("../src/lib/showhow/recordingLibrary").ImportRecordingRequest,
 	) =>

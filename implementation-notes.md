@@ -1619,3 +1619,57 @@ Native AFTER showed the original 288px menu cap clipped Gemini and Other; the pr
 The lead's isolated native Settings-sheet follow-up found the Radix menu portal rendered at `z-index: 50` under the two Showhow sheets at `z-index: 10000`; `elementFromPoint` hit the overlay instead of the list, and the captured screenshot showed the menu invisible. The retained native RED evidence is `/Users/mohamedb/dev/loop-evidence/showhow-178/native-harness/sheet-native-QFdX53/result.json` and `SHEET-open-list.png`. `AiConnections` now layers its portal at `z-[10001]` so the model picker remains usable above the existing sheet layer. No sheet code or class-string test assertion was added; the lead owns the native hit-test GREEN proof and a fresh review of this source follow-up.
 
 Supervisor w5N:pX approved a bounded Mock E deviation for PR #193 on 2026-10-23: replace only the OpenAI and Google picker entries with `openai/gpt-6.1-sol` (GPT-6.1 Sol) and `google/gemini-4-argon` (Gemini 4 Argon). Both exact IDs and catalogue names are present in the same captured primary OpenRouter catalogue recorded in `/Users/mohamedb/dev/loop-evidence/showhow-178/SUPERVISOR-MODEL-DELTA-VERIFICATION.json`; the raw response is `openrouter-models-20261023.json`. The three Claude entries and Haiku default remain unchanged. The earlier model-ID history and dated approval are preserved in `/Users/mohamedb/dev/loop-evidence/showhow-178/MODEL-IDS.md`.
+
+## 23 October 2026 — Showhow #179 recording Trash
+
+The #179 candidate wires all four approved entry points: Library detail actions, sidebar row context menu, Cmd+Backspace on the selected row, and the macOS editor topbar menu. Confirmation uses the approved copy. The main-process service validates the recording bundle, stages it under a visible basename plus UUID, calls only Electron shell.trashItem, and restores through the exact in-memory Trash path and inode identity. Restore reserves the original path with non-recursive mkdir; conflicts, symlink substitutions, and rollback failures leave the recording recoverable and never overwrite a competing bundle. Trash uses os.userInfo().homedir, with injectable paths for filesystem tests; Undo lasts six seconds and carries one expiresAt deadline across the editor-to-Library swap.
+
+The editor reuses promptUnsaved("close") and UnsavedChangesModal for Save, Discard, and Cancel. The Trash sheet hides while that prompt and its save are active, then remains as a busy modal through Trash IPC and Library handoff. The project ID and primary recording bundle are checked before the prompt, before moving, and after the IPC response; new document changes that arrive during the move trigger a fresh unsaved prompt before handoff. Before Trash begins, Save failure and Cancel leave the original media in place. If new dirty work appears during Trash IPC, Cancel in the post-IPC unsaved prompt preserves that work while the bundle already moved to Trash remains there.
+
+The Undo toast uses the main-process expiresAt deadline across navigation. Because Sonner pauses its
+own duration while expanded, interacting, or the document is hidden, the Library also schedules an
+independent deadline timer that dismisses the returned toast ID; the Undo action checks expiresAt
+again before restoring. The focused RED showed no dismiss at six seconds without that timer, and the
+GREEN exercises expiry with no Sonner renderer mounted plus a stale action invocation.
+
+Necessary caller alignment added src/components/showhow/LibraryRow.tsx, src/components/ai-edition/v4/EditorTopBar.tsx, and src/components/ai-edition/NewEditorShell.tsx, with focused tests in their owning packages. This is bounded to the four issue entry points. Supervisor w5N:pX approved the standing locale rule for this ticket: new showhowTrash keys use English placeholder values in all other 14 locale files, keeping all 15 structures aligned. No parity checker or test was weakened.
+
+RED evidence is preserved at /Users/mohamedb/dev/loop-evidence/showhow-179/red-renderer-baseline-20261023/, red-editor-topbar-20261023/, red-editor-shell-20261023/, and red-window-swap-expiry-20261023/. Some final interaction cases were added after the initial UI draft; the archived baseline runs exposed the missing entry/menu paths, and the final candidate focused run covers Save ordering/failure, Discard, Cancel, project switching, and deferred Trash IPC with new dirty work. The exact passing receipt is /Users/mohamedb/dev/loop-evidence/showhow-179/checks-20261023/focused-tests-final.json (4 files, 135 passed). Main filesystem behavior is exercised by electron/showhow/trashRecording.test.ts, not renderer-only mocks.
+
+Candidate checks: the current focused main Trash service, Library, editor topbar, and NewEditorShell suite passed 136/136 at checks-20261023/focused-tests-deadline-final.json; the earlier 135-test receipt is superseded. checks-20261023/tsc-deadline-final.json passed after the deadline timer change. checks-20261023/biome-deadline-final.json passed with three warnings (one missing openVoiceoverFlow dependency elsewhere in NewEditorShell and two empty-block warnings already present in the TopBar test). checks-20261023/i18n.json passed across all 15 locales. checks-20261023/build-vite.json passed before the final JSX containment cleanup and deadline timer, so lead owns the exact candidate rebuild. Formatting and import sorting for changed files are complete. The deadline seam's behavioral RED and GREEN, plus two preserved test-harness attempts and their classifications, are in checks-20261023/toast-deadline-*.json/log. The initial duplicate --run attempt and zsh receipt-variable error remain recorded as setup/capture failures, not product RED. The successful build-vite emitted the repository's existing stale Browserslist-data and dynamic-chunk warnings.
+
+Lead-owned native product proof has not run. The prior isolated native environment preflight only confirmed that one exact unique fixture path in real ~/.Trash was absent; it made no Trash call and is not Undo proof. Lead owns candidate build binding, Library native Trash/Undo, the hydrated editor journey, full affected suites, final review, and any commit/push/PR. No commit or push was made.
+
+## 23 October 2026 — Showhow #179 final Prove and native proof
+
+This addendum supersedes the preceding status that native product proof had not run. Lead Prove
+`/Users/mohamedb/dev/loop-evidence/showhow-179/lead-prove-j0And4/CHECKS.json` records full unit
+tests passing (4,990 passed, 2 skipped), browser tests passing (29), full Biome exit 0 with 28
+warnings, and passing i18n, branding, and build-vite checks. Test TypeScript initially exited 2;
+the exact diagnostics remain in `typescript-tests.stdout`. The bounded repair changed only
+`electron/showhow/trashRecording.test.ts` and `src/components/library/RecordingLibrary.test.tsx`
+for type-safe assertions/narrowing. The repaired test-project typecheck and focused main/Library
+tests passed; their receipts and the candidate hash comparison are under
+`/Users/mohamedb/dev/loop-evidence/showhow-179/test-type-repair-20261023/`. All 24 runtime files
+remained byte-identical. This addendum's only repository change is documentation.
+
+Lead's macOS product proof passed at
+`/Users/mohamedb/dev/loop-evidence/showhow-179/after-native-5b7zV1/result.json`, with a steady
+screenshot recapture at
+`/Users/mohamedb/dev/loop-evidence/showhow-179/after-native-EEgVSg/result.json`. All four real
+entry points opened the exact approved confirmation. Each run logged only two `shell.trashItem`
+calls for its known synthetic fixture. Library Undo and editor-to-Library Undo restored the bundle
+to its original path with its original inode identity and every content hash. The final audit at
+`/Users/mohamedb/dev/loop-evidence/showhow-179/FINAL-NATIVE-FIXTURE-AUDIT.json` confirms the two
+known Trash paths from each run are absent and both originals are restored. The lead inspected
+steady screenshots 01, 02, 03, 07, and 08 plus the restore-toast and restored-state captures. The
+steady recapture disabled screenshot animations for capture; earlier mid-animation screenshots
+remain preserved.
+
+The first native product attempt at
+`/Users/mohamedb/dev/loop-evidence/showhow-179/after-native-0nZSI5/result.json` failed on a harness
+locator before any Trash call; that receipt remains preserved. The passing runs used unpackaged
+Electron 41.2.1 on macOS and only harness-owned synthetic bundles and their exact known Trash paths.
+No Trash enumeration or owner recordings, auth, settings, or installed app state was touched.
+Windows/Linux, packaged or installed builds, and macOS 13 hardware remain untested. No commit or
+push was made.

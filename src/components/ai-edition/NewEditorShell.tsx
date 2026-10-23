@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { MoveRecordingToTrashSheet } from "@/components/showhow/MoveRecordingToTrashSheet";
 import type { EditorProjectData } from "@/components/video-editor/projectPersistence";
 import { toFileUrl } from "@/components/video-editor/projectPersistence";
 import { useEditorDialogActions } from "@/contexts/EditorDialogsContext";
@@ -128,6 +129,33 @@ export const DEFAULT_TIMELINE_HEIGHT_PX = 392;
 export const MIN_TIMELINE_HEIGHT_PX = 160;
 export const MAX_TIMELINE_HEIGHT_PX = 560;
 
+function recordingBundleDir(videoPath: string | null): string | null {
+	if (!videoPath) return null;
+	const separator = Math.max(videoPath.lastIndexOf("/"), videoPath.lastIndexOf("\\"));
+	const fileName = videoPath.slice(separator + 1);
+	return separator >= 0 && (fileName === "video.mp4" || fileName === "video.webm")
+		? videoPath.slice(0, separator)
+		: null;
+}
+
+function recordingBundleDirForDocument(document: AxcutDocument | null): string | null {
+	if (!document) return null;
+	const videoPath =
+		document.assets.find((asset) => asset.id === document.project.primaryAssetId)?.originalPath ??
+		null;
+	return recordingBundleDir(videoPath);
+}
+
+function isCurrentRecordingTarget(
+	document: AxcutDocument | null,
+	target: { bundleDir: string; projectId: string },
+): boolean {
+	return (
+		document?.project.id === target.projectId &&
+		recordingBundleDirForDocument(document) === target.bundleDir
+	);
+}
+
 /**
  * What one `loadedmetadata` event does, from the front of the write queue.
  *
@@ -196,6 +224,7 @@ export async function runLoadedMetadataWrite(
 
 export function NewEditorShell() {
 	const te = useScopedT("editor");
+	const tc = useScopedT("common");
 	useMcpDocumentHost();
 	const document = useProjectStore((s) => s.document);
 	const projectId = useProjectStore((s) => s.projectId);
@@ -218,6 +247,13 @@ export function NewEditorShell() {
 	// timeline, and a docked inspector on the right whose rail also opens the AI chat.
 	const [mode, setMode] = useState<EditorMode>("edit");
 	const [chatOpen, setChatOpen] = useState(false);
+	const [trashTarget, setTrashTarget] = useState<{
+		bundleDir: string;
+		projectId: string;
+		title: string;
+	} | null>(null);
+	const [trashBusy, setTrashBusy] = useState(false);
+	const [trashAwaitingUnsaved, setTrashAwaitingUnsaved] = useState(false);
 	const pendingChatPrompt = useChatPromptBus((s) => s.pending);
 	useEffect(() => {
 		if (pendingChatPrompt && !chatOpen) {
@@ -345,17 +381,15 @@ export function NewEditorShell() {
 
 	const promptUnsaved = useCallback(
 		(action: "close" | "new" | "open" | "record"): Promise<UnsavedChoice> => {
-			if (!dirty) return Promise.resolve("discard");
+			if (!useProjectStore.getState().dirty) return Promise.resolve("discard");
 			return new Promise<UnsavedChoice>((resolve) => {
 				setUnsavedPrompt({ action, resolve });
 			});
 		},
-		[dirty],
+		[],
 	);
 
-	const primaryAssetPath =
-		document?.assets.find((a) => a.id === document.project.primaryAssetId)?.originalPath ?? null;
-	void primaryAssetPath;
+	const trashableBundleDir = recordingBundleDirForDocument(document);
 	const clips: AxcutClip[] = document?.timeline.clips ?? [];
 	const visibleClips = useMemo(() => (document ? resolveVisibleClips(document) : []), [document]);
 	const hasProject = Boolean(document);
@@ -992,6 +1026,92 @@ export function NewEditorShell() {
 		}
 	}, [promptUnsaved]);
 
+	const handleRequestTrashRecording = useCallback(async () => {
+		const openDocument = useProjectStore.getState().document;
+		const projectId = openDocument?.project.id;
+		const bundleDir = recordingBundleDirForDocument(openDocument);
+		if (!projectId || !bundleDir) return;
+		try {
+			const entries = await window.electronAPI?.showhowListRecordings?.();
+			const target = { bundleDir, projectId };
+			if (!isCurrentRecordingTarget(useProjectStore.getState().document, target)) return;
+			const entry = entries?.find((candidate) => candidate.bundleDir === bundleDir);
+			if (!entry) {
+				toast.error(tc("showhowTrash.moveError"));
+				return;
+			}
+			setTrashTarget({ projectId, bundleDir: entry.bundleDir, title: entry.title });
+		} catch (error) {
+			console.error("[editor] failed to find recording for Trash:", error);
+			toast.error(tc("showhowTrash.moveError"), {
+				description: error instanceof Error ? error.message : String(error),
+			});
+		}
+	}, [tc]);
+
+	const handleConfirmTrashRecording = useCallback(async () => {
+		if (!trashTarget || trashBusy) return;
+		setTrashBusy(true);
+		setTrashAwaitingUnsaved(true);
+		try {
+			if (!isCurrentRecordingTarget(useProjectStore.getState().document, trashTarget)) {
+				console.warn("[editor] skipped Trash because the open recording changed");
+				toast.error(tc("showhowTrash.moveError"));
+				setTrashTarget(null);
+				return;
+			}
+			const choice = await promptUnsaved("close");
+			if (choice === "cancel") {
+				setTrashTarget(null);
+				return;
+			}
+			if (!isCurrentRecordingTarget(useProjectStore.getState().document, trashTarget)) {
+				console.warn("[editor] skipped Trash because the open recording changed");
+				toast.error(tc("showhowTrash.moveError"));
+				setTrashTarget(null);
+				return;
+			}
+			const approvedDocument = useProjectStore.getState().document;
+			setTrashAwaitingUnsaved(false);
+			const result = await window.electronAPI?.showhowTrashRecording?.(trashTarget.bundleDir, true);
+			if (!result?.success) {
+				console.error("[editor] failed to move recording to Trash:", result?.error);
+				toast.error(tc("showhowTrash.moveError"), { description: result?.error });
+				return;
+			}
+			const settledDocument = useProjectStore.getState().document;
+			if (settledDocument !== approvedDocument) {
+				if (!isCurrentRecordingTarget(settledDocument, trashTarget)) {
+					console.warn("[editor] recording moved, but the open project changed before handoff");
+					setTrashTarget(null);
+					return;
+				}
+				setTrashAwaitingUnsaved(true);
+				const followUpChoice = await promptUnsaved("close");
+				if (followUpChoice === "cancel") {
+					setTrashTarget(null);
+					return;
+				}
+				if (!isCurrentRecordingTarget(useProjectStore.getState().document, trashTarget)) {
+					console.warn("[editor] recording moved, but the open project changed before handoff");
+					setTrashTarget(null);
+					return;
+				}
+				setTrashAwaitingUnsaved(false);
+			}
+			await window.electronAPI?.showhowOpenLibrary?.();
+			setTrashTarget(null);
+		} catch (error) {
+			console.error("[editor] failed to move recording to Trash:", error);
+			toast.error(tc("showhowTrash.moveError"), {
+				description: error instanceof Error ? error.message : String(error),
+			});
+		} finally {
+			setTrashAwaitingUnsaved(false);
+			setTrashBusy(false);
+		}
+	}, [promptUnsaved, tc, trashBusy, trashTarget]);
+
 	const handleExport = useCallback(() => {
 		if (!hasAsset) {
 			toast.info("Add a video to the project before exporting.");
@@ -1555,6 +1675,7 @@ export function NewEditorShell() {
 					showAbout: handleShowAbout,
 					checkForUpdates: handleCheckForUpdates,
 					openLibrary: () => void handleOpenLibrary(),
+					trashRecording: trashableBundleDir ? handleRequestTrashRecording : undefined,
 					newRecording: () => setMode("rec"),
 				}}
 			/>
@@ -1766,6 +1887,15 @@ export function NewEditorShell() {
 				}}
 				action={unsavedPrompt?.action ?? "new"}
 				onChoose={handleConfirmUnsaved}
+			/>
+			<MoveRecordingToTrashSheet
+				open={trashTarget !== null && !trashAwaitingUnsaved}
+				title={trashTarget?.title ?? ""}
+				busy={trashBusy}
+				onOpenChange={(open) => {
+					if (!open) setTrashTarget(null);
+				}}
+				onConfirm={() => void handleConfirmTrashRecording()}
 			/>
 			<AddAudioLayerDialog
 				open={voiceoverFlow !== null}

@@ -3,6 +3,7 @@ import "@testing-library/jest-dom";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fireEvent, render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
@@ -19,6 +20,7 @@ const platform = vi.hoisted(() => ({ isMac: false }));
 vi.mock("@/contexts/ShortcutsContext", () => ({
 	useShortcuts: () => ({ isMac: platform.isMac }),
 }));
+vi.mock("@/utils/platformUtils", () => ({ isMac: () => platform.isMac }));
 
 class StubResizeObserver {
 	observe = vi.fn();
@@ -53,6 +55,7 @@ function renderTopBar(
 	const onSave = vi.fn();
 	const onOpenLibrary = vi.fn();
 	const onNewRecording = vi.fn();
+	const onTrashRecording = vi.fn();
 	const onModeChange = vi.fn();
 	render(
 		<TooltipProvider>
@@ -74,6 +77,7 @@ function renderTopBar(
 					checkForUpdates: onCheckForUpdates,
 					openLibrary: onOpenLibrary,
 					newRecording: onNewRecording,
+					trashRecording: onTrashRecording,
 				}}
 			/>
 		</TooltipProvider>,
@@ -89,6 +93,7 @@ function renderTopBar(
 		onSave,
 		onOpenLibrary,
 		onNewRecording,
+		onTrashRecording,
 		onModeChange,
 	};
 }
@@ -107,6 +112,15 @@ function stubElectronAPI(info: { version: string; canCheckForUpdates: boolean })
 }
 
 describe("ProjectNameField (issue #180)", () => {
+	it("opens the macOS editor menu and routes Move to Trash to its action", async () => {
+		platform.isMac = true;
+		const user = userEvent.setup();
+		const { onTrashRecording } = renderTopBar("Demo Project");
+		await user.click(screen.getByRole("button", { name: "showhowTrash.moreActions" }));
+		await user.click(await screen.findByRole("menuitem", { name: "showhowTrash.menuItem" }));
+		expect(onTrashRecording).toHaveBeenCalledOnce();
+	});
+
 	it("renders the project title on the button", () => {
 		renderTopBar("Demo Project");
 		expect(screen.getByRole("button", { name: "topbar.renameProject" })).toHaveTextContent(

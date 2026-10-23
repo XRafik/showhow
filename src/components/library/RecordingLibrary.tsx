@@ -1,5 +1,17 @@
-import { CircleDot, FileText, Folder, Scissors, Search, Settings, Upload } from "lucide-react";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
+import {
+	CircleDot,
+	FileText,
+	Folder,
+	MoreHorizontal,
+	Scissors,
+	Search,
+	Settings,
+	Trash2,
+	Upload,
+} from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import {
 	AgentBriefPanel,
 	AgentBriefSheets,
@@ -14,6 +26,7 @@ import { Field } from "@/components/showhow/Field";
 import { GuideStep, Mosaic } from "@/components/showhow/GuideStep";
 import { ImportVideoSheet } from "@/components/showhow/ImportVideoSheet";
 import { LibraryRow } from "@/components/showhow/LibraryRow";
+import { MoveRecordingToTrashSheet } from "@/components/showhow/MoveRecordingToTrashSheet";
 import { Progress } from "@/components/showhow/Progress";
 import { SettingsView } from "@/components/showhow/SettingsView";
 import { Shell } from "@/components/showhow/Shell";
@@ -24,6 +37,7 @@ import { VideoPlayer } from "@/components/showhow/VideoPlayer";
 import { useScopedT } from "@/contexts/I18nContext";
 import type { RecordingLibraryEntry } from "@/lib/showhow/recordingLibrary";
 import type { WorkflowDocumentUpdate } from "@/lib/showhow/workflowDocument";
+import { isMac } from "@/utils/platformUtils";
 import { filterRecordings } from "./library-search";
 
 // ---- helpers -----------------------------------------------------------------
@@ -85,12 +99,16 @@ function ErrorLibraryState() {
 
 function RecordingDetail({
 	entry,
+	showTrashAction,
+	onTrashRequest,
 	onEntryChange,
 	onTitleChange,
 	onStepsChange,
 	onGuideStatusChange,
 }: {
 	entry: RecordingLibraryEntry;
+	showTrashAction: boolean;
+	onTrashRequest: (entry: RecordingLibraryEntry) => void;
 	onEntryChange: (entry: RecordingLibraryEntry) => void;
 	onTitleChange: (bundleDir: string, title: string) => void;
 	onStepsChange: (bundleDir: string, steps: RecordingLibraryEntry["steps"]) => void;
@@ -468,6 +486,34 @@ function RecordingDetail({
 							>
 								Rename
 							</Button>
+							{showTrashAction && (
+								<DropdownMenu.Root>
+									<DropdownMenu.Trigger asChild>
+										<button
+											type="button"
+											aria-label={t("showhowTrash.moreActions")}
+											className="inline-flex size-10 items-center justify-center rounded-[4px] border border-ds-line text-ds-ink-soft hover:bg-ds-ink-wash focus-visible:outline focus-visible:outline-2 focus-visible:outline-ds-accent"
+										>
+											<MoreHorizontal size={16} aria-hidden="true" />
+										</button>
+									</DropdownMenu.Trigger>
+									<DropdownMenu.Portal>
+										<DropdownMenu.Content
+											align="end"
+											sideOffset={4}
+											className="z-[10001] min-w-48 rounded-[6px] border border-ds-line bg-ds-surface p-1 text-ds-ink shadow-[4px_4px_0_var(--ds-accent)]"
+										>
+											<DropdownMenu.Item
+												className="flex cursor-pointer items-center gap-2 rounded px-3 py-2 text-left text-sm outline-none data-[highlighted]:bg-ds-ink-wash"
+												onSelect={() => onTrashRequest(entry)}
+											>
+												<Trash2 size={14} aria-hidden="true" />
+												{t("showhowTrash.menuItem")}
+											</DropdownMenu.Item>
+										</DropdownMenu.Content>
+									</DropdownMenu.Portal>
+								</DropdownMenu.Root>
+							)}
 						</div>
 					</>
 				)}
@@ -726,6 +772,7 @@ function TranscriptOnlyDocSection({ entry }: { entry: RecordingLibraryEntry }) {
  */
 export function RecordingLibrary() {
 	const t = useScopedT("common");
+	const mac = isMac();
 	const [entries, setEntries] = useState<RecordingLibraryEntry[]>([]);
 	const [selectedBundleDir, setSelectedBundleDir] = useState<string | null>(null);
 	const [query, setQuery] = useState("");
@@ -736,6 +783,14 @@ export function RecordingLibrary() {
 	const [settingsOpen, setSettingsOpen] = useState(false);
 	const [loading, setLoading] = useState(true);
 	const [loadError, setLoadError] = useState(false);
+	const [trashEntry, setTrashEntry] = useState<RecordingLibraryEntry | null>(null);
+	const [trashBusy, setTrashBusy] = useState(false);
+	const [contextMenu, setContextMenu] = useState<{
+		entry: RecordingLibraryEntry;
+		x: number;
+		y: number;
+	} | null>(null);
+	const contextMenuRef = useRef<HTMLDivElement>(null);
 	useEffect(() => {
 		let active = true;
 		window.electronAPI
@@ -756,6 +811,58 @@ export function RecordingLibrary() {
 			active = false;
 		};
 	}, []);
+	const restoreRecording = useCallback(
+		async (undoToken: string) => {
+			try {
+				const result = await window.electronAPI.showhowRestoreRecording(undoToken);
+				if (!result.success || !result.bundleDir) {
+					toast.error(t("showhowTrash.restoreError"));
+					return;
+				}
+				const restoredEntries = await window.electronAPI.showhowListRecordings();
+				setEntries(restoredEntries);
+				setSelectedBundleDir(result.bundleDir);
+				setQuery("");
+				setOverview(false);
+				setSettingsOpen(false);
+				setLoadError(false);
+			} catch (error) {
+				console.error("[RecordingLibrary] restore recording failed:", error);
+				toast.error(t("showhowTrash.restoreError"));
+			}
+		},
+		[t],
+	);
+	const showTrashUndo = useCallback(
+		(undoToken: string, expiresAt: number) => {
+			const duration = Math.max(0, expiresAt - Date.now());
+			if (duration === 0) return;
+			const toastId = toast(t("showhowTrash.moved"), {
+				duration,
+				action: {
+					label: t("showhowTrash.undo"),
+					onClick: () => {
+						toast.dismiss(toastId);
+						if (Date.now() >= expiresAt) return;
+						void restoreRecording(undoToken);
+					},
+				},
+			});
+			window.setTimeout(() => toast.dismiss(toastId), duration);
+		},
+		[restoreRecording, t],
+	);
+	useEffect(() => {
+		const consumeNotice = window.electronAPI?.showhowConsumeTrashNotice;
+		if (!consumeNotice) return;
+		void consumeNotice()
+			.then((notice) => {
+				if (notice) showTrashUndo(notice.undoToken, notice.expiresAt);
+			})
+			.catch((error: unknown) => {
+				console.error("[RecordingLibrary] failed to consume trash notice:", error);
+			});
+	}, [showTrashUndo]);
 	const visibleEntries = filterRecordings(entries, query);
 	const activeEntry =
 		visibleEntries.find((entry) => entry.bundleDir === selectedBundleDir) ?? visibleEntries[0];
@@ -786,6 +893,74 @@ export function RecordingLibrary() {
 			current.map((entry) => (entry.bundleDir === bundleDir ? { ...entry, title } : entry)),
 		);
 	};
+	const handleTrashConfirm = async () => {
+		if (!trashEntry || trashBusy) return;
+		setTrashBusy(true);
+		try {
+			const result = await window.electronAPI.showhowTrashRecording(trashEntry.bundleDir);
+			if (!result.success) {
+				console.error("[RecordingLibrary] failed to move recording to Trash:", result.error);
+				toast.error(t("showhowTrash.moveError"), { description: result.error });
+				return;
+			}
+			const removedIndex = entries.findIndex((entry) => entry.bundleDir === trashEntry.bundleDir);
+			const remainingEntries = entries.filter((entry) => entry.bundleDir !== trashEntry.bundleDir);
+			setEntries(remainingEntries);
+			setSelectedBundleDir((selected) =>
+				selected === trashEntry.bundleDir
+					? (remainingEntries[Math.min(removedIndex, remainingEntries.length - 1)]?.bundleDir ??
+						null)
+					: selected,
+			);
+			setTrashEntry(null);
+			setOverview(false);
+			setSettingsOpen(false);
+			showTrashUndo(result.undoToken, result.expiresAt);
+		} catch (error) {
+			console.error("[RecordingLibrary] failed to move recording to Trash:", error);
+			toast.error(t("showhowTrash.moveError"), {
+				description: error instanceof Error ? error.message : String(error),
+			});
+		} finally {
+			setTrashBusy(false);
+		}
+	};
+	useEffect(() => {
+		if (!contextMenu) return;
+		contextMenuRef.current?.focus();
+	}, [contextMenu]);
+	useEffect(() => {
+		if (!mac) return;
+		const onKeyDown = (event: KeyboardEvent) => {
+			if (
+				event.key !== "Backspace" ||
+				!event.metaKey ||
+				event.ctrlKey ||
+				event.altKey ||
+				event.shiftKey ||
+				event.defaultPrevented ||
+				trashEntry ||
+				overview ||
+				settingsOpen
+			) {
+				return;
+			}
+			const target = event.target;
+			if (
+				target instanceof HTMLElement &&
+				(target.isContentEditable ||
+					target.closest("input, textarea, select, [contenteditable='true']"))
+			) {
+				return;
+			}
+			const selected = entries.find((entry) => entry.bundleDir === selectedBundleDir);
+			if (!selected) return;
+			event.preventDefault();
+			setTrashEntry(selected);
+		};
+		window.addEventListener("keydown", onKeyDown);
+		return () => window.removeEventListener("keydown", onKeyDown);
+	}, [entries, mac, overview, selectedBundleDir, settingsOpen, trashEntry]);
 	return (
 		<Shell
 			className="h-screen"
@@ -857,6 +1032,18 @@ export function RecordingLibrary() {
 									</Tag>
 								}
 								processing={entry.guideStatus === "making" ? <Mosaic /> : undefined}
+								onContextMenu={
+									mac
+										? (event) => {
+												event.preventDefault();
+												event.currentTarget.focus();
+												setSettingsOpen(false);
+												setOverview(false);
+												setSelectedBundleDir(entry.bundleDir);
+												setContextMenu({ entry, x: event.clientX, y: event.clientY });
+											}
+										: undefined
+								}
 								selected={!overview && !settingsOpen && entry.bundleDir === activeEntry?.bundleDir}
 								onSelect={() => {
 									setSettingsOpen(false);
@@ -876,6 +1063,52 @@ export function RecordingLibrary() {
 				</Sidebar>
 			}
 		>
+			<MoveRecordingToTrashSheet
+				open={trashEntry !== null}
+				title={trashEntry?.title ?? ""}
+				busy={trashBusy}
+				onOpenChange={(open) => {
+					if (!open) setTrashEntry(null);
+				}}
+				onConfirm={() => void handleTrashConfirm()}
+			/>
+			{contextMenu && (
+				<div
+					className="fixed inset-0 z-[10001]"
+					onPointerDown={(event) => {
+						if (event.target === event.currentTarget) setContextMenu(null);
+					}}
+				>
+					<div
+						ref={contextMenuRef}
+						role="menu"
+						aria-label={t("showhowTrash.moreActions")}
+						tabIndex={-1}
+						onKeyDown={(event) => {
+							if (event.key === "Escape") setContextMenu(null);
+						}}
+						className="fixed min-w-48 rounded-[6px] border border-ds-line bg-ds-surface p-1 text-ds-ink shadow-[4px_4px_0_var(--ds-accent)]"
+						style={{
+							left: Math.max(8, Math.min(contextMenu.x, window.innerWidth - 208)),
+							top: Math.max(8, Math.min(contextMenu.y, window.innerHeight - 52)),
+						}}
+					>
+						<button
+							type="button"
+							role="menuitem"
+							autoFocus
+							className="flex w-full cursor-pointer items-center gap-2 rounded px-3 py-2 text-left text-sm outline-none hover:bg-ds-ink-wash focus:bg-ds-ink-wash"
+							onClick={() => {
+								setTrashEntry(contextMenu.entry);
+								setContextMenu(null);
+							}}
+						>
+							<Trash2 size={14} aria-hidden="true" />
+							{t("showhowTrash.menuItem")}
+						</button>
+					</div>
+				</div>
+			)}
 			<ImportVideoSheet
 				open={importOpen}
 				onOpenChange={setImportOpen}
@@ -941,6 +1174,8 @@ export function RecordingLibrary() {
 							<RecordingDetail
 								key={activeEntry.bundleDir}
 								entry={activeEntry}
+								showTrashAction={mac}
+								onTrashRequest={setTrashEntry}
 								onEntryChange={replaceEntry}
 								onTitleChange={updateTitle}
 								onStepsChange={updateSteps}

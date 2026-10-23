@@ -553,6 +553,20 @@ interface Window {
 		setTitleBarOverlay: (color: string, symbolColor: string) => void;
 		getPlatform: () => string;
 		getSystemVersion: () => string;
+		showhowTrashRecording: (
+			bundleDir: string,
+			returnToLibrary?: boolean,
+		) => Promise<
+			| import("./showhow/trashRecording").RecordingTrashResult
+			| import("./showhow/trashRecording").RecordingTrashFailure
+		>;
+		showhowRestoreRecording: (
+			undoToken: string,
+		) => Promise<import("./showhow/trashRecording").RecordingRestoreResult>;
+		showhowConsumeTrashNotice: () => Promise<{
+			undoToken: string;
+			expiresAt: number;
+		} | null>;
 		getAppInfo: () => Promise<{ version: string; canCheckForUpdates: boolean }>;
 		checkForUpdates: () => Promise<void>;
 		showAbout: () => Promise<void>;
