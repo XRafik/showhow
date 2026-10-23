@@ -1,8 +1,8 @@
-import { mkdir, mkdtemp, readFile, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { createRecordingBundle } from "./bundle";
+import { configureShowhowSettingsFile, createRecordingBundle } from "./bundle";
 import { listRecordings, readRecordingEntry, regenerateRecordingDoc } from "./recordingLibrary";
 
 async function makeTempRoot(): Promise<string> {
@@ -10,6 +10,34 @@ async function makeTempRoot(): Promise<string> {
 }
 
 describe("listRecordings", () => {
+	it("scans the persisted recordings root when no root is supplied", async () => {
+		const userData = await makeTempRoot();
+		const recordingsRoot = path.join(userData, "chosen recordings");
+		const bundleDir = path.join(recordingsRoot, "chosen-recording");
+		await mkdir(bundleDir, { recursive: true });
+		await writeFile(
+			path.join(bundleDir, "meta.json"),
+			JSON.stringify({
+				title: "Chosen take",
+				source: "desktop",
+				createdAt: 5,
+				video: "video.webm",
+			}),
+		);
+		await writeFile(path.join(bundleDir, "video.webm"), "video");
+		await writeFile(
+			path.join(userData, "showhow-settings.json"),
+			JSON.stringify({ recordingsRoot }),
+		);
+		configureShowhowSettingsFile(userData);
+		try {
+			expect(await listRecordings()).toMatchObject([{ bundleDir, title: "Chosen take" }]);
+		} finally {
+			configureShowhowSettingsFile(path.join(userData, "missing-user-data"));
+			await rm(userData, { recursive: true, force: true });
+		}
+	});
+
 	it("reads an imported MP4 bundle without inventing capture telemetry", async () => {
 		const root = await makeTempRoot();
 		const dir = path.join(root, "imported");

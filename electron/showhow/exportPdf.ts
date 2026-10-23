@@ -164,7 +164,7 @@ export function registerPdfExportHandlers(deps: {
 		channel: string,
 		handler: (event: { sender: { id: number } }, ...args: unknown[]) => Promise<unknown>,
 	) => void;
-	recordingsRoot: string;
+	recordingsRoot: string | (() => string);
 	downloadsDir: string;
 	homeDir: string;
 	chooseSaveFile: (defaultPath: string) => Promise<string | null>;
@@ -183,7 +183,9 @@ export function registerPdfExportHandlers(deps: {
 	};
 	async function bundlePath(value: unknown) {
 		if (typeof value !== "string") throw new Error("Invalid bundle");
-		const root = await fs.realpath(deps.recordingsRoot);
+		const recordingsRoot =
+			typeof deps.recordingsRoot === "function" ? deps.recordingsRoot() : deps.recordingsRoot;
+		const root = await fs.realpath(recordingsRoot);
 		const real = await fs.realpath(path.resolve(value));
 		if (!real.startsWith(root + path.sep)) throw new Error("Outside recordings root");
 		return real;

@@ -311,11 +311,14 @@ function createMediaFileStream(
  * or untrusted URLs can never throw into the protocol handler.
  */
 export async function fetchShowhowMedia(
-	recordingsRoot: string,
+	recordingsRoot: string | (() => string),
 	request: ShowhowMediaRequest,
 ): Promise<Response> {
 	try {
-		return await serveShowhowMedia(recordingsRoot, request);
+		return await serveShowhowMedia(
+			typeof recordingsRoot === "function" ? recordingsRoot() : recordingsRoot,
+			request,
+		);
 	} catch (error) {
 		if (isAbortError(error)) {
 			throw error;

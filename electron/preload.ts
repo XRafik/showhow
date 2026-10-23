@@ -154,6 +154,29 @@ contextBridge.exposeInMainWorld("electronAPI", {
 		ipcRenderer.invoke("showhow:settings-info") as Promise<
 			import("../src/lib/showhow/settings").ShowhowSettingsInfo
 		>,
+	showhowChooseRecordingsFolder: () =>
+		ipcRenderer.invoke("showhow:choose-recordings-folder") as Promise<
+			import("../src/lib/showhow/settings").RecordingsFolderSelectionResult
+		>,
+	showhowChangeRecordingsFolder: (
+		token: string,
+		action: import("../src/lib/showhow/settings").RecordingsFolderAction,
+	) =>
+		ipcRenderer.invoke("showhow:change-recordings-folder", token, action) as Promise<
+			import("../src/lib/showhow/settings").RecordingsFolderChangeResult
+		>,
+	showhowOnRecordingsFolderMoveProgress: (
+		callback: (
+			progress: import("../src/lib/showhow/settings").RecordingsFolderMoveProgress,
+		) => void,
+	) => {
+		const listener = (
+			_event: Electron.IpcRendererEvent,
+			progress: import("../src/lib/showhow/settings").RecordingsFolderMoveProgress,
+		) => callback(progress);
+		ipcRenderer.on("showhow:recordings-folder-move-progress", listener);
+		return () => ipcRenderer.removeListener("showhow:recordings-folder-move-progress", listener);
+	},
 	showhowGetSystemTheme: () => ipcRenderer.invoke("showhow:get-system-theme") as Promise<boolean>,
 	showhowOnSystemThemeChanged: (callback: (isDark: boolean) => void) => {
 		const listener = (_event: unknown, isDark: boolean) => callback(isDark);

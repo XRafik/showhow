@@ -1,10 +1,11 @@
 import { randomUUID } from "node:crypto";
 import type { Stats } from "node:fs";
-import { lstat, mkdir, readFile, realpath, rename, rmdir } from "node:fs/promises";
+import { promises as nodeFs } from "node:fs";
+import { lstat, mkdir, readFile, realpath, rmdir } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { shell } from "electron";
-import { SHOWHOW_RECORDINGS_ROOT } from "./bundle";
+import { getRecordingsRoot } from "./bundle";
 
 const UNDO_WINDOW_MS = 6_000;
 
@@ -44,7 +45,7 @@ export interface RecordingRestoreResult {
 }
 
 interface RecordingTrashServiceOptions {
-	recordingsRoot?: string;
+	recordingsRoot?: string | (() => string);
 	userHomeDir?: string;
 	trashItem?: (bundleDir: string) => Promise<void>;
 }
@@ -135,7 +136,7 @@ export async function moveWithReservation(
 		) {
 			throw new Error("Destination reservation changed before move");
 		}
-		await rename(source, destination);
+		await nodeFs.rename(source, destination);
 	} catch (error) {
 		await removeOwnedEmptyReservation(destination, reservationIdentity);
 		throw error;
@@ -201,12 +202,13 @@ function stagedName(bundlePath: string): string {
 }
 
 export function createRecordingTrashService({
-	recordingsRoot = SHOWHOW_RECORDINGS_ROOT,
+	recordingsRoot = getRecordingsRoot,
 	userHomeDir = os.userInfo().homedir,
 	trashItem = (bundleDir) => shell.trashItem(bundleDir),
 }: RecordingTrashServiceOptions = {}) {
 	const undoRecords = new Map<string, UndoRecord>();
-	const rootPath = path.resolve(recordingsRoot);
+	const resolveRoot = () =>
+		path.resolve(typeof recordingsRoot === "function" ? recordingsRoot() : recordingsRoot);
 	const homePath = path.resolve(userHomeDir);
 
 	return {
@@ -219,7 +221,7 @@ export function createRecordingTrashService({
 			let trashRoot: DirectorySnapshot;
 			let sourceStat: Stats;
 			try {
-				root = await snapshotDirectory(rootPath);
+				root = await snapshotDirectory(resolveRoot());
 				home = await snapshotDirectory(homePath);
 				trashRoot = await snapshotDirectory(path.join(home.path, ".Trash"));
 				sourceStat = await validateBundle(bundleDir, root);

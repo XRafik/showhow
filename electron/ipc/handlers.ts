@@ -150,8 +150,9 @@ import {
 } from "../recording-source-settings";
 import { registerAiGuideHandlers } from "../showhow/aiGuideConsent";
 import {
+	getRecordingsRoot,
+	isInsideRecordingsRoot,
 	regenerateDocArtifacts,
-	SHOWHOW_RECORDINGS_ROOT,
 	updateWorkflowDocument,
 } from "../showhow/bundle";
 import { createPdfRenderer, registerPdfExportHandlers } from "../showhow/exportPdf";
@@ -238,7 +239,7 @@ function approveFilePath(filePath: string): void {
 }
 
 function getAllowedReadDirs(): string[] {
-	return [RECORDINGS_DIR, SHOWHOW_RECORDINGS_ROOT];
+	return [RECORDINGS_DIR, getRecordingsRoot()];
 }
 
 function isPathWithinDir(filePath: string, dirPath: string): boolean {
@@ -1973,7 +1974,7 @@ export function registerIpcHandlers(
 ) {
 	const appSettings = new AppSettingsStore(app.getPath("userData"));
 	const recordingTrashService = createRecordingTrashService({
-		recordingsRoot: SHOWHOW_RECORDINGS_ROOT,
+		recordingsRoot: getRecordingsRoot,
 		userHomeDir: os.userInfo().homedir,
 		trashItem: (bundleDir) => shell.trashItem(bundleDir),
 	});
@@ -3887,7 +3888,7 @@ export function registerIpcHandlers(
 
 	registerAiGuideHandlers({
 		handle: (channel, handler) => ipcMain.handle(channel, handler),
-		recordingsRoot: SHOWHOW_RECORDINGS_ROOT,
+		recordingsRoot: getRecordingsRoot,
 		preferencesDir: app.getPath("userData"),
 		getStore: () => getAiEditionLlmConfig(),
 		createModel: createStructuredModelFactory({
@@ -3913,9 +3914,8 @@ export function registerIpcHandlers(
 	ipcMain.handle("showhow:open-recording", async (_, bundleDir: unknown) => {
 		if (typeof bundleDir !== "string") return { success: false };
 		try {
+			if (!(await isInsideRecordingsRoot(bundleDir))) return { success: false };
 			const resolved = await fs.realpath(bundleDir);
-			const root = await fs.realpath(SHOWHOW_RECORDINGS_ROOT);
-			if (!resolved.startsWith(`${root}${path.sep}`)) return { success: false };
 			const entry = await readRecordingEntry(resolved);
 			if (!entry?.video) return { success: false };
 			const video = path.join(resolved, entry.video);
@@ -3939,13 +3939,24 @@ export function registerIpcHandlers(
 
 	registerShowhowSettingsHandlers({
 		handle: (channel, handler) => ipcMain.handle(channel, handler),
-		recordingsRoot: SHOWHOW_RECORDINGS_ROOT,
+		recordingsRoot: getRecordingsRoot,
 		homeDir: app.getPath("home"),
+		chooseFolder: async (defaultPath) => {
+			const result = await dialog.showOpenDialog({
+				defaultPath,
+				properties: ["openDirectory", "createDirectory"],
+			});
+			return result.canceled ? null : (result.filePaths[0] ?? null);
+		},
+		onMoveProgress: (event, progress) => {
+			const { sender } = event as Electron.IpcMainInvokeEvent;
+			if (!sender.isDestroyed()) sender.send("showhow:recordings-folder-move-progress", progress);
+		},
 	});
 
 	registerPdfExportHandlers({
 		handle: (channel, handler) => ipcMain.handle(channel, handler),
-		recordingsRoot: SHOWHOW_RECORDINGS_ROOT,
+		recordingsRoot: getRecordingsRoot,
 		downloadsDir: app.getPath("downloads"),
 		homeDir: app.getPath("home"),
 		chooseSaveFile: async (defaultPath) => {
@@ -3961,7 +3972,7 @@ export function registerIpcHandlers(
 
 	registerImportRecordingHandlers({
 		handle: (channel, handler) => ipcMain.handle(channel, handler),
-		recordingsRoot: SHOWHOW_RECORDINGS_ROOT,
+		recordingsRoot: getRecordingsRoot,
 		selectFile: async () => {
 			const result = await dialog.showOpenDialog({
 				properties: ["openFile"],
@@ -4027,17 +4038,7 @@ export function registerIpcHandlers(
 			return { success: false };
 		}
 		const resolved = path.resolve(bundleDir);
-		let root: string;
-		let realBundleDir: string;
-		try {
-			[root, realBundleDir] = await Promise.all([
-				fs.realpath(SHOWHOW_RECORDINGS_ROOT),
-				fs.realpath(resolved),
-			]);
-		} catch {
-			return { success: false };
-		}
-		if (!realBundleDir.startsWith(`${root}${path.sep}`)) {
+		if (!(await isInsideRecordingsRoot(resolved))) {
 			console.error("showhow:copy-path rejected path outside recordings root:", resolved);
 			return { success: false };
 		}
@@ -4049,7 +4050,7 @@ export function registerIpcHandlers(
 			return { success: false };
 		}
 		const resolved = path.resolve(bundleDir);
-		if (!resolved.startsWith(`${SHOWHOW_RECORDINGS_ROOT}${path.sep}`)) {
+		if (!(await isInsideRecordingsRoot(resolved))) {
 			console.error("showhow:write-transcript rejected path outside recordings root:", resolved);
 			return { success: false };
 		}
@@ -4080,7 +4081,7 @@ export function registerIpcHandlers(
 				return { success: false };
 			}
 			const resolved = path.resolve(bundleDir);
-			if (!resolved.startsWith(`${SHOWHOW_RECORDINGS_ROOT}${path.sep}`)) {
+			if (!(await isInsideRecordingsRoot(resolved))) {
 				console.error(
 					"showhow:update-workflow-document rejected path outside recordings root:",
 					resolved,
@@ -4102,7 +4103,7 @@ export function registerIpcHandlers(
 			return { success: false, stepsWritten: 0, transcriptAvailable: false, entry: null };
 		}
 		const resolved = path.resolve(bundleDir);
-		if (!resolved.startsWith(`${SHOWHOW_RECORDINGS_ROOT}${path.sep}`)) {
+		if (!(await isInsideRecordingsRoot(resolved))) {
 			console.error("showhow:regenerate-doc rejected path outside recordings root:", resolved);
 			return { success: false, stepsWritten: 0, transcriptAvailable: false, entry: null };
 		}

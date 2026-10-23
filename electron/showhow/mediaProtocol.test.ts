@@ -54,6 +54,24 @@ describe("fetchShowhowMedia full and range responses", () => {
 		expect(new Uint8Array(await response.arrayBuffer())).toEqual(fixtureBytes);
 	});
 
+	it("resolves a persisted custom root for media and refuses it after the root changes", async () => {
+		const customRoot = await fs.mkdtemp(path.join(os.tmpdir(), "showhow-custom-media-"));
+		const customBundle = path.join(customRoot, "recording");
+		await fs.mkdir(customBundle);
+		await fs.writeFile(path.join(customBundle, "video.mp4"), fixtureBytes);
+		let activeRoot = customRoot;
+		const customUrl = createShowhowMediaUrl(customBundle, "video.mp4");
+		try {
+			const response = await fetchShowhowMedia(() => activeRoot, new Request(customUrl));
+			expect(response.status).toBe(200);
+			expect(new Uint8Array(await response.arrayBuffer())).toEqual(fixtureBytes);
+			activeRoot = recordingsRoot;
+			expect((await fetchShowhowMedia(() => activeRoot, new Request(customUrl))).status).toBe(404);
+		} finally {
+			await fs.rm(customRoot, { recursive: true, force: true });
+		}
+	});
+
 	it("answers a bytes=0-99 Range request with 206, Content-Range, and exactly the first 100 bytes", async () => {
 		const request = new Request(videoUrl, { headers: { Range: "bytes=0-99" } });
 

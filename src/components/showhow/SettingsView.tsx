@@ -1,4 +1,4 @@
-import { KeyRound } from "lucide-react";
+import { FolderOpen, KeyRound } from "lucide-react";
 import {
 	type KeyboardEvent,
 	type ReactNode,
@@ -12,6 +12,10 @@ import { useScopedT } from "@/contexts/I18nContext";
 import {
 	BUNDLED_TRANSCRIPTION,
 	RECORDING_COUNTDOWN_SECONDS,
+	type RecordingsFolderAction,
+	type RecordingsFolderChangeResult,
+	type RecordingsFolderMoveProgress,
+	type RecordingsFolderSelection,
 	type ShowhowSettingsInfo,
 } from "@/lib/showhow/settings";
 import {
@@ -22,6 +26,8 @@ import {
 import { cn } from "@/lib/utils";
 import { AiConnections } from "./AiConnections";
 import { Button } from "./Button";
+import { Progress } from "./Progress";
+import { Sheet } from "./Sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./Tabs";
 
 const label = "font-ds-label text-[10px] uppercase tracking-[0.8px] text-ds-ink-soft";
@@ -222,9 +228,19 @@ function Connections() {
 	);
 }
 
-function Recording() {
+function Recording({
+	onRecordingsFolderChanged,
+}: {
+	onRecordingsFolderChanged?: () => Promise<void>;
+}) {
 	const t = useScopedT("common");
 	const [info, setInfo] = useState<ShowhowSettingsInfo>();
+	const [folderSelection, setFolderSelection] = useState<RecordingsFolderSelection | null>(null);
+	const [folderChange, setFolderChange] = useState<RecordingsFolderChangeResult | null>(null);
+	const [folderError, setFolderError] = useState<string | null>(null);
+	const [folderBusy, setFolderBusy] = useState(false);
+	const [moving, setMoving] = useState(false);
+	const [moveProgress, setMoveProgress] = useState<RecordingsFolderMoveProgress | null>(null);
 	const [hideIcons, setHideIcons] = useState<boolean>();
 	const [status, setStatus] = useState<"idle" | "saving" | "error" | "load-error">("idle");
 	useEffect(() => {
@@ -252,6 +268,63 @@ function Recording() {
 			dispose?.();
 		};
 	}, []);
+	useEffect(() => {
+		if (!folderSelection) return;
+		return window.electronAPI.showhowOnRecordingsFolderMoveProgress((progress) => {
+			setMoveProgress(progress);
+		});
+	}, [folderSelection]);
+	const chooseFolder = async () => {
+		setFolderError(null);
+		try {
+			const result = await window.electronAPI.showhowChooseRecordingsFolder();
+			if (result === null) return;
+			if (result.status === "rejected") {
+				setFolderError(
+					t(
+						result.reason === "same-folder"
+							? "showhowSettings.folderSameError"
+							: result.reason === "inside-current-folder"
+								? "showhowSettings.folderNestedError"
+								: "showhowSettings.folderInvalidError",
+					),
+				);
+				return;
+			}
+			setFolderChange(null);
+			setMoveProgress(null);
+			setFolderSelection(result);
+		} catch {
+			setFolderError(t("showhowSettings.folderChooseError"));
+		}
+	};
+	const changeFolder = async (action: RecordingsFolderAction) => {
+		if (!folderSelection || folderBusy) return;
+		setFolderBusy(true);
+		setMoving(action === "move");
+		setFolderError(null);
+		setFolderChange(null);
+		try {
+			const result = await window.electronAPI.showhowChangeRecordingsFolder(
+				folderSelection.token,
+				action,
+			);
+			setFolderChange(result);
+			if (result.recordingsFolder) {
+				setInfo((current) => ({
+					...(current ?? { recordingsFolder: folderSelection.currentRecordingsFolder }),
+					recordingsFolder: result.recordingsFolder!,
+				}));
+				await onRecordingsFolderChanged?.();
+			}
+			if (result.success) setFolderSelection(null);
+		} catch {
+			setFolderError(t("showhowSettings.folderChangeError"));
+		} finally {
+			setFolderBusy(false);
+			setMoving(false);
+		}
+	};
 	const save = async (next: boolean) => {
 		const previous = hideIcons;
 		setHideIcons(next);
@@ -270,7 +343,21 @@ function Recording() {
 			<SettingLine
 				name={t("showhowSettings.folder")}
 				note={t("showhowSettings.folderNote")}
-				control={<span className="font-ds-label text-[12px]">{info?.recordingsFolder ?? "…"}</span>}
+				control={
+					<div className="flex max-w-full items-center gap-3">
+						<span className="break-all text-right font-ds-label text-[12px]">
+							{info?.recordingsFolder ?? "…"}
+						</span>
+						<Button
+							variant="secondary"
+							icon={FolderOpen}
+							disabled={!info || folderBusy}
+							onClick={() => void chooseFolder()}
+						>
+							{t("showhowSettings.folderChange")}
+						</Button>
+					</div>
+				}
 			/>
 			<SettingLine
 				name={t("showhowSettings.countdown")}
@@ -299,6 +386,111 @@ function Recording() {
 					{t(status === "error" ? "showhowSettings.saveError" : "showhowSettings.loadError")}
 				</p>
 			)}
+			{folderError && (
+				<p role="alert" className="mt-3 text-sm text-ds-rec-ink">
+					{folderError}
+				</p>
+			)}
+			<Sheet
+				open={folderSelection !== null}
+				onOpenChange={(open) => {
+					if (!open && !folderBusy) {
+						setFolderSelection(null);
+						setFolderChange(null);
+					}
+				}}
+				eyebrow={t("showhowSettings.folderPickerEyebrow")}
+				title={t("showhowSettings.folderPickerTitle", {
+					count: folderSelection?.recordingCount ?? 0,
+					plural: folderSelection?.recordingCount === 1 ? "" : "s",
+				})}
+				description={
+					folderSelection
+						? t("showhowSettings.folderPickerDescription", {
+								count: folderSelection.recordingCount,
+								plural: folderSelection.recordingCount === 1 ? "" : "s",
+								folder: folderSelection.recordingsFolder,
+								currentFolder: folderSelection.currentRecordingsFolder,
+							})
+						: ""
+				}
+				footer={
+					folderChange ? (
+						<Button
+							variant="secondary"
+							disabled={folderBusy}
+							onClick={() => setFolderSelection(null)}
+						>
+							{t("showhowSettings.folderDone")}
+						</Button>
+					) : (
+						<>
+							<Button
+								variant="secondary"
+								disabled={folderBusy}
+								onClick={() => setFolderSelection(null)}
+							>
+								{t("actions.cancel")}
+							</Button>
+							<Button
+								variant="secondary"
+								disabled={folderBusy}
+								onClick={() => void changeFolder("keep")}
+							>
+								{t("showhowSettings.folderKeep")}
+							</Button>
+							<Button disabled={folderBusy} onClick={() => void changeFolder("move")}>
+								{t("showhowSettings.folderMove", {
+									count: folderSelection?.recordingCount ?? 0,
+									plural: folderSelection?.recordingCount === 1 ? "" : "s",
+								})}
+							</Button>
+						</>
+					)
+				}
+			>
+				{moving && moveProgress && (
+					<div className="space-y-3">
+						<p role="status" className="font-ds-display text-lg">
+							{t("showhowSettings.folderMovingProgress", {
+								current: moveProgress.current,
+								total: moveProgress.total,
+							})}
+						</p>
+						<Progress
+							label={t("showhowSettings.folderMovingProgress", {
+								current: moveProgress.current,
+								total: moveProgress.total,
+							})}
+							value={moveProgress.total > 0 ? (moveProgress.current / moveProgress.total) * 100 : 0}
+						/>
+					</div>
+				)}
+				{folderChange && !folderChange.success && (
+					<div role="alert" className="space-y-2 text-sm text-ds-rec-ink">
+						<p>
+							{folderChange.failedBundle
+								? t("showhowSettings.folderMoveFailed", { name: folderChange.failedBundle })
+								: t("showhowSettings.folderChangeError")}
+						</p>
+						{folderChange.movedBundles?.length ? (
+							<p>
+								{t("showhowSettings.folderMoved", { names: folderChange.movedBundles.join(", ") })}
+							</p>
+						) : null}
+						{folderChange.remainingBundles?.length ? (
+							<p>
+								{t("showhowSettings.folderRemaining", {
+									names: folderChange.remainingBundles.join(", "),
+								})}
+							</p>
+						) : null}
+						{folderChange.recoveryBundle && (
+							<p>{t("showhowSettings.folderRecovery", { folder: folderChange.recoveryBundle })}</p>
+						)}
+					</div>
+				)}
+			</Sheet>
 		</>
 	);
 }
@@ -452,7 +644,11 @@ const SECTIONS = [
 	["appearance", "tabAppearance", "appearanceIntro", Appearance],
 ] as const;
 
-export function SettingsView() {
+export function SettingsView({
+	onRecordingsFolderChanged,
+}: {
+	onRecordingsFolderChanged?: () => Promise<void>;
+} = {}) {
 	const t = useScopedT("common");
 	return (
 		<div className="font-ds-body text-ds-ink">
@@ -472,7 +668,11 @@ export function SettingsView() {
 						<p className="mb-2 mt-5 max-w-[700px] text-[15px] leading-relaxed text-ds-ink-soft">
 							{t(`showhowSettings.${intro}`)}
 						</p>
-						<Section />
+						{Section === Recording ? (
+							<Recording onRecordingsFolderChanged={onRecordingsFolderChanged} />
+						) : (
+							<Section />
+						)}
 					</TabsContent>
 				))}
 			</Tabs>

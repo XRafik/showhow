@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { afterAll, afterEach, expect, it, vi } from "vitest";
+import { bundleDirName, configureShowhowSettingsFile } from "./bundle";
 
 const fixture = vi.hoisted(() => {
 	const fs = require("node:fs") as typeof import("node:fs");
@@ -79,4 +80,40 @@ it("a bundle-root error before relocation keeps the original recording readable"
 	const result = await finishShowhowRecording({ screenVideoPath: video, createdAt: 1792180802000 });
 	expect(result.screenVideoPath).toBe(video);
 	expect(await fs.readFile(result.screenVideoPath, "utf8")).toBe("another valid take");
+});
+
+it("uses the root captured before bundling for fail-open media lookup", async () => {
+	const settingsDir = path.join(fixture.root, "preferences");
+	const settingsFile = path.join(settingsDir, "showhow-settings.json");
+	const recordingsRoot = path.join(fixture.root, "recordings-before");
+	const changedRoot = path.join(fixture.root, "recordings-after");
+	await fs.mkdir(settingsDir, { recursive: true });
+	await fs.mkdir(recordingsRoot);
+	await fs.mkdir(changedRoot);
+	await fs.writeFile(settingsFile, JSON.stringify({ recordingsRoot }));
+	configureShowhowSettingsFile(settingsDir);
+	const video = path.join(fixture.root, "root-switch.mp4");
+	const createdAt = 1792180803000;
+	await fs.writeFile(video, "valid relocated video");
+	const writeFile = fs.writeFile.bind(fs);
+	vi.spyOn(fs, "writeFile").mockImplementation(async (target, ...args) => {
+		if (String(target).endsWith("meta.json")) {
+			await writeFile(settingsFile, JSON.stringify({ recordingsRoot: changedRoot }));
+			throw Object.assign(new Error("metadata disk failure"), { code: "ENOSPC" });
+		}
+		return writeFile(target, ...args);
+	});
+	vi.spyOn(console, "error").mockImplementation(() => undefined);
+	try {
+		const result = await finishShowhowRecording({ screenVideoPath: video, createdAt });
+		const relocatedVideo = path.join(recordingsRoot, bundleDirName(createdAt), "video.mp4");
+
+		expect(result.screenVideoPath).toBe(relocatedVideo);
+		expect(await fs.readFile(result.screenVideoPath, "utf8")).toBe("valid relocated video");
+		expect(
+			await fs.stat(path.join(changedRoot, bundleDirName(createdAt))).catch(() => null),
+		).toBeNull();
+	} finally {
+		configureShowhowSettingsFile(path.join(fixture.root, "unused-user-data"));
+	}
 });

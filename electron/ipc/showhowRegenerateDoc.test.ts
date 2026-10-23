@@ -88,12 +88,16 @@ vi.mock("../showhow/bridgeServer", () => ({
 	},
 }));
 
-// Preserve the real bundle exports (regenerateDocArtifacts, createRecordingBundle,
-// etc.) so the IPC handler end-to-end runs the real doc engine against a real
-// bundle on disk; only override SHOWHOW_RECORDINGS_ROOT to point at a temp dir.
+// Preserve the real bundle exports and containment logic while pointing the
+// handler's active root at this test's fixture directory.
 vi.mock("../showhow/bundle", async (importOriginal) => {
 	const actual = await importOriginal<typeof import("../showhow/bundle")>();
-	return { ...actual, SHOWHOW_RECORDINGS_ROOT: fixture.showhowRoot };
+	return {
+		...actual,
+		getRecordingsRoot: () => fixture.showhowRoot,
+		isInsideRecordingsRoot: (candidate: string, root = fixture.showhowRoot) =>
+			actual.isInsideRecordingsRoot(candidate, root),
+	};
 });
 
 // eslint-disable-next-line import/first

@@ -49,7 +49,7 @@ interface Consent {
 }
 export function registerAiGuideHandlers(deps: {
 	handle: (channel: string, handler: GuideIpcHandler) => void;
-	recordingsRoot: string;
+	recordingsRoot: string | (() => string);
 	preferencesDir: string;
 	getStore: () => GuideConfigStore;
 	createModel: (key: string, model: string, payload: StructuredPayload) => Promise<StructuredModel>;
@@ -82,9 +82,11 @@ export function registerAiGuideHandlers(deps: {
 	const getModel = () => resolveGuideModel(deps.getStore().getConfig());
 	async function bundlePath(value: unknown): Promise<string> {
 		if (typeof value !== "string") throw new Error("Invalid bundle");
-		const root = await fs.realpath(deps.recordingsRoot);
+		const recordingsRoot =
+			typeof deps.recordingsRoot === "function" ? deps.recordingsRoot() : deps.recordingsRoot;
+		const root = await fs.realpath(recordingsRoot);
 		const resolved = path.resolve(value);
-		if (!resolved.startsWith(path.resolve(deps.recordingsRoot) + path.sep))
+		if (!resolved.startsWith(path.resolve(recordingsRoot) + path.sep))
 			throw new Error("Outside recordings root");
 		const real = await fs.realpath(resolved);
 		if (!real.startsWith(root + path.sep)) throw new Error("Outside recordings root");

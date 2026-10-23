@@ -1,4 +1,14 @@
-import { access, mkdir, mkdtemp, readdir, readFile, stat, writeFile } from "node:fs/promises";
+import {
+	access,
+	mkdir,
+	mkdtemp,
+	readdir,
+	readFile,
+	rm,
+	stat,
+	symlink,
+	writeFile,
+} from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
@@ -11,6 +21,7 @@ import {
 	createRecordingBundle,
 	type FrameExtractor,
 	formatStepTimestamp,
+	isInsideRecordingsRoot,
 	parseTranscript,
 	regenerateDocArtifacts,
 	renderStepsMarkdown,
@@ -32,6 +43,25 @@ describe("bundleDirName", () => {
 		const ts = new Date(2026, 0, 5, 9, 3, 1).getTime();
 		expect(bundleDirName(ts)).toBe("2026-01-05_090301-recording");
 	});
+});
+
+it("checks recording paths through symlink aliases against the real root", async () => {
+	const work = await mkdtemp(path.join(os.tmpdir(), "showhow-root-check-"));
+	const root = path.join(work, "recordings");
+	const bundle = path.join(root, "bundle");
+	const alias = path.join(work, "recordings-alias");
+	const outside = path.join(work, "outside");
+	await mkdir(bundle, { recursive: true });
+	await mkdir(outside);
+	await symlink(root, alias, "dir");
+	try {
+		expect(await isInsideRecordingsRoot(bundle, root)).toBe(true);
+		expect(await isInsideRecordingsRoot(path.join(alias, "bundle"), root)).toBe(true);
+		expect(await isInsideRecordingsRoot(root, root)).toBe(false);
+		expect(await isInsideRecordingsRoot(outside, root)).toBe(false);
+	} finally {
+		await rm(work, { recursive: true, force: true });
+	}
 });
 
 describe("buildMeta", () => {

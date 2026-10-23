@@ -5,8 +5,7 @@ import path from "node:path";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Hoisted temp roots so the mocked module exports point at writable test dirs
-// before `handlers.ts` is imported (its top-level reads RECORDINGS_DIR and
-// SHOWHOW_RECORDINGS_ROOT transitively at module load).
+// before `handlers.ts` is imported.
 const fixture = vi.hoisted(() => {
 	const nodeFs = require("node:fs") as typeof import("node:fs");
 	const nodeOs = require("node:os") as typeof import("node:os");
@@ -25,6 +24,9 @@ const fixture = vi.hoisted(() => {
 		showhowRoot,
 		showhowRootParent,
 		userData,
+		activeShowhowRoot: showhowRoot,
+		folderDialogResult: { canceled: true, filePaths: [] as string[] },
+		folderDialogOptions: null as { defaultPath?: string; properties?: string[] } | null,
 		ipcHandlers: new Map<string, (...args: unknown[]) => unknown>(),
 		clipboardWrites: [] as string[],
 	};
@@ -45,7 +47,12 @@ vi.mock("electron", () => ({
 	BrowserWindow: {},
 	clipboard: { writeText: (text: string) => fixture.clipboardWrites.push(text) },
 	desktopCapturer: {},
-	dialog: {},
+	dialog: {
+		showOpenDialog: async (options: { defaultPath?: string; properties?: string[] }) => {
+			fixture.folderDialogOptions = options;
+			return fixture.folderDialogResult;
+		},
+	},
 	ipcMain: {
 		handle: (channel: string, listener: (...args: unknown[]) => unknown) =>
 			fixture.ipcHandlers.set(channel, listener),
@@ -60,11 +67,17 @@ vi.mock("electron", () => ({
 
 vi.mock("../main", () => ({ RECORDINGS_DIR: fixture.recordingsDir }));
 
-vi.mock("../showhow/bundle", () => ({
-	SHOWHOW_RECORDINGS_ROOT: fixture.showhowRoot,
-	createRecordingBundle: () => Promise.resolve(),
-	regenerateDocArtifacts: () => Promise.resolve(),
-}));
+vi.mock("../showhow/bundle", async (importOriginal) => {
+	const actual = await importOriginal<typeof import("../showhow/bundle")>();
+	return {
+		...actual,
+		getRecordingsRoot: () => fixture.activeShowhowRoot,
+		isInsideRecordingsRoot: (candidate: string, root = fixture.activeShowhowRoot) =>
+			actual.isInsideRecordingsRoot(candidate, root),
+		createRecordingBundle: () => Promise.resolve(),
+		regenerateDocArtifacts: () => Promise.resolve(),
+	};
+});
 
 // Imported after the mocks above so its module-level reads see the temp roots.
 // eslint-disable-next-line import/first
@@ -90,7 +103,7 @@ describe("getApprovedProjectSession trust roots", () => {
 		);
 	});
 
-	it("approves a screen video descended from the canonical SHOWHOW_RECORDINGS_ROOT", async () => {
+	it("approves a screen video descended from the active Showhow recordings root", async () => {
 		const bundleDir = path.join(fixture.showhowRoot, "2026-07-28_120000-recording");
 		await mkdir(bundleDir, { recursive: true });
 		const screenVideoPath = path.join(bundleDir, VIDEO_NAME);
@@ -191,6 +204,25 @@ describe("showhow:copy-path handler", () => {
 		return bundleDir;
 	}
 
+	it("opens the Settings folder picker with the active root and directory options", async () => {
+		const targetRoot = await mkdtemp(path.join(tmpdir(), "showhow-picked-recordings-"));
+		fixture.folderDialogResult = { canceled: false, filePaths: [targetRoot] };
+		try {
+			const handler = fixture.ipcHandlers.get("showhow:choose-recordings-folder");
+			if (!handler) throw new Error("recordings folder picker handler was not registered");
+			const result = (await handler()) as { status: string; recordingCount: number };
+			expect(fixture.folderDialogOptions).toEqual({
+				defaultPath: fixture.showhowRoot,
+				properties: ["openDirectory", "createDirectory"],
+			});
+			expect(result).toMatchObject({ status: "selected" });
+		} finally {
+			fixture.folderDialogResult = { canceled: true, filePaths: [] };
+			fixture.folderDialogOptions = null;
+			await rm(targetRoot, { recursive: true, force: true });
+		}
+	});
+
 	it("copies the fresh recording path supplied by the Library list", async () => {
 		const bundleDir = await makeBundle(fixture.showhowRoot, "fresh-recording", "desktop");
 		const [entry] = await listRecordings(fixture.showhowRoot);
@@ -198,6 +230,22 @@ describe("showhow:copy-path handler", () => {
 		expect(entry?.bundleDir).toBe(bundleDir);
 		expect(await copyPath(entry?.bundleDir)).toEqual({ success: true });
 		expect(fixture.clipboardWrites).toEqual([bundleDir]);
+	});
+
+	it("authorizes copy-path against the active custom recordings root", async () => {
+		const customRoot = await mkdtemp(path.join(tmpdir(), "showhow-custom-copy-"));
+		const customBundle = await makeBundle(customRoot, "custom-recording", "desktop");
+		const oldRootBundle = await makeBundle(fixture.showhowRoot, "old-root-recording", "desktop");
+		const previousRoot = fixture.activeShowhowRoot;
+		fixture.activeShowhowRoot = customRoot;
+		try {
+			expect(await copyPath(customBundle)).toEqual({ success: true });
+			expect(await copyPath(oldRootBundle)).toEqual({ success: false });
+			expect(fixture.clipboardWrites).toEqual([customBundle]);
+		} finally {
+			fixture.activeShowhowRoot = previousRoot;
+			await rm(customRoot, { recursive: true, force: true });
+		}
 	});
 
 	it("copies the canonical imported MP4 bundle path supplied by the Library list", async () => {
