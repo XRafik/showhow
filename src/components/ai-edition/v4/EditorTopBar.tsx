@@ -1,3 +1,4 @@
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import {
 	ArrowLeft,
 	ChevronDown,
@@ -9,17 +10,20 @@ import {
 	Keyboard,
 	Languages,
 	Moon,
+	MoreHorizontal,
 	MousePointer2,
 	RefreshCw,
 	Save,
 	Sparkles,
 	Star,
 	Sun,
+	Trash2,
 } from "lucide-react";
 import { type KeyboardEvent as ReactKeyboardEvent, useEffect, useRef, useState } from "react";
 import { useI18n, useScopedT } from "@/contexts/I18nContext";
 import { useTheme } from "@/hooks/useTheme";
 import { getAvailableLocales, getLocaleName } from "@/i18n/loader";
+import { isMac } from "@/utils/platformUtils";
 import { StylePresetsMenu } from "../StylePresetsMenu";
 import styles from "./EditorShellV4.module.css";
 
@@ -37,6 +41,7 @@ export interface TopBarActions {
 	checkForUpdates: () => void;
 	/** Back to the Library window (Editor-01 "Library"). */
 	openLibrary: () => void;
+	trashRecording?: () => void;
 	/** The editor's Record mode (Editor-01 "New recording"). */
 	newRecording: () => void;
 }
@@ -65,6 +70,7 @@ export function EditorTopBar({
 	actions,
 }: EditorTopBarProps) {
 	const t = useScopedT("editor");
+	const tCommon = useScopedT("common");
 	const savedLabel = dirty ? t("topbar.unsaved") : t("topbar.saved");
 
 	return (
@@ -128,6 +134,25 @@ export function EditorTopBar({
 					<FolderOpen size={14} aria-hidden />
 					<span className={styles.navLabel}>{t("topbar.open")}</span>
 				</button>
+				{isMac() && actions.trashRecording ? (
+					<DropdownMenu.Root>
+						<DropdownMenu.Trigger asChild>
+							<button
+								type="button"
+								className={styles.navLink}
+								aria-label={tCommon("showhowTrash.moreActions")}
+							>
+								<MoreHorizontal size={16} aria-hidden />
+							</button>
+						</DropdownMenu.Trigger>
+						<DropdownMenu.Content align="end" sideOffset={6} className={styles.appMenu}>
+							<DropdownMenu.Item className={styles.appMenuRow} onSelect={actions.trashRecording}>
+								<Trash2 size={15} aria-hidden />
+								{tCommon("showhowTrash.menuItem")}
+							</DropdownMenu.Item>
+						</DropdownMenu.Content>
+					</DropdownMenu.Root>
+				) : null}
 			</nav>
 
 			{/* A preset is the whole look the inspector's panes edit, so its entry stays in the bar,

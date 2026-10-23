@@ -166,6 +166,7 @@ import {
 import { restorePendingBundleTranscript } from "../showhow/resumeTranscript";
 import { registerShowhowSettingsHandlers } from "../showhow/settings";
 import { requestBundleTranscript } from "../showhow/transcriptJob";
+import { createRecordingTrashService } from "../showhow/trashRecording";
 import { registerNativeBridgeHandlers } from "./nativeBridge";
 import { createNativeMacMidCaptureErrorWatch } from "./nativeMacMidCaptureErrorWatch";
 import { registerRecordingPrefsHandlers } from "./recordingPrefs";
@@ -1971,6 +1972,12 @@ export function registerIpcHandlers(
 	_switchToHud?: () => void,
 ) {
 	const appSettings = new AppSettingsStore(app.getPath("userData"));
+	const recordingTrashService = createRecordingTrashService({
+		recordingsRoot: SHOWHOW_RECORDINGS_ROOT,
+		userHomeDir: os.userInfo().homedir,
+		trashItem: (bundleDir) => shell.trashItem(bundleDir),
+	});
+	let pendingLibraryTrashUndo: { undoToken: string; expiresAt: number } | null = null;
 	const broadcastSelectedSource = (source: SelectedSource | null) => {
 		for (const window of BrowserWindow.getAllWindows()) {
 			if (!window.isDestroyed()) {
@@ -3969,6 +3976,50 @@ export function registerIpcHandlers(
 
 	ipcMain.handle("showhow:list-recordings", async () => {
 		return listRecordings();
+	});
+
+	ipcMain.handle(
+		"showhow:trash-recording",
+		async (_, bundleDir: unknown, returnToLibrary: unknown) => {
+			if (process.platform !== "darwin") {
+				return { success: false, error: "Recording Trash is available on macOS only." };
+			}
+			if (typeof bundleDir !== "string") {
+				return { success: false, error: "Recording path must be a string." };
+			}
+			const result = await recordingTrashService.trashBundle(bundleDir);
+			if (!result.success) {
+				console.error("[showhow:trash-recording] failed:", result.error);
+				return result;
+			}
+			if (returnToLibrary === true) {
+				pendingLibraryTrashUndo = {
+					undoToken: result.undoToken,
+					expiresAt: result.expiresAt,
+				};
+			}
+			return result;
+		},
+	);
+
+	ipcMain.handle("showhow:restore-recording", async (_, undoToken: unknown) => {
+		if (process.platform !== "darwin") {
+			return { success: false, error: "Recording Trash is available on macOS only." };
+		}
+		if (typeof undoToken !== "string") {
+			return { success: false, error: "Undo token must be a string." };
+		}
+		const result = await recordingTrashService.restore(undoToken);
+		if (!result.success) {
+			console.error("[showhow:restore-recording] failed:", result.error);
+		}
+		return result;
+	});
+
+	ipcMain.handle("showhow:consume-trash-notice", async () => {
+		const notice = pendingLibraryTrashUndo;
+		pendingLibraryTrashUndo = null;
+		return notice && notice.expiresAt > Date.now() ? notice : null;
 	});
 
 	ipcMain.handle("showhow:copy-path", async (_, bundleDir: unknown) => {

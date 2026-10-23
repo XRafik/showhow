@@ -290,5 +290,17 @@
 		"light": "Light",
 		"dark": "Dark",
 		"system": "System"
+	},
+	"showhowTrash": {
+		"eyebrow": "YOUR LIBRARY",
+		"title": "Move to Trash?",
+		"body": "“{{title}}” and everything in its folder — video, guide, brief and screenshots — goes to the macOS Trash. You can put it back from there.",
+		"move": "Move to Trash",
+		"menuItem": "Move to Trash…",
+		"moreActions": "More actions",
+		"moved": "Moved to Trash",
+		"undo": "UNDO",
+		"restoreError": "Couldn't restore — it's still in your Trash",
+		"moveError": "Couldn't move to Trash. The recording is still in your Library."
 	}
 }

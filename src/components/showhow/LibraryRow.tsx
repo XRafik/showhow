@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { MouseEventHandler, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 export interface LibraryRowProps {
@@ -9,6 +9,7 @@ export interface LibraryRowProps {
 	onSelect: () => void;
 	trailing?: ReactNode;
 	processing?: ReactNode;
+	onContextMenu?: MouseEventHandler<HTMLButtonElement>;
 }
 
 export function LibraryRow({
@@ -19,6 +20,7 @@ export function LibraryRow({
 	onSelect,
 	trailing,
 	processing,
+	onContextMenu,
 }: LibraryRowProps) {
 	return (
 		<button
@@ -30,6 +32,7 @@ export function LibraryRow({
 			aria-current={selected ? "true" : undefined}
 			aria-pressed={Boolean(selected)}
 			onClick={onSelect}
+			onContextMenu={onContextMenu}
 		>
 			<span className="font-ds-body text-[13px] font-medium leading-[1.3] text-ds-on-panel">
 				{title}
