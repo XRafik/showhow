@@ -26,7 +26,7 @@ export function Sidebar({
 }: SidebarProps) {
 	return (
 		<aside className="flex w-[272px] shrink-0 flex-col gap-6 bg-ds-panel px-[18px] py-[26px] font-ds-body text-ds-on-panel">
-			<Logo withWordmark />
+			<Logo withWordmark style={{ marginLeft: "var(--titlebar-inset-left, 0px)" }} />
 			{primary && (
 				<Button
 					className="w-full justify-center"
