@@ -1602,3 +1602,16 @@ regression failures), `GREEN-003` (14/14), `TSC-003` (scheduler exit 75, command
 `I18N-002` (exit 0), and `BRANDING-002` (exit 0). `TSC-003` is retained as NOT RUN; `TSC-004` is
 the queued successful retry. Lead's full unit run is in progress; lead owns browser and test-TypeScript
 checks, followed by fresh independent review. No commit or push was made.
+
+
+## 23 October 2026 — Showhow #178 AI model picker
+
+`AiConnections` now offers the five model IDs confirmed in `MODEL-ID-VERIFICATION-20261023.json`: `anthropic/claude-haiku-5.5` (default), `anthropic/claude-sonnet-5.5`, `anthropic/claude-opus-5.5`, `openai/gpt-5`, and `google/gemini-2.5-pro`. Mock E's `anthropic/claude-opus-5-5` is a typo absent from the verified catalogue; the picker uses the confirmed dotted `anthropic/claude-opus-5.5` ID and keeps the mock's GPT and Gemini labels.
+
+Selecting a listed model or entering an Other model ID passes the exact slug through the existing `llmSetConfig` path. Unknown saved IDs appear under Other with their value retained. API-key save/removal still uses the existing OpenRouter bridge calls. The repeated own-key sentence was removed from `AiConnections`; callers provide it in their parent copy, and the standalone component keeps its OpenRouter heading.
+
+Four separately run RED cases and their GREEN counterparts are retained under `/Users/mohamedb/dev/loop-evidence/showhow-178/native-harness/red/` and `green-final2/`. The complete `AiConnections.test.tsx` suite and unchanged `electron/showhow/guideModel.test.ts` seam both passed under the heavy runtime wrapper; receipts are under `focused-final/`. Earlier test attempts are retained in their original `green/`, `green-retry/`, and `focused/` folders and are not the passing receipts. The first full proof run's exact locale parity failures and scoped Biome failures remain preserved under `/Users/mohamedb/dev/loop-evidence/showhow-178/prove/`.
+
+Supervisor w5N:pX approved the locale-scope exception recorded in `/Users/mohamedb/dev/loop-evidence/showhow-178/LOCALE-SCOPE-APPROVED.txt`: the four new `showhowGuide` keys use English placeholders in the other 14 `common.json` files. A search found no code reference to `showhowGuide.defaultModel`, so that obsolete key was removed from all 15 locale files. No parity checker or test was changed. The second full proof pass in `/Users/mohamedb/dev/loop-evidence/showhow-178/prove2/` passed all checks and the build for the locale-expanded candidate before the picker clipping repair.
+
+Native AFTER showed the original 288px menu cap clipped Gemini and Other; the preserved RED screenshot is `/Users/mohamedb/dev/loop-evidence/showhow-178/native-harness/after-native-WEVlxA/AFTER-open-list.png`. The picker now caps to Radix's available content height so the default window can show all six entries while Radix's viewport remains vertically scrollable when space is limited. After this repair, the focused component suite passed 5/5 and the focused Biome check passed; receipts are in `native-harness/focused-after-clip/`. The lead owns the final rebuild and native GREEN repeat with the all-six-bounds assertion.
