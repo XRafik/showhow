@@ -69,6 +69,7 @@ import {
 	showPermissionsWindowIfNeeded,
 } from "./permissions";
 import { setDisplaySleepBlocked } from "./recording/displaySleepBlocker";
+import { configureShowhowSettingsFile, getRecordingsRoot } from "./showhow/bundle";
 import { fetchShowhowMedia, SHOWHOW_MEDIA_SCHEME } from "./showhow/mediaProtocol";
 import { registerOpenLibraryHandler } from "./showhow/openLibrary";
 import { acquireStableInstanceLock } from "./showhow/singleInstanceLock";
@@ -139,6 +140,7 @@ disableHttpCacheForDevServer(app.commandLine, process.env);
 installMainProcessErrorGuards();
 
 export const RECORDINGS_DIR = path.join(app.getPath("userData"), "recordings");
+configureShowhowSettingsFile(app.getPath("userData"));
 
 async function ensureRecordingsDir() {
 	try {
@@ -1229,9 +1231,7 @@ app.on("will-quit", () => {
 const appReady = !cliCommand && hasSingleInstanceLock ? app.whenReady() : null;
 
 appReady?.then(async () => {
-	protocol.handle(SHOWHOW_MEDIA_SCHEME, (request) =>
-		fetchShowhowMedia(path.join(app.getPath("home"), "Showhow", "Recordings"), request),
-	);
+	protocol.handle(SHOWHOW_MEDIA_SCHEME, (request) => fetchShowhowMedia(getRecordingsRoot, request));
 	if (isDiagnosticModeEnabled()) {
 		mainLogBuffer.install();
 		console.info("[diagnostic] OPENSCREEN_DIAGNOSTIC=1, capturing console.* into ring buffer");

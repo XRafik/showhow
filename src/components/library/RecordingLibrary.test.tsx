@@ -51,6 +51,9 @@ const mockShowhowRegenerateDoc =
 			entry: RecordingLibraryEntry | null;
 		}>
 	>();
+const mockShowhowSettingsInfo = vi.fn();
+const mockShowhowChooseRecordingsFolder = vi.fn();
+const mockShowhowChangeRecordingsFolder = vi.fn();
 
 afterEach(() => {
 	toast.dismiss();
@@ -75,6 +78,18 @@ beforeEach(() => {
 	mockShowhowConsumeTrashNotice.mockResolvedValue(null);
 	mockShowhowTrashRecording.mockResolvedValue({ success: false, error: "Trash unavailable" });
 	mockShowhowRestoreRecording.mockResolvedValue({ success: false, error: "Undo expired" });
+	mockShowhowSettingsInfo.mockResolvedValue({ recordingsFolder: "~/Showhow/Recordings" });
+	mockShowhowChooseRecordingsFolder.mockResolvedValue({
+		status: "selected",
+		token: "folder-selection",
+		recordingsFolder: "~/Client work",
+		currentRecordingsFolder: "~/Showhow/Recordings",
+		recordingCount: 1,
+	});
+	mockShowhowChangeRecordingsFolder.mockResolvedValue({
+		success: true,
+		recordingsFolder: "~/Client work",
+	});
 	Object.defineProperty(window, "electronAPI", {
 		value: {
 			getPlatform: () => "darwin",
@@ -89,6 +104,19 @@ beforeEach(() => {
 			showhowCopyPath: mockShowhowCopyPath,
 			showhowUpdateWorkflowDocument: mockShowhowUpdateWorkflowDocument,
 			showhowRegenerateDoc: mockShowhowRegenerateDoc,
+			showhowAiGuideStatus: vi.fn(async () => ({ connected: false, model: "test/model" })),
+			showhowSettingsInfo: mockShowhowSettingsInfo,
+			showhowChooseRecordingsFolder: mockShowhowChooseRecordingsFolder,
+			showhowChangeRecordingsFolder: mockShowhowChangeRecordingsFolder,
+			showhowOnRecordingsFolderMoveProgress: () => () => undefined,
+			getRecordingPrefs: async () => ({ hideDesktopIcons: false, micEnabled: true }),
+			setRecordingPrefs: async (patch: object) => ({
+				hideDesktopIcons: false,
+				micEnabled: true,
+				...patch,
+			}),
+			onRecordingPrefsChanged: () => () => undefined,
+			showhowGetSystemTheme: async () => true,
 			switchToHud: mockSwitchToHud,
 		},
 		writable: true,
@@ -414,6 +442,65 @@ describe("RecordingLibrary", () => {
 		await userEvent.click(screen.getByText(browserEntry.title));
 		expect(screen.getByRole("heading", { level: 1, name: browserEntry.title })).toBeVisible();
 		expect(settings).not.toHaveAttribute("aria-current");
+	});
+
+	it.each([
+		{
+			mode: "MOVE",
+			action: "move",
+			result: { success: true, recordingsFolder: "~/Client work" },
+			entries: [{ ...desktopDocEntry, bundleDir: "/Users/user/Client work/moved", title: "Moved" }],
+		},
+		{
+			mode: "KEEP",
+			action: "keep",
+			result: { success: true, recordingsFolder: "~/Client work" },
+			entries: [],
+		},
+		{
+			mode: "partial MOVE",
+			action: "move",
+			result: {
+				success: false,
+				recordingsFolder: "~/Client work",
+				movedBundles: ["moved"],
+				remainingBundles: ["failed"],
+				failedBundle: "failed",
+			},
+			entries: [{ ...desktopDocEntry, bundleDir: "/Users/user/Client work/moved", title: "Moved" }],
+		},
+	])("reloads Library list and playback after recordings-folder $mode", async ({
+		action,
+		result,
+		entries,
+	}) => {
+		mockShowhowListRecordings
+			.mockResolvedValueOnce([desktopDocEntry])
+			.mockResolvedValueOnce(entries);
+		mockShowhowChangeRecordingsFolder.mockResolvedValueOnce(result);
+		render(<RecordingLibrary />);
+		await screen.findByRole("heading", { name: desktopDocEntry.title });
+		await userEvent.click(screen.getByRole("button", { name: "Settings" }));
+		await userEvent.click(screen.getByRole("tab", { name: "Recording" }));
+		await userEvent.click(await screen.findByRole("button", { name: "Change…" }));
+		await userEvent.click(
+			screen.getByRole("button", {
+				name: action === "move" ? "Move 1 recording" : "Keep them there",
+			}),
+		);
+		await waitFor(() => expect(mockShowhowListRecordings).toHaveBeenCalledTimes(2));
+
+		if (entries.length === 0) {
+			await userEvent.click(screen.getByRole("button", { name: "Library · 0" }));
+			expect(screen.getByTestId("empty-library-state")).toBeVisible();
+			return;
+		}
+
+		if (!result.success) await userEvent.click(await screen.findByRole("button", { name: "Done" }));
+		await userEvent.click(screen.getByText("Moved"));
+		const video = document.querySelector("video");
+		expect(await screen.findByRole("heading", { name: "Moved" })).toBeVisible();
+		expect(video?.getAttribute("src")).toContain("/Client work/moved/video.mp4");
 	});
 
 	it("opens Export PDF from the guide actions only when the guide has steps", async () => {

@@ -1,5 +1,11 @@
 # Implementation notes
 
+## 23 October 2026 — Showhow #180 recordings folder
+
+The new folder picker, confirmation sheet, and move-progress messages use English placeholder copy
+in all 15 locale files under the supervisor's standing locale rule. The locale checker and locale
+key parity remain unchanged; this is not a translation-quality claim.
+
 ## 22 October 2026 — Showhow #176 Import progress dither
 
 The import sheet now reports 0 while the picker is open, the copied-byte ratio while copying,

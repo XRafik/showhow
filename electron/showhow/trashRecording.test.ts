@@ -135,6 +135,42 @@ describe("moveWithReservation", () => {
 });
 
 describe("createRecordingTrashService", () => {
+	it("uses a custom root for Trash and restores to the root captured by Undo", async () => {
+		const fixture = await makeFixture();
+		const customRoot = path.join(fixture.root, "custom-recordings");
+		const customBundle = path.join(customRoot, "custom-recording");
+		await mkdir(customBundle, { recursive: true });
+		await writeFile(
+			path.join(customBundle, "meta.json"),
+			JSON.stringify({
+				title: "Custom take",
+				source: "imported",
+				createdAt: 2,
+				video: "video.mp4",
+			}),
+		);
+		await writeFile(path.join(customBundle, "video.mp4"), "custom video bytes");
+		let activeRoot = fixture.recordingsRoot;
+		const service = createRecordingTrashService({
+			recordingsRoot: () => activeRoot,
+			userHomeDir: fixture.home,
+			trashItem: (stagedBundleDir) =>
+				rename(stagedBundleDir, path.join(fixture.trashRoot, path.basename(stagedBundleDir))),
+		});
+
+		activeRoot = customRoot;
+		expect(await service.trashBundle(fixture.bundleDir)).toMatchObject({ success: false });
+		const moved = await service.trashBundle(customBundle);
+		expect(moved.success).toBe(true);
+		if (!moved.success) throw new Error("expected the custom recording to move to Trash");
+		activeRoot = fixture.recordingsRoot;
+
+		const restored = await service.restore(moved.undoToken);
+
+		expect(restored).toMatchObject({ success: true, bundleDir: customBundle });
+		expect(await readFile(path.join(customBundle, "video.mp4"), "utf8")).toBe("custom video bytes");
+	});
+
 	it("moves the whole bundle to the injected user's exact Trash path and restores it", async () => {
 		const fixture = await makeFixture();
 		const { bundleDir, trashRoot, service } = fixture;

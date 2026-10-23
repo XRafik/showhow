@@ -6,7 +6,7 @@ import type {
 	RecordingLibraryEntry,
 	StepCaptureReason,
 } from "../../src/lib/showhow/recordingLibrary";
-import { regenerateDocArtifacts, SHOWHOW_RECORDINGS_ROOT } from "./bundle";
+import { getRecordingsRoot, regenerateDocArtifacts } from "./bundle";
 import { createShowhowMediaUrl } from "./mediaProtocol";
 
 export type { RecordingLibraryEntry };
@@ -195,7 +195,7 @@ async function readEntryForDir(
  * Returns `[]` without throwing when the root directory does not exist.
  */
 export async function listRecordings(
-	recordingsRoot = SHOWHOW_RECORDINGS_ROOT,
+	recordingsRoot = getRecordingsRoot(),
 ): Promise<RecordingLibraryEntry[]> {
 	let entries: Dirent[];
 	try {

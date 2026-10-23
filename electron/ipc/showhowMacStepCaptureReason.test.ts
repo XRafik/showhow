@@ -82,11 +82,16 @@ vi.mock("../showhow/bridgeServer", () => ({
 	},
 }));
 
-// Preserve the real bundle exports so createRecordingBundle runs end-to-end
-// against a real bundle on disk; only override SHOWHOW_RECORDINGS_ROOT.
+// Preserve real bundle behavior and containment while pointing registered
+// handlers at this test's fixture root.
 vi.mock("../showhow/bundle", async (importOriginal) => {
 	const actual = await importOriginal<typeof import("../showhow/bundle")>();
-	return { ...actual, SHOWHOW_RECORDINGS_ROOT: fixture.showhowRoot };
+	return {
+		...actual,
+		getRecordingsRoot: () => fixture.showhowRoot,
+		isInsideRecordingsRoot: (candidate: string, root = fixture.showhowRoot) =>
+			actual.isInsideRecordingsRoot(candidate, root),
+	};
 });
 
 // eslint-disable-next-line import/first
@@ -138,7 +143,7 @@ describe("stop-native-mac-recording stepCaptureReason (issue #27 live)", () => {
 
 		// No cursor.json -> system mode has no cursor telemetry -> no clicks.
 		// stepCaptureReason: accessibility-denied must take precedence.
-		const { createRecordingBundle } = await import("../showhow/bundle");
+		const { createRecordingBundle, isInsideRecordingsRoot } = await import("../showhow/bundle");
 		const bundle = await createRecordingBundle({
 			screenVideoPath,
 			createdAt: new Date(2026, 6, 11, 16, 42, 7).getTime(),
@@ -146,6 +151,7 @@ describe("stop-native-mac-recording stepCaptureReason (issue #27 live)", () => {
 			stepCaptureReason: "accessibility-denied",
 		});
 
+		expect(await isInsideRecordingsRoot(bundle.bundleDir, fixture.showhowRoot)).toBe(true);
 		const meta = JSON.parse(await readFile(path.join(bundle.bundleDir, "meta.json"), "utf-8"));
 		expect(meta.stepCapture).toEqual({
 			status: "unavailable",

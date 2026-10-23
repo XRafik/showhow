@@ -12,6 +12,11 @@ const guideStatus = vi.fn();
 const getPrefs = vi.fn();
 const setPrefs = vi.fn();
 const info = vi.fn();
+const chooseRecordingsFolder = vi.fn();
+const changeRecordingsFolder = vi.fn();
+let folderProgressListener:
+	| ((progress: { current: number; total: number; bundleName: string }) => void)
+	| undefined;
 let prefsListener: ((prefs: { hideDesktopIcons: boolean }) => void) | undefined;
 
 beforeEach(() => {
@@ -25,6 +30,15 @@ beforeEach(() => {
 		...patch,
 	}));
 	info.mockResolvedValue({ recordingsFolder: "~/Showhow/Recordings" });
+	chooseRecordingsFolder.mockResolvedValue({
+		status: "selected",
+		token: "folder-selection",
+		recordingsFolder: "~/Client work",
+		currentRecordingsFolder: "~/Showhow/Recordings",
+		recordingCount: 2,
+	});
+	changeRecordingsFolder.mockResolvedValue({ success: true, recordingsFolder: "~/Client work" });
+	folderProgressListener = undefined;
 	Object.defineProperty(window, "electronAPI", {
 		configurable: true,
 		value: {
@@ -36,6 +50,14 @@ beforeEach(() => {
 				return () => undefined;
 			},
 			showhowSettingsInfo: info,
+			showhowChooseRecordingsFolder: chooseRecordingsFolder,
+			showhowChangeRecordingsFolder: changeRecordingsFolder,
+			showhowOnRecordingsFolderMoveProgress: (callback: typeof folderProgressListener) => {
+				folderProgressListener = callback;
+				return () => {
+					folderProgressListener = undefined;
+				};
+			},
 			showhowGetSystemTheme: async () => true,
 		},
 	});
@@ -96,6 +118,66 @@ describe("SettingsView", () => {
 		await waitFor(() => expect(toggle).toHaveAttribute("aria-checked", "false"));
 		expect(screen.getByText("~/Showhow/Recordings")).toBeVisible();
 		expect(screen.getByText("3 s")).toBeVisible();
+	});
+
+	it("offers the recordings folder picker in Recording settings", async () => {
+		render(<SettingsView />);
+		await tab("Recording");
+
+		expect(await screen.findByRole("button", { name: "Change…" })).toBeEnabled();
+	});
+
+	it("shows the folder confirmation and keeps existing recordings in place", async () => {
+		render(<SettingsView />);
+		await tab("Recording");
+		await userEvent.click(await screen.findByRole("button", { name: "Change…" }));
+
+		expect(await screen.findByRole("heading", { name: "Move your 2 recordings?" })).toBeVisible();
+		expect(
+			screen.getByText(/If you keep them where they are, they won’t show in your Library/u),
+		).toBeVisible();
+		await userEvent.click(screen.getByRole("button", { name: "Keep them there" }));
+
+		expect(changeRecordingsFolder).toHaveBeenCalledWith("folder-selection", "keep");
+		await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+		expect(screen.getByText("~/Client work")).toBeVisible();
+	});
+
+	it("shows dither progress and names partial failures and the retained verified copy", async () => {
+		let resolveChange!: (result: {
+			success: false;
+			recordingsFolder: string;
+			movedBundles: string[];
+			remainingBundles: string[];
+			failedBundle: string;
+			recoveryBundle: string;
+			error: string;
+		}) => void;
+		changeRecordingsFolder.mockReturnValueOnce(
+			new Promise((resolve) => {
+				resolveChange = resolve;
+			}),
+		);
+		render(<SettingsView />);
+		await tab("Recording");
+		await userEvent.click(await screen.findByRole("button", { name: "Change…" }));
+		await waitFor(() => expect(folderProgressListener).toBeTypeOf("function"));
+		await userEvent.click(screen.getByRole("button", { name: "Move 2 recordings" }));
+		folderProgressListener?.({ current: 2, total: 2, bundleName: "two-recording" });
+		expect(await screen.findByRole("status")).toHaveTextContent("Moving 2 of 2…");
+		expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", "100");
+		resolveChange({
+			success: false,
+			recordingsFolder: "~/Client work",
+			movedBundles: ["one-recording"],
+			remainingBundles: ["two-recording", "three-recording"],
+			failedBundle: "two-recording",
+			recoveryBundle: "/scratch/Client work/two-recording",
+			error: "source removal denied",
+		});
+		expect(await screen.findByRole("alert")).toHaveTextContent("two-recording");
+		expect(screen.getByRole("alert")).toHaveTextContent("three-recording");
+		expect(screen.getByRole("alert")).toHaveTextContent("/scratch/Client work/two-recording");
 	});
 
 	it("reverts Hide desktop icons and shows an error when the save is rejected", async () => {

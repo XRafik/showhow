@@ -1,5 +1,6 @@
 import { execFile as execFileCallback } from "node:child_process";
-import { promises as fs } from "node:fs";
+import { randomUUID } from "node:crypto";
+import { promises as fs, readFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
@@ -10,6 +11,82 @@ const execFile = promisify(execFileCallback);
 
 /** Root for all Showhow recording bundles. One folder per recording; the folder IS the recording. */
 export const SHOWHOW_RECORDINGS_ROOT = path.join(os.homedir(), "Showhow", "Recordings");
+const SHOWHOW_SETTINGS_FILE = "showhow-settings.json";
+let recordingsSettingsFile: string | undefined;
+
+export function configureShowhowSettingsFile(userDataDir: string): void {
+	recordingsSettingsFile = path.join(userDataDir, SHOWHOW_SETTINGS_FILE);
+}
+
+export function getRecordingsRoot(settingsFile = recordingsSettingsFile): string {
+	if (settingsFile) {
+		try {
+			const value: unknown = JSON.parse(readFileSync(settingsFile, "utf8"));
+			if (
+				typeof value === "object" &&
+				value !== null &&
+				"recordingsRoot" in value &&
+				typeof value.recordingsRoot === "string" &&
+				path.isAbsolute(value.recordingsRoot)
+			) {
+				return path.resolve(value.recordingsRoot);
+			}
+		} catch {
+			// A missing or unreadable settings file keeps the established default.
+		}
+	}
+	return SHOWHOW_RECORDINGS_ROOT;
+}
+
+export async function isInsideRecordingsRoot(
+	candidate: string,
+	recordingsRoot = getRecordingsRoot(),
+): Promise<boolean> {
+	try {
+		const [root, realCandidate] = await Promise.all([
+			fs.realpath(recordingsRoot),
+			fs.realpath(path.resolve(candidate)),
+		]);
+		const relative = path.relative(root, realCandidate);
+		return (
+			relative !== "" &&
+			relative !== ".." &&
+			!relative.startsWith(`..${path.sep}`) &&
+			!path.isAbsolute(relative)
+		);
+	} catch {
+		return false;
+	}
+}
+
+export async function saveRecordingsRoot(
+	recordingsRoot: string,
+	settingsFile = recordingsSettingsFile,
+) {
+	if (!settingsFile || !path.isAbsolute(recordingsRoot)) {
+		throw new Error("Recordings settings are unavailable");
+	}
+	let settings: Record<string, unknown> = {};
+	try {
+		const value: unknown = JSON.parse(readFileSync(settingsFile, "utf8"));
+		if (typeof value !== "object" || value === null || Array.isArray(value)) {
+			throw new Error("Showhow settings are invalid");
+		}
+		settings = value as Record<string, unknown>;
+	} catch (error) {
+		if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+	}
+	settings.recordingsRoot = path.resolve(recordingsRoot);
+	const temporaryFile = `${settingsFile}.${randomUUID()}.tmp`;
+	await fs.mkdir(path.dirname(settingsFile), { recursive: true });
+	try {
+		await fs.writeFile(temporaryFile, JSON.stringify(settings, null, 2), { flag: "wx" });
+		await fs.rename(temporaryFile, settingsFile);
+	} catch (error) {
+		await fs.rm(temporaryFile, { force: true }).catch(() => undefined);
+		throw error;
+	}
+}
 
 export interface ShowhowMeta {
 	guide?: import("../../src/lib/showhow/aiGuide").GuideState;
@@ -484,7 +561,7 @@ async function fileExists(p: string): Promise<boolean> {
 }
 
 export async function createRecordingBundle(input: CreateBundleInput): Promise<CreateBundleResult> {
-	const root = input.recordingsRoot ?? SHOWHOW_RECORDINGS_ROOT;
+	const root = input.recordingsRoot ?? getRecordingsRoot();
 	const bundleDir = path.join(root, bundleDirName(input.createdAt));
 	await fs.mkdir(path.join(bundleDir, "screenshots"), { recursive: true });
 

@@ -12,3 +12,34 @@ export const RECORDING_COUNTDOWN_SECONDS = 3;
 export interface ShowhowSettingsInfo {
 	recordingsFolder: string;
 }
+
+export interface RecordingsFolderSelection {
+	status: "selected";
+	token: string;
+	recordingsFolder: string;
+	currentRecordingsFolder: string;
+	recordingCount: number;
+}
+
+export type RecordingsFolderSelectionResult =
+	| RecordingsFolderSelection
+	| { status: "rejected"; reason: "invalid-folder" | "same-folder" | "inside-current-folder" }
+	| null;
+
+export type RecordingsFolderAction = "keep" | "move";
+
+export interface RecordingsFolderMoveProgress {
+	current: number;
+	total: number;
+	bundleName: string;
+}
+
+export interface RecordingsFolderChangeResult {
+	success: boolean;
+	recordingsFolder?: string;
+	movedBundles?: string[];
+	remainingBundles?: string[];
+	failedBundle?: string;
+	recoveryBundle?: string;
+	error?: string;
+}

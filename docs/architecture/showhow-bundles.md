@@ -5,9 +5,12 @@ and transcription layer.
 
 ## Purpose and current scope
 
-Every completed recording is persisted as a self-contained folder under
-`~/Showhow/Recordings/`. The folder is the recording: it contains the source artifacts needed by
-the editor, a person, or an AI agent. Phase 1 establishes the folder, manifest, and transcript.
+Every completed recording is persisted as a self-contained folder under the default
+`~/Showhow/Recordings/` root, or the custom root selected in Settings; the chosen root persists
+across restarts. When changing roots, MOVE relocates existing bundles (verifying cross-volume
+copies before source removal), while KEEP leaves them on disk and removes them from the Library.
+The folder is the recording: it contains the source artifacts needed by the editor, a person, or
+an AI agent. Phase 1 establishes the folder, manifest, and transcript.
 Generating workflow steps and screenshots is desktop doc-engine work and is not yet complete.
 
 ## Bundle contract

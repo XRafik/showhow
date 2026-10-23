@@ -3,7 +3,7 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import type { RecordingSession } from "../../src/lib/recordingSession";
 import type { StepCaptureReason } from "../../src/lib/showhow/recordingLibrary";
-import { bundleDirName, createRecordingBundle, SHOWHOW_RECORDINGS_ROOT } from "./bundle";
+import { bundleDirName, createRecordingBundle, getRecordingsRoot } from "./bundle";
 import { requestBundleTranscript } from "./transcriptJob";
 
 /** The three macOS completion paths share this fail-open documentation boundary. */
@@ -12,8 +12,14 @@ export async function finishShowhowRecording(
 	durationMs?: number,
 	stepCaptureReason?: StepCaptureReason,
 ): Promise<RecordingSession> {
+	const recordingsRoot = getRecordingsRoot();
 	try {
-		const bundle = await createRecordingBundle({ ...session, durationMs, stepCaptureReason });
+		const bundle = await createRecordingBundle({
+			...session,
+			durationMs,
+			recordingsRoot,
+			stepCaptureReason,
+		});
 		// A persisted pending job survives the HUD/editor transition. A failed worker leaves this marker.
 		await fs
 			.writeFile(path.join(bundle.bundleDir, "transcript.txt"), "(transcription pending)\n", {
@@ -33,7 +39,7 @@ export async function finishShowhowRecording(
 		console.error("Showhow bundle creation failed; keeping valid recording:", error);
 		// Bundling may have moved the video before a metadata write failed. Never hand the editor a missing flat path.
 		const moved = path.join(
-			SHOWHOW_RECORDINGS_ROOT,
+			recordingsRoot,
 			bundleDirName(session.createdAt),
 			path.extname(session.screenVideoPath).toLowerCase() === ".mp4" ? "video.mp4" : "video.webm",
 		);

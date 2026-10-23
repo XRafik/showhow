@@ -233,7 +233,7 @@ export type ImportIpcHandler = (event: ImportIpcEvent, ...args: unknown[]) => Pr
 export interface ImportHandlerDependencies {
 	handle: (channel: string, handler: ImportIpcHandler) => void;
 	selectFile: () => Promise<string | null>;
-	recordingsRoot: string;
+	recordingsRoot: string | (() => string);
 	onImported?: (
 		entry: import("../../src/lib/showhow/recordingLibrary").RecordingLibraryEntry,
 	) => void;
@@ -274,7 +274,8 @@ export function registerImportRecordingHandlers(deps: ImportHandlerDependencies)
 			if (!sourcePath || controller.signal.aborted) return { status: "cancelled" };
 			const result = await importRecording({
 				sourcePath,
-				recordingsRoot: deps.recordingsRoot,
+				recordingsRoot:
+					typeof deps.recordingsRoot === "function" ? deps.recordingsRoot() : deps.recordingsRoot,
 				requestId: value.requestId,
 				signal: controller.signal,
 				onProgress: progress,

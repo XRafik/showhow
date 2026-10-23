@@ -181,6 +181,18 @@ interface Window {
 		) => Promise<import("../src/lib/showhow/pdfExport").PdfExportResult>;
 		showhowPdfReveal: (revealId: string) => Promise<{ success: boolean }>;
 		showhowSettingsInfo: () => Promise<import("../src/lib/showhow/settings").ShowhowSettingsInfo>;
+		showhowChooseRecordingsFolder: () => Promise<
+			import("../src/lib/showhow/settings").RecordingsFolderSelectionResult
+		>;
+		showhowChangeRecordingsFolder: (
+			token: string,
+			action: import("../src/lib/showhow/settings").RecordingsFolderAction,
+		) => Promise<import("../src/lib/showhow/settings").RecordingsFolderChangeResult>;
+		showhowOnRecordingsFolderMoveProgress: (
+			callback: (
+				progress: import("../src/lib/showhow/settings").RecordingsFolderMoveProgress,
+			) => void,
+		) => () => void;
 		showhowOpenRecording: (bundleDir: string) => Promise<{ success: boolean }>;
 		showhowImportRecording: (
 			request: import("../src/lib/showhow/recordingLibrary").ImportRecordingRequest,

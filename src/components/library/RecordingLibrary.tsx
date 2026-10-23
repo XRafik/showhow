@@ -791,26 +791,35 @@ export function RecordingLibrary() {
 		y: number;
 	} | null>(null);
 	const contextMenuRef = useRef<HTMLDivElement>(null);
-	useEffect(() => {
-		let active = true;
-		window.electronAPI
-			.showhowListRecordings()
-			.then((result) => {
-				if (!active) return;
-				setEntries(result);
-				setSelectedBundleDir(result[0]?.bundleDir ?? null);
-			})
-			.catch((error: unknown) => {
-				console.error("[RecordingLibrary] failed to load recordings:", error);
-				if (active) setLoadError(true);
-			})
-			.finally(() => {
-				if (active) setLoading(false);
-			});
-		return () => {
-			active = false;
-		};
+	const loadRequest = useRef(0);
+	const reloadRecordings = useCallback(async () => {
+		const request = ++loadRequest.current;
+		setLoading(true);
+		setLoadError(false);
+		try {
+			const result = await window.electronAPI.showhowListRecordings();
+			if (request !== loadRequest.current) return;
+			setEntries(result);
+			setSelectedBundleDir(result[0]?.bundleDir ?? null);
+			setQuery("");
+			setOverview(false);
+		} catch (error: unknown) {
+			console.error("[RecordingLibrary] failed to load recordings:", error);
+			if (request === loadRequest.current) {
+				setEntries([]);
+				setSelectedBundleDir(null);
+				setLoadError(true);
+			}
+		} finally {
+			if (request === loadRequest.current) setLoading(false);
+		}
 	}, []);
+	useEffect(() => {
+		void reloadRecordings();
+		return () => {
+			loadRequest.current += 1;
+		};
+	}, [reloadRecordings]);
 	const restoreRecording = useCallback(
 		async (undoToken: string) => {
 			try {
@@ -1130,7 +1139,7 @@ export function RecordingLibrary() {
 			/>
 			<div className="mx-auto max-w-[928px] px-6 pb-16 pt-14 min-[1100px]:px-[54px]">
 				{settingsOpen ? (
-					<SettingsView />
+					<SettingsView onRecordingsFolderChanged={reloadRecordings} />
 				) : (
 					<>
 						{loading && (
