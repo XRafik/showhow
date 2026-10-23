@@ -1851,3 +1851,7 @@ Six exact safe owned-app JPEGs were extracted from retained native CUA output wi
 ## HISTORICAL authorisation record — 23 October 2026 — #148 resume and documentation refresh
 
 Supervisor DISPATCH.txt / SUPERVISOR-RESUME-AUTHORITY.txt supersede the old package/tool STOP for a fresh-build native Computer Use route, without tool changes. Frozen three-file hashes matched archive/live. Retained stash ff4b6aa336c721d2ea63b9dc1484e0580658d8c0; same branch fast-forwarded to e1fab9047b6cd7c797a9ade025749d4c9cfa4d3e. Original archive and all failed receipts retained. This authorisation record is historical; the current w79:p3 result and documentation state are in the CURRENT sections above and in the current external snapshot/return receipts.
+
+## 23 October 2026 — #137 publish the landing page
+
+Owner chose Cloudflare Pages and approved publishing on 23 October 2026. Created the classic Pages project `showhow` with `wrangler pages project create --force`; without `--force`, wrangler 4.152 delegates to Workers and edits `site/package.json`, which was reverted. Deployed `site/dist` from `main` at `001b202a` (deployment `09b3401d`); production URL <https://showhow-agy.pages.dev/> answered 200 over HTTPS. Added `.github/workflows/pages.yml` for later deploys on `site/**` changes; it skips with a warning until the owner adds `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. Redeploy and rollback steps are in `docs/landing/deploy.md`. No custom domain yet.
