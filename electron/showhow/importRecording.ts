@@ -176,6 +176,7 @@ export async function importRecording(input: ImportRecordingInput): Promise<Impo
 			hasCursorTelemetry: false,
 		});
 		meta.title = path.basename(fileName, path.extname(fileName));
+		meta.titleSource = "user";
 		meta.stepCapture = {
 			status: "unavailable",
 			reason: "no-clicks",

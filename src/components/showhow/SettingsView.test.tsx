@@ -12,6 +12,7 @@ const guideStatus = vi.fn();
 const getPrefs = vi.fn();
 const setPrefs = vi.fn();
 const info = vi.fn();
+const setNameRecordingsWithAi = vi.fn();
 const chooseRecordingsFolder = vi.fn();
 const changeRecordingsFolder = vi.fn();
 let folderProgressListener:
@@ -29,7 +30,14 @@ beforeEach(() => {
 		micEnabled: true,
 		...patch,
 	}));
-	info.mockResolvedValue({ recordingsFolder: "~/Showhow/Recordings" });
+	info.mockResolvedValue({
+		recordingsFolder: "~/Showhow/Recordings",
+		nameRecordingsWithAi: true,
+	});
+	setNameRecordingsWithAi.mockImplementation(async (enabled: boolean) => ({
+		success: true,
+		nameRecordingsWithAi: enabled,
+	}));
 	chooseRecordingsFolder.mockResolvedValue({
 		status: "selected",
 		token: "folder-selection",
@@ -50,6 +58,7 @@ beforeEach(() => {
 				return () => undefined;
 			},
 			showhowSettingsInfo: info,
+			showhowSetNameRecordingsWithAi: setNameRecordingsWithAi,
 			showhowChooseRecordingsFolder: chooseRecordingsFolder,
 			showhowChangeRecordingsFolder: changeRecordingsFolder,
 			showhowOnRecordingsFolderMoveProgress: (callback: typeof folderProgressListener) => {
@@ -89,6 +98,32 @@ describe("SettingsView", () => {
 		render(<SettingsView />);
 		expect(await screen.findByText("Connected")).toBeVisible();
 		expect(screen.queryByText("Not connected")).not.toBeInTheDocument();
+	});
+
+	it("loads and saves the automatic recording title preference", async () => {
+		info.mockResolvedValueOnce({
+			recordingsFolder: "~/Showhow/Recordings",
+			nameRecordingsWithAi: false,
+		});
+		render(<SettingsView />);
+		const toggle = await screen.findByRole("switch", { name: "Name recordings with AI" });
+		await waitFor(() => expect(toggle).toBeEnabled());
+		expect(toggle).toHaveAttribute("aria-checked", "false");
+		await userEvent.click(toggle);
+		expect(setNameRecordingsWithAi).toHaveBeenCalledWith(true);
+		await waitFor(() => expect(toggle).toHaveAttribute("aria-checked", "true"));
+	});
+
+	it("restores the automatic title preference when persistence fails", async () => {
+		setNameRecordingsWithAi.mockResolvedValueOnce({ success: false });
+		render(<SettingsView />);
+		const toggle = await screen.findByRole("switch", { name: "Name recordings with AI" });
+		await waitFor(() => expect(toggle).toBeEnabled());
+		await userEvent.click(toggle);
+		expect(await screen.findByRole("alert")).toHaveTextContent(
+			"Could not save this preference. The previous setting is kept.",
+		);
+		expect(toggle).toHaveAttribute("aria-checked", "true");
 	});
 
 	it("reports a provider status error instead of guessing", async () => {

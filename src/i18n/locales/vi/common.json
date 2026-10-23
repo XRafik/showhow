@@ -143,7 +143,8 @@
 		"failed": "Failed",
 		"pick": "Pick a recording",
 		"pickBody": "Choose one from the library, or record something new.",
-		"changeProvider": "Change provider"
+		"changeProvider": "Change provider",
+		"naming": "NAMING…"
 	},
 	"importVideo": {
 		"title": "Import video",
@@ -250,7 +251,7 @@
 		"tabTranscription": "Transcription",
 		"tabAgents": "Agents",
 		"tabAppearance": "Appearance",
-		"connectionsIntro": "Recording, editing and step-finding run on this Mac. AI connections are optional and only used when you make a guide or brief. Editor AI edits keep their own provider settings.",
+		"connectionsIntro": "Recording, editing and step-finding run on this Mac. Optional AI connections are used for guides and briefs, and for automatic titles when enabled. Editor AI edits keep their own provider settings.",
 		"chatgpt": "ChatGPT plan",
 		"chatgptMeta": "Sign-in · Optional",
 		"comingLater": "Coming later",
@@ -306,7 +307,10 @@
 		"folderMoved": "Moved: {{names}}",
 		"folderRemaining": "Not attempted: {{names}}",
 		"folderRecovery": "A verified copy is available at {{folder}}.",
-		"folderDone": "Done"
+		"folderDone": "Done",
+		"nameRecordingsWithAi": "Name recordings with AI",
+		"nameRecordingsWithAiNote": "When enabled, completed transcripts and click labels go to OpenRouter when a key is connected. User titles and imported video names stay unchanged.",
+		"nameRecordingsWithAiError": "Could not save this preference. The previous setting is kept."
 	},
 	"showhowTrash": {
 		"eyebrow": "YOUR LIBRARY",

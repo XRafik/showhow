@@ -14,6 +14,7 @@ export type { RecordingLibraryEntry };
 interface RawMeta {
 	schemaVersion?: unknown;
 	title?: unknown;
+	summary?: unknown;
 	source?: unknown;
 	createdAt?: unknown;
 	durationMs?: unknown;
@@ -154,6 +155,9 @@ async function readEntryForDir(
 		source: raw.source,
 		createdAt: raw.createdAt,
 	};
+	if (typeof raw.summary === "string" && raw.summary.trim()) {
+		entry.summary = raw.summary;
+	}
 	if (typeof raw.durationMs === "number" && Number.isFinite(raw.durationMs)) {
 		entry.durationMs = raw.durationMs;
 	}

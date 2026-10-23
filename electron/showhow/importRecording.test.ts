@@ -76,6 +76,12 @@ describe("importRecording", () => {
 			video: "video.mp4",
 			stepCapture: { status: "unavailable" },
 		});
+		expect(
+			JSON.parse(await readFile(path.join(result.entry.bundleDir, "meta.json"), "utf8")),
+		).toMatchObject({
+			title: "Demo",
+			titleSource: "user",
+		});
 		expect(result.entry.durationMs).toBeGreaterThanOrEqual(900);
 		expect(await hash(path.join(result.entry.bundleDir, "video.mp4"))).toBe(originalHash);
 		expect(await hash(source)).toBe(originalHash);

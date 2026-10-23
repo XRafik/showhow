@@ -13,6 +13,7 @@ const execFile = promisify(execFileCallback);
 export const SHOWHOW_RECORDINGS_ROOT = path.join(os.homedir(), "Showhow", "Recordings");
 const SHOWHOW_SETTINGS_FILE = "showhow-settings.json";
 let recordingsSettingsFile: string | undefined;
+const settingsWrites = new Map<string, Promise<void>>();
 
 export function configureShowhowSettingsFile(userDataDir: string): void {
 	recordingsSettingsFile = path.join(userDataDir, SHOWHOW_SETTINGS_FILE);
@@ -36,6 +37,21 @@ export function getRecordingsRoot(settingsFile = recordingsSettingsFile): string
 		}
 	}
 	return SHOWHOW_RECORDINGS_ROOT;
+}
+
+export function getNameRecordingsWithAi(settingsFile = recordingsSettingsFile): boolean {
+	if (!settingsFile) return true;
+	try {
+		const value: unknown = JSON.parse(readFileSync(settingsFile, "utf8"));
+		return typeof value === "object" &&
+			value !== null &&
+			"nameRecordingsWithAi" in value &&
+			typeof value.nameRecordingsWithAi === "boolean"
+			? value.nameRecordingsWithAi
+			: true;
+	} catch {
+		return true;
+	}
 }
 
 export async function isInsideRecordingsRoot(
@@ -66,25 +82,52 @@ export async function saveRecordingsRoot(
 	if (!settingsFile || !path.isAbsolute(recordingsRoot)) {
 		throw new Error("Recordings settings are unavailable");
 	}
-	let settings: Record<string, unknown> = {};
+	await saveShowhowSettingsPatch({ recordingsRoot: path.resolve(recordingsRoot) }, settingsFile);
+}
+
+export async function saveNameRecordingsWithAi(
+	enabled: boolean,
+	settingsFile = recordingsSettingsFile,
+): Promise<void> {
+	if (!settingsFile) throw new Error("Recording settings are unavailable");
+	await saveShowhowSettingsPatch({ nameRecordingsWithAi: enabled }, settingsFile);
+}
+
+async function saveShowhowSettingsPatch(
+	patch: Record<string, unknown>,
+	settingsFile: string,
+): Promise<void> {
+	const file = path.resolve(settingsFile);
+	const previous = settingsWrites.get(file) ?? Promise.resolve();
+	const write = previous
+		.catch(() => undefined)
+		.then(async () => {
+			let settings: Record<string, unknown> = {};
+			try {
+				const value: unknown = JSON.parse(readFileSync(file, "utf8"));
+				if (typeof value !== "object" || value === null || Array.isArray(value)) {
+					throw new Error("Showhow settings are invalid");
+				}
+				settings = value as Record<string, unknown>;
+			} catch (error) {
+				if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+			}
+			Object.assign(settings, patch);
+			const temporaryFile = `${file}.${randomUUID()}.tmp`;
+			await fs.mkdir(path.dirname(file), { recursive: true });
+			try {
+				await fs.writeFile(temporaryFile, JSON.stringify(settings, null, 2), { flag: "wx" });
+				await fs.rename(temporaryFile, file);
+			} catch (error) {
+				await fs.rm(temporaryFile, { force: true }).catch(() => undefined);
+				throw error;
+			}
+		});
+	settingsWrites.set(file, write);
 	try {
-		const value: unknown = JSON.parse(readFileSync(settingsFile, "utf8"));
-		if (typeof value !== "object" || value === null || Array.isArray(value)) {
-			throw new Error("Showhow settings are invalid");
-		}
-		settings = value as Record<string, unknown>;
-	} catch (error) {
-		if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
-	}
-	settings.recordingsRoot = path.resolve(recordingsRoot);
-	const temporaryFile = `${settingsFile}.${randomUUID()}.tmp`;
-	await fs.mkdir(path.dirname(settingsFile), { recursive: true });
-	try {
-		await fs.writeFile(temporaryFile, JSON.stringify(settings, null, 2), { flag: "wx" });
-		await fs.rename(temporaryFile, settingsFile);
-	} catch (error) {
-		await fs.rm(temporaryFile, { force: true }).catch(() => undefined);
-		throw error;
+		await write;
+	} finally {
+		if (settingsWrites.get(file) === write) settingsWrites.delete(file);
 	}
 }
 
@@ -92,6 +135,8 @@ export interface ShowhowMeta {
 	guide?: import("../../src/lib/showhow/aiGuide").GuideState;
 	schemaVersion: 1;
 	title: string;
+	titleSource: "default" | "ai" | "user";
+	summary?: string;
 	/**
 	 * Recordings use `"desktop"` or `"browser"`; imported local MP4s use `"imported"`.
 	 */
@@ -356,6 +401,7 @@ export async function updateWorkflowDocument(
 			const meta = parseEditableMeta(await fs.readFile(metaPath, "utf-8"));
 			if (meta.title !== update.title.trim()) markGuideEdited(meta);
 			meta.title = update.title.trim();
+			meta.titleSource = "user";
 			const metaTmp = path.join(bundleDir, "meta.json.tmp");
 			try {
 				await fs.writeFile(metaTmp, `${JSON.stringify(meta, null, 2)}\n`, "utf-8");
@@ -480,6 +526,7 @@ export function buildMeta(input: BuildMetaInput): ShowhowMeta {
 	return {
 		schemaVersion: 1,
 		title,
+		titleSource: "default",
 		source: input.source ?? "desktop",
 		createdAt: input.createdAt,
 		...(input.durationMs !== undefined ? { durationMs: input.durationMs } : {}),

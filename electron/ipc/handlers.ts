@@ -149,7 +149,9 @@ import {
 	shouldPersistSelectedSource,
 } from "../recording-source-settings";
 import { registerAiGuideHandlers } from "../showhow/aiGuideConsent";
+import { createAiTitleService } from "../showhow/aiTitle";
 import {
+	getNameRecordingsWithAi,
 	getRecordingsRoot,
 	isInsideRecordingsRoot,
 	regenerateDocArtifacts,
@@ -1979,6 +1981,10 @@ export function registerIpcHandlers(
 		trashItem: (bundleDir) => shell.trashItem(bundleDir),
 	});
 	let pendingLibraryTrashUndo: { undoToken: string; expiresAt: number } | null = null;
+	let aiTitleService: ReturnType<typeof createAiTitleService> | undefined;
+	const onTranscriptReady = (bundleDir: string) => {
+		if (aiTitleService) void aiTitleService.nameRecording(bundleDir);
+	};
 	const broadcastSelectedSource = (source: SelectedSource | null) => {
 		for (const window of BrowserWindow.getAllWindows()) {
 			if (!window.isDestroyed()) {
@@ -3699,6 +3705,7 @@ export function registerIpcHandlers(
 					session,
 					isValidDurationMs(durationMs) ? durationMs : undefined,
 					stepCaptureReason,
+					onTranscriptReady,
 				);
 				setCurrentRecordingSessionState(session);
 				currentProjectPath = null;
@@ -3835,7 +3842,12 @@ export function registerIpcHandlers(
 					...(cursorCaptureMode ? { cursorCaptureMode } : {}),
 				};
 				if (platformLabel === "macOS")
-					session = await finishShowhowRecording(session, payload.durationMs);
+					session = await finishShowhowRecording(
+						session,
+						payload.durationMs,
+						undefined,
+						onTranscriptReady,
+					);
 				setCurrentRecordingSessionState(session);
 				currentProjectPath = null;
 
@@ -3886,29 +3898,40 @@ export function registerIpcHandlers(
 		},
 	);
 
+	const createStructuredModel = createStructuredModelFactory({
+		loadChat: async (apiKey, model) => {
+			const { createOpenScreenChatModel } = await import("../ai-edition/deep-agent/chat-model");
+			const chat = await createOpenScreenChatModel({ provider: "openrouter", apiKey, model });
+			return {
+				withStructuredOutput: (schema, options) => chat.withStructuredOutput(schema, options),
+			};
+		},
+		toMessages: async (messages) => {
+			const { HumanMessage, SystemMessage } = await import("@langchain/core/messages");
+			return messages.map((message) =>
+				message.role === "system"
+					? new SystemMessage({ content: message.content })
+					: new HumanMessage({ content: message.content }),
+			);
+		},
+	});
 	registerAiGuideHandlers({
 		handle: (channel, handler) => ipcMain.handle(channel, handler),
 		recordingsRoot: getRecordingsRoot,
 		preferencesDir: app.getPath("userData"),
 		getStore: () => getAiEditionLlmConfig(),
-		createModel: createStructuredModelFactory({
-			loadChat: async (apiKey, model) => {
-				const { createOpenScreenChatModel } = await import("../ai-edition/deep-agent/chat-model");
-				const chat = await createOpenScreenChatModel({ provider: "openrouter", apiKey, model });
-				return {
-					withStructuredOutput: (schema, options) => chat.withStructuredOutput(schema, options),
-				};
-			},
-			toMessages: async (messages) => {
-				const { HumanMessage, SystemMessage } = await import("@langchain/core/messages");
-				return messages.map((message) =>
-					message.role === "system"
-						? new SystemMessage({ content: message.content })
-						: new HumanMessage({ content: message.content }),
-				);
-			},
-		}),
+		createModel: createStructuredModel,
 		writeClipboard: (text) => clipboard.writeText(text),
+	});
+	aiTitleService = createAiTitleService({
+		isEnabled: getNameRecordingsWithAi,
+		getStore: () => getAiEditionLlmConfig(),
+		createModel: createStructuredModel,
+		onStatus: (event) => {
+			for (const window of BrowserWindow.getAllWindows()) {
+				if (!window.isDestroyed()) window.webContents.send("showhow:recording-title-status", event);
+			}
+		},
 	});
 
 	ipcMain.handle("showhow:open-recording", async (_, bundleDir: unknown) => {
@@ -3926,6 +3949,7 @@ export function registerIpcHandlers(
 				await restorePendingBundleTranscript(
 					session ?? { screenVideoPath: video, createdAt: entry.createdAt },
 					resolved,
+					onTranscriptReady,
 				),
 			);
 			currentProjectPath = null;
@@ -3941,6 +3965,7 @@ export function registerIpcHandlers(
 		handle: (channel, handler) => ipcMain.handle(channel, handler),
 		recordingsRoot: getRecordingsRoot,
 		homeDir: app.getPath("home"),
+		settingsFile: path.join(app.getPath("userData"), "showhow-settings.json"),
 		chooseFolder: async (defaultPath) => {
 			const result = await dialog.showOpenDialog({
 				defaultPath,
@@ -3981,12 +4006,21 @@ export function registerIpcHandlers(
 			return result.canceled ? null : (result.filePaths[0] ?? null);
 		},
 		onImported: (entry) => {
-			void requestBundleTranscript(entry.bundleDir, path.join(entry.bundleDir, "video.mp4"));
+			void requestBundleTranscript(
+				entry.bundleDir,
+				path.join(entry.bundleDir, "video.mp4"),
+				onTranscriptReady,
+			);
 		},
 	});
 
 	ipcMain.handle("showhow:list-recordings", async () => {
-		return listRecordings();
+		const entries = await listRecordings();
+		return entries.map((entry) =>
+			aiTitleService?.isNaming(entry.bundleDir)
+				? { ...entry, titleStatus: "naming" as const }
+				: entry,
+		);
 	});
 
 	ipcMain.handle(
@@ -4067,6 +4101,7 @@ export function registerIpcHandlers(
 			} catch (error) {
 				console.error("showhow:write-transcript doc regeneration failed:", error);
 			}
+			onTranscriptReady(resolved);
 			return { success: true };
 		} catch (error) {
 			console.error("showhow:write-transcript failed:", error);
@@ -4221,6 +4256,7 @@ export function registerIpcHandlers(
 				session,
 				payload.durationMs,
 				payload.stepCaptureReason,
+				onTranscriptReady,
 			);
 		setCurrentRecordingSessionState(session);
 		currentProjectPath = null;
